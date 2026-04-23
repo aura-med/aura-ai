@@ -46,7 +46,7 @@
 /* Aura dark theme — always dark, no light mode */
 :root {
   /* Backgrounds */
-  --background: #0a0d12;
+  --background: #ffffff;
   --card: #111520;
   --muted: #181e2e;
   --popover: #111520;
@@ -96,7 +96,7 @@
 
 /* Aura-specific semantic tokens used directly in components */
 :root {
-  --aura-bg:     #0a0d12;
+  --aura-bg:     #ffffff;
   --aura-bg2:    #111520;
   --aura-bg3:    #181e2e;
   --aura-bg4:    #1e2638;

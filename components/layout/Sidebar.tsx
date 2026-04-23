@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Users, UserCircle, Activity, Calendar,
   Heart, Gauge, Zap, BookOpen, FlaskConical, Settings,
-  ClipboardList, TrendingUp
+  ClipboardList, TrendingUp, Star
 } from 'lucide-react'
 
 interface NavItem {
@@ -21,6 +21,7 @@ const NAV_ITEMS: NavItem[] = [
   // Overview
   { href: '/',           label: 'Dashboard',        icon: LayoutDashboard, badge: 3, section: 'Visão Geral' },
   { href: '/squad',      label: 'Plantel',           icon: Users,           section: 'Visão Geral' },
+  { href: '/selecoes',   label: 'Seleções',          icon: Star,            section: 'Visão Geral' },
   // Clinical
   { href: '/athletes',   label: 'Avaliação Atleta',  icon: UserCircle,      section: 'Clínico' },
   { href: '/readiness',  label: 'Prontidão',         icon: Heart,           section: 'Clínico' },

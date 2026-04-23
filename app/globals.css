@@ -43,7 +43,7 @@
   --radius-xl: calc(var(--radius) * 1.4);
 }
 
-/* Aura dark theme — always dark, no light mode */
+/* Aura dark theme (default) */
 :root {
   /* Backgrounds */
   --background: #0a0d12;
@@ -92,6 +92,51 @@
   --sidebar-accent-foreground: #e8eaf2;
   --sidebar-border: rgba(255, 255, 255, 0.07);
   --sidebar-ring: rgba(0, 229, 160, 0.3);
+}
+
+/* Light mode overrides */
+html.light {
+  --background: #f4f6fa;
+  --card: #ffffff;
+  --muted: #e8edf5;
+  --popover: #ffffff;
+
+  --border: rgba(0, 0, 0, 0.08);
+  --input: rgba(0, 0, 0, 0.08);
+  --ring: rgba(0, 0, 0, 0.15);
+
+  --foreground: #1a1f2e;
+  --card-foreground: #1a1f2e;
+  --popover-foreground: #1a1f2e;
+  --muted-foreground: #5a6478;
+
+  --primary: #00b37a;
+  --primary-foreground: #ffffff;
+
+  --secondary: rgba(77, 154, 255, 0.1);
+  --secondary-foreground: #2a6fd4;
+
+  --accent: rgba(130, 80, 220, 0.1);
+  --accent-foreground: #6b35c9;
+
+  --sidebar: #eef1f7;
+  --sidebar-foreground: #4a5568;
+  --sidebar-primary: #00b37a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(0, 0, 0, 0.04);
+  --sidebar-accent-foreground: #1a1f2e;
+  --sidebar-border: rgba(0, 0, 0, 0.08);
+  --sidebar-ring: rgba(0, 179, 122, 0.3);
+
+  --aura-bg:     #f4f6fa;
+  --aura-bg2:    #ffffff;
+  --aura-bg3:    #e8edf5;
+  --aura-bg4:    #dde3ee;
+  --aura-text:   #1a1f2e;
+  --aura-text2:  #5a6478;
+  --aura-text3:  #9aa3b2;
+  --aura-border: rgba(0, 0, 0, 0.08);
+  --aura-border2: rgba(0, 0, 0, 0.15);
 }
 
 /* Aura-specific semantic tokens used directly in components */

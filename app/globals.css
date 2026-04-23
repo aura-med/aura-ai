@@ -165,9 +165,11 @@ html.light {
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
   }
   html {
     @apply font-sans;

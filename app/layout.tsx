@@ -34,7 +34,7 @@ export default function RootLayout({
       lang="en"
       className={`dark ${inter.variable} ${dmMono.variable} ${syne.variable} h-full`}
     >
-      <body className="h-full bg-background text-foreground antialiased">
+      <body className="h-full antialiased">
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

@@ -1,128 +1,121 @@
+import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
-import { ScoreBadge } from '@/components/athlete/ScoreBadge'
-import { scoreToRisk } from '@/lib/utils'
+import { calcScore, riskColor, riskLabel, riskLevel } from '@/lib/scoring'
+import { ScoreBadge, Sparkline } from '@/components/ui/aura'
 
-export const dynamic = 'force-dynamic'
-
-const POSITION_COLORS: Record<string, string> = {
-  GK:  'var(--aura-warn)',
-  DEF: 'var(--aura-blue)',
-  MID: 'var(--aura-green)',
-  FWD: 'var(--aura-danger)',
-}
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export default async function SquadPage() {
-  const supabase = await createClient()
-
   const { data: athletes } = await supabase
     .from('athletes')
-    .select('id, name, shirt_number, position, status, club')
+    .select(`*, wellness_checkins(*), injury_events(*), score_history(*)`)
     .eq('active', true)
     .order('shirt_number')
 
-  const { data: latestScores } = await supabase
-    .from('score_history')
-    .select('athlete_id, total_score, confidence, score_date')
-    .in('score_date', [new Date().toISOString().split('T')[0]])
+  const withScores = (athletes ?? []).map((a: any) => {
+    const latest = (a.wellness_checkins ?? [])
+      .sort((x: any, y: any) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
+    const inputs = {
+      history: (a.injury_events ?? []).filter((i: any) => !i.return_date).length >= 2 ? 2
+        : (a.injury_events ?? []).length >= 1 ? 1 : 0,
+      acwr: null, hrv: null,
+      fatigue: latest?.fatigue ?? null,
+      sleep: latest?.sleep_hours ?? null,
+      tqr: latest?.tqr ?? null,
+      stress: latest?.stress ?? null,
+      decel: null, md: null,
+    }
+    const score = calcScore(inputs)
+    const history = (a.score_history ?? [])
+      .sort((x: any, y: any) => new Date(x.score_date).getTime() - new Date(y.score_date).getTime())
+      .slice(-7).map((s: any) => Math.round(s.total_score * 100))
+    return { ...a, score, history }
+  })
 
-  const scoreMap = new Map(latestScores?.map((s) => [s.athlete_id, s]) ?? [])
+  const byPos: Record<string, any[]> = { GK: [], DEF: [], MID: [], FWD: [] }
+  const rehab: any[] = []
+  withScores.forEach(a => {
+    if (a.status === 'rehab') rehab.push(a)
+    else if (a.position && byPos[a.position]) byPos[a.position].push(a)
+  })
+
+  const posLabels: Record<string, string> = { GK: 'Guarda-redes', DEF: 'Defesas', MID: 'Médios', FWD: 'Avançados' }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1
-          className="text-2xl font-bold"
-          style={{ fontFamily: 'var(--font-syne)', color: 'var(--aura-text)' }}
-        >
-          Plantel
-        </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--aura-text2)' }}>
-          {athletes?.length ?? 0} atletas · scores de hoje
-        </p>
+    <div>
+      <div className="sec-hdr">
+        <div className="sec-title">👥 Plantel</div>
+        <div className="sec-sub">{withScores.length} atletas convocados · Ordenado por posição</div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        {athletes?.map((athlete) => {
-          const scoreRow = scoreMap.get(athlete.id)
-          const score = scoreRow ? Math.round(scoreRow.total_score * 100) : null
-          const level = score !== null ? scoreToRisk(score) : null
-
-          return (
-            <Link
-              key={athlete.id}
-              href={`/athletes/${athlete.id}`}
-              className="block rounded-xl border p-4 transition-colors hover:border-[var(--aura-border2)]"
-              style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
-            >
-              <div className="flex items-start justify-between gap-3">
-                {/* Shirt number + name */}
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold font-mono shrink-0"
-                    style={{
-                      background: 'var(--aura-bg3)',
-                      color: 'var(--aura-text2)',
-                    }}
-                  >
-                    {athlete.shirt_number}
-                  </div>
-                  <div className="min-w-0">
-                    <p
-                      className="text-sm font-semibold truncate"
-                      style={{ color: 'var(--aura-text)' }}
-                    >
-                      {athlete.name}
-                    </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span
-                        className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded"
-                        style={{
-                          color: POSITION_COLORS[athlete.position] ?? 'var(--aura-text3)',
-                          background: POSITION_COLORS[athlete.position] ? `${POSITION_COLORS[athlete.position]}18` : 'var(--aura-bg3)',
-                        }}
-                      >
-                        {athlete.position}
-                      </span>
-                      {athlete.status === 'rehab' && (
-                        <span
-                          className="text-[10px] px-1.5 py-0.5 rounded"
-                          style={{
-                            background: 'var(--aura-warn-bg)',
-                            color: 'var(--aura-warn)',
-                          }}
-                        >
-                          Rehab
-                        </span>
+      {Object.entries(byPos).map(([pos, athletes]) =>
+        athletes.length === 0 ? null : (
+          <div key={pos} style={{ marginBottom: 20 }}>
+            <div style={{
+              fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2,
+              textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 8,
+              paddingBottom: 6, borderBottom: '1px solid var(--border)',
+            }}>
+              {posLabels[pos]}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 6 }}>
+              {athletes.map((a: any) => (
+                <Link key={a.id} href={`/athlete?id=${a.id}`} style={{ textDecoration: 'none' }}>
+                  <div className="ath-card">
+                    <div className="ath-avatar">{a.shirt_number}</div>
+                    <div className="ath-info">
+                      <div className="ath-name">{a.name}</div>
+                      <div className="ath-meta">{a.club}</div>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontFamily: 'var(--display)', fontSize: 18, fontWeight: 900, color: riskColor(a.score.score) }}>
+                        {a.score.score}%
+                      </div>
+                      <div style={{ fontSize: 10, color: 'var(--text2)', fontFamily: 'var(--mono)', marginBottom: 3 }}>
+                        {riskLabel(a.score.score)}
+                      </div>
+                      {a.history.length > 1 && (
+                        <Sparkline data={a.history} color={riskColor(a.score.score)} width={52} height={14} />
                       )}
                     </div>
                   </div>
-                </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )
+      )}
 
-                {/* Score */}
-                {score !== null && level ? (
-                  <ScoreBadge score={score} level={level} size="sm" />
-                ) : (
-                  <span
-                    className="text-xs font-mono"
-                    style={{ color: 'var(--aura-text3)' }}
-                  >
-                    sem dados
+      {rehab.length > 0 && (
+        <div>
+          <div style={{
+            fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2,
+            textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 8,
+            paddingBottom: 6, borderBottom: '1px solid var(--border)',
+          }}>
+            Reabilitação
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 6 }}>
+            {rehab.map((a: any) => (
+              <Link key={a.id} href={`/rehab`} style={{ textDecoration: 'none' }}>
+                <div className="ath-card">
+                  <div className="ath-avatar">{a.shirt_number}</div>
+                  <div className="ath-info">
+                    <div className="ath-name">{a.name}</div>
+                    <div className="ath-meta">{a.position} · {a.club}</div>
+                  </div>
+                  <span className="score-badge" style={{ background: 'var(--blue2)', color: 'var(--blue)', borderColor: 'rgba(77,154,255,0.25)' }}>
+                    Reab.
                   </span>
-                )}
-              </div>
-
-              {/* Club */}
-              <p
-                className="text-xs mt-3 truncate"
-                style={{ color: 'var(--aura-text3)' }}
-              >
-                {athlete.club}
-              </p>
-            </Link>
-          )
-        })}
-      </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

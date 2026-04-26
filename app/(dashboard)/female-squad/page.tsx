@@ -1,154 +1,138 @@
-import { createClient } from '@/lib/supabase/server'
-import { getMenstrualPhase, applyMenstrualMultiplier } from '@/lib/menstrual/cycle'
-import { ScoreBadge } from '@/components/athlete/ScoreBadge'
-import { scoreToRisk } from '@/lib/utils'
+import { createClient } from '@supabase/supabase-js'
+import Link from 'next/link'
+import { calcScore, riskColor, riskLabel, getMenstrualPhase, getFemaleAdjustedScore } from '@/lib/scoring'
+import { AlertBox } from '@/components/ui/aura'
 
-export const dynamic = 'force-dynamic'
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
-export default async function FemaleSquadPage() {
-  const supabase = await createClient()
+const PHASE_GUIDE = [
+  { phase: 'menstrual',  color: '#ff4d6d', days: 'D1–5',  note: 'Dor e fadiga possíveis. Reduzir impacto se necessário.' },
+  { phase: 'follicular', color: '#00e5a0', days: 'D6–13', note: 'Fase ideal para carga alta e desenvolvimento de força.' },
+  { phase: 'ovulatory',  color: '#ff7043', days: 'D14',   note: 'Risco LCA +40%. Evitar arranques bruscos e aterragens.' },
+  { phase: 'luteal',     color: '#ffb347', days: 'D15–28',note: 'Laxidez ligamentar aumentada. Reforço proprioceptivo.' },
+]
 
+export default async function FemalePage() {
   const { data: athletes } = await supabase
     .from('athletes')
-    .select('id, name, shirt_number, position, club, menstrual_day, cycle_length')
+    .select(`*, wellness_checkins(*), injury_events(*), rehab_sessions(*, rehab_protocols(*))`)
     .eq('active', true)
     .not('menstrual_day', 'is', null)
     .order('shirt_number')
 
-  const today = new Date().toISOString().split('T')[0]
+  const withData = (athletes ?? []).map((a: any) => {
+    const latest = (a.wellness_checkins ?? [])
+      .sort((x: any, y: any) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
+    const inputs = {
+      history: (a.injury_events ?? []).length >= 2 ? 2 : (a.injury_events ?? []).length >= 1 ? 1 : 0,
+      acwr: null, hrv: null, fatigue: latest?.fatigue ?? null, sleep: latest?.sleep_hours ?? null,
+      tqr: latest?.tqr ?? null, stress: latest?.stress ?? null, decel: null, md: null,
+    }
+    const base = calcScore(inputs)
+    const adjusted = getFemaleAdjustedScore(base.score, a.menstrual_day, a.cycle_length)
+    return { ...a, base_score: base.score, adjusted_score: adjusted.adjusted, phase: adjusted.phase }
+  })
 
-  const { data: scores } = await supabase
-    .from('score_history')
-    .select('athlete_id, total_score, confidence')
-    .eq('score_date', today)
-
-  const scoreMap = new Map(scores?.map((s) => [s.athlete_id, s]) ?? [])
+  const available = withData.filter(a => a.status === 'available')
+  const rehab     = withData.filter(a => a.status === 'rehab')
+  const highRisk  = withData.filter(a => a.adjusted_score >= 65)
+  const inOvulation = withData.filter(a => a.phase?.phase === 'ovulatory')
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1
-          className="text-2xl font-bold"
-          style={{ fontFamily: 'var(--font-syne)', color: 'var(--aura-text)' }}
-        >
-          Seleção Feminina
-        </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--aura-text2)' }}>
-          Score ajustado pelo ciclo menstrual · Risco LCA (Hewett 2007, Renstrom BJSM 2008)
-        </p>
+    <div>
+      <div className="sec-hdr">
+        <div className="sec-title">⚽ Seleção Nacional Feminina</div>
+        <div className="sec-sub">Monitorização com ciclo menstrual integrado · Risco LCA ajustado</div>
       </div>
 
-      {/* Phase legend */}
-      <div
-        className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl border"
-        style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
-      >
-        {[
-          { phase: 'Menstrual', color: '#ff4d6d', mult: '1.1×', note: 'D1–5' },
-          { phase: 'Folicular', color: '#00e5a0', mult: '1.0×', note: 'D6–13' },
-          { phase: 'Ovulatória', color: '#f6ad55', mult: '1.4×', note: 'D14 ⚠️' },
-          { phase: 'Luteínica',  color: '#b48dfc', mult: '1.2×', note: 'D15–28' },
-        ].map((p) => (
-          <div key={p.phase} className="flex items-center gap-2.5">
-            <div
-              className="w-3 h-3 rounded-full shrink-0"
-              style={{ background: p.color }}
-            />
-            <div>
-              <p className="text-xs font-medium" style={{ color: 'var(--aura-text)' }}>
-                {p.phase}
-              </p>
-              <p className="text-[10px]" style={{ color: 'var(--aura-text3)' }}>
-                {p.note} · LCA {p.mult}
-              </p>
+      {/* Cycle phase guide */}
+      <div className="card" style={{ marginBottom: 16, borderColor: 'rgba(180,141,252,0.3)' }}>
+        <div className="ctitle" style={{ color: 'var(--purple)' }}>🔬 Impacto do ciclo menstrual no risco de lesão</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 10 }}>
+          {PHASE_GUIDE.map(p => (
+            <div key={p.phase} style={{ background: 'var(--bg3)', borderRadius: 8, padding: 12, borderLeft: `3px solid ${p.color}` }}>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text3)', marginBottom: 4 }}>{p.days}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: p.color, marginBottom: 4, textTransform: 'capitalize' }}>{p.phase}</div>
+              <div style={{ fontSize: 11, color: 'var(--text2)', lineHeight: 1.5 }}>{p.note}</div>
             </div>
+          ))}
+        </div>
+        <div className="alert alert-b" style={{ marginBottom: 0 }}>
+          <div className="adot ad-b" />
+          <div style={{ fontSize: 12 }}>
+            <strong>Evidência:</strong> Risco de lesão LCA varia até 4x ao longo do ciclo menstrual
+            (Hewett et al. 2007; Renstrom et al. BJSM 2008). A Aura é a única plataforma que integra
+            este factor no score de risco.
           </div>
-        ))}
+        </div>
       </div>
 
-      {/* Athlete grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        {athletes?.map((athlete) => {
-          const phaseInfo = getMenstrualPhase(
-            athlete.menstrual_day ?? 1,
-            athlete.cycle_length ?? 28
-          )
-          const scoreRow = scoreMap.get(athlete.id)
-          const baseScore = scoreRow ? Math.round(scoreRow.total_score * 100) : null
-          const adjustedScore = baseScore !== null
-            ? applyMenstrualMultiplier(baseScore, athlete.menstrual_day ?? 1, athlete.cycle_length ?? 28)
-            : null
-          const level = adjustedScore !== null ? scoreToRisk(adjustedScore) : null
+      {/* KPIs */}
+      <div className="kpi-grid" style={{ marginBottom: 16 }}>
+        <div className="kpi"><div className="kpi-num" style={{ color: 'var(--text)' }}>{athletes?.length ?? 0}</div><div className="kpi-label">Atletas convocadas</div></div>
+        <div className="kpi"><div className="kpi-num" style={{ color: 'var(--orange)' }}>{highRisk.length}</div><div className="kpi-label">Score ajustado alto</div></div>
+        <div className="kpi"><div className="kpi-num" style={{ color: 'var(--danger)' }}>{inOvulation.length}</div><div className="kpi-label">Em ovulação hoje</div></div>
+        <div className="kpi"><div className="kpi-num" style={{ color: 'var(--blue)' }}>{rehab.length}</div><div className="kpi-label">Em reabilitação</div></div>
+      </div>
+
+      {/* Squad grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
+        {withData.map(a => {
+          const lcaAdjusted = a.adjusted_score > a.base_score
+          const isOvulatory = a.phase?.phase === 'ovulatory'
 
           return (
-            <div
-              key={athlete.id}
-              className="rounded-xl border p-4"
-              style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
-            >
-              <div className="flex items-start justify-between gap-3 mb-3">
-                <div>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--aura-text)' }}>
-                    {athlete.name}
-                  </p>
-                  <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>
-                    #{athlete.shirt_number} · {athlete.position}
-                  </p>
+            <Link key={a.id} href={`/athlete?id=${a.id}`} style={{ textDecoration: 'none' }}>
+              <div style={{
+                background: 'var(--bg2)', border: `1px solid ${isOvulatory ? 'rgba(255,112,67,0.4)' : 'var(--border)'}`,
+                borderRadius: 10, padding: '12px 14px', cursor: 'pointer', transition: 'all .15s',
+              }}>
+                {/* Top row */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                  <div className="ath-avatar">{a.shirt_number}</div>
+                  <div className="ath-info">
+                    <div className="ath-name">{a.name}</div>
+                    <div className="ath-meta">{a.position} · {a.club}</div>
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 900, color: riskColor(a.adjusted_score) }}>
+                      {a.adjusted_score}%
+                    </div>
+                    {lcaAdjusted && (
+                      <div style={{ fontSize: 9, color: 'var(--orange)', fontFamily: 'var(--mono)' }}>+LCA</div>
+                    )}
+                  </div>
                 </div>
-                {adjustedScore !== null && level && (
-                  <ScoreBadge score={adjustedScore} level={level} size="sm" />
+
+                {/* Phase indicator */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: a.phase?.color, flexShrink: 0 }} />
+                  <div style={{ fontSize: 11, color: 'var(--text2)' }}>
+                    {a.phase?.label} · Dia {a.menstrual_day}
+                  </div>
+                </div>
+
+                {/* Phase note for high-risk phases */}
+                {(isOvulatory || a.phase?.phase === 'menstrual') && (
+                  <div style={{ fontSize: 10, color: a.phase?.color, lineHeight: 1.4, marginTop: 6 }}>
+                    {a.phase?.note}
+                  </div>
+                )}
+
+                {a.status === 'rehab' && (
+                  <div style={{ marginTop: 6 }}>
+                    <span style={{ fontSize: 9, fontFamily: 'var(--mono)', padding: '2px 6px', borderRadius: 4, background: 'var(--blue2)', color: 'var(--blue)' }}>
+                      REABILITAÇÃO
+                    </span>
+                  </div>
                 )}
               </div>
-
-              {/* Phase pill */}
-              <div className="flex items-center justify-between">
-                <div
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-full text-xs"
-                  style={{
-                    background: phaseInfo.color + '18',
-                    border: `1px solid ${phaseInfo.color}40`,
-                    color: phaseInfo.color,
-                  }}
-                >
-                  <div
-                    className="w-1.5 h-1.5 rounded-full"
-                    style={{ background: phaseInfo.color }}
-                  />
-                  {phaseInfo.label} · D{athlete.menstrual_day}
-                </div>
-                <span
-                  className="text-xs font-mono font-bold"
-                  style={{ color: phaseInfo.color }}
-                >
-                  LCA {phaseInfo.lcaRiskMultiplier}×
-                </span>
-              </div>
-
-              {phaseInfo.phase === 'ovulatory' && (
-                <p
-                  className="text-[11px] mt-2 px-2 py-1.5 rounded"
-                  style={{
-                    background: 'var(--aura-warn-bg)',
-                    color: 'var(--aura-warn)',
-                  }}
-                >
-                  ⚠️ {phaseInfo.note}
-                </p>
-              )}
-            </div>
+            </Link>
           )
         })}
-
-        {(!athletes || athletes.length === 0) && (
-          <div
-            className="col-span-full text-center py-12 rounded-xl border"
-            style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
-          >
-            <p className="text-sm" style={{ color: 'var(--aura-text3)' }}>
-              Sem atletas femininas registadas. Adicione atletas com ciclo menstrual activado.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   )

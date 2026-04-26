@@ -1,88 +1,114 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
+import Link from 'next/link'
+import { riskColor } from '@/lib/scoring'
 
-export const dynamic = 'force-dynamic'
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export default async function LoadPage() {
-  const supabase = await createClient()
-
-  const today = new Date().toISOString().split('T')[0]
-
   const { data: sessions } = await supabase
     .from('gps_sessions')
-    .select('athlete_id, hsr_distance_m, sprint_distance_m, decel_high_count, player_load, max_speed_kmh, athletes(name, shirt_number, position)')
-    .eq('session_date', today)
-    .order('hsr_distance_m', { ascending: false })
+    .select(`*, athletes(id, name, position, shirt_number)`)
+    .order('session_date', { ascending: false })
+    .limit(100)
+
+  const byAthlete: Record<string, any> = {}
+  ;(sessions ?? []).forEach((s: any) => {
+    if (!s.athletes) return
+    const id = s.athletes.id
+    if (!byAthlete[id]) byAthlete[id] = { athlete: s.athletes, sessions: [] }
+    byAthlete[id].sessions.push(s)
+  })
+
+  const rows = Object.values(byAthlete)
+    .sort((a: any, b: any) => (a.athlete.shirt_number ?? 99) - (b.athlete.shirt_number ?? 99))
+
+  function acwrColor(v: number | null) {
+    if (!v) return 'var(--text3)'
+    if (v < 0.8) return 'var(--blue)'
+    if (v < 1.3) return 'var(--green2)'
+    if (v < 1.5) return 'var(--warn)'
+    return 'var(--danger)'
+  }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1
-          className="text-2xl font-bold"
-          style={{ fontFamily: 'var(--font-syne)', color: 'var(--aura-text)' }}
-        >
-          Carga & GPS
-        </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--aura-text2)' }}>
-          Dados da sessão de hoje · {today}
-        </p>
+    <div>
+      <div className="sec-hdr">
+        <div className="sec-title">📡 Carga & GPS</div>
+        <div className="sec-sub">Sessões GPS importadas · Dados por atleta</div>
       </div>
 
-      <div
-        className="rounded-xl border overflow-hidden"
-        style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
-      >
-        <table className="w-full text-sm">
-          <thead>
-            <tr style={{ borderBottom: '1px solid var(--aura-border)' }}>
-              {['Atleta', 'HSR (m)', 'Sprint (m)', 'Dec. Alta Int.', 'Player Load', 'Vmax (km/h)'].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-medium"
-                  style={{ color: 'var(--aura-text3)' }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {sessions?.map((s, i) => {
-              const athlete = s.athletes as unknown as { name: string; shirt_number: number; position: string } | null
-              return (
-                <tr key={i} style={{ borderBottom: '1px solid var(--aura-border)' }}
-                  className="hover:bg-[var(--aura-bg3)] transition-colors">
-                  <td className="px-4 py-3">
-                    <span className="font-medium" style={{ color: 'var(--aura-text)' }}>
-                      {athlete?.name ?? '—'}
-                    </span>
-                    <span className="text-xs ml-2" style={{ color: 'var(--aura-text3)' }}>
-                      {athlete?.position}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--aura-blue)' }}>
-                    {s.hsr_distance_m?.toFixed(0) ?? '—'}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--aura-warn)' }}>
-                    {s.sprint_distance_m?.toFixed(0) ?? '—'}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--aura-purple)' }}>
-                    {s.decel_high_count ?? '—'}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--aura-text2)' }}>
-                    {s.player_load?.toFixed(1) ?? '—'}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--aura-green)' }}>
-                    {s.max_speed_kmh?.toFixed(1) ?? '—'}
-                  </td>
-                </tr>
-              )
-            })}
-            {(!sessions || sessions.length === 0) && (
+      {rows.length === 0 ? (
+        <div className="alert alert-b">
+          <div className="adot ad-b" />
+          <div style={{ fontSize: 12 }}>
+            <strong>Sem dados GPS carregados.</strong> Para importar dados, vai ao botão de upload
+            ou exporta um CSV do STATSports/Catapult e usa a API de importação.
+          </div>
+        </div>
+      ) : (
+        <div className="card">
+          <div className="ctitle">Sessões recentes por atleta</div>
+          <table className="data-table">
+            <thead>
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-sm"
-                  style={{ color: 'var(--aura-text3)' }}>
-                  Sem dados GPS para hoje. Importe dados Catapult ou insira via API.
-                </td>
+                <th>Atleta</th>
+                <th style={{ textAlign: 'right' }}>Distância (m)</th>
+                <th style={{ textAlign: 'right' }}>HSR (m)</th>
+                <th style={{ textAlign: 'right' }}>Sprint (m)</th>
+                <th style={{ textAlign: 'right' }}>Vmax (km/h)</th>
+                <th style={{ textAlign: 'right' }}>Decel</th>
+                <th style={{ textAlign: 'right' }}>Player Load</th>
+                <th style={{ textAlign: 'center' }}>Tipo</th>
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {rows.map(({ athlete, sessions }: any) => {
+                const latest = sessions[0]
+                return (
+                  <tr key={athlete.id}>
+                    <td>
+                      <Link href={`/athlete?id=${athlete.id}`} style={{ textDecoration: 'none' }}>
+                        <strong>{athlete.name}</strong>
+                        <br /><span style={{ fontSize: 10, color: 'var(--text2)' }}>{athlete.position}</span>
+                      </Link>
+                    </td>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--mono)' }}>
+                      {latest?.total_distance_m?.toFixed(0) ?? '—'}
+                    </td>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--mono)' }}>
+                      {latest?.hsr_distance_m?.toFixed(0) ?? '—'}
+                    </td>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--mono)' }}>
+                      {latest?.sprint_distance_m?.toFixed(0) ?? '—'}
+                    </td>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--mono)', color: 'var(--blue)' }}>
+                      {latest?.max_speed_kmh?.toFixed(1) ?? '—'}
+                    </td>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--mono)' }}>
+                      {latest?.decel_high_count ?? '—'}
+                    </td>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--mono)' }}>
+                      {latest?.player_load?.toFixed(1) ?? '—'}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span style={{
+                        fontSize: 9, fontFamily: 'var(--mono)', padding: '2px 7px', borderRadius: 4,
+                        background: latest?.session_type === 'match' ? 'var(--danger2)' : 'var(--blue2)',
+                        color: latest?.session_type === 'match' ? 'var(--danger)' : 'var(--blue)',
+                      }}>
+                        {latest?.session_type ?? '—'}
+                      </span>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }

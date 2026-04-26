@@ -24,6 +24,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/selecoes',   label: 'Seleções',          icon: Star,            section: 'Visão Geral' },
   // Clinical
   { href: '/athletes',   label: 'Avaliação Atleta',  icon: UserCircle,      section: 'Clínico' },
+  { href: '/input',      label: 'Input Wellness',    icon: ClipboardList,   section: 'Clínico' },
   { href: '/readiness',  label: 'Prontidão',         icon: Heart,           section: 'Clínico' },
   { href: '/rehab',      label: 'Reabilitação',      icon: Activity, badge: 2, section: 'Clínico' },
   // Performance

@@ -1,14 +1,10 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { calcScore, riskColor, riskLabel, riskLevel } from '@/lib/scoring'
 import { ScoreBadge, Sparkline } from '@/components/ui/aura'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
 export default async function SquadPage() {
+  const supabase = await createClient()
   const { data: athletes } = await supabase
     .from('athletes')
     .select(`*, wellness_checkins(*), injury_events(*), score_history(*)`)

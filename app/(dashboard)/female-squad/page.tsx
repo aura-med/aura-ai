@@ -1,12 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { calcScore, riskColor, riskLabel, getMenstrualPhase, getFemaleAdjustedScore } from '@/lib/scoring'
 import { AlertBox } from '@/components/ui/aura'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 const PHASE_GUIDE = [
   { phase: 'menstrual',  color: '#ff4d6d', days: 'D1–5',  note: 'Dor e fadiga possíveis. Reduzir impacto se necessário.' },
@@ -16,6 +11,7 @@ const PHASE_GUIDE = [
 ]
 
 export default async function FemalePage() {
+  const supabase = await createClient()
   const { data: athletes } = await supabase
     .from('athletes')
     .select(`*, wellness_checkins(*), injury_events(*), rehab_sessions(*, rehab_protocols(*))`)

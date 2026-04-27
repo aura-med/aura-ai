@@ -1,13 +1,8 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { calcScore, riskColor, riskLevel, getReadiness } from '@/lib/scoring'
 import { ScoreBadge } from '@/components/ui/aura'
 import type { ReadinessIndicator } from '@/types'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 const READINESS_COLORS = {
   green: 'var(--green2)', amber: 'var(--warn)', red: 'var(--danger)', grey: 'var(--text3)'
@@ -17,6 +12,7 @@ const READINESS_LABELS = {
 }
 
 export default async function ReadinessPage() {
+  const supabase = await createClient()
   const { data: athletes } = await supabase
     .from('athletes')
     .select(`*, wellness_checkins(*), performance_data(*), injury_events(*), athlete_passport(*)`)

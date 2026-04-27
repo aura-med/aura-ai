@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Mono, Inter, Syne } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -33,8 +34,8 @@ export default function RootLayout({
       lang="en"
       className={`dark ${inter.variable} ${dmMono.variable} ${syne.variable} h-full`}
     >
-      <body className="h-full bg-background text-foreground antialiased">
-        {children}
+      <body className="h-full antialiased">
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, ChevronDown } from 'lucide-react'
+import { Bell, ChevronDown, Sun, Moon } from 'lucide-react'
 import { useUiStore } from '@/stores/uiStore'
 import type { UserRole } from '@/types'
 
@@ -13,7 +13,7 @@ const ROLES: { value: UserRole; label: string }[] = [
 ]
 
 export function Topbar() {
-  const { role, setRole } = useUiStore()
+  const { role, setRole, theme, toggleTheme } = useUiStore()
 
   const today = new Date().toLocaleDateString('pt-PT', {
     weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
@@ -86,6 +86,16 @@ export function Topbar() {
             style={{ color: 'var(--aura-text3)' }}
           />
         </div>
+
+        {/* Theme toggle */}
+        <button
+          onClick={toggleTheme}
+          className="p-2 rounded-md transition-colors"
+          style={{ color: 'var(--aura-text2)' }}
+          aria-label="Toggle theme"
+        >
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
 
         {/* Alerts bell */}
         <button

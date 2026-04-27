@@ -1,10 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 const METRICS = [
   { key: 'vmax',           label: 'Vmax (km/h)',      icon: '🏃', hi: 36, lo: 28 },
@@ -18,6 +13,7 @@ const METRICS = [
 ]
 
 export default async function PerformancePage() {
+  const supabase = await createClient()
   const { data: perfData } = await supabase
     .from('performance_data')
     .select(`*, athletes(id, name, position, shirt_number, club)`)

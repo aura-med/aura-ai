@@ -1,13 +1,9 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { riskColor } from '@/lib/scoring'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
 export default async function LoadPage() {
+  const supabase = await createClient()
   const { data: sessions } = await supabase
     .from('gps_sessions')
     .select(`*, athletes(id, name, position, shirt_number)`)

@@ -1,8 +1,10 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { calcScore, riskColor, riskLabel, VAR_ICONS, VAR_LABELS } from '@/lib/scoring'
 import { DecompositionBars, ConfBadge, AlertBox } from '@/components/ui/aura'
 import { supabase } from '@/lib/supabase'
+import { getSquadIdParam } from '@/lib/squad-url'
 import type { AthleteScore } from '@/types'
 
 const SLIDERS = [
@@ -17,6 +19,16 @@ const SLIDERS = [
 ]
 
 export default function InputPage() {
+  return (
+    <Suspense fallback={<div className="loading"><div className="spinner" /><span>A carregar dados...</span></div>}>
+      <InputContent />
+    </Suspense>
+  )
+}
+
+function InputContent() {
+  const searchParams = useSearchParams()
+  const squadId = getSquadIdParam(searchParams)
   const [athletes, setAthletes] = useState<any[]>([])
   const [selectedId, setSelectedId] = useState<string>('')
   const [values, setValues] = useState<Record<string, number | null>>({})
@@ -26,17 +38,23 @@ export default function InputPage() {
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    supabase.from('athletes').select('id,name,shirt_number,position,status,injury_events(*)')
+    let query = supabase.from('athletes').select('id,name,shirt_number,position,status,injury_events(*)')
       .eq('active', true).eq('status', 'available').order('shirt_number')
-      .then(({ data }) => {
+
+    if (squadId) query = query.eq('squad_id', squadId)
+
+    query.then(({ data }) => {
         setAthletes(data ?? [])
         if (data?.[0]) {
           setSelectedId(data[0].id)
           const histCount = (data[0].injury_events ?? []).length
           setHistory(histCount >= 2 ? 2 : histCount >= 1 ? 1 : 0)
+        } else {
+          setSelectedId('')
+          setHistory(-1)
         }
       })
-  }, [])
+  }, [squadId])
 
   useEffect(() => {
     const inputs = {

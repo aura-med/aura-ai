@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { DM_Mono, Inter, Syne } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { NextIntlClientProvider } from 'next-intl'
+import { getMessages, getLocale } from 'next-intl/server'
 
 const inter = Inter({
   variable: "--font-inter",
@@ -24,18 +26,23 @@ export const metadata: Metadata = {
   description: "Predictive injury risk management platform for elite football",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale()
+  const messages = await getMessages()
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`dark ${inter.variable} ${dmMono.variable} ${syne.variable} h-full`}
     >
       <body className="h-full antialiased">
-        <ThemeProvider>{children}</ThemeProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <ThemeProvider>{children}</ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

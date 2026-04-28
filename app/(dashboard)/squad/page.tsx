@@ -1,15 +1,25 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { calcScore, riskColor, riskLabel, riskLevel } from '@/lib/scoring'
-import { ScoreBadge, Sparkline } from '@/components/ui/aura'
+import { calcScore, riskColor, riskLabel } from '@/lib/scoring'
+import { Sparkline } from '@/components/ui/aura'
+import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 
-export default async function SquadPage() {
+export default async function SquadPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const squadId = getSquadIdParam(searchParams ? await searchParams : null)
   const supabase = await createClient()
-  const { data: athletes } = await supabase
+  let query = supabase
     .from('athletes')
     .select(`*, wellness_checkins(*), injury_events(*), score_history(*)`)
     .eq('active', true)
     .order('shirt_number')
+
+  if (squadId) query = query.eq('squad_id', squadId)
+
+  const { data: athletes } = await query
 
   const withScores = (athletes ?? []).map((a: any) => {
     const latest = (a.wellness_checkins ?? [])
@@ -59,7 +69,7 @@ export default async function SquadPage() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 6 }}>
               {athletes.map((a: any) => (
-                <Link key={a.id} href={`/athlete?id=${a.id}`} style={{ textDecoration: 'none' }}>
+                <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
                   <div className="ath-card">
                     <div className="ath-avatar">{a.shirt_number}</div>
                     <div className="ath-info">
@@ -96,7 +106,7 @@ export default async function SquadPage() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 6 }}>
             {rehab.map((a: any) => (
-              <Link key={a.id} href={`/rehab`} style={{ textDecoration: 'none' }}>
+              <Link key={a.id} href={withSquadParam('/rehab', squadId)} style={{ textDecoration: 'none' }}>
                 <div className="ath-card">
                   <div className="ath-avatar">{a.shirt_number}</div>
                   <div className="ath-info">

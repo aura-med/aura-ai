@@ -1,6 +1,8 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { getSquadIdParam } from '@/lib/squad-url'
 import type { RehabSession, RehabProtocol, RtpCriterion } from '@/types'
 import { AlertBox } from '@/components/ui/aura'
 
@@ -10,19 +12,32 @@ function phaseColor(phaseIndex: number): string {
 }
 
 export default function RehabPage() {
+  return (
+    <Suspense fallback={<div className="loading"><div className="spinner" /><span>A carregar protocolos...</span></div>}>
+      <RehabContent />
+    </Suspense>
+  )
+}
+
+function RehabContent() {
+  const searchParams = useSearchParams()
+  const squadId = getSquadIdParam(searchParams)
   const [sessions, setSessions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   async function load() {
-    const { data } = await supabase
+    setLoading(true)
+    let query = supabase
       .from('rehab_sessions')
-      .select(`*, athletes(*), rehab_protocols(*)`)
+      .select(`*, athletes!inner(*), rehab_protocols(*)`)
       .eq('athletes.active', true)
+    if (squadId) query = query.eq('athletes.squad_id', squadId)
+    const { data } = await query
     setSessions(data ?? [])
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [squadId])
 
   async function toggleRTP(sessionId: string, idx: number, criteria: RtpCriterion[]) {
     const updated = criteria.map((c, i) => i === idx ? { ...c, done: !c.done } : c)

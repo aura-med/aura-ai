@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 
 const METRICS = [
   { key: 'vmax',           label: 'Vmax (km/h)',      icon: '🏃', hi: 36, lo: 28 },
@@ -12,12 +13,21 @@ const METRICS = [
   { key: 'player_load_max',label: 'Player Load',      icon: '🔋', hi: 1360, lo: 780 },
 ]
 
-export default async function PerformancePage() {
+export default async function PerformancePage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const squadId = getSquadIdParam(searchParams ? await searchParams : null)
   const supabase = await createClient()
-  const { data: perfData } = await supabase
+  let query = supabase
     .from('performance_data')
-    .select(`*, athletes(id, name, position, shirt_number, club)`)
+    .select(`*, athletes!inner(id, name, position, shirt_number, club, squad_id)`)
     .order('session_date', { ascending: false })
+
+  if (squadId) query = query.eq('athletes.squad_id', squadId)
+
+  const { data: perfData } = await query
 
   // Latest record per athlete
   const byAthlete: Record<string, any> = {}
@@ -69,7 +79,7 @@ export default async function PerformancePage() {
             {rows.sort((a, b) => (b.vmax_today_pct ?? 0) - (a.vmax_today_pct ?? 0)).map((r: any) => (
               <div key={r.athlete.id} className="bar-row" style={{ marginBottom: 9 }}>
                 <div className="bar-name" style={{ width: 160 }}>
-                  <Link href={`/athlete?id=${r.athlete.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <Link href={withSquadParam(`/athletes/${r.athlete.id}`, squadId)} style={{ textDecoration: 'none', color: 'inherit' }}>
                     {r.athlete.name}{' '}
                     <span style={{ color: 'var(--text3)', fontSize: 10 }}>({r.athlete.position})</span>
                   </Link>
@@ -104,7 +114,7 @@ export default async function PerformancePage() {
                   {rows.map((r: any) => (
                     <tr key={r.athlete.id}>
                       <td>
-                        <Link href={`/athlete?id=${r.athlete.id}`} style={{ textDecoration: 'none' }}>
+                        <Link href={withSquadParam(`/athletes/${r.athlete.id}`, squadId)} style={{ textDecoration: 'none' }}>
                           <strong>{r.athlete.name}</strong>
                           <br /><span style={{ fontSize: 10, color: 'var(--text2)' }}>{r.athlete.position}</span>
                         </Link>

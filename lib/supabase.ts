@@ -1,9 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient as createBrowserClient } from '@/lib/supabase/client'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createBrowserClient()
 
 // ─── Typed query helpers ─────────────────────────────────────────
 
@@ -65,6 +62,69 @@ export async function getSquads(orgId?: string) {
   let q = supabase.from('squads').select('*')
   if (orgId) q = q.eq('org_id', orgId)
   const { data, error } = await q
+  if (error) throw error
+  return data ?? []
+}
+
+export async function getOrganizations() {
+  const { data, error } = await supabase
+    .from('organizations')
+    .select('id, name, type')
+    .order('name')
+  if (error) throw error
+  return data ?? []
+}
+
+export async function getSquadsByOrg(orgId: string) {
+  const { data, error } = await supabase
+    .from('squads')
+    .select('id, name, type, season, org_id')
+    .eq('org_id', orgId)
+    .order('name')
+  if (error) throw error
+  return data ?? []
+}
+
+export async function getUserOrganizationContext() {
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  if (userError) throw userError
+  if (!user) return { org: null, squads: [] }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('org_id')
+    .eq('id', user.id)
+    .single()
+  if (profileError) throw profileError
+  if (!profile?.org_id) return { org: null, squads: [] }
+
+  const { data: org, error: orgError } = await supabase
+      .from('organizations')
+      .select('id, name, type')
+      .eq('id', profile.org_id)
+      .single()
+
+  if (orgError) throw orgError
+
+  const { data: squads, error: squadsError } = await supabase
+      .from('squads')
+      .select('id, name, type, season, org_id')
+      .eq('org_id', profile.org_id)
+      .order('name')
+
+  if (squadsError) {
+    console.warn('[aura] Could not load squads for organization', squadsError.message)
+    return { org, squads: [] }
+  }
+
+  return { org, squads: squads ?? [] }
+}
+
+export async function getAllSquads() {
+  const { data, error } = await supabase
+    .from('squads')
+    .select('id, name, type, season, org_id, organizations(name)')
+    .order('name')
   if (error) throw error
   return data ?? []
 }

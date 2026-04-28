@@ -1,0 +1,382 @@
+{
+  "topbar": {
+    "roles": {
+      "physio": "Physiotherapist",
+      "doctor": "Doctor",
+      "coach": "Coach",
+      "fitness_coach": "Fitness Coach",
+      "admin": "Admin"
+    },
+    "fpfPilot": "FPF Pilot",
+    "langToggle": "Language",
+    "squad": "Squad",
+    "org": "Organization"
+  },
+  "sidebar": {
+    "sections": {
+      "overview": "Overview",
+      "clinical": "Clinical",
+      "performance": "Performance",
+      "intelligence": "Intelligence",
+      "special": "Special",
+      "system": "System"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "squad": "Squad",
+      "selecoes": "Squads",
+      "athletes": "Athlete Assessment",
+      "input": "Wellness Input",
+      "readiness": "Readiness",
+      "rehab": "Rehabilitation",
+      "load": "Load & GPS",
+      "performance": "Max Values & Profile",
+      "calendar": "Calendar Intelligence",
+      "passport": "Athlete Passport",
+      "female_squad": "Female Squad",
+      "settings": "Settings"
+    },
+    "version": "Aura v1.1 · FPF Pilot"
+  },
+  "risk": {
+    "low": "Low",
+    "medium": "Moderate",
+    "high": "High",
+    "critical": "Critical"
+  },
+  "confidence": {
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "high_lower": "high",
+    "medium_lower": "medium",
+    "low_lower": "low"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Squad overview — today",
+    "kpi": {
+      "athletes": "Registered athletes",
+      "athletes_sub": "{available} avail. · {rehab} rehab.",
+      "avg_score": "Average squad score",
+      "high_risk_alerts": "High/critical risk alerts",
+      "high_risk_sub": "Score ≥65%",
+      "in_rehab": "In rehabilitation",
+      "in_rehab_sub": "Active protocol"
+    },
+    "alerts": {
+      "title": "Athletes on alert",
+      "dominant_variable": "Dominant variable"
+    },
+    "rehab_section": {
+      "title": "In rehabilitation",
+      "badge": "Rehab."
+    },
+    "squad": {
+      "title": "Available squad"
+    }
+  },
+  "squad": {
+    "title": "Squad",
+    "subtitle": "{count} registered athletes · Ordered by position",
+    "positions": {
+      "GK": "Goalkeepers",
+      "DEF": "Defenders",
+      "MID": "Midfielders",
+      "FWD": "Forwards"
+    },
+    "rehab_section": "Rehabilitation",
+    "rehab_badge": "Rehab."
+  },
+  "athletes": {
+    "empty_state": {
+      "title": "Select an athlete from the squad",
+      "description": "Go to Squad and click on an athlete to view the full profile."
+    },
+    "not_found": "Athlete not found",
+    "score_predictive": "Predictive score",
+    "dominant_variable": "Dominant variable",
+    "trend_7days": "TREND — 7 DAYS",
+    "decomposition_title": "Factor decomposition (v1.1)",
+    "injury_history": "Injury history",
+    "no_injuries": "No injuries recorded",
+    "active_days": "days",
+    "active_marker": "ACTIVE",
+    "active_rehab": "Active rehabilitation",
+    "score_decomposition": "Score Decomposition by Factor",
+    "no_score_today": "No score data for today. Please enter wellness and GPS data.",
+    "injury_history_title": "Injury History",
+    "no_injuries_registered": "No injuries registered.",
+    "recurrence": "Recurrence"
+  },
+  "rehab": {
+    "title": "Rehabilitation",
+    "no_active_protocol": "No active rehabilitation protocol.",
+    "protocol_phases": "Protocol Phases",
+    "rtp_criteria": "RTP Criteria",
+    "phase_label": "Phase",
+    "day_label": "Day",
+    "active_rehab_title": "Active rehabilitation",
+    "no_athletes": "No athletes in rehabilitation",
+    "all_available": "All athletes are available.",
+    "loading": "Loading protocols...",
+    "protocol_phases_label": "Protocol — phases",
+    "prescribed_exercises": "Prescribed exercises",
+    "progression_criteria": "Progression criteria",
+    "rtp_criteria_label": "RTP Criteria",
+    "criteria_fulfilled": "criteria fulfilled",
+    "clinical_assessment": "Clinical assessment",
+    "pain_eva": "Pain (VAS 0-10)",
+    "eccentric_strength": "Eccentric strength (%)",
+    "askling_test": "Askling H-test",
+    "positive": "+ Positive",
+    "negative": "- Negative",
+    "balance": "Balance (s)",
+    "hop_test": "Hop test (%)",
+    "rtp_adaptive": "Adaptive RTP"
+  },
+  "readiness": {
+    "title": "Performance Readiness",
+    "subtitle": "4-indicator traffic light · Indicative — not predictive",
+    "ready": "Ready",
+    "caution": "Caution",
+    "limited": "Limited",
+    "total_available": "Total available",
+    "status_label": {
+      "green": "Ready",
+      "amber": "Caution",
+      "red": "Limited",
+      "grey": "No data"
+    },
+    "methodology_note": "Methodological note",
+    "methodology_text": "The readiness panel is a synthesis of 4 recovery indicators. It is not a predictive performance model. In weeks with two matches confidence is reduced. Use as decision support, not as a substitute for clinical judgment.",
+    "squad_status": "Squad status — today",
+    "table": {
+      "athlete": "Athlete",
+      "injury_risk": "Injury risk",
+      "readiness": "Readiness",
+      "indicators": "Indicators"
+    }
+  },
+  "input": {
+    "title": "Enter data",
+    "subtitle": "Score recalculated in real time",
+    "athlete_label": "Athlete",
+    "saving": "Saving...",
+    "saved": "Saved ✓",
+    "save": "Save ✓",
+    "injury_history": "Injury history",
+    "no_injuries": "0 injuries",
+    "one_injury": "1 injury",
+    "multiple_injuries": "≥2 same segment",
+    "monitoring_variables": "Monitoring variables",
+    "calculated_score": "Calculated score",
+    "decomposition": "Decomposition",
+    "dominant_variable": "Dominant variable"
+  },
+  "calendar": {
+    "title": "Calendar Intelligence",
+    "subtitle": "Projected score · Simulates the impact of load decisions",
+    "recovery_profile": "Recovery profile",
+    "projected_score": "Projected score — next {count} days",
+    "today": "Today",
+    "risk_entry": "Entry risk",
+    "proj_score": "Proj. score",
+    "post_game": "Post-game",
+    "squad_impact": "Impact on full squad",
+    "recovery_speed": "RECOVERY SPEED",
+    "congestion_sensitivity": "CONG. SENS.",
+    "md1_drop": "MD+1 DROP",
+    "md2_drop": "MD+2 DROP",
+    "table": {
+      "athlete": "Athlete",
+      "now": "Now",
+      "game1": "Game 1",
+      "game2": "Game 2",
+      "final": "Final",
+      "trend": "Trend"
+    },
+    "trend": {
+      "rising": "↑ Rising",
+      "improving": "↓ Improving",
+      "stable": "→ Stable"
+    },
+    "simulation_hint": "Use the ◀ ▶ buttons on each calendar day to change the session type. The chart updates in real time.",
+    "loading": "Loading calendar..."
+  },
+  "score_badge": {
+    "confidence_prefix": "Conf.",
+    "confidence_prefix_lower": "conf."
+  },
+  "partial_bars": {
+    "variables": {
+      "history": "Injury History",
+      "acwr": "ACWR GPS",
+      "hrv": "HRV Δ Baseline",
+      "fatigue": "Fatigue (Hooper)",
+      "sleep": "Sleep (hours)",
+      "tqr": "TQR",
+      "stress": "Stress",
+      "decel": "High Int. Decel.",
+      "md": "MD+n"
+    },
+    "no_data": "no data"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "empty": "No notifications",
+    "loading": "Loading...",
+    "last50": "Last 50 notifications",
+    "types": {
+      "score_critical": "Critical Score",
+      "score_high": "High Score",
+      "injury_new": "New Injury",
+      "rehab_update": "Rehab Update",
+      "checkin_missing": "Missing Check-in",
+      "rtp_ready": "Ready to Return",
+      "readiness_drop": "Readiness Drop"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "absent": "absent",
+    "missing_variables": "{count} missing variable",
+    "missing_variables_plural": "{count} missing variables",
+    "weight_redistributed": "total weight of {weight}% redistributed across remaining variables."
+  },
+  "settings": {
+    "title": "Settings",
+    "nav": {
+      "profile": "Profile",
+      "organizations": "Organizations",
+      "squads": "Squads",
+      "preferences": "Preferences",
+      "users": "Users",
+      "notifications": "Notifications",
+      "integrations": "Integrations",
+      "subscription": "Subscription",
+      "privacy": "Privacy & GDPR",
+      "signOut": "Sign Out"
+    },
+    "profile": {
+      "title": "Profile",
+      "description": "Manage your personal information and access credentials.",
+      "fullName": "Full Name",
+      "email": "Email",
+      "emailNote": "Email cannot be changed here. Contact the administrator.",
+      "roleLabel": "Role",
+      "roleNote": "Role is assigned by the organization administrator.",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "saved": "Saved!"
+    },
+    "organizations": {
+      "title": "Organizations",
+      "description": "Manage your organization's details.",
+      "orgName": "Organization Name",
+      "orgType": "Type",
+      "memberSince": "since",
+      "adminOnly": "Only administrators can change the organization name.",
+      "noOrg": "You are not associated with any organization."
+    },
+    "squads": {
+      "title": "Squads",
+      "description": "Manage the organization's squads.",
+      "createSquad": "New Squad",
+      "newSquad": "Create Squad",
+      "squadName": "Name",
+      "squadNamePlaceholder": "E.g.: National A",
+      "squadType": "Type",
+      "typeMale": "Male",
+      "typeFemale": "Female",
+      "athletes": "athletes",
+      "confirmDelete": "Are you sure?",
+      "noSquads": "No squads created yet."
+    },
+    "preferences": {
+      "title": "Preferences",
+      "description": "Customize your platform experience.",
+      "theme": "Theme",
+      "themeDark": "Dark",
+      "themeLight": "Light",
+      "language": "Language"
+    },
+    "users": {
+      "title": "Users",
+      "description": "Manage organization users.",
+      "inviteUser": "Invite User",
+      "inviteEmail": "Email",
+      "inviteRole": "Role",
+      "inviteComingSoon": "Email invites will be available soon.",
+      "noUsers": "No users found.",
+      "noName": "No name"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Choose which alerts you want to receive.",
+      "scoreCritical": "Critical Score",
+      "scoreCriticalDesc": "Alert when an athlete's risk score reaches critical level.",
+      "scoreHigh": "High Score",
+      "scoreHighDesc": "Alert when an athlete's risk score reaches high level.",
+      "injuryNew": "New Injury",
+      "injuryNewDesc": "Notification when a new injury is registered.",
+      "rehabUpdate": "Rehab Update",
+      "rehabUpdateDesc": "Notification when the rehabilitation protocol is updated.",
+      "checkinMissing": "Missing Check-in",
+      "checkinMissingDesc": "Alert when an athlete has not done their daily check-in.",
+      "rtpReady": "Athlete Ready for RTP",
+      "rtpReadyDesc": "Notification when an athlete meets return-to-play criteria.",
+      "readinessDrop": "Readiness Drop",
+      "readinessDropDesc": "Alert when overall squad readiness drops sharply."
+    },
+    "integrations": {
+      "title": "Integrations",
+      "description": "Connect external devices and platforms.",
+      "note": "Integrations will be rolled out progressively. Contact the Aura team for early access."
+    },
+    "subscription": {
+      "title": "Subscription",
+      "description": "Plan details and included features.",
+      "planName": "FPF Pilot",
+      "planType": "Pilot Plan",
+      "planActive": "Active",
+      "validFrom": "Valid from",
+      "validTo": "Valid to",
+      "includedFeatures": "Included features",
+      "featureAthletes": "Unlimited athlete management",
+      "featureScore": "Injury risk predictive score (v1.1)",
+      "featureRehab": "Adaptive rehabilitation protocols",
+      "featureCalendar": "Calendar Intelligence",
+      "featurePassport": "Athlete Passport",
+      "featureGdpr": "GDPR compliance / consent",
+      "featureSupport": "Dedicated technical support",
+      "upgradeTitle": "Interested in expanding?",
+      "upgradeDescription": "Contact us to explore full plan options, additional integrations, or deployment in other organizations.",
+      "contactUpgrade": "Contact Aura team"
+    },
+    "privacy": {
+      "title": "Privacy & GDPR",
+      "description": "Monitor athlete consent status.",
+      "totalAthletes": "Total athletes",
+      "consentGiven": "With consent",
+      "consentMissing": "Without consent",
+      "consentList": "Consent status",
+      "exportCsv": "Export CSV",
+      "consentOk": "Consent given",
+      "consentMissingLabel": "No consent",
+      "noAthletes": "No athletes found.",
+      "gdprTitle": "GDPR Note",
+      "gdprNote": "Athlete data is retained in accordance with organizational policies and the General Data Protection Regulation (GDPR). Consents must be renewed annually."
+    },
+    "common": {
+      "save": "Save",
+      "saving": "Saving...",
+      "saved": "Saved!",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "create": "Create",
+      "comingSoon": "Coming soon"
+    }
+  }
+}

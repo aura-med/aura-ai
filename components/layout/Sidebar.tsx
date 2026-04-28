@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 import {
   LayoutDashboard, Users, UserCircle, Activity, Calendar,
   Heart, Gauge, Zap, BookOpen, FlaskConical, Settings,
@@ -11,38 +12,39 @@ import {
 
 interface NavItem {
   href: string
-  label: string
+  labelKey: string
   icon: React.ElementType
   badge?: number
-  section: string
+  sectionKey: string
 }
 
 const NAV_ITEMS: NavItem[] = [
   // Overview
-  { href: '/',           label: 'Dashboard',        icon: LayoutDashboard, badge: 3, section: 'Visão Geral' },
-  { href: '/squad',      label: 'Plantel',           icon: Users,           section: 'Visão Geral' },
-  { href: '/selecoes',   label: 'Seleções',          icon: Star,            section: 'Visão Geral' },
+  { href: '/',           labelKey: 'dashboard',    icon: LayoutDashboard, badge: 3, sectionKey: 'overview' },
+  { href: '/squad',      labelKey: 'squad',          icon: Users,                     sectionKey: 'overview' },
+  { href: '/selecoes',   labelKey: 'selecoes',       icon: Star,                      sectionKey: 'overview' },
   // Clinical
-  { href: '/athletes',   label: 'Avaliação Atleta',  icon: UserCircle,      section: 'Clínico' },
-  { href: '/input',      label: 'Input Wellness',    icon: ClipboardList,   section: 'Clínico' },
-  { href: '/readiness',  label: 'Prontidão',         icon: Heart,           section: 'Clínico' },
-  { href: '/rehab',      label: 'Reabilitação',      icon: Activity, badge: 2, section: 'Clínico' },
+  { href: '/athletes',   labelKey: 'athletes',       icon: UserCircle,                sectionKey: 'clinical' },
+  { href: '/input',      labelKey: 'input',          icon: ClipboardList,             sectionKey: 'clinical' },
+  { href: '/readiness',  labelKey: 'readiness',      icon: Heart,                     sectionKey: 'clinical' },
+  { href: '/rehab',      labelKey: 'rehab',          icon: Activity, badge: 2,        sectionKey: 'clinical' },
   // Performance
-  { href: '/load',       label: 'Carga & GPS',       icon: Gauge,           section: 'Performance' },
-  { href: '/performance',label: 'Máximos & Perfil',  icon: TrendingUp,      section: 'Performance' },
+  { href: '/load',       labelKey: 'load',           icon: Gauge,                     sectionKey: 'performance' },
+  { href: '/performance',labelKey: 'performance',    icon: TrendingUp,                sectionKey: 'performance' },
   // Intelligence
-  { href: '/calendar',   label: 'Calendar Intelligence', icon: Calendar,    section: 'Inteligência' },
-  { href: '/passport',   label: 'Passaporte Atleta', icon: BookOpen,        section: 'Inteligência' },
+  { href: '/calendar',   labelKey: 'calendar',       icon: Calendar,                  sectionKey: 'intelligence' },
+  { href: '/passport',   labelKey: 'passport',       icon: BookOpen,                  sectionKey: 'intelligence' },
   // Special
-  { href: '/female-squad', label: 'Seleção Feminina', icon: Zap,            section: 'Especial' },
+  { href: '/female-squad', labelKey: 'female_squad', icon: Zap,                       sectionKey: 'special' },
   // Admin
-  { href: '/settings',   label: 'Definições',        icon: Settings,        section: 'Sistema' },
+  { href: '/settings',   labelKey: 'settings',       icon: Settings,                  sectionKey: 'system' },
 ]
 
-const SECTIONS = ['Visão Geral', 'Clínico', 'Performance', 'Inteligência', 'Especial', 'Sistema']
+const SECTION_KEYS = ['overview', 'clinical', 'performance', 'intelligence', 'special', 'system'] as const
 
 export function Sidebar() {
   const pathname = usePathname()
+  const t = useTranslations('sidebar')
 
   return (
     <aside
@@ -50,16 +52,16 @@ export function Sidebar() {
       style={{ background: 'var(--aura-bg)', borderColor: 'var(--aura-border)' }}
     >
       <nav className="flex-1 px-3 py-4 space-y-6">
-        {SECTIONS.map((section) => {
-          const items = NAV_ITEMS.filter((i) => i.section === section)
+        {SECTION_KEYS.map((sectionKey) => {
+          const items = NAV_ITEMS.filter((i) => i.sectionKey === sectionKey)
           if (!items.length) return null
           return (
-            <div key={section}>
+            <div key={sectionKey}>
               <p
                 className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest"
                 style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}
               >
-                {section}
+                {t(`sections.${sectionKey}`)}
               </p>
               <ul className="space-y-0.5">
                 {items.map((item) => {
@@ -91,7 +93,7 @@ export function Sidebar() {
                               : 'text-[var(--aura-text3)] group-hover:text-[var(--aura-text2)]'
                           )}
                         />
-                        <span className="flex-1 truncate">{item.label}</span>
+                        <span className="flex-1 truncate">{t(`nav.${item.labelKey}`)}</span>
                         {item.badge ? (
                           <span
                             className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full"
@@ -118,7 +120,7 @@ export function Sidebar() {
         className="px-6 py-3 text-[10px]"
         style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}
       >
-        Aura v1.1 · FPF Pilot
+        {t('version')}
       </div>
     </aside>
   )

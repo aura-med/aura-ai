@@ -1,54 +1,65 @@
-import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft, Edit2 } from 'lucide-react'
 import { ScoreBadge } from '@/components/athlete/ScoreBadge'
 import { PartialScoreBars } from '@/components/athlete/PartialScoreBars'
-import { scoreToRisk } from '@/lib/utils'
-import type { ScorePartials, ScoreWeights } from '@/types'
+import { RecommendationTabs } from '@/components/athlete/RecommendationTabs'
+import { ReadinessRow } from '@/components/athlete/ReadinessRow'
+import { Sparkline } from '@/components/ui/aura'
+import { riskColor, scoreToRisk } from '@/lib/utils'
 import { BASE_WEIGHTS_V1 } from '@/lib/scoring/engine'
+import type { ScorePartials, ReadinessIndicator } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AthleteAssessmentPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default async function AthleteDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: athlete }, { data: scoreRow }, { data: injuries }] = await Promise.all([
-    supabase.from('athletes').select('*').eq('id', id).single(),
-    supabase
-      .from('score_history')
-      .select('*')
-      .eq('athlete_id', id)
-      .order('score_date', { ascending: false })
-      .limit(1)
-      .single(),
-    supabase
-      .from('injury_events')
-      .select('*')
-      .eq('athlete_id', id)
-      .order('injury_date', { ascending: false })
-      .limit(10),
-  ])
+  // Fetch athlete with all related data
+  const { data: athlete, error } = await supabase
+    .from('athletes')
+    .select(`
+      id, name, shirt_number, position, date_of_birth, club, status,
+      injury_events (id, injury_date, return_date, diagnosis, location, severity, days_absent, is_recurrence),
+      score_history (score_date, total_score, acwr_partial, hrv_partial, fatigue_partial, sleep_partial, tqr_partial, history_partial, stress_partial, decel_partial, confidence, days_since_match),
+      gps_sessions (session_date, session_type, total_distance_m, hsr_distance_m, max_speed_kmh, player_load),
+      wellness_checkins (checkin_date, fatigue, sleep_quality, sleep_hours, hrv_ms, tqr)
+    `)
+    .eq('id', id)
+    .order('injury_date', { referencedTable: 'injury_events', ascending: false })
+    .order('score_date', { referencedTable: 'score_history', ascending: false })
+    .order('session_date', { referencedTable: 'gps_sessions', ascending: false })
+    .order('checkin_date', { referencedTable: 'wellness_checkins', ascending: false })
+    .single()
 
-  if (!athlete) notFound()
+  if (error || !athlete) notFound()
 
-  const score = scoreRow ? Math.round(scoreRow.total_score * 100) : null
-  const level = score !== null ? scoreToRisk(score) : null
+  // Latest score
+  const latestScore = athlete.score_history?.[0]
+  const score = latestScore ? Math.round(latestScore.total_score * 100) : null
+  const riskLevel = score !== null ? scoreToRisk(score) : null
+  const confidence = (latestScore?.confidence ?? 'low') as 'high' | 'medium' | 'low'
 
-  const partials: ScorePartials = scoreRow
+  // 7-day sparkline values (oldest → newest for left-to-right display)
+  const sparkData: (number | null)[] = (athlete.score_history ?? [])
+    .slice(0, 7)
+    .reverse()
+    .map((s) => Math.round(s.total_score * 100))
+
+  // Partials from latest score
+  const partials: ScorePartials = latestScore
     ? {
-        history: scoreRow.history_partial,
-        acwr:    scoreRow.acwr_partial,
-        hrv:     scoreRow.hrv_partial,
-        fatigue: scoreRow.fatigue_partial,
-        sleep:   scoreRow.sleep_partial,
-        tqr:     scoreRow.tqr_partial,
-        stress:  scoreRow.stress_partial,
-        decel:   scoreRow.decel_partial,
-        md:      null,
+        history: latestScore.history_partial,
+        acwr: latestScore.acwr_partial,
+        hrv: latestScore.hrv_partial,
+        fatigue: latestScore.fatigue_partial,
+        sleep: latestScore.sleep_partial,
+        tqr: latestScore.tqr_partial,
+        stress: latestScore.stress_partial,
+        decel: latestScore.decel_partial,
+        md: null,
       }
     : {
         history: null, acwr: null, hrv: null, fatigue: null,
@@ -59,109 +70,272 @@ export default async function AthleteAssessmentPage({
     (k) => partials[k] === null
   )
 
+  // Dominant variable (highest contributing partial × weight)
+  let dominantVariable: string | null = null
+  let maxContrib = 0
+  for (const [k, v] of Object.entries(partials)) {
+    if (v !== null) {
+      const w = BASE_WEIGHTS_V1[k as keyof typeof BASE_WEIGHTS_V1] ?? 0
+      const contrib = (v as number) * w
+      if (contrib > maxContrib) {
+        maxContrib = contrib
+        dominantVariable = k
+      }
+    }
+  }
+
+  // Age calculation
+  const age = athlete.date_of_birth
+    ? Math.floor((Date.now() - new Date(athlete.date_of_birth).getTime()) / (1000 * 60 * 60 * 24 * 365.25))
+    : null
+
+  // Readiness indicators
+  const latestCheckin = athlete.wellness_checkins?.[0]
+  const latestGps = athlete.gps_sessions?.[0]
+  const daysSinceMatch = latestScore?.days_since_match ?? null
+
+  const readinessIndicators: ReadinessIndicator[] = [
+    {
+      label: 'HRV',
+      value: latestCheckin?.hrv_ms ? `${latestCheckin.hrv_ms}ms` : '--',
+      status: !latestCheckin?.hrv_ms ? 'grey' : latestCheckin.hrv_ms > 60 ? 'green' : latestCheckin.hrv_ms > 45 ? 'amber' : 'red',
+    },
+    {
+      label: daysSinceMatch !== null ? `MD+${daysSinceMatch}` : 'MD',
+      value: daysSinceMatch !== null ? `+${daysSinceMatch}d` : '--',
+      status: !daysSinceMatch ? 'grey' : daysSinceMatch >= 3 ? 'green' : daysSinceMatch >= 2 ? 'amber' : 'red',
+      detail: 'Dias desde jogo',
+    },
+    {
+      label: 'Vmax',
+      value: latestGps?.max_speed_kmh ? `${latestGps.max_speed_kmh.toFixed(1)} km/h` : '--',
+      status: !latestGps?.max_speed_kmh ? 'grey' : latestGps.max_speed_kmh > 28 ? 'green' : latestGps.max_speed_kmh > 24 ? 'amber' : 'red',
+    },
+    {
+      label: 'Wellness',
+      value: latestCheckin?.fatigue ? `${latestCheckin.fatigue}/7` : '--',
+      status: !latestCheckin?.fatigue ? 'grey' : latestCheckin.fatigue <= 3 ? 'green' : latestCheckin.fatigue <= 5 ? 'amber' : 'red',
+      detail: 'Fadiga Hooper',
+    },
+  ]
+
+  // Recent GPS sessions (last 3)
+  const recentGps = athlete.gps_sessions?.slice(0, 3) ?? []
+
+  // Sparkline color based on current risk
+  const sparkColor = riskLevel ? riskColor(riskLevel) : 'var(--aura-text3)'
+
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-5 max-w-5xl">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1
-            className="text-2xl font-bold"
-            style={{ fontFamily: 'var(--font-syne)', color: 'var(--aura-text)' }}
+        <div className="flex items-center gap-4">
+          <Link
+            href="/athletes"
+            className="flex items-center gap-1.5 text-xs transition-colors"
+            style={{ color: 'var(--aura-text3)' }}
           >
-            {athlete.name}
-          </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--aura-text2)' }}>
-            #{athlete.shirt_number} · {athlete.position} · {athlete.club}
-          </p>
+            <ArrowLeft size={13} />
+            Plantel
+          </Link>
+          <div className="flex items-center gap-3">
+            {/* Shirt number avatar */}
+            <div
+              className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold font-mono border"
+              style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }}
+            >
+              #{athlete.shirt_number ?? '?'}
+            </div>
+            <div>
+              <h1 className="text-xl font-bold" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+                {athlete.name}
+              </h1>
+              <p className="text-xs font-mono mt-0.5" style={{ color: 'var(--aura-text3)' }}>
+                {[athlete.position, age ? `${age}a` : null, athlete.club].filter(Boolean).join(' · ')}
+              </p>
+            </div>
+          </div>
         </div>
-        {score !== null && level && (
-          <ScoreBadge
-            score={score}
-            level={level}
-            confidence={scoreRow?.confidence}
-            size="lg"
-          />
-        )}
+        <div className="flex items-center gap-3">
+          {score !== null && riskLevel && (
+            <ScoreBadge score={score} level={riskLevel} confidence={confidence} size="lg" />
+          )}
+          <Link
+            href="/input"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs border transition-colors hover:bg-white/5"
+            style={{ color: 'var(--aura-text2)', borderColor: 'var(--aura-border2)' }}
+          >
+            <Edit2 size={12} />
+            Editar dados
+          </Link>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Score decomposition */}
-        <div
-          className="rounded-xl border p-5"
-          style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
-        >
-          <h2
-            className="text-sm font-semibold mb-4"
-            style={{ color: 'var(--aura-text)' }}
+      {/* Main grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Left: Score & Decomposition */}
+        <div className="space-y-4">
+          <div
+            className="rounded-xl border p-5 space-y-4"
+            style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
           >
-            Decomposição por Factor
-          </h2>
-          {scoreRow ? (
-            <PartialScoreBars
-              partials={partials}
-              weights={BASE_WEIGHTS_V1 as ScoreWeights}
-              missing={missing}
-            />
-          ) : (
-            <p className="text-sm" style={{ color: 'var(--aura-text3)' }}>
-              Sem dados de score para hoje. Insira os dados de wellness e GPS.
-            </p>
-          )}
-        </div>
-
-        {/* Injury history */}
-        <div
-          className="rounded-xl border p-5"
-          style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
-        >
-          <h2 className="text-sm font-semibold mb-4" style={{ color: 'var(--aura-text)' }}>
-            Historial de Lesões
-          </h2>
-          {injuries && injuries.length > 0 ? (
-            <ul className="space-y-3">
-              {injuries.map((inj) => (
-                <li
-                  key={inj.id}
-                  className="flex items-start justify-between border-b last:border-0 pb-3 last:pb-0"
-                  style={{ borderColor: 'var(--aura-border)' }}
+            {/* Score + sparkline */}
+            <div className="flex items-end justify-between">
+              <div>
+                <div
+                  className="text-5xl font-bold font-mono leading-none"
+                  style={{ color: score !== null && riskLevel ? riskColor(riskLevel) : 'var(--aura-text3)' }}
                 >
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: 'var(--aura-text)' }}>
-                      {inj.diagnosis}
-                    </p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--aura-text3)' }}>
-                      {inj.location} · {inj.injury_date}
-                      {inj.is_recurrence && (
-                        <span
-                          className="ml-2 text-[10px] px-1 rounded"
-                          style={{
-                            background: 'var(--aura-danger-bg)',
-                            color: 'var(--aura-danger)',
-                          }}
-                        >
-                          Recidiva
-                        </span>
-                      )}
-                    </p>
+                  {score ?? '--'}
+                </div>
+                <div className="text-xs font-mono mt-1" style={{ color: 'var(--aura-text3)' }}>
+                  Risco de Lesão
+                </div>
+                {dominantVariable && (
+                  <div className="text-xs mt-2" style={{ color: 'var(--aura-text2)' }}>
+                    Dom: <span style={{ color: 'var(--aura-warn)' }}>{dominantVariable.toUpperCase()}</span>
                   </div>
-                  {inj.days_absent && (
-                    <span
-                      className="text-xs font-mono shrink-0"
-                      style={{ color: 'var(--aura-text3)' }}
-                    >
-                      {inj.days_absent}d
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm" style={{ color: 'var(--aura-text3)' }}>
-              Sem lesões registadas.
-            </p>
-          )}
+                )}
+              </div>
+              {sparkData.length > 1 && (
+                <div className="w-28 h-12">
+                  <Sparkline data={sparkData} color={sparkColor} width={112} height={48} />
+                </div>
+              )}
+            </div>
+
+            {/* Decomposition bars */}
+            {latestScore && (
+              <PartialScoreBars
+                partials={partials}
+                weights={BASE_WEIGHTS_V1}
+                missing={missing}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Right: Clinical history + Recommendations */}
+        <div className="space-y-4">
+          {/* Injury history */}
+          <div
+            className="rounded-xl border p-5"
+            style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+          >
+            <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+              Historial Clínico
+            </h3>
+            {!athlete.injury_events?.length ? (
+              <p className="text-xs py-3 text-center" style={{ color: 'var(--aura-text3)' }}>Sem lesões registadas.</p>
+            ) : (
+              <div className="space-y-2">
+                {athlete.injury_events.slice(0, 5).map((inj) => (
+                  <div key={inj.id} className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs leading-snug" style={{ color: 'var(--aura-text)' }}>
+                        {inj.diagnosis ?? 'Lesão não especificada'}
+                        {inj.is_recurrence && (
+                          <span className="ml-1.5 text-[10px] px-1 py-0.5 rounded font-mono" style={{ background: 'rgba(255,77,109,0.15)', color: 'var(--aura-danger)' }}>
+                            Recidiva
+                          </span>
+                        )}
+                      </p>
+                      {inj.location && (
+                        <p className="text-[11px] font-mono mt-0.5" style={{ color: 'var(--aura-text3)' }}>
+                          {inj.location}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-[11px] font-mono" style={{ color: 'var(--aura-text3)' }}>
+                        {new Date(inj.injury_date).toLocaleDateString('pt-PT', { month: 'short', year: 'numeric' })}
+                      </p>
+                      {inj.return_date ? (
+                        <p className="text-[11px] font-mono" style={{ color: 'var(--aura-text3)' }}>
+                          {inj.days_absent}d
+                        </p>
+                      ) : (
+                        <p className="text-[11px] font-bold font-mono" style={{ color: 'var(--aura-danger)' }}>
+                          ACTIVO
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Recommendations */}
+          <div
+            className="rounded-xl border p-5"
+            style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+          >
+            <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+              Recomendações
+            </h3>
+            <RecommendationTabs
+              dominantVariable={dominantVariable}
+              riskLevel={(riskLevel ?? 'low') as 'low' | 'medium' | 'high' | 'critical'}
+            />
+          </div>
         </div>
       </div>
+
+      {/* Readiness row */}
+      <ReadinessRow indicators={readinessIndicators} />
+
+      {/* GPS section */}
+      {recentGps.length > 0 && (
+        <div
+          className="rounded-xl border p-5"
+          style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+        >
+          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+            GPS Recente
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs font-mono">
+              <thead>
+                <tr style={{ color: 'var(--aura-text3)' }}>
+                  <th className="text-left py-1.5 pr-4">Data</th>
+                  <th className="text-left py-1.5 pr-4">Tipo</th>
+                  <th className="text-right py-1.5 pr-4">Distância</th>
+                  <th className="text-right py-1.5 pr-4">HSR</th>
+                  <th className="text-right py-1.5 pr-4">Vmax</th>
+                  <th className="text-right py-1.5">Player Load</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentGps.map((g, i) => (
+                  <tr
+                    key={i}
+                    className="border-t"
+                    style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text)' }}
+                  >
+                    <td className="py-2 pr-4">
+                      {new Date(g.session_date).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' })}
+                    </td>
+                    <td className="py-2 pr-4 capitalize">{g.session_type}</td>
+                    <td className="py-2 pr-4 text-right">
+                      {g.total_distance_m ? `${(g.total_distance_m / 1000).toFixed(1)}km` : '--'}
+                    </td>
+                    <td className="py-2 pr-4 text-right">
+                      {g.hsr_distance_m ? `${(g.hsr_distance_m / 1000).toFixed(1)}km` : '--'}
+                    </td>
+                    <td className="py-2 pr-4 text-right">
+                      {g.max_speed_kmh ? `${g.max_speed_kmh.toFixed(1)}km/h` : '--'}
+                    </td>
+                    <td className="py-2 text-right">
+                      {g.player_load?.toFixed(0) ?? '--'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

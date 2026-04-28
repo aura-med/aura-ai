@@ -69,6 +69,34 @@ export async function getSquads(orgId?: string) {
   return data ?? []
 }
 
+export async function getOrganizations() {
+  const { data, error } = await supabase
+    .from('organizations')
+    .select('id, name, type')
+    .order('name')
+  if (error) throw error
+  return data ?? []
+}
+
+export async function getSquadsByOrg(orgId: string) {
+  const { data, error } = await supabase
+    .from('squads')
+    .select('id, name, type, season')
+    .eq('org_id', orgId)
+    .order('name')
+  if (error) throw error
+  return data ?? []
+}
+
+export async function getAllSquads() {
+  const { data, error } = await supabase
+    .from('squads')
+    .select('id, name, type, season, org_id, organizations(name)')
+    .order('name')
+  if (error) throw error
+  return data ?? []
+}
+
 export async function getCalendarEvents(squadId: string) {
   const { data, error } = await supabase
     .from('calendar_events')

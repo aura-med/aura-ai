@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { calcScore, riskColor, riskLabel, getMenstrualPhase, getFemaleAdjustedScore } from '@/lib/scoring'
 import { AlertBox } from '@/components/ui/aura'
+import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 
 const PHASE_GUIDE = [
   { phase: 'menstrual',  color: '#ff4d6d', days: 'D1–5',  note: 'Dor e fadiga possíveis. Reduzir impacto se necessário.' },
@@ -10,14 +11,23 @@ const PHASE_GUIDE = [
   { phase: 'luteal',     color: '#ffb347', days: 'D15–28',note: 'Laxidez ligamentar aumentada. Reforço proprioceptivo.' },
 ]
 
-export default async function FemalePage() {
+export default async function FemalePage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const squadId = getSquadIdParam(searchParams ? await searchParams : null)
   const supabase = await createClient()
-  const { data: athletes } = await supabase
+  let query = supabase
     .from('athletes')
     .select(`*, wellness_checkins(*), injury_events(*), rehab_sessions(*, rehab_protocols(*))`)
     .eq('active', true)
     .not('menstrual_day', 'is', null)
     .order('shirt_number')
+
+  if (squadId) query = query.eq('squad_id', squadId)
+
+  const { data: athletes } = await query
 
   const withData = (athletes ?? []).map((a: any) => {
     const latest = (a.wellness_checkins ?? [])
@@ -81,7 +91,7 @@ export default async function FemalePage() {
           const isOvulatory = a.phase?.phase === 'ovulatory'
 
           return (
-            <Link key={a.id} href={`/athlete?id=${a.id}`} style={{ textDecoration: 'none' }}>
+            <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
               <div style={{
                 background: 'var(--bg2)', border: `1px solid ${isOvulatory ? 'rgba(255,112,67,0.4)' : 'var(--border)'}`,
                 borderRadius: 10, padding: '12px 14px', cursor: 'pointer', transition: 'all .15s',

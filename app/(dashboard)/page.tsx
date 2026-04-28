@@ -1,30 +1,35 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { calcScore, riskColor, riskLabel, riskLevel } from '@/lib/scoring'
-import { ScoreBadge, AlertBox, Sparkline } from '@/components/ui/aura'
+import { calcScore, riskColor, riskLabel } from '@/lib/scoring'
+import { Sparkline } from '@/components/ui/aura'
+import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 
-async function getData() {
+async function getData(squadId: string | null) {
   const supabase = await createClient()
-  const { data: athletes } = await supabase
+  let query = supabase
     .from('athletes')
     .select(`*, wellness_checkins(*), performance_data(*), injury_events(*), fatigue_profiles(*), score_history(*)`)
     .eq('active', true)
     .order('shirt_number')
 
-  const { data: squads } = await supabase.from('squads').select('*')
-  return { athletes: athletes ?? [], squads: squads ?? [] }
+  if (squadId) query = query.eq('squad_id', squadId)
+
+  const { data: athletes } = await query
+  return { athletes: athletes ?? [] }
 }
 
-export default async function Dashboard() {
-  const { athletes, squads } = await getData()
+export default async function Dashboard({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const squadId = getSquadIdParam(searchParams ? await searchParams : null)
+  const { athletes } = await getData(squadId)
 
   // Compute scores
   const withScores = athletes.map(a => {
     const latest = (a.wellness_checkins ?? [])
       .sort((x: any, y: any) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
-    const perf = (a.performance_data ?? [])
-      .sort((x: any, y: any) => new Date(y.session_date).getTime() - new Date(x.session_date).getTime())[0]
-
     const inputs = {
       history: (a.injury_events ?? []).filter((i: any) => !i.return_date).length >= 2 ? 2
         : (a.injury_events ?? []).length >= 1 ? 1 : 0,
@@ -93,7 +98,7 @@ export default async function Dashboard() {
             <div className="card">
               <div className="ctitle">⚠ Atletas em alerta</div>
               {highRisk.map(a => (
-                <Link key={a.id} href={`/athlete?id=${a.id}`} style={{ textDecoration: 'none' }}>
+                <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
                   <div className={`alert ${a.computed_score.score >= 85 ? 'alert-r' : 'alert-w'}`}
                     style={{ cursor: 'pointer' }}>
                     <div className={`adot ${a.computed_score.score >= 85 ? 'ad-r' : 'ad-w'}`} />
@@ -120,7 +125,7 @@ export default async function Dashboard() {
             <div className="card">
               <div className="ctitle">🦴 Em reabilitação</div>
               {rehab.map(a => (
-                <Link key={a.id} href={`/rehab?id=${a.id}`} style={{ textDecoration: 'none' }}>
+                <Link key={a.id} href={withSquadParam('/rehab', squadId)} style={{ textDecoration: 'none' }}>
                   <div className="ath-card">
                     <div className="ath-avatar">{a.shirt_number}</div>
                     <div className="ath-info">
@@ -141,7 +146,7 @@ export default async function Dashboard() {
         <div className="card">
           <div className="ctitle">Plantel disponível</div>
           {available.map(a => (
-            <Link key={a.id} href={`/athlete?id=${a.id}`} style={{ textDecoration: 'none' }}>
+            <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
               <div className="ath-card">
                 <div className="ath-avatar">{a.shirt_number}</div>
                 <div className="ath-info">

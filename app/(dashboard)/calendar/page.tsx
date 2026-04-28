@@ -1,7 +1,9 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { calcScore, riskColor, projectScore } from '@/lib/scoring'
+import { getSquadIdParam } from '@/lib/squad-url'
 import type { CalendarSnapshot } from '@/types'
 
 const TYPE_ICONS: Record<string, string>  = { match: '⚽', training: '🏃', rest: '😴', travel: '✈️' }
@@ -11,6 +13,16 @@ const TYPES = ['rest', 'training', 'match']
 const INTENSITIES = ['low', 'medium', 'high', 'max']
 
 export default function CalendarPage() {
+  return (
+    <Suspense fallback={<div className="loading"><div className="spinner" /><span>A carregar calendario...</span></div>}>
+      <CalendarContent />
+    </Suspense>
+  )
+}
+
+function CalendarContent() {
+  const searchParams = useSearchParams()
+  const squadId = getSquadIdParam(searchParams)
   const [athletes, setAthletes] = useState<any[]>([])
   const [selectedId, setSelectedId] = useState<string>('')
   const [events, setEvents] = useState<any[]>([])
@@ -18,17 +30,28 @@ export default function CalendarPage() {
   const [snapshots, setSnapshots] = useState<CalendarSnapshot[]>([])
 
   useEffect(() => {
-    Promise.all([
-      supabase.from('athletes').select(`*, wellness_checkins(*), injury_events(*), fatigue_profiles(*)`).eq('active', true).eq('status', 'available').order('shirt_number'),
-      supabase.from('calendar_events').select('*').order('event_date'),
-    ]).then(([{ data: aths }, { data: evs }]) => {
+    setLoading(true)
+    let athleteQuery = supabase
+      .from('athletes')
+      .select(`*, wellness_checkins(*), injury_events(*), fatigue_profiles(*)`)
+      .eq('active', true)
+      .eq('status', 'available')
+      .order('shirt_number')
+    let eventQuery = supabase.from('calendar_events').select('*').order('event_date')
+
+    if (squadId) {
+      athleteQuery = athleteQuery.eq('squad_id', squadId)
+      eventQuery = eventQuery.eq('squad_id', squadId)
+    }
+
+    Promise.all([athleteQuery, eventQuery]).then(([{ data: aths }, { data: evs }]) => {
       const a = aths ?? []
       setAthletes(a)
-      if (a[0]) setSelectedId(a[0].id)
+      setSelectedId(a[0]?.id ?? '')
       setEvents(evs ?? [])
       setLoading(false)
     })
-  }, [])
+  }, [squadId])
 
   useEffect(() => {
     const athlete = athletes.find(a => a.id === selectedId)

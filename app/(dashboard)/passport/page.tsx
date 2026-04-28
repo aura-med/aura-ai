@@ -1,25 +1,39 @@
 'use client'
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import { Suspense, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { riskColor } from '@/lib/scoring'
+import { getSquadIdParam } from '@/lib/squad-url'
 
 export default function PassportPage() {
+  return (
+    <Suspense fallback={<div className="loading"><div className="spinner" /><span>A carregar passaportes...</span></div>}>
+      <PassportContent />
+    </Suspense>
+  )
+}
+
+function PassportContent() {
+  const searchParams = useSearchParams()
+  const squadId = getSquadIdParam(searchParams)
   const [athletes, setAthletes] = useState<any[]>([])
   const [selected, setSelected] = useState<string>('')
   const [shared, setShared] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.from('athletes')
+    setLoading(true)
+    let query = supabase.from('athletes')
       .select(`*, injury_events(*), performance_data(*), athlete_passport(*), fatigue_profiles(*)`)
       .eq('active', true).order('shirt_number')
-      .then(({ data }) => {
+
+    if (squadId) query = query.eq('squad_id', squadId)
+
+    query.then(({ data }) => {
         setAthletes(data ?? [])
-        if (data?.[0]) setSelected(data[0].id)
+        setSelected(data?.[0]?.id ?? '')
         setLoading(false)
       })
-  }, [])
+  }, [squadId])
 
   async function toggleShare(athleteId: string, current: boolean) {
     const passport = athletes.find(a => a.id === athleteId)?.athlete_passport?.[0]

@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import {
   LayoutDashboard, Users, UserCircle, Activity, Calendar,
-  Heart, Gauge, Zap, BookOpen, FlaskConical, Settings,
-  ClipboardList, TrendingUp, Star
+  Heart, Gauge, Zap, BookOpen, Settings,
+  ClipboardList, TrendingUp
 } from 'lucide-react'
 
 interface NavItem {
@@ -22,7 +22,6 @@ const NAV_ITEMS: NavItem[] = [
   // Overview
   { href: '/',           labelKey: 'dashboard',    icon: LayoutDashboard, badge: 3, sectionKey: 'overview' },
   { href: '/squad',      labelKey: 'squad',          icon: Users,                     sectionKey: 'overview' },
-  { href: '/selecoes',   labelKey: 'selecoes',       icon: Star,                      sectionKey: 'overview' },
   // Clinical
   { href: '/athletes',   labelKey: 'athletes',       icon: UserCircle,                sectionKey: 'clinical' },
   { href: '/input',      labelKey: 'input',          icon: ClipboardList,             sectionKey: 'clinical' },

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { calcScore, riskColor, riskLevel, getReadiness } from '@/lib/scoring'
 import { ScoreBadge } from '@/components/ui/aura'
+import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import type { ReadinessIndicator } from '@/types'
 
 const READINESS_COLORS = {
@@ -11,12 +12,23 @@ const READINESS_LABELS = {
   green: 'Pronto', amber: 'Precaução', red: 'Limitado', grey: 'Sem dados'
 }
 
-export default async function ReadinessPage() {
+export default async function ReadinessPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const squadId = getSquadIdParam(searchParams ? await searchParams : null)
   const supabase = await createClient()
-  const { data: athletes } = await supabase
+  let query = supabase
     .from('athletes')
     .select(`*, wellness_checkins(*), performance_data(*), injury_events(*), athlete_passport(*)`)
-    .eq('active', true).eq('status', 'available').order('shirt_number')
+    .eq('active', true)
+    .eq('status', 'available')
+    .order('shirt_number')
+
+  if (squadId) query = query.eq('squad_id', squadId)
+
+  const { data: athletes } = await query
 
   const withData = (athletes ?? []).map((a: any) => {
     const latest = (a.wellness_checkins ?? [])
@@ -87,7 +99,7 @@ export default async function ReadinessPage() {
               return (
                 <tr key={a.id}>
                   <td>
-                    <Link href={`/athlete?id=${a.id}`} style={{ textDecoration: 'none' }}>
+                    <Link href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
                       <strong>{a.name}</strong>
                       <br />
                       <span style={{ fontSize: 10, color: 'var(--text2)' }}>{a.position} · {a.club}</span>

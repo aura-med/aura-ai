@@ -6,15 +6,24 @@ import { ScoreBadge } from '@/components/athlete/ScoreBadge'
 import { PartialScoreBars } from '@/components/athlete/PartialScoreBars'
 import { RecommendationTabs } from '@/components/athlete/RecommendationTabs'
 import { ReadinessRow } from '@/components/athlete/ReadinessRow'
+import { GpsSection } from '@/components/athlete/GpsSection'
 import { Sparkline } from '@/components/ui/aura'
 import { riskColor, scoreToRisk } from '@/lib/utils'
 import { BASE_WEIGHTS_V1 } from '@/lib/scoring/engine'
+import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import type { ScorePartials, ReadinessIndicator } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AthleteDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AthleteDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}) {
   const { id } = await params
+  const squadId = getSquadIdParam(searchParams ? await searchParams : null)
   const supabase = await createClient()
 
   // Fetch athlete with all related data
@@ -25,12 +34,14 @@ export default async function AthleteDetailPage({ params }: { params: Promise<{ 
       injury_events (id, injury_date, return_date, diagnosis, location, severity, days_absent, is_recurrence),
       score_history (score_date, total_score, acwr_partial, hrv_partial, fatigue_partial, sleep_partial, tqr_partial, history_partial, stress_partial, decel_partial, confidence, days_since_match),
       gps_sessions (session_date, session_type, total_distance_m, hsr_distance_m, max_speed_kmh, player_load),
+      performance_data (session_date, vmax, vmax_today_pct),
       wellness_checkins (checkin_date, fatigue, sleep_quality, sleep_hours, hrv_ms, tqr)
     `)
     .eq('id', id)
     .order('injury_date', { referencedTable: 'injury_events', ascending: false })
     .order('score_date', { referencedTable: 'score_history', ascending: false })
     .order('session_date', { referencedTable: 'gps_sessions', ascending: false })
+    .order('session_date', { referencedTable: 'performance_data', ascending: false })
     .order('checkin_date', { referencedTable: 'wellness_checkins', ascending: false })
     .single()
 
@@ -92,7 +103,12 @@ export default async function AthleteDetailPage({ params }: { params: Promise<{ 
   // Readiness indicators
   const latestCheckin = athlete.wellness_checkins?.[0]
   const latestGps = athlete.gps_sessions?.[0]
+  const latestPerf = athlete.performance_data?.[0]
   const daysSinceMatch = latestScore?.days_since_match ?? null
+  const vmaxPct = latestPerf?.vmax_today_pct ??
+    (latestGps?.max_speed_kmh && latestPerf?.vmax
+      ? Math.round((latestGps.max_speed_kmh / latestPerf.vmax) * 100)
+      : null)
 
   const readinessIndicators: ReadinessIndicator[] = [
     {
@@ -107,9 +123,9 @@ export default async function AthleteDetailPage({ params }: { params: Promise<{ 
       detail: 'Dias desde jogo',
     },
     {
-      label: 'Vmax',
-      value: latestGps?.max_speed_kmh ? `${latestGps.max_speed_kmh.toFixed(1)} km/h` : '--',
-      status: !latestGps?.max_speed_kmh ? 'grey' : latestGps.max_speed_kmh > 28 ? 'green' : latestGps.max_speed_kmh > 24 ? 'amber' : 'red',
+      label: 'Vmax%',
+      value: vmaxPct !== null ? `${vmaxPct}%` : '--',
+      status: vmaxPct === null ? 'grey' : vmaxPct >= 95 ? 'green' : vmaxPct >= 85 ? 'amber' : 'red',
     },
     {
       label: 'Wellness',
@@ -131,7 +147,7 @@ export default async function AthleteDetailPage({ params }: { params: Promise<{ 
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link
-            href="/athletes"
+            href={withSquadParam('/athletes', squadId)}
             className="flex items-center gap-1.5 text-xs transition-colors"
             style={{ color: 'var(--aura-text3)' }}
           >
@@ -285,57 +301,7 @@ export default async function AthleteDetailPage({ params }: { params: Promise<{ 
       {/* Readiness row */}
       <ReadinessRow indicators={readinessIndicators} />
 
-      {/* GPS section */}
-      {recentGps.length > 0 && (
-        <div
-          className="rounded-xl border p-5"
-          style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
-        >
-          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
-            GPS Recente
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs font-mono">
-              <thead>
-                <tr style={{ color: 'var(--aura-text3)' }}>
-                  <th className="text-left py-1.5 pr-4">Data</th>
-                  <th className="text-left py-1.5 pr-4">Tipo</th>
-                  <th className="text-right py-1.5 pr-4">Distância</th>
-                  <th className="text-right py-1.5 pr-4">HSR</th>
-                  <th className="text-right py-1.5 pr-4">Vmax</th>
-                  <th className="text-right py-1.5">Player Load</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentGps.map((g, i) => (
-                  <tr
-                    key={i}
-                    className="border-t"
-                    style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text)' }}
-                  >
-                    <td className="py-2 pr-4">
-                      {new Date(g.session_date).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' })}
-                    </td>
-                    <td className="py-2 pr-4 capitalize">{g.session_type}</td>
-                    <td className="py-2 pr-4 text-right">
-                      {g.total_distance_m ? `${(g.total_distance_m / 1000).toFixed(1)}km` : '--'}
-                    </td>
-                    <td className="py-2 pr-4 text-right">
-                      {g.hsr_distance_m ? `${(g.hsr_distance_m / 1000).toFixed(1)}km` : '--'}
-                    </td>
-                    <td className="py-2 pr-4 text-right">
-                      {g.max_speed_kmh ? `${g.max_speed_kmh.toFixed(1)}km/h` : '--'}
-                    </td>
-                    <td className="py-2 text-right">
-                      {g.player_load?.toFixed(0) ?? '--'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      <GpsSection sessions={recentGps} />
     </div>
   )
 }

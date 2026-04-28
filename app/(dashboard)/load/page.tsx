@@ -1,14 +1,23 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { riskColor } from '@/lib/scoring'
+import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 
-export default async function LoadPage() {
+export default async function LoadPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const squadId = getSquadIdParam(searchParams ? await searchParams : null)
   const supabase = await createClient()
-  const { data: sessions } = await supabase
+  let query = supabase
     .from('gps_sessions')
-    .select(`*, athletes(id, name, position, shirt_number)`)
+    .select(`*, athletes!inner(id, name, position, shirt_number, squad_id)`)
     .order('session_date', { ascending: false })
     .limit(100)
+
+  if (squadId) query = query.eq('athletes.squad_id', squadId)
+
+  const { data: sessions } = await query
 
   const byAthlete: Record<string, any> = {}
   ;(sessions ?? []).forEach((s: any) => {
@@ -66,7 +75,7 @@ export default async function LoadPage() {
                 return (
                   <tr key={athlete.id}>
                     <td>
-                      <Link href={`/athlete?id=${athlete.id}`} style={{ textDecoration: 'none' }}>
+                      <Link href={withSquadParam(`/athletes/${athlete.id}`, squadId)} style={{ textDecoration: 'none' }}>
                         <strong>{athlete.name}</strong>
                         <br /><span style={{ fontSize: 10, color: 'var(--text2)' }}>{athlete.position}</span>
                       </Link>

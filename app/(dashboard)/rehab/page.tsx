@@ -27,13 +27,25 @@ function RehabContent() {
 
   async function load() {
     setLoading(true)
-    let query = supabase
-      .from('rehab_sessions')
-      .select(`*, athletes!inner(*), rehab_protocols(*)`)
-      .eq('athletes.active', true)
-    if (squadId) query = query.eq('athletes.squad_id', squadId)
-    const { data } = await query
-    setSessions(data ?? [])
+    // Query athletes in rehab first (consistent with dashboard)
+    let athQuery = supabase
+      .from('athletes')
+      .select(`*, rehab_sessions(*, rehab_protocols(*))`)
+      .eq('active', true)
+      .eq('status', 'rehab')
+    if (squadId) athQuery = athQuery.eq('squad_id', squadId)
+    const { data: athletes } = await athQuery
+
+    // Flatten: one entry per athlete (use first/only session if exists)
+    const rows = (athletes ?? []).map((a: any) => {
+      const session = (a.rehab_sessions ?? [])[0] ?? null
+      if (session) {
+        return { ...session, athletes: a, rehab_protocols: session.rehab_protocols }
+      }
+      // Athlete in rehab but no session assigned yet
+      return { id: `no-session-${a.id}`, athletes: a, rehab_protocols: null, noSession: true }
+    })
+    setSessions(rows)
     setLoading(false)
   }
 
@@ -81,6 +93,26 @@ function RehabContent() {
       </div>
 
       {sessions.map((session: any) => {
+        // Athlete in rehab but no protocol assigned
+        if (session.noSession) {
+          return (
+            <div key={session.id} className="card" style={{ marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 16 }}>{session.athletes?.name}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 4 }}>
+                    {session.athletes?.position} · {session.athletes?.club}
+                  </div>
+                </div>
+                <div className="alert alert-w" style={{ margin: 0 }}>
+                  <div className="adot ad-w" />
+                  <div style={{ fontSize: 12 }}>Sem protocolo de reabilitação atribuído</div>
+                </div>
+              </div>
+            </div>
+          )
+        }
+
         const protocol: RehabProtocol = session.rehab_protocols
         const athlete = session.athletes
         const rtp: RtpCriterion[] = session.rtp_criteria ?? []

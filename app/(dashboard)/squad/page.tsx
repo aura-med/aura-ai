@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { calcScore, riskColor, riskLabel } from '@/lib/scoring'
 import { Sparkline } from '@/components/ui/aura'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
+import { getAthleteList, type AthleteListDTO } from '@/lib/dal/athletes'
 
 export default async function SquadPage({
   searchParams,
@@ -10,22 +10,13 @@ export default async function SquadPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
   const squadId = getSquadIdParam(searchParams ? await searchParams : null)
-  const supabase = await createClient()
-  let query = supabase
-    .from('athletes')
-    .select(`*, wellness_checkins(*), injury_events(*), score_history(*)`)
-    .eq('active', true)
-    .order('shirt_number')
+  const athletes = await getAthleteList(squadId)
 
-  if (squadId) query = query.eq('squad_id', squadId)
-
-  const { data: athletes } = await query
-
-  const withScores = (athletes ?? []).map((a: any) => {
+  const withScores = athletes.map((a: AthleteListDTO) => {
     const latest = (a.wellness_checkins ?? [])
-      .sort((x: any, y: any) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
+      .sort((x, y) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
     const inputs = {
-      history: (a.injury_events ?? []).filter((i: any) => !i.return_date).length >= 2 ? 2
+      history: (a.injury_events ?? []).filter((i) => !i.return_date).length >= 2 ? 2
         : (a.injury_events ?? []).length >= 1 ? 1 : 0,
       acwr: null, hrv: null,
       fatigue: latest?.fatigue ?? null,
@@ -36,13 +27,13 @@ export default async function SquadPage({
     }
     const score = calcScore(inputs)
     const history = (a.score_history ?? [])
-      .sort((x: any, y: any) => new Date(x.score_date).getTime() - new Date(y.score_date).getTime())
-      .slice(-7).map((s: any) => Math.round(s.total_score * 100))
+      .sort((x, y) => new Date(x.score_date).getTime() - new Date(y.score_date).getTime())
+      .slice(-7).map((s) => Math.round(s.total_score * 100))
     return { ...a, score, history }
   })
 
-  const byPos: Record<string, any[]> = { GK: [], DEF: [], MID: [], FWD: [] }
-  const rehab: any[] = []
+  const byPos: Record<string, typeof withScores> = { GK: [], DEF: [], MID: [], FWD: [] }
+  const rehab: typeof withScores = []
   withScores.forEach(a => {
     if (a.status === 'rehab') rehab.push(a)
     else if (a.position && byPos[a.position]) byPos[a.position].push(a)
@@ -57,8 +48,8 @@ export default async function SquadPage({
         <div className="sec-sub">{withScores.length} atletas convocados · Ordenado por posição</div>
       </div>
 
-      {Object.entries(byPos).map(([pos, athletes]) =>
-        athletes.length === 0 ? null : (
+      {Object.entries(byPos).map(([pos, posAthletes]) =>
+        posAthletes.length === 0 ? null : (
           <div key={pos} style={{ marginBottom: 20 }}>
             <div style={{
               fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2,
@@ -68,13 +59,13 @@ export default async function SquadPage({
               {posLabels[pos]}
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 6 }}>
-              {athletes.map((a: any) => (
+              {posAthletes.map((a) => (
                 <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
                   <div className="ath-card">
                     <div className="ath-avatar">{a.shirt_number}</div>
                     <div className="ath-info">
                       <div className="ath-name">{a.name}</div>
-                      <div className="ath-meta">{a.club}</div>
+                      <div className="ath-meta">{a.position}</div>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <div style={{ fontFamily: 'var(--display)', fontSize: 18, fontWeight: 900, color: riskColor(a.score.score) }}>
@@ -105,13 +96,13 @@ export default async function SquadPage({
             Reabilitação
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 6 }}>
-            {rehab.map((a: any) => (
+            {rehab.map((a) => (
               <Link key={a.id} href={withSquadParam('/rehab', squadId)} style={{ textDecoration: 'none' }}>
                 <div className="ath-card">
                   <div className="ath-avatar">{a.shirt_number}</div>
                   <div className="ath-info">
                     <div className="ath-name">{a.name}</div>
-                    <div className="ath-meta">{a.position} · {a.club}</div>
+                    <div className="ath-meta">{a.position}</div>
                   </div>
                   <span className="score-badge" style={{ background: 'var(--blue2)', color: 'var(--blue)', borderColor: 'rgba(77,154,255,0.25)' }}>
                     Reab.

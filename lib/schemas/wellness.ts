@@ -9,6 +9,7 @@ export const WellnessCheckinSchema = z.object({
   hrv_ms: z.number().positive().nullable().optional(),
   tqr: z.number().int().min(6).max(20).nullable().optional(),
   stress: z.number().int().min(1).max(10).nullable().optional(),
+  checkin_type: z.enum(['morning', 'post_session']).optional(),
 })
 
 export type WellnessCheckinInput = z.infer<typeof WellnessCheckinSchema>

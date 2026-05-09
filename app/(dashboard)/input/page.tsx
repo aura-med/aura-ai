@@ -81,6 +81,7 @@ function InputContent() {
     const result = await saveWellnessCheckin({
       athlete_id: selectedId,
       checkin_date: today,
+      checkin_type: 'morning' as const,
       fatigue: values.fatigue ?? null,
       sleep_hours: values.sleep ?? null,
       tqr: values.tqr ?? null,

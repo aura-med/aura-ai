@@ -62,6 +62,7 @@ export default function SquadsPage() {
     setLoading(false)
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchSquads() }, [])
 
   async function handleCreate() {

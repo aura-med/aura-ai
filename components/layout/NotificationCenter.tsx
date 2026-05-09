@@ -13,10 +13,10 @@ import {
 import type { Notification } from '@/lib/notifications'
 import { createClient } from '@/lib/supabase/client'
 
-function formatTime(dateStr: string): string {
+function formatTime(dateStr: string, now: number): string {
   try {
     const date = new Date(dateStr)
-    const diff = Date.now() - date.getTime()
+    const diff = now - date.getTime()
     const minutes = Math.floor(diff / 60000)
     if (minutes < 1) return 'agora'
     if (minutes < 60) return `${minutes}m`
@@ -35,6 +35,7 @@ export function NotificationCenter({ orgId }: { orgId?: string }) {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
+  const [now] = useState(() => Date.now())
   const panelRef = useRef<HTMLDivElement>(null)
 
   const unreadCount = notifications.filter(
@@ -48,11 +49,17 @@ export function NotificationCenter({ orgId }: { orgId?: string }) {
 
   useEffect(() => {
     if (!orgId) return
-    setLoading(true)
-    getNotifications(orgId)
-      .then(setNotifications)
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    ;(async () => {
+      setLoading(true)
+      try {
+        const data = await getNotifications(orgId)
+        setNotifications(data)
+      } catch {
+        // ignore
+      } finally {
+        setLoading(false)
+      }
+    })()
   }, [orgId, open])
 
   // Close on outside click
@@ -182,7 +189,7 @@ export function NotificationCenter({ orgId }: { orgId?: string }) {
                           className="text-[10px] shrink-0 font-mono"
                           style={{ color: 'var(--aura-text3)' }}
                         >
-                          {formatTime(n.created_at)}
+                          {formatTime(n.created_at, now)}
                         </span>
                       </div>
                       {n.body && (

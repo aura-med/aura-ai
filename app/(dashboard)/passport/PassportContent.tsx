@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
 import type { PassportAthleteDTO } from '@/lib/dal/passport'
 import { togglePassportShare } from '@/lib/actions/passport'
 

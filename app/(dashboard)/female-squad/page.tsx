@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { calcScore, riskColor, riskLabel, getMenstrualPhase, getFemaleAdjustedScore } from '@/lib/scoring'
-import { AlertBox } from '@/components/ui/aura'
+import { calcScore, riskColor, getFemaleAdjustedScore } from '@/lib/scoring'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 
 const PHASE_GUIDE = [
@@ -29,20 +28,26 @@ export default async function FemalePage({
 
   const { data: athletes } = await query
 
-  const withData = (athletes ?? []).map((a: any) => {
+  type FemaleAthlete = {
+    id: string; name: string; shirt_number: number | null; position: string | null
+    club: string | null; status: string; menstrual_day: number | null; cycle_length: number | null
+    wellness_checkins: Array<{ checkin_date: string; fatigue: number | null; sleep_hours: number | null; tqr: number | null; stress: number | null }>
+    injury_events: Array<{ id: string }>
+    rehab_sessions: Array<{ id: string }>
+  }
+  const withData = ((athletes ?? []) as FemaleAthlete[]).map((a) => {
     const latest = (a.wellness_checkins ?? [])
-      .sort((x: any, y: any) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
+      .sort((x, y) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
     const inputs = {
       history: (a.injury_events ?? []).length >= 2 ? 2 : (a.injury_events ?? []).length >= 1 ? 1 : 0,
       acwr: null, hrv: null, fatigue: latest?.fatigue ?? null, sleep: latest?.sleep_hours ?? null,
       tqr: latest?.tqr ?? null, stress: latest?.stress ?? null, decel: null, md: null,
     }
     const base = calcScore(inputs)
-    const adjusted = getFemaleAdjustedScore(base.score, a.menstrual_day, a.cycle_length)
+    const adjusted = getFemaleAdjustedScore(base.score, a.menstrual_day ?? 1, a.cycle_length ?? 28)
     return { ...a, base_score: base.score, adjusted_score: adjusted.adjusted, phase: adjusted.phase }
   })
 
-  const available = withData.filter(a => a.status === 'available')
   const rehab     = withData.filter(a => a.status === 'rehab')
   const highRisk  = withData.filter(a => a.adjusted_score >= 65)
   const inOvulation = withData.filter(a => a.phase?.phase === 'ovulatory')

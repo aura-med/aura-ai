@@ -2,6 +2,15 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 
+interface GpsRow {
+  athlete: { id: string; name: string; position: string | null; shirt_number: number | null }
+  sessions: Array<{
+    session_date: string; session_type: string | null; total_distance_m: number | null
+    hsr_distance_m: number | null; sprint_distance_m: number | null; max_speed_kmh: number | null
+    decel_high_count: number | null; player_load: number | null
+  }>
+}
+
 export default async function LoadPage({
   searchParams,
 }: {
@@ -19,24 +28,17 @@ export default async function LoadPage({
 
   const { data: sessions } = await query
 
-  const byAthlete: Record<string, any> = {}
-  ;(sessions ?? []).forEach((s: any) => {
-    if (!s.athletes) return
-    const id = s.athletes.id
-    if (!byAthlete[id]) byAthlete[id] = { athlete: s.athletes, sessions: [] }
+  const byAthlete: Record<string, GpsRow> = {}
+  ;(sessions ?? []).forEach((s) => {
+    const sessionWithAthlete = s as typeof s & { athletes: { id: string; name: string; position: string | null; shirt_number: number | null } }
+    if (!sessionWithAthlete.athletes) return
+    const id = sessionWithAthlete.athletes.id
+    if (!byAthlete[id]) byAthlete[id] = { athlete: sessionWithAthlete.athletes, sessions: [] }
     byAthlete[id].sessions.push(s)
   })
 
-  const rows = Object.values(byAthlete)
-    .sort((a: any, b: any) => (a.athlete.shirt_number ?? 99) - (b.athlete.shirt_number ?? 99))
-
-  function acwrColor(v: number | null) {
-    if (!v) return 'var(--text3)'
-    if (v < 0.8) return 'var(--blue)'
-    if (v < 1.3) return 'var(--green2)'
-    if (v < 1.5) return 'var(--warn)'
-    return 'var(--danger)'
-  }
+  const rows: GpsRow[] = Object.values(byAthlete)
+    .sort((a, b) => (a.athlete.shirt_number ?? 99) - (b.athlete.shirt_number ?? 99))
 
   return (
     <div>
@@ -70,7 +72,7 @@ export default async function LoadPage({
               </tr>
             </thead>
             <tbody>
-              {rows.map(({ athlete, sessions }: any) => {
+              {rows.map(({ athlete, sessions }) => {
                 const latest = sessions[0]
                 return (
                   <tr key={athlete.id}>

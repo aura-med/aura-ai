@@ -1,20 +1,13 @@
 'use client'
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { getSquadIdParam } from '@/lib/squad-url'
-import type { RehabSession, RehabProtocol, RtpCriterion } from '@/types'
-import { AlertBox } from '@/components/ui/aura'
+import type { RehabProtocol, RtpCriterion } from '@/types'
 import type { RehabSessionDTO } from '@/lib/dal/rehab'
 import { updateRtpCriteria, updateClinicalData } from '@/lib/actions/rehab'
 
 interface Props {
   initialSessions: RehabSessionDTO[]
   squadId: string | null
-}
-
-function phaseColor(phaseIndex: number): string {
-  const colors = ['#ff4d6d', '#ffb347', '#4d9aff', '#00e5a0']
-  return colors[phaseIndex] ?? '#7a8399'
 }
 
 export function RehabContent({ initialSessions, squadId }: Props) {
@@ -31,7 +24,7 @@ export function RehabContent({ initialSessions, squadId }: Props) {
     if (squadId) athQuery = athQuery.eq('squad_id', squadId)
     const { data: athletes } = await athQuery
 
-    const rows = (athletes ?? []).map((a: any) => {
+    const rows = (athletes ?? []).map((a) => {
       const session = (a.rehab_sessions ?? [])[0] ?? null
       if (session) {
         return { ...session, athletes: a, rehab_protocols: session.rehab_protocols }
@@ -48,8 +41,8 @@ export function RehabContent({ initialSessions, squadId }: Props) {
     load()
   }
 
-  async function updateClinical(sessionId: string, field: string, value: any, clinicalData: any) {
-    await updateClinicalData({ sessionId, field, value }, clinicalData as Record<string, unknown>)
+  async function updateClinical(sessionId: string, field: string, value: unknown, clinicalData: Record<string, unknown>) {
+    await updateClinicalData({ sessionId, field, value }, clinicalData)
     load()
   }
 
@@ -78,7 +71,8 @@ export function RehabContent({ initialSessions, squadId }: Props) {
         </div>
       </div>
 
-      {sessions.map((session: any) => {
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      {(sessions as unknown as any[]).map((session: any) => {
         // Athlete in rehab but no protocol assigned
         if (session.noSession) {
           return (
@@ -103,7 +97,9 @@ export function RehabContent({ initialSessions, squadId }: Props) {
         const athlete = session.athletes
         const rtp: RtpCriterion[] = session.rtp_criteria ?? []
         const clinical = session.clinical_data ?? {}
-        const phases: any[] = protocol?.phases ?? []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const phases: any[] = (protocol as any)?.phases ?? []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const currentPhase = phases.find((p: any) => session.current_day >= p.d1 && session.current_day <= p.d2)
           ?? phases[phases.length - 1]
         const rtpDone = rtp.filter(r => r.done).length
@@ -137,7 +133,7 @@ export function RehabContent({ initialSessions, squadId }: Props) {
             {/* Phase timeline */}
             <div className="ctitle">Protocolo — fases</div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 14, overflowX: 'auto' }}>
-              {phases.map((phase: any, i: number) => {
+              {phases.map((phase, i: number) => {
                 const isDone = session.current_day > phase.d2
                 const isActive = session.current_day >= phase.d1 && session.current_day <= phase.d2
                 return (

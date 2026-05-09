@@ -29,21 +29,25 @@ export default async function PerformancePage({
 
   const { data: perfData } = await query
 
+  interface PerfRow {
+    athlete: { id: string; name: string; position: string | null; club: string | null }
+    vmax: number | null
+    vmax_today_pct: number | null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any
+  }
+
   // Latest record per athlete
-  const byAthlete: Record<string, any> = {}
-  ;(perfData ?? []).forEach((p: any) => {
-    if (!p.athletes) return
-    const id = p.athletes.id
-    if (!byAthlete[id]) byAthlete[id] = { ...p, athlete: p.athletes }
+  const byAthlete: Record<string, PerfRow> = {}
+  ;(perfData ?? []).forEach((p) => {
+    const row = p as typeof p & { athletes: { id: string; name: string; position: string | null; club: string | null } }
+    if (!row.athletes) return
+    const id = row.athletes.id
+    if (!byAthlete[id]) byAthlete[id] = { ...row, athlete: row.athletes }
   })
 
-  const rows = Object.values(byAthlete)
-    .sort((a: any, b: any) => (b.vmax ?? 0) - (a.vmax ?? 0))
-
-  function barColor(val: number, lo: number, hi: number) {
-    const pct = Math.max(0, Math.min(100, ((val - lo) / (hi - lo)) * 100))
-    return pct > 75 ? 'var(--green2)' : pct > 40 ? 'var(--warn)' : 'var(--text3)'
-  }
+  const rows: PerfRow[] = Object.values(byAthlete)
+    .sort((a, b) => ((b.vmax ?? 0) as number) - ((a.vmax ?? 0) as number))
 
   function vmaxColor(pct: number | null) {
     if (!pct) return 'var(--text3)'
@@ -76,7 +80,7 @@ export default async function PerformancePage({
             <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 12, fontFamily: 'var(--mono)' }}>
               % da velocidade máxima pessoal atingida. Critério RTP: ≥95%
             </div>
-            {rows.sort((a, b) => (b.vmax_today_pct ?? 0) - (a.vmax_today_pct ?? 0)).map((r: any) => (
+            {rows.sort((a, b) => ((b.vmax_today_pct ?? 0) as number) - ((a.vmax_today_pct ?? 0) as number)).map((r) => (
               <div key={r.athlete.id} className="bar-row" style={{ marginBottom: 9 }}>
                 <div className="bar-name" style={{ width: 160 }}>
                   <Link href={withSquadParam(`/athletes/${r.athlete.id}`, squadId)} style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -111,7 +115,7 @@ export default async function PerformancePage({
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((r: any) => (
+                  {rows.map((r) => (
                     <tr key={r.athlete.id}>
                       <td>
                         <Link href={withSquadParam(`/athletes/${r.athlete.id}`, squadId)} style={{ textDecoration: 'none' }}>

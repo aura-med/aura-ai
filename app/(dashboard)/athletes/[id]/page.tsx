@@ -95,8 +95,9 @@ export default async function AthleteDetailPage({
     }
   }
 
-  // Age calculation
+  // Age calculation — server component, Date.now() is safe at request time
   const age = athlete.date_of_birth
+    // eslint-disable-next-line react-hooks/purity
     ? Math.floor((Date.now() - new Date(athlete.date_of_birth).getTime()) / (1000 * 60 * 60 * 24 * 365.25))
     : null
 

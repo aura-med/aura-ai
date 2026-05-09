@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { calcScore, riskColor, riskLevel, getReadiness } from '@/lib/scoring'
+import { calcScore, getReadiness } from '@/lib/scoring'
 import { ScoreBadge } from '@/components/ui/aura'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import type { ReadinessIndicator } from '@/types'

@@ -1,8 +1,8 @@
 'use client'
 import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { calcScore, riskColor, riskLabel, VAR_ICONS, VAR_LABELS } from '@/lib/scoring'
-import { DecompositionBars, ConfBadge, AlertBox } from '@/components/ui/aura'
+import { calcScore, riskColor, VAR_ICONS, VAR_LABELS } from '@/lib/scoring'
+import { DecompositionBars, ConfBadge } from '@/components/ui/aura'
 import { supabase } from '@/lib/supabase'
 import { getSquadIdParam } from '@/lib/squad-url'
 import { saveWellnessCheckin } from '@/lib/actions/wellness'
@@ -30,7 +30,8 @@ export default function InputPage() {
 function InputContent() {
   const searchParams = useSearchParams()
   const squadId = getSquadIdParam(searchParams)
-  const [athletes, setAthletes] = useState<any[]>([])
+  const [athletes, setAthletes] = useState<Array<{ id: string; name: string; shirt_number: number | null; position: string | null; status: string; injury_events: Array<{ id: string }> }>>([])
+
   const [selectedId, setSelectedId] = useState<string>('')
   const [values, setValues] = useState<Record<string, number | null>>({})
   const [history, setHistory] = useState<number>(-1)
@@ -70,6 +71,7 @@ function InputContent() {
       decel: values.decel ?? null,
       md: values.md ?? null,
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setScore(calcScore(inputs))
   }, [values, history])
 

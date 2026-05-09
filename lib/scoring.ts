@@ -198,7 +198,8 @@ export function riskLevel(score: number): 'low' | 'medium' | 'high' | 'critical'
 
 // ─── Menstrual cycle ─────────────────────────────────────────────
 
-export function getMenstrualPhase(day: number, cycleLength = 28): MenstrualPhase {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function getMenstrualPhase(day: number, _cycleLength = 28): MenstrualPhase {
   if (day <= 5) return {
     phase: 'menstrual', label: 'Fase menstrual', color: '#ff4d6d',
     lca_risk: 1.1, note: 'Dor possível. Monitorizar intensidade.'

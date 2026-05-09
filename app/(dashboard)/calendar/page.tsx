@@ -9,8 +9,26 @@ import type { CalendarSnapshot } from '@/types'
 const TYPE_ICONS: Record<string, string>  = { match: '⚽', training: '🏃', rest: '😴', travel: '✈️' }
 const TYPE_COLORS: Record<string, string> = { match: 'var(--danger)', training: 'var(--blue)', rest: 'var(--green2)', travel: 'var(--warn)' }
 const INT_COLORS: Record<string, string>  = { max: 'var(--danger)', high: 'var(--orange)', medium: 'var(--warn)', low: 'var(--green2)' }
-const TYPES = ['rest', 'training', 'match']
 const INTENSITIES = ['low', 'medium', 'high', 'max']
+
+interface CalendarAthlete {
+  id: string
+  name: string
+  shirt_number: number | null
+  position: string | null
+  wellness_checkins: Array<{ checkin_date: string; fatigue: number | null; sleep_hours: number | null; tqr: number | null; stress: number | null }>
+  injury_events: Array<{ id: string }>
+  fatigue_profiles: Array<{ recovery_speed: number; congestion_sensitivity: number; typical_md1_drop: number; typical_md2_drop: number; avg_daily_load?: number | null; peak_load?: number | null }>
+}
+
+interface CalendarEvent {
+  id?: string
+  event_date: string
+  event_type: string
+  intensity: string | null
+  label?: string | null
+  squad_id?: string
+}
 
 export default function CalendarPage() {
   return (
@@ -23,13 +41,14 @@ export default function CalendarPage() {
 function CalendarContent() {
   const searchParams = useSearchParams()
   const squadId = getSquadIdParam(searchParams)
-  const [athletes, setAthletes] = useState<any[]>([])
+  const [athletes, setAthletes] = useState<CalendarAthlete[]>([])
   const [selectedId, setSelectedId] = useState<string>('')
-  const [events, setEvents] = useState<any[]>([])
+  const [events, setEvents] = useState<CalendarEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [snapshots, setSnapshots] = useState<CalendarSnapshot[]>([])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     let athleteQuery = supabase
       .from('athletes')
@@ -45,10 +64,10 @@ function CalendarContent() {
     }
 
     Promise.all([athleteQuery, eventQuery]).then(([{ data: aths }, { data: evs }]) => {
-      const a = aths ?? []
+      const a = (aths ?? []) as CalendarAthlete[]
       setAthletes(a)
       setSelectedId(a[0]?.id ?? '')
-      setEvents(evs ?? [])
+      setEvents((evs ?? []) as CalendarEvent[])
       setLoading(false)
     })
   }, [squadId])
@@ -57,7 +76,7 @@ function CalendarContent() {
     const athlete = athletes.find(a => a.id === selectedId)
     if (!athlete) return
     const latest = (athlete.wellness_checkins ?? [])
-      .sort((a: any, b: any) => new Date(b.checkin_date).getTime() - new Date(a.checkin_date).getTime())[0]
+      .sort((a, b) => new Date(b.checkin_date).getTime() - new Date(a.checkin_date).getTime())[0]
     const inputs = {
       history: (athlete.injury_events ?? []).length >= 2 ? 2 : (athlete.injury_events ?? []).length >= 1 ? 1 : 0,
       acwr: null, hrv: null, fatigue: latest?.fatigue ?? null, sleep: latest?.sleep_hours ?? null,
@@ -65,6 +84,7 @@ function CalendarContent() {
     }
     const currentScore = calcScore(inputs).score
     const profile = athlete.fatigue_profiles?.[0]
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSnapshots(projectScore(currentScore, events, profile))
   }, [selectedId, athletes, events])
 
@@ -234,7 +254,7 @@ function CalendarContent() {
             </thead>
             <tbody>
               {athletes.slice(0, 10).map(a => {
-                const latest = (a.wellness_checkins ?? []).sort((x: any, y: any) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
+                const latest = (a.wellness_checkins ?? []).sort((x, y) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
                 const inputs = {
                   history: (a.injury_events ?? []).length >= 2 ? 2 : (a.injury_events ?? []).length >= 1 ? 1 : 0,
                   acwr: null, hrv: null, fatigue: latest?.fatigue ?? null, sleep: latest?.sleep_hours ?? null,

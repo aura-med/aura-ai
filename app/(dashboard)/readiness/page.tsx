@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { calcScore, riskColor, riskLevel, getReadiness } from '@/lib/scoring'
+import { calcScore, getReadiness } from '@/lib/scoring'
 import { ScoreBadge } from '@/components/ui/aura'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import type { ReadinessIndicator } from '@/types'
@@ -30,11 +30,18 @@ export default async function ReadinessPage({
 
   const { data: athletes } = await query
 
-  const withData = (athletes ?? []).map((a: any) => {
+  type ReadinessRawAthlete = {
+    id: string; name: string; position: string | null; club: string | null; shirt_number: number | null
+    wellness_checkins: Array<{ checkin_date: string; fatigue: number | null; sleep_hours: number | null; tqr: number | null; stress: number | null; hrv_ms: number | null }>
+    performance_data: Array<{ session_date: string; vmax: number | null; vmax_today_pct: number | null }>
+    injury_events: Array<{ id: string }>
+    athlete_passport: Array<{ passport_data: { hrv_baseline_ms?: number | null } | null }>
+  }
+  const withData = ((athletes ?? []) as ReadinessRawAthlete[]).map((a) => {
     const latest = (a.wellness_checkins ?? [])
-      .sort((x: any, y: any) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
+      .sort((x, y) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
     const perf = (a.performance_data ?? [])
-      .sort((x: any, y: any) => new Date(y.session_date).getTime() - new Date(x.session_date).getTime())[0]
+      .sort((x, y) => new Date(y.session_date).getTime() - new Date(x.session_date).getTime())[0]
     const passport = a.athlete_passport?.[0]
 
     const inputs = {

@@ -49,7 +49,7 @@ export default function PreferencesPage() {
       }
       setLoading(false)
     })
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSave() {
     setSaving(true)

@@ -13,6 +13,7 @@ interface Props {
 export function RehabContent({ initialSessions, squadId }: Props) {
   const [sessions, setSessions] = useState<RehabSessionDTO[]>(initialSessions)
   const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   async function load() {
     setLoading(true)
@@ -22,7 +23,8 @@ export function RehabContent({ initialSessions, squadId }: Props) {
       .eq('active', true)
       .eq('status', 'rehab')
     if (squadId) athQuery = athQuery.eq('squad_id', squadId)
-    const { data: athletes } = await athQuery
+    const { data: athletes, error } = await athQuery
+    if (error) { setLoadError(error.message); setLoading(false); return }
 
     const rows = (athletes ?? []).map((a) => {
       const session = (a.rehab_sessions ?? [])[0] ?? null
@@ -48,6 +50,16 @@ export function RehabContent({ initialSessions, squadId }: Props) {
 
   if (loading) return (
     <div className="loading"><div className="spinner" /><span>A carregar protocolos...</span></div>
+  )
+
+  if (loadError) return (
+    <div>
+      <div className="sec-hdr"><div className="sec-title">🦴 Reabilitação activa</div></div>
+      <div className="alert alert-r" style={{ marginTop: 16 }}>
+        <div className="adot ad-r" />
+        <div><strong>Erro ao actualizar dados:</strong> {loadError}</div>
+      </div>
+    </div>
   )
 
   if (sessions.length === 0) return (

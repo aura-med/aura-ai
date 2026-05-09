@@ -326,6 +326,91 @@ export async function getSecurityPageData(params: SecurityPageParams = {}) {
   }
 }
 
+export async function getAnalyticsData(rangeDays = 7) {
+  const context = await requirePlatformAdmin()
+  const service = createAdminClient()
+  const activeSupportSession = await getActiveSupportSession(context.user.id)
+
+  const since = new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+
+  const [orgsResult, profilesResult, athletesResult, scoreResult, notificationsResult] = await Promise.all([
+    service.from('organizations').select('id, name, status, created_at').order('name'),
+    service.from('profiles').select('id, created_at').order('created_at'),
+    service.from('athletes').select('id, org_id, active, consent_date'),
+    service
+      .from('score_history')
+      .select('id, athlete_id, score_date, total_score')
+      .gte('score_date', since)
+      .order('score_date'),
+    service.from('notifications').select('id, org_id, read_by, created_at').order('created_at', { ascending: false }).limit(1000),
+  ])
+
+  const orgs     = orgsResult.data ?? []
+  const profiles = profilesResult.data ?? []
+  const athletes = athletesResult.data ?? []
+  const scores   = scoreResult.data ?? []
+  const notifications = notificationsResult.data ?? []
+
+  // Day series
+  const days = Array.from({ length: rangeDays }, (_, i) => {
+    const d = new Date(Date.now() - (rangeDays - 1 - i) * 24 * 60 * 60 * 1000)
+    return d.toISOString().slice(0, 10)
+  })
+
+  const riskSeries = days.map((day) => ({
+    label:    day.slice(5),
+    highRisk: scores.filter((s) => s.score_date === day && Number(s.total_score) >= 0.65).length,
+  }))
+
+  // Cumulative user signups
+  const signupSeries = days.map((day) => ({
+    label:   day.slice(5),
+    signups: profiles.filter((p) => p.created_at.slice(0, 10) <= day).length,
+  }))
+
+  const orgFreshness = [...orgs]
+    .sort((a, b) => {
+      const aA = athletes.filter((ath) => ath.org_id === a.id && ath.active).length
+      const bA = athletes.filter((ath) => ath.org_id === b.id && ath.active).length
+      return bA - aA
+    })
+    .slice(0, 8)
+    .map((o) => ({
+      label:    o.name.slice(0, 12),
+      athletes: athletes.filter((a) => a.org_id === o.id && a.active).length,
+    }))
+
+  const missingConsent = athletes.filter((a) => a.active && !a.consent_date).length
+  const notificationReadRate = notifications.length
+    ? Math.round(
+        (notifications.filter((n) => Array.isArray(n.read_by) && n.read_by.length > 0).length /
+          notifications.length) *
+          100
+      )
+    : 0
+
+  return {
+    context,
+    activeSupportSession,
+    riskSeries,
+    signupSeries,
+    orgFreshness,
+    metrics: {
+      staleOrgs:           orgs.filter((o) => o.status === 'active').length,
+      highRiskScores:      scores.filter((s) => Number(s.total_score) >= 0.65).length,
+      notificationReadRate,
+      missingConsent,
+    },
+    orgRows: orgs.map((o) => ({
+      id:                  o.id,
+      name:                o.name,
+      users_count:         0,
+      athletes_count:      athletes.filter((a) => a.org_id === o.id && a.active).length,
+      missing_consent_count: athletes.filter((a) => a.org_id === o.id && a.active && !a.consent_date).length,
+    })),
+  }
+}
+
 export async function getSensitiveOrgDetail(orgId: string) {
   const context = await requirePlatformAdmin()
   const service = createAdminClient()

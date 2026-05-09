@@ -265,29 +265,64 @@ export async function getUsersPageData(params: UsersPageParams = {}) {
   }
 }
 
-export async function getSecurityPageData() {
+export interface SecurityPageParams {
+  type?: string
+  page?: number
+}
+
+export async function getSecurityPageData(params: SecurityPageParams = {}) {
   const context = await requirePlatformAdmin()
   const service = createAdminClient()
   const activeSupportSession = await getActiveSupportSession(context.user.id)
+  const page = Math.max(1, params.page ?? 1)
 
-  const [auditResult, sessionsResult, adminsResult, orgsResult] = await Promise.all([
-    service.from('platform_audit_logs').select('*').order('created_at', { ascending: false }).limit(100),
+  const [auditResult, sessionsResult, adminsResult, orgsResult, authUsersResult] = await Promise.all([
+    service.from('platform_audit_logs').select('*').order('created_at', { ascending: false }).limit(500),
     service.from('support_sessions').select('*').order('started_at', { ascending: false }).limit(50),
     service.from('platform_admins').select('user_id, level, active, created_at, last_seen_at').order('created_at', { ascending: false }),
     service.from('organizations').select('id, name'),
+    service.auth.admin.listUsers({ page: 1, perPage: 1000 }),
   ])
 
-  const orgById = new Map((orgsResult.data ?? []).map((org) => [org.id, org.name]))
+  const orgById    = new Map((orgsResult.data ?? []).map((o) => [o.id, o.name]))
+  const authById   = new Map((authUsersResult.data?.users ?? []).map((u) => [u.id, u]))
+
+  let logs = (auditResult.data ?? []).map((log) => ({
+    ...log,
+    org_name: log.org_id ? orgById.get(log.org_id) : null,
+  }))
+  if (params.type) logs = logs.filter((l) => l.event_type.includes(params.type as string))
+
+  const totalLogs = logs.length
+  const paginatedLogs = logs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const admins = (adminsResult.data ?? []).map((a) => {
+    const auth = authById.get(a.user_id)
+    return { ...a, email: auth?.email ?? null }
+  })
+
+  // Users available to be added as admins (have a profile, not already active admin)
+  const existingAdminIds = new Set(admins.filter((a) => a.active).map((a) => a.user_id))
+  const profilesResult = await service.from('profiles').select('id, full_name, org_id').order('full_name')
+  const eligibleUsers = ((profilesResult.data ?? []) as ProfileRow[])
+    .filter((p) => !existingAdminIds.has(p.id))
+    .map((p) => ({
+      id: p.id,
+      label: authById.get(p.id)?.email ?? p.full_name ?? p.id.slice(0, 8),
+    }))
 
   return {
     context,
     activeSupportSession,
-    auditLogs: (auditResult.data ?? []).map((log) => ({ ...log, org_name: log.org_id ? orgById.get(log.org_id) : null })),
-    supportSessions: ((sessionsResult.data ?? []) as SupportSessionRow[]).map((session) => ({
-      ...session,
-      org_name: orgById.get(session.org_id) ?? 'Unknown organization',
+    auditLogs:  paginatedLogs,
+    totalLogs,
+    auditPage:  page,
+    supportSessions: ((sessionsResult.data ?? []) as SupportSessionRow[]).map((s) => ({
+      ...s,
+      org_name: orgById.get(s.org_id) ?? 'Unknown',
     })),
-    admins: adminsResult.data ?? [],
+    admins,
+    eligibleUsers,
   }
 }
 

@@ -1,9 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { calcScore, riskColor, riskLevel, getReadiness } from '@/lib/scoring'
 import { ScoreBadge } from '@/components/ui/aura'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import type { ReadinessIndicator } from '@/types'
+import { getReadinessList, type ReadinessAthleteDTO } from '@/lib/dal/athletes'
 
 const READINESS_COLORS = {
   green: 'var(--green2)', amber: 'var(--warn)', red: 'var(--danger)', grey: 'var(--text3)'
@@ -18,23 +18,13 @@ export default async function ReadinessPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
   const squadId = getSquadIdParam(searchParams ? await searchParams : null)
-  const supabase = await createClient()
-  let query = supabase
-    .from('athletes')
-    .select(`*, wellness_checkins(*), performance_data(*), injury_events(*), athlete_passport(*)`)
-    .eq('active', true)
-    .eq('status', 'available')
-    .order('shirt_number')
+  const athletes = await getReadinessList(squadId)
 
-  if (squadId) query = query.eq('squad_id', squadId)
-
-  const { data: athletes } = await query
-
-  const withData = (athletes ?? []).map((a: any) => {
+  const withData = athletes.map((a: ReadinessAthleteDTO) => {
     const latest = (a.wellness_checkins ?? [])
-      .sort((x: any, y: any) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
+      .sort((x, y) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
     const perf = (a.performance_data ?? [])
-      .sort((x: any, y: any) => new Date(y.session_date).getTime() - new Date(x.session_date).getTime())[0]
+      .sort((x, y) => new Date(y.session_date).getTime() - new Date(x.session_date).getTime())[0]
     const passport = a.athlete_passport?.[0]
 
     const inputs = {
@@ -102,7 +92,7 @@ export default async function ReadinessPage({
                     <Link href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
                       <strong>{a.name}</strong>
                       <br />
-                      <span style={{ fontSize: 10, color: 'var(--text2)' }}>{a.position} · {a.club}</span>
+                      <span style={{ fontSize: 10, color: 'var(--text2)' }}>{a.position}</span>
                     </Link>
                   </td>
                   <td style={{ textAlign: 'center' }}>

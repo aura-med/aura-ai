@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { calcScore, riskColor, riskLabel } from '@/lib/scoring'
 import { Sparkline } from '@/components/ui/aura'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
+import { getAthleteList, type AthleteListDTO } from '@/lib/dal/athletes'
 
 export default async function AthletesIndexPage({
   searchParams,
@@ -10,23 +10,13 @@ export default async function AthletesIndexPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
   const squadId = getSquadIdParam(searchParams ? await searchParams : null)
-  const supabase = await createClient()
+  const athletes = await getAthleteList(squadId)
 
-  let query = supabase
-    .from('athletes')
-    .select(`*, wellness_checkins(*), injury_events(*), score_history(*)`)
-    .eq('active', true)
-    .order('shirt_number')
-
-  if (squadId) query = query.eq('squad_id', squadId)
-
-  const { data: athletes } = await query
-
-  const withScores = (athletes ?? []).map((a: any) => {
+  const withScores = athletes.map((a: AthleteListDTO) => {
     const latest = (a.wellness_checkins ?? [])
-      .sort((x: any, y: any) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
+      .sort((x, y) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
     const inputs = {
-      history: (a.injury_events ?? []).filter((i: any) => !i.return_date).length >= 2 ? 2
+      history: (a.injury_events ?? []).filter((i) => !i.return_date).length >= 2 ? 2
         : (a.injury_events ?? []).length >= 1 ? 1 : 0,
       acwr: null,
       hrv: null,
@@ -39,9 +29,9 @@ export default async function AthletesIndexPage({
     }
     const score = calcScore(inputs)
     const history = (a.score_history ?? [])
-      .sort((x: any, y: any) => new Date(x.score_date).getTime() - new Date(y.score_date).getTime())
+      .sort((x, y) => new Date(x.score_date).getTime() - new Date(y.score_date).getTime())
       .slice(-7)
-      .map((s: any) => Math.round(s.total_score * 100))
+      .map((s) => Math.round(s.total_score * 100))
     return { ...a, score, history }
   })
 
@@ -61,13 +51,13 @@ export default async function AthletesIndexPage({
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 8 }}>
-          {withScores.map((a: any) => (
+          {withScores.map((a) => (
             <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
               <div className="ath-card">
                 <div className="ath-avatar">{a.shirt_number}</div>
                 <div className="ath-info">
                   <div className="ath-name">{a.name}</div>
-                  <div className="ath-meta">{[a.position, a.club].filter(Boolean).join(' · ')}</div>
+                  <div className="ath-meta">{[a.position].filter(Boolean).join(' · ')}</div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div style={{ fontFamily: 'var(--display)', fontSize: 18, fontWeight: 900, color: riskColor(a.score.score) }}>

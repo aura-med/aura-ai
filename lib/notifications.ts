@@ -30,6 +30,7 @@ export async function getNotifications(orgId: string): Promise<Notification[]> {
 }
 
 export async function markAllAsRead(orgId: string, userId: string): Promise<void> {
+  if (!userId) return
   const supabase = createClient()
   // Get all unread notification ids
   const { data } = await supabase

@@ -11,15 +11,40 @@ import {
   getNotificationColor,
 } from '@/lib/notifications'
 import type { Notification } from '@/lib/notifications'
+import { createClient } from '@/lib/supabase/client'
+
+function formatTime(dateStr: string): string {
+  try {
+    const date = new Date(dateStr)
+    const diff = Date.now() - date.getTime()
+    const minutes = Math.floor(diff / 60000)
+    if (minutes < 1) return 'agora'
+    if (minutes < 60) return `${minutes}m`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h`
+    const days = Math.floor(hours / 24)
+    return `${days}d`
+  } catch {
+    return ''
+  }
+}
 
 export function NotificationCenter({ orgId }: { orgId?: string }) {
   const t = useTranslations('notifications')
   const [open, setOpen] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
 
-  const unreadCount = notifications.filter((n) => !n.read_by?.length).length
+  const unreadCount = notifications.filter(
+    (n) => userId ? !n.read_by?.includes(userId) : !n.read_by?.length
+  ).length
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null))
+  }, [])
 
   useEffect(() => {
     if (!orgId) return
@@ -41,22 +66,6 @@ export function NotificationCenter({ orgId }: { orgId?: string }) {
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [open])
-
-  function formatTime(dateStr: string): string {
-    try {
-      const date = new Date(dateStr)
-      const diff = Date.now() - date.getTime()
-      const minutes = Math.floor(diff / 60000)
-      if (minutes < 1) return 'agora'
-      if (minutes < 60) return `${minutes}m`
-      const hours = Math.floor(minutes / 60)
-      if (hours < 24) return `${hours}h`
-      const days = Math.floor(hours / 24)
-      return `${days}d`
-    } catch {
-      return ''
-    }
-  }
 
   return (
     <div className="relative" ref={panelRef}>
@@ -107,15 +116,21 @@ export function NotificationCenter({ orgId }: { orgId?: string }) {
               )}
             </span>
             <div className="flex items-center gap-2">
-              {unreadCount > 0 && (
+              {unreadCount > 0 && userId && (
                 <button
-                  onClick={() =>
-                    markAllAsRead(orgId ?? '', '').then(() =>
+                  onClick={() => {
+                    if (!userId) return
+                    markAllAsRead(orgId ?? '', userId).then(() =>
                       setNotifications((prev) =>
-                        prev.map((n) => ({ ...n, read_by: ['me'] }))
+                        prev.map((n) => ({
+                          ...n,
+                          read_by: n.read_by?.includes(userId)
+                            ? n.read_by
+                            : [...(n.read_by ?? []), userId],
+                        }))
                       )
                     )
-                  }
+                  }}
                   className="text-xs flex items-center gap-1 transition-colors"
                   style={{ color: 'var(--aura-text3)' }}
                   title={t('markAllRead')}
@@ -142,7 +157,7 @@ export function NotificationCenter({ orgId }: { orgId?: string }) {
               </div>
             ) : (
               notifications.map((n) => {
-                const isRead = n.read_by?.length > 0
+                const isRead = userId ? !!n.read_by?.includes(userId) : (n.read_by?.length ?? 0) > 0
                 return (
                   <div
                     key={n.id}

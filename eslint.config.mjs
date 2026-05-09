@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     // Git worktrees and Claude worktrees
     ".worktrees/**",
     ".claude/worktrees/**",
+    "apps/admin/**",
   ]),
 ]);
 

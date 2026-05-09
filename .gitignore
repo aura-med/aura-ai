@@ -42,3 +42,4 @@ next-env.d.ts
 
 # workspace vs code
 aura.code-workspace
+.worktrees/

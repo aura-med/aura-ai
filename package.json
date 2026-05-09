@@ -2,11 +2,15 @@
   "name": "aura-ai",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "node --test --experimental-strip-types tests/**/*.test.ts",
+    "test:a11y": "node --test --experimental-strip-types tests/a11y/**/*.test.ts",
+    "test:e2e": "playwright test",
     "admin:dev": "npm run dev --prefix apps/admin",
     "admin:build": "npm run build --prefix apps/admin",
     "admin:start": "npm run start --prefix apps/admin",
@@ -31,10 +35,12 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "axe-core": "^4.11.4",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",

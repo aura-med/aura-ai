@@ -1,15 +1,14 @@
-import { createClient } from '@/lib/supabase/server'
+import { connection } from 'next/server'
 import Link from 'next/link'
-import { calcScore, getReadiness } from '@/lib/scoring'
 import { ScoreBadge } from '@/components/ui/aura'
+import { getReadinessPageDTO } from '@/lib/data/readiness'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
-import type { ReadinessIndicator } from '@/types'
 
-const READINESS_COLORS = {
-  green: 'var(--green2)', amber: 'var(--warn)', red: 'var(--danger)', grey: 'var(--text3)'
-}
-const READINESS_LABELS = {
-  green: 'Pronto', amber: 'Precaução', red: 'Limitado', grey: 'Sem dados'
+const STATUS_COLORS = {
+  green: 'var(--green2)',
+  amber: 'var(--warn)',
+  red: 'var(--danger)',
+  grey: 'var(--text3)',
 }
 
 export default async function ReadinessPage({
@@ -17,128 +16,84 @@ export default async function ReadinessPage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
+  await connection()
   const squadId = getSquadIdParam(searchParams ? await searchParams : null)
-  const supabase = await createClient()
-  let query = supabase
-    .from('athletes')
-    .select(`*, wellness_checkins(*), performance_data(*), injury_events(*), athlete_passport(*)`)
-    .eq('active', true)
-    .eq('status', 'available')
-    .order('shirt_number')
-
-  if (squadId) query = query.eq('squad_id', squadId)
-
-  const { data: athletes } = await query
-
-  type ReadinessRawAthlete = {
-    id: string; name: string; position: string | null; club: string | null; shirt_number: number | null
-    wellness_checkins: Array<{ checkin_date: string; fatigue: number | null; sleep_hours: number | null; tqr: number | null; stress: number | null; hrv_ms: number | null }>
-    performance_data: Array<{ session_date: string; vmax: number | null; vmax_today_pct: number | null }>
-    injury_events: Array<{ id: string }>
-    athlete_passport: Array<{ passport_data: { hrv_baseline_ms?: number | null } | null }>
-  }
-  const withData = ((athletes ?? []) as ReadinessRawAthlete[]).map((a) => {
-    const latest = (a.wellness_checkins ?? [])
-      .sort((x, y) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
-    const perf = (a.performance_data ?? [])
-      .sort((x, y) => new Date(y.session_date).getTime() - new Date(x.session_date).getTime())[0]
-    const passport = a.athlete_passport?.[0]
-
-    const inputs = {
-      history: (a.injury_events ?? []).length >= 2 ? 2 : (a.injury_events ?? []).length >= 1 ? 1 : 0,
-      acwr: null, hrv: null,
-      fatigue: latest?.fatigue ?? null,
-      sleep: latest?.sleep_hours ?? null,
-      tqr: latest?.tqr ?? null,
-      stress: latest?.stress ?? null,
-      decel: null, md: null,
-    }
-    const score = calcScore(inputs)
-    const readiness = getReadiness({
-      wellness: latest,
-      perf,
-      hrv_baseline_ms: passport?.passport_data?.hrv_baseline_ms ?? null,
-    })
-    return { ...a, score, readiness }
-  })
-
-  const green = withData.filter(a => a.readiness.overall === 'green').length
-  const amber = withData.filter(a => a.readiness.overall === 'amber').length
-  const red   = withData.filter(a => a.readiness.overall === 'red').length
+  const dto = await getReadinessPageDTO(squadId)
 
   return (
     <div>
       <div className="sec-hdr">
-        <div className="sec-title">🟢 Prontidão de Performance</div>
-        <div className="sec-sub">Semáforo de 4 indicadores · Indicativo — não preditivo</div>
+        <div className="sec-title">Prontidao de Performance</div>
+        <div className="sec-sub">Semaforo de 4 indicadores · Indicativo, nao preditivo</div>
       </div>
 
       <div className="kpi-grid" style={{ marginBottom: 16 }}>
-        <div className="kpi"><div className="kpi-num" style={{ color: 'var(--green2)' }}>{green}</div><div className="kpi-label">Prontos</div></div>
-        <div className="kpi"><div className="kpi-num" style={{ color: 'var(--warn)' }}>{amber}</div><div className="kpi-label">Precaução</div></div>
-        <div className="kpi"><div className="kpi-num" style={{ color: 'var(--danger)' }}>{red}</div><div className="kpi-label">Limitados</div></div>
-        <div className="kpi"><div className="kpi-num" style={{ color: 'var(--text)' }}>{withData.length}</div><div className="kpi-label">Total disponíveis</div></div>
+        <div className="kpi"><div className="kpi-num" style={{ color: 'var(--green2)' }}>{dto.summary.green}</div><div className="kpi-label">Prontos</div></div>
+        <div className="kpi"><div className="kpi-num" style={{ color: 'var(--warn)' }}>{dto.summary.amber}</div><div className="kpi-label">Precaucao</div></div>
+        <div className="kpi"><div className="kpi-num" style={{ color: 'var(--danger)' }}>{dto.summary.red}</div><div className="kpi-label">Limitados</div></div>
+        <div className="kpi"><div className="kpi-num" style={{ color: 'var(--text)' }}>{dto.summary.total}</div><div className="kpi-label">Total disponiveis</div></div>
       </div>
 
       <div className="alert alert-b" style={{ marginBottom: 16 }}>
         <div className="adot ad-b" />
         <div style={{ fontSize: 12 }}>
-          <strong>Nota metodológica:</strong> O painel de prontidão é uma síntese de 4 indicadores de recuperação.
-          Não é um modelo preditivo de performance. Em semanas com dois jogos a confiança é reduzida.
-          Utilizar como apoio à decisão, não como substituto do julgamento clínico.
+          <strong>Nota metodologica:</strong> O painel de prontidao sintetiza 4 indicadores de recuperacao.
+          Usar como apoio a decisao, nao como substituto do julgamento clinico.
         </div>
       </div>
 
       <div className="card">
-        <div className="ctitle">Estado do plantel — hoje</div>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Atleta</th>
-              <th style={{ textAlign: 'center' }}>Risco lesão</th>
-              <th style={{ textAlign: 'center' }}>Prontidão</th>
-              <th>Indicadores</th>
-            </tr>
-          </thead>
-          <tbody>
-            {withData.map(a => {
-              const oCol = READINESS_COLORS[a.readiness.overall as keyof typeof READINESS_COLORS]
-              return (
-                <tr key={a.id}>
+        <div className="ctitle">Estado do plantel - hoje</div>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Atleta</th>
+                <th scope="col" style={{ textAlign: 'center' }}>Risco lesao</th>
+                <th scope="col" style={{ textAlign: 'center' }}>Prontidao</th>
+                <th scope="col">Indicadores</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dto.rows.map((row) => (
+                <tr key={row.id}>
                   <td>
-                    <Link href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
-                      <strong>{a.name}</strong>
+                    <Link href={withSquadParam(`/athletes/${row.id}`, squadId)} style={{ textDecoration: 'none' }}>
+                      <strong>{row.name}</strong>
                       <br />
-                      <span style={{ fontSize: 10, color: 'var(--text2)' }}>{a.position} · {a.club}</span>
+                      <span style={{ fontSize: 11, color: 'var(--text2)' }}>{row.position ?? '-'} · {row.club ?? '-'}</span>
                     </Link>
                   </td>
                   <td style={{ textAlign: 'center' }}>
-                    <ScoreBadge score={a.score.score} />
+                    <ScoreBadge score={row.score.score} />
+                    <div style={{ marginTop: 4, fontFamily: 'var(--mono)', fontSize: 10, color: STATUS_COLORS[row.scoreStatus.key] }}>
+                      {row.scoreStatus.label}
+                    </div>
                   </td>
                   <td style={{ textAlign: 'center' }}>
-                    <span style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 600, color: oCol }}>
-                      {READINESS_LABELS[a.readiness.overall as keyof typeof READINESS_LABELS]}
+                    <span
+                      style={{ fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 600, color: STATUS_COLORS[row.readiness.overall.key] }}
+                      aria-label={row.readiness.overall.ariaLabel}
+                    >
+                      {row.readiness.overall.label}
                     </span>
                   </td>
                   <td>
-                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                      {a.readiness.indicators.map((ind: ReadinessIndicator) => {
-                        const c = READINESS_COLORS[ind.status]
-                        return (
-                          <div key={ind.label} style={{ textAlign: 'center', minWidth: 50 }}>
-                            <div style={{ width: 10, height: 10, borderRadius: '50%', background: c, margin: '0 auto 2px' }} />
-                            <div style={{ fontFamily: 'var(--mono)', fontSize: 8, color: 'var(--text3)' }}>{ind.label}</div>
-                            <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: c }}>{ind.value}</div>
-                          </div>
-                        )
-                      })}
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'stretch', flexWrap: 'wrap' }}>
+                      {row.readiness.indicators.map((indicator) => (
+                        <div key={indicator.label} style={{ minWidth: 72, padding: '6px 8px', borderRadius: 8, background: 'var(--bg3)', border: '1px solid var(--border)' }}>
+                          <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text3)' }}>{indicator.label}</div>
+                          <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: STATUS_COLORS[indicator.status.key] }}>{indicator.value}</div>
+                          <div style={{ fontSize: 10, color: STATUS_COLORS[indicator.status.key] }}>{indicator.status.label}</div>
+                        </div>
+                      ))}
                     </div>
                   </td>
                 </tr>
-              )
-            })}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )

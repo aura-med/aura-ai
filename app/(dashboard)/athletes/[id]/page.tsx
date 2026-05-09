@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Edit2 } from 'lucide-react'
@@ -8,21 +9,32 @@ import { RecommendationTabs } from '@/components/athlete/RecommendationTabs'
 import { ReadinessRow } from '@/components/athlete/ReadinessRow'
 import { GpsSection } from '@/components/athlete/GpsSection'
 import { Sparkline } from '@/components/ui/aura'
+import { DashboardSkeleton } from '@/components/ui/DashboardSkeleton'
 import { riskColor, scoreToRisk } from '@/lib/utils'
 import { BASE_WEIGHTS_V1 } from '@/lib/scoring/engine'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import type { ScorePartials, ReadinessIndicator } from '@/types'
 
-export const dynamic = 'force-dynamic'
-
-export default async function AthleteDetailPage({
-  params,
-  searchParams,
-}: {
+export default function AthleteDetailPage(props: {
   params: Promise<{ id: string }>
   searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
-  const { id } = await params
+  return (
+    <Suspense fallback={<DashboardSkeleton title="A carregar atleta" />}>
+      {props.params.then(({ id }) => (
+        <AthleteDetailContent id={id} searchParams={props.searchParams} />
+      ))}
+    </Suspense>
+  )
+}
+
+async function AthleteDetailContent({
+  id,
+  searchParams,
+}: {
+  id: string
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}) {
   const squadId = getSquadIdParam(searchParams ? await searchParams : null)
   const supabase = await createClient()
 

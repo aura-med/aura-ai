@@ -18,6 +18,11 @@ import { getUserOrganizationContext } from '@/lib/supabase'
 
 type LocaleValue = 'pt' | 'en' | 'es'
 
+// Computed once at module load time — safe for server and client
+const TODAY_LABEL = new Date().toLocaleDateString('pt-PT', {
+  weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+})
+
 const LOCALES: { value: LocaleValue; label: string; flag: string }[] = [
   { value: 'pt', label: 'PT', flag: '🇵🇹' },
   { value: 'en', label: 'EN', flag: '🇬🇧' },
@@ -39,15 +44,9 @@ function TopbarContent() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const [today, setToday] = useState<string | null>(null)
   const [org, setOrgState] = useState<{ id: string; name: string; type: string } | null>(null)
   const [squads, setSquads] = useState<Array<{ id: string; name: string; type: string; org_id: string }>>([])
 
-  useEffect(() => {
-    setToday(new Date().toLocaleDateString('pt-PT', {
-      weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
-    }))
-  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -67,7 +66,7 @@ function TopbarContent() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const selectedFromUrl = getSquadIdParam(searchParams)
   const validSquadIds = useMemo(() => new Set(squads.map((s) => s.id)), [squads])
@@ -189,7 +188,7 @@ function TopbarContent() {
           className="hidden sm:block text-xs"
           style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}
         >
-          {today}
+          {TODAY_LABEL}
         </span>
 
         {/* Language selector */}

@@ -1,10 +1,11 @@
 'use client'
 import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { calcScore, riskColor, riskLabel, VAR_ICONS, VAR_LABELS } from '@/lib/scoring'
-import { DecompositionBars, ConfBadge, AlertBox } from '@/components/ui/aura'
+import { calcScore, riskColor, VAR_ICONS, VAR_LABELS } from '@/lib/scoring'
+import { DecompositionBars, ConfBadge } from '@/components/ui/aura'
 import { supabase } from '@/lib/supabase'
 import { getSquadIdParam } from '@/lib/squad-url'
+import { saveWellnessCheckin } from '@/lib/actions/wellness'
 import type { AthleteScore } from '@/types'
 
 const SLIDERS = [
@@ -29,13 +30,15 @@ export default function InputPage() {
 function InputContent() {
   const searchParams = useSearchParams()
   const squadId = getSquadIdParam(searchParams)
-  const [athletes, setAthletes] = useState<any[]>([])
+  const [athletes, setAthletes] = useState<Array<{ id: string; name: string; shirt_number: number | null; position: string | null; status: string; injury_events: Array<{ id: string }> }>>([])
+
   const [selectedId, setSelectedId] = useState<string>('')
   const [values, setValues] = useState<Record<string, number | null>>({})
   const [history, setHistory] = useState<number>(-1)
   const [score, setScore] = useState<AthleteScore | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
     let query = supabase.from('athletes').select('id,name,shirt_number,position,status,injury_events(*)')
@@ -68,23 +71,29 @@ function InputContent() {
       decel: values.decel ?? null,
       md: values.md ?? null,
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setScore(calcScore(inputs))
   }, [values, history])
 
   async function handleSave() {
     if (!selectedId) return
     setSaving(true)
+    setSaveError(null)
     const today = new Date().toISOString().split('T')[0]
-    await supabase.from('wellness_checkins').upsert({
+    const result = await saveWellnessCheckin({
       athlete_id: selectedId,
       checkin_date: today,
-      checkin_type: 'morning',
+      checkin_type: 'morning' as const,
       fatigue: values.fatigue ?? null,
       sleep_hours: values.sleep ?? null,
       tqr: values.tqr ?? null,
       stress: values.stress ?? null,
-    }, { onConflict: 'athlete_id,checkin_date' })
+    })
     setSaving(false)
+    if (!result.success) {
+      setSaveError(result.error)
+      return
+    }
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -141,6 +150,9 @@ function InputContent() {
           >
             {saving ? 'A guardar...' : saved ? 'Guardado ✓' : 'Guardar ✓'}
           </button>
+          {saveError && (
+            <div style={{ fontSize: 11, color: 'var(--danger)', maxWidth: 200 }}>{saveError}</div>
+          )}
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { riskColor, riskLabel, riskBgClass } from '@/lib/utils'
+import { riskColor, riskLabel } from '@/lib/utils'
 import type { RiskLevel, Confidence } from '@/types'
 
 interface ScoreBadgeProps {

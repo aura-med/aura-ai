@@ -25,7 +25,6 @@ const ROLE_OPTIONS: UserRole[] = ['admin', 'doctor', 'physio', 'coach', 'fitness
 
 export default function UsersPage() {
   const t = useTranslations('settings.users')
-  const tc = useTranslations('settings.common')
   const [users, setUsers] = useState<ProfileRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

@@ -61,8 +61,7 @@ export function DecompositionBars({ calc }: { calc: AthleteScore }) {
       {Object.entries(calc.partials).map(([k, p]) => {
         const isAbsent = p === null
         const ew = calc.effective_weights[k] ?? 0
-        const origW = 0 // we don't store orig here; show effective only
-        const weightChanged = !isAbsent && ew > 0
+        // origW not stored here; show effective weight only
 
         if (isAbsent) return (
           <div key={k} className="bar-row" style={{ opacity: 0.4 }}>

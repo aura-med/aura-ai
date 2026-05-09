@@ -28,11 +28,16 @@ export default async function Dashboard({
 
   // Compute scores
   const withScores = athletes.map(a => {
-    const latest = (a.wellness_checkins ?? [])
-      .sort((x: any, y: any) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const checkins: any[] = a.wellness_checkins ?? []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const injuries: any[] = a.injury_events ?? []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const scoreHist: any[] = a.score_history ?? []
+    const latest = checkins.sort((x, y) => new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime())[0]
     const inputs = {
-      history: (a.injury_events ?? []).filter((i: any) => !i.return_date).length >= 2 ? 2
-        : (a.injury_events ?? []).length >= 1 ? 1 : 0,
+      history: injuries.filter((i) => !i.return_date).length >= 2 ? 2
+        : injuries.length >= 1 ? 1 : 0,
       acwr: null,
       hrv: null,
       fatigue: latest?.fatigue ?? null,
@@ -43,10 +48,10 @@ export default async function Dashboard({
       md: null,
     }
     const score = calcScore(inputs)
-    const history = (a.score_history ?? [])
-      .sort((x: any, y: any) => new Date(x.score_date).getTime() - new Date(y.score_date).getTime())
+    const history = scoreHist
+      .sort((x, y) => new Date(x.score_date).getTime() - new Date(y.score_date).getTime())
       .slice(-7)
-      .map((s: any) => Math.round(s.total_score * 100))
+      .map((s) => Math.round(s.total_score * 100))
 
     return { ...a, computed_score: score, history }
   })

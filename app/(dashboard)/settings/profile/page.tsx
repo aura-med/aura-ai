@@ -7,7 +7,6 @@ import { Save } from 'lucide-react'
 
 export default function ProfilePage() {
   const t = useTranslations('settings.profile')
-  const tc = useTranslations('settings.common')
   const tCommon = useTranslations('common')
   const [fullName, setFullName] = useState('')
   const [role, setRole] = useState('')

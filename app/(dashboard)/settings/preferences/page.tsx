@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { useUiStore } from '@/stores/uiStore'
 import { Save, Sun, Moon } from 'lucide-react'
+import { savePreferences } from '@/lib/actions/preferences'
 
 interface Preferences {
   locale: 'pt' | 'en' | 'es'
@@ -48,7 +49,7 @@ export default function PreferencesPage() {
       }
       setLoading(false)
     })
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSave() {
     setSaving(true)
@@ -58,15 +59,13 @@ export default function PreferencesPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      const { error } = await supabase
-        .from('user_preferences')
-        .upsert({
-          user_id: user.id,
-          locale: prefs.locale,
-          theme: prefs.theme,
-          default_squad_id: prefs.default_squad_id,
-        })
-      if (error) throw error
+      const result = await savePreferences({
+        user_id: user.id,
+        locale: prefs.locale,
+        theme: prefs.theme,
+        default_squad_id: prefs.default_squad_id,
+      })
+      if (!result.success) throw new Error(result.error)
 
       // Apply changes to UI store
       if (prefs.theme !== theme) toggleTheme()

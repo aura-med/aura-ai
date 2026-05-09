@@ -5,6 +5,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { calculateScore, BASE_WEIGHTS_V1 } from '@/lib/scoring/engine'
+import { ScoreHistorySchema } from '@/lib/schemas/score'
 import type { ScoreInputs } from '@/types'
 
 export async function POST(
@@ -75,23 +76,33 @@ export async function POST(
 
   const result = calculateScore(inputs, BASE_WEIGHTS_V1)
 
+  // Validate score payload before persisting
+  const scoreObj = {
+    athlete_id:      id,
+    score_date:      today,
+    total_score:     result.score / 100,
+    acwr_partial:    result.partials.acwr,
+    hrv_partial:     result.partials.hrv,
+    fatigue_partial: result.partials.fatigue,
+    sleep_partial:   result.partials.sleep,
+    tqr_partial:     result.partials.tqr,
+    history_partial: result.partials.history,
+    stress_partial:  result.partials.stress,
+    decel_partial:   result.partials.decel,
+    days_since_match: md,
+    confidence:      result.confidence,
+  }
+
+  const validation = ScoreHistorySchema.safeParse(scoreObj)
+  if (!validation.success) {
+    return NextResponse.json({ error: 'Invalid score payload' }, { status: 422 })
+  }
+
   // Persist to score_history (upsert — one score per athlete per day)
   const { error } = await supabase
     .from('score_history')
     .upsert({
-      athlete_id:      id,
-      score_date:      today,
-      total_score:     result.score / 100,
-      acwr_partial:    result.partials.acwr,
-      hrv_partial:     result.partials.hrv,
-      fatigue_partial: result.partials.fatigue,
-      sleep_partial:   result.partials.sleep,
-      tqr_partial:     result.partials.tqr,
-      history_partial: result.partials.history,
-      stress_partial:  result.partials.stress,
-      decel_partial:   result.partials.decel,
-      days_since_match: md,
-      confidence:      result.confidence,
+      ...scoreObj,
       weights_version: 1,
     }, { onConflict: 'athlete_id,score_date' })
 

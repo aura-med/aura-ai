@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { Users, Plus, Trash2, X } from 'lucide-react'
+import { createSquad } from '@/lib/actions/squad'
 
 interface SquadRow {
   id: string
@@ -78,12 +79,12 @@ export default function SquadsPage() {
         .eq('id', user.id)
         .single()
 
-      const { error } = await supabase.from('squads').insert({
+      const result = await createSquad({
         name: newName.trim(),
         type: newType,
         org_id: profile?.org_id,
       })
-      if (error) throw error
+      if (!result.success) throw new Error(result.error)
       setNewName('')
       setNewType('male')
       setShowCreate(false)

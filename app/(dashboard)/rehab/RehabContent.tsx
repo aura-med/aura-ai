@@ -5,6 +5,7 @@ import { getSquadIdParam } from '@/lib/squad-url'
 import type { RehabSession, RehabProtocol, RtpCriterion } from '@/types'
 import { AlertBox } from '@/components/ui/aura'
 import type { RehabSessionDTO } from '@/lib/dal/rehab'
+import { updateRtpCriteria, updateClinicalData } from '@/lib/actions/rehab'
 
 interface Props {
   initialSessions: RehabSessionDTO[]
@@ -43,17 +44,12 @@ export function RehabContent({ initialSessions, squadId }: Props) {
 
   async function toggleRTP(sessionId: string, idx: number, criteria: RtpCriterion[]) {
     const updated = criteria.map((c, i) => i === idx ? { ...c, done: !c.done } : c)
-    await supabase.from('rehab_sessions')
-      .update({ rtp_criteria: updated, updated_at: new Date().toISOString() })
-      .eq('id', sessionId)
+    await updateRtpCriteria({ sessionId, criteria: updated })
     load()
   }
 
   async function updateClinical(sessionId: string, field: string, value: any, clinicalData: any) {
-    const updated = { ...clinicalData, [field]: value }
-    await supabase.from('rehab_sessions')
-      .update({ clinical_data: updated, updated_at: new Date().toISOString() })
-      .eq('id', sessionId)
+    await updateClinicalData({ sessionId, field, value }, clinicalData as Record<string, unknown>)
     load()
   }
 

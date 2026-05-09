@@ -5,6 +5,7 @@ import { calcScore, riskColor, riskLabel, VAR_ICONS, VAR_LABELS } from '@/lib/sc
 import { DecompositionBars, ConfBadge, AlertBox } from '@/components/ui/aura'
 import { supabase } from '@/lib/supabase'
 import { getSquadIdParam } from '@/lib/squad-url'
+import { saveWellnessCheckin } from '@/lib/actions/wellness'
 import type { AthleteScore } from '@/types'
 
 const SLIDERS = [
@@ -36,6 +37,7 @@ function InputContent() {
   const [score, setScore] = useState<AthleteScore | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
     let query = supabase.from('athletes').select('id,name,shirt_number,position,status,injury_events(*)')
@@ -74,17 +76,21 @@ function InputContent() {
   async function handleSave() {
     if (!selectedId) return
     setSaving(true)
+    setSaveError(null)
     const today = new Date().toISOString().split('T')[0]
-    await supabase.from('wellness_checkins').upsert({
+    const result = await saveWellnessCheckin({
       athlete_id: selectedId,
       checkin_date: today,
-      checkin_type: 'morning',
       fatigue: values.fatigue ?? null,
       sleep_hours: values.sleep ?? null,
       tqr: values.tqr ?? null,
       stress: values.stress ?? null,
-    }, { onConflict: 'athlete_id,checkin_date' })
+    })
     setSaving(false)
+    if (!result.success) {
+      setSaveError(result.error)
+      return
+    }
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -141,6 +147,9 @@ function InputContent() {
           >
             {saving ? 'A guardar...' : saved ? 'Guardado ✓' : 'Guardar ✓'}
           </button>
+          {saveError && (
+            <div style={{ fontSize: 11, color: 'var(--danger)', maxWidth: 200 }}>{saveError}</div>
+          )}
         </div>
       </div>
 

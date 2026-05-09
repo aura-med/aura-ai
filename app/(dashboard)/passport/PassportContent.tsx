@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { PassportAthleteDTO } from '@/lib/dal/passport'
+import { togglePassportShare } from '@/lib/actions/passport'
 
 interface Props {
   initialAthletes: PassportAthleteDTO[]
@@ -15,9 +16,7 @@ export function PassportContent({ initialAthletes }: Props) {
   async function toggleShare(athleteId: string, current: boolean) {
     const passport = athletes.find(a => a.id === athleteId)?.athlete_passport?.[0]
     if (!passport) return
-    await supabase.from('athlete_passport')
-      .update({ is_shareable: !current, last_updated: new Date().toISOString() })
-      .eq('athlete_id', athleteId)
+    await togglePassportShare({ athleteId, passportId: passport.id, isShareable: !current })
     setShared(s => ({ ...s, [athleteId]: !current }))
   }
 

@@ -2,6 +2,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { daysSince, pct } from '@/lib/utils'
 import { recordAudit, requirePlatformAdmin } from '@/lib/admin-auth'
 
+export const PAGE_SIZE = 25
+
 type JsonMap = Record<string, unknown>
 
 interface OrganizationRow {
@@ -164,19 +166,49 @@ export async function getPlatformAdminHome() {
   }
 }
 
-export async function getOrganizationsPageData() {
+export interface OrgsPageParams {
+  q?: string
+  status?: string
+  page?: number
+}
+
+export async function getOrganizationsPageData(params: OrgsPageParams = {}) {
   const data = await getPlatformAdminHome()
+  const page = Math.max(1, params.page ?? 1)
+
+  let orgs = data.orgRows
+
+  if (params.q) {
+    const q = params.q.toLowerCase()
+    orgs = orgs.filter((o) => o.name.toLowerCase().includes(q))
+  }
+  if (params.status) orgs = orgs.filter((o) => o.status === params.status)
+
+  const total = orgs.length
+  const paginated = orgs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
   return {
-    context: data.context,
+    context:              data.context,
     activeSupportSession: data.activeSupportSession,
-    orgRows: data.orgRows,
+    orgRows:              paginated,
+    total,
+    page,
+    allOrgRows:           data.orgRows,
   }
 }
 
-export async function getUsersPageData() {
+export interface UsersPageParams {
+  q?: string
+  status?: string
+  role?: string
+  page?: number
+}
+
+export async function getUsersPageData(params: UsersPageParams = {}) {
   const context = await requirePlatformAdmin()
   const service = createAdminClient()
   const activeSupportSession = await getActiveSupportSession(context.user.id)
+  const page = Math.max(1, params.page ?? 1)
 
   const [profilesResult, orgsResult, authUsersResult] = await Promise.all([
     service.from('profiles').select('id, org_id, role, full_name, created_at').order('full_name'),
@@ -184,30 +216,51 @@ export async function getUsersPageData() {
     service.auth.admin.listUsers({ page: 1, perPage: 1000 }),
   ])
 
-  const authById = new Map((authUsersResult.data?.users ?? []).map((user) => [user.id, user]))
-  const orgById = new Map((orgsResult.data ?? []).map((org) => [org.id, org]))
-  const users = ((profilesResult.data ?? []) as ProfileRow[]).map((profile) => {
+  const authById  = new Map((authUsersResult.data?.users ?? []).map((u) => [u.id, u]))
+  const orgById   = new Map((orgsResult.data ?? []).map((o) => [o.id, o]))
+
+  let users = ((profilesResult.data ?? []) as ProfileRow[]).map((profile) => {
     const authUser = authById.get(profile.id)
     const org = profile.org_id ? orgById.get(profile.org_id) : null
     return {
-      id: profile.id,
-      full_name: profile.full_name,
-      email: authUser?.email ?? null,
-      role: profile.role,
-      org_id: profile.org_id,
-      org_name: org?.name ?? null,
-      org_status: org?.status ?? null,
-      created_at: profile.created_at,
+      id:              profile.id,
+      full_name:       profile.full_name,
+      email:           authUser?.email ?? null,
+      role:            profile.role,
+      org_id:          profile.org_id,
+      org_name:        org?.name ?? null,
+      org_status:      org?.status ?? null,
+      created_at:      profile.created_at,
       last_sign_in_at: authUser?.last_sign_in_at ?? null,
-      invited_at: authUser?.invited_at ?? null,
-      disabled: Boolean(authUser?.banned_until),
+      invited_at:      authUser?.invited_at ?? null,
+      disabled:        Boolean(authUser?.banned_until),
     }
   })
+
+  // Filter
+  if (params.q) {
+    const q = params.q.toLowerCase()
+    users = users.filter(
+      (u) =>
+        u.full_name?.toLowerCase().includes(q) ||
+        u.email?.toLowerCase().includes(q) ||
+        u.org_name?.toLowerCase().includes(q)
+    )
+  }
+  if (params.role)   users = users.filter((u) => u.role === params.role)
+  if (params.status === 'active')   users = users.filter((u) => !u.disabled && u.last_sign_in_at)
+  if (params.status === 'invited')  users = users.filter((u) => u.invited_at && !u.last_sign_in_at)
+  if (params.status === 'disabled') users = users.filter((u) => u.disabled)
+
+  const total = users.length
+  const paginated = users.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   return {
     context,
     activeSupportSession,
-    users,
+    users: paginated,
+    total,
+    page,
     organizations: orgsResult.data ?? [],
   }
 }

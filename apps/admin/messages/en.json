@@ -1,0 +1,64 @@
+{
+  "nav": {
+    "overview": "Overview",
+    "organizations": "Organizations",
+    "users": "Users & Access",
+    "analytics": "Analytics",
+    "operations": "Operations",
+    "security": "Security",
+    "settings": "Settings"
+  },
+  "common": {
+    "signOut": "Sign out",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "search": "Search…",
+    "allStatuses": "All statuses",
+    "allRoles": "All roles",
+    "prev": "← Prev",
+    "next": "Next →",
+    "noResults": "No results match these filters.",
+    "internal": "INTERNAL ADMIN"
+  },
+  "users": {
+    "title": "Users & Access",
+    "description": "Invite organization users, change roles, and manage access.",
+    "inviteUser": "Invite user",
+    "invite": "Invite",
+    "disable": "Disable",
+    "enable": "Enable",
+    "profiles": "Profiles",
+    "pendingInvites": "Pending invites",
+    "disabled": "Disabled",
+    "organizations": "Organizations"
+  },
+  "organizations": {
+    "title": "Organizations",
+    "description": "Manage organization status, plans, modules, and data health.",
+    "create": "Create organization",
+    "suspend": "Suspend",
+    "activate": "Activate",
+    "total": "Total",
+    "active": "Active",
+    "suspended": "Suspended",
+    "missingConsent": "Missing consent"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "description": "Operational and adoption analytics."
+  },
+  "security": {
+    "title": "Security",
+    "description": "Admin registry, support sessions, and audit log.",
+    "adminRegistry": "Admin Registry",
+    "addAdmin": "Add admin",
+    "revoke": "Revoke",
+    "auditLog": "Audit log",
+    "supportSessions": "Support sessions"
+  },
+  "overview": {
+    "title": "Platform overview",
+    "description": "Aggregate operational health for Aura organizations."
+  }
+}

@@ -161,3 +161,45 @@ export const inputStyle = {
   borderColor: 'var(--aura-border2)',
   color: 'var(--aura-text)',
 }
+
+// ── Feedback banner ──────────────────────────────────────────────────────────
+
+interface FeedbackBannerProps {
+  success?: string
+  error?: string
+}
+
+export function FeedbackBanner({ success, error }: FeedbackBannerProps) {
+  if (!success && !error) return null
+  const tone = error ? 'danger' : 'green'
+  const msg = error ?? success ?? ''
+  const colors: Record<string, { bg: string; border: string; color: string }> = {
+    danger: { bg: 'var(--aura-danger-bg)', border: 'rgba(255,77,109,0.28)', color: 'var(--aura-danger)' },
+    green:  { bg: 'var(--aura-green-bg)',  border: 'rgba(0,229,160,0.28)',  color: 'var(--aura-green)' },
+  }
+  const c = colors[tone]
+  return (
+    <div
+      className="rounded-lg border px-4 py-3 text-sm"
+      style={{ background: c.bg, borderColor: c.border, color: c.color }}
+    >
+      {msg}
+    </div>
+  )
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+
+interface EmptyStateProps {
+  message: string
+}
+
+export function EmptyState({ message }: EmptyStateProps) {
+  return (
+    <tr>
+      <td colSpan={99} className="py-12 text-center text-sm" style={{ color: 'var(--aura-text3)' }}>
+        {message}
+      </td>
+    </tr>
+  )
+}

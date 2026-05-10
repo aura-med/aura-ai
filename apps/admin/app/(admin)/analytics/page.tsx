@@ -1,41 +1,55 @@
+import Link from 'next/link'
 import { Card, Kpi, PageHeader, StatusBadge } from '@/components/ui'
 import { MiniBarChart, MiniLineChart } from '@/components/charts'
-import { getPlatformAdminHome } from '@/lib/admin-data'
+import { getAnalyticsData } from '@/lib/admin-data'
 
-function lastSevenDays() {
-  return Array.from({ length: 7 }, (_, index) => {
-    const date = new Date()
-    date.setDate(date.getDate() - (6 - index))
-    return date.toISOString().slice(0, 10)
-  })
+const RANGES = [
+  { value: '7',  label: '7d' },
+  { value: '30', label: '30d' },
+  { value: '90', label: '90d' },
+]
+
+interface SearchParams {
+  range?: string
 }
 
-export default async function AnalyticsPage() {
-  const { metrics, orgRows, scoreRows } = await getPlatformAdminHome()
-  const days = lastSevenDays()
-  const riskSeries = days.map((day) => ({
-    label: day.slice(5),
-    highRisk: scoreRows.filter((score) => score.score_date === day && Number(score.total_score) >= 0.65).length,
-  }))
-  const orgFreshness = orgRows
-    .slice()
-    .sort((a, b) => (b.athletes_count ?? 0) - (a.athletes_count ?? 0))
-    .slice(0, 8)
-    .map((org) => ({
-      label: org.name.slice(0, 10),
-      athletes: org.athletes_count,
-    }))
+export default async function AnalyticsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>
+}) {
+  const sp    = await searchParams
+  const range = Number(sp.range ?? 7)
+  const { metrics, riskSeries, signupSeries, orgFreshness, orgRows } = await getAnalyticsData(range)
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Analytics"
-        description="Operational and adoption analytics only. Sensitive clinical rows remain hidden unless Support Mode is active for a scoped organization."
-      />
+      <div className="flex items-center justify-between">
+        <PageHeader
+          title="Analytics"
+          description="Operational and adoption analytics. Sensitive clinical data is hidden unless Support Mode is active."
+        />
+        <div className="flex gap-1 rounded-lg border p-1" style={{ borderColor: 'var(--aura-border)' }}>
+          {RANGES.map((r) => (
+            <Link
+              key={r.value}
+              href={`/analytics?range=${r.value}`}
+              className="min-h-8 rounded-md px-3 text-xs font-medium"
+              style={
+                String(range) === r.value
+                  ? { background: 'var(--aura-green-bg)', color: 'var(--aura-green)' }
+                  : { color: 'var(--aura-text2)' }
+              }
+            >
+              {r.label}
+            </Link>
+          ))}
+        </div>
+      </div>
 
       <div className="grid gap-3 md:grid-cols-4">
-        <Kpi label="Check-in stale orgs" tone={metrics.staleOrgs ? 'warn' : 'green'} value={metrics.staleOrgs} />
-        <Kpi label="High risk score events" tone="warn" value={metrics.highRiskScores} />
+        <Kpi label="Active orgs" tone={metrics.staleOrgs ? 'warn' : 'green'} value={metrics.staleOrgs} />
+        <Kpi label="High risk events" tone="warn" value={metrics.highRiskScores} />
         <Kpi label="Notification read rate" tone="blue" value={`${metrics.notificationReadRate}%`} />
         <Kpi label="Missing consent" tone={metrics.missingConsent ? 'danger' : 'green'} value={metrics.missingConsent} />
       </div>
@@ -45,7 +59,7 @@ export default async function AnalyticsPage() {
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h2 className="text-sm font-semibold">High risk score events</h2>
-              <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>Daily aggregate count, no athlete identity exposed.</p>
+              <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>Daily aggregate — no athlete identity exposed.</p>
             </div>
             <StatusBadge tone="warn">aggregate</StatusBadge>
           </div>
@@ -54,12 +68,20 @@ export default async function AnalyticsPage() {
 
         <Card>
           <div className="mb-4">
-            <h2 className="text-sm font-semibold">Athlete coverage by organization</h2>
-            <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>Largest organizations by active athlete count.</p>
+            <h2 className="text-sm font-semibold">Cumulative user signups</h2>
+            <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>Total profiles over time.</p>
           </div>
-          <MiniBarChart data={orgFreshness} dataKey="athletes" />
+          <MiniLineChart data={signupSeries} dataKey="signups" />
         </Card>
       </div>
+
+      <Card>
+        <div className="mb-4">
+          <h2 className="text-sm font-semibold">Athlete coverage by organization</h2>
+          <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>Largest organizations by active athlete count.</p>
+        </div>
+        <MiniBarChart data={orgFreshness} dataKey="athletes" />
+      </Card>
 
       <Card className="overflow-x-auto p-0">
         <table className="admin-table">
@@ -69,7 +91,6 @@ export default async function AnalyticsPage() {
               <th>Users</th>
               <th>Athletes</th>
               <th>Missing consent</th>
-              <th>Freshness</th>
             </tr>
           </thead>
           <tbody>
@@ -79,7 +100,6 @@ export default async function AnalyticsPage() {
                 <td>{org.users_count}</td>
                 <td>{org.athletes_count}</td>
                 <td>{org.missing_consent_count}</td>
-                <td>{org.stale_days === null ? 'No data' : `${org.stale_days}d`}</td>
               </tr>
             ))}
           </tbody>

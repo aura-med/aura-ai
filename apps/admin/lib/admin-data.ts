@@ -2,6 +2,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { daysSince, pct } from '@/lib/utils'
 import { recordAudit, requirePlatformAdmin } from '@/lib/admin-auth'
 
+export const PAGE_SIZE = 25
+
 type JsonMap = Record<string, unknown>
 
 interface OrganizationRow {
@@ -164,19 +166,49 @@ export async function getPlatformAdminHome() {
   }
 }
 
-export async function getOrganizationsPageData() {
+export interface OrgsPageParams {
+  q?: string
+  status?: string
+  page?: number
+}
+
+export async function getOrganizationsPageData(params: OrgsPageParams = {}) {
   const data = await getPlatformAdminHome()
+  const page = Math.max(1, params.page ?? 1)
+
+  let orgs = data.orgRows
+
+  if (params.q) {
+    const q = params.q.toLowerCase()
+    orgs = orgs.filter((o) => o.name.toLowerCase().includes(q))
+  }
+  if (params.status) orgs = orgs.filter((o) => o.status === params.status)
+
+  const total = orgs.length
+  const paginated = orgs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
   return {
-    context: data.context,
+    context:              data.context,
     activeSupportSession: data.activeSupportSession,
-    orgRows: data.orgRows,
+    orgRows:              paginated,
+    total,
+    page,
+    allOrgRows:           data.orgRows,
   }
 }
 
-export async function getUsersPageData() {
+export interface UsersPageParams {
+  q?: string
+  status?: string
+  role?: string
+  page?: number
+}
+
+export async function getUsersPageData(params: UsersPageParams = {}) {
   const context = await requirePlatformAdmin()
   const service = createAdminClient()
   const activeSupportSession = await getActiveSupportSession(context.user.id)
+  const page = Math.max(1, params.page ?? 1)
 
   const [profilesResult, orgsResult, authUsersResult] = await Promise.all([
     service.from('profiles').select('id, org_id, role, full_name, created_at').order('full_name'),
@@ -184,57 +216,198 @@ export async function getUsersPageData() {
     service.auth.admin.listUsers({ page: 1, perPage: 1000 }),
   ])
 
-  const authById = new Map((authUsersResult.data?.users ?? []).map((user) => [user.id, user]))
-  const orgById = new Map((orgsResult.data ?? []).map((org) => [org.id, org]))
-  const users = ((profilesResult.data ?? []) as ProfileRow[]).map((profile) => {
+  const authById  = new Map((authUsersResult.data?.users ?? []).map((u) => [u.id, u]))
+  const orgById   = new Map((orgsResult.data ?? []).map((o) => [o.id, o]))
+
+  let users = ((profilesResult.data ?? []) as ProfileRow[]).map((profile) => {
     const authUser = authById.get(profile.id)
     const org = profile.org_id ? orgById.get(profile.org_id) : null
     return {
-      id: profile.id,
-      full_name: profile.full_name,
-      email: authUser?.email ?? null,
-      role: profile.role,
-      org_id: profile.org_id,
-      org_name: org?.name ?? null,
-      org_status: org?.status ?? null,
-      created_at: profile.created_at,
+      id:              profile.id,
+      full_name:       profile.full_name,
+      email:           authUser?.email ?? null,
+      role:            profile.role,
+      org_id:          profile.org_id,
+      org_name:        org?.name ?? null,
+      org_status:      org?.status ?? null,
+      created_at:      profile.created_at,
       last_sign_in_at: authUser?.last_sign_in_at ?? null,
-      invited_at: authUser?.invited_at ?? null,
-      disabled: Boolean(authUser?.banned_until),
+      invited_at:      authUser?.invited_at ?? null,
+      disabled:        Boolean(authUser?.banned_until),
     }
   })
+
+  // Filter
+  if (params.q) {
+    const q = params.q.toLowerCase()
+    users = users.filter(
+      (u) =>
+        u.full_name?.toLowerCase().includes(q) ||
+        u.email?.toLowerCase().includes(q) ||
+        u.org_name?.toLowerCase().includes(q)
+    )
+  }
+  if (params.role)   users = users.filter((u) => u.role === params.role)
+  if (params.status === 'active')   users = users.filter((u) => !u.disabled && u.last_sign_in_at)
+  if (params.status === 'invited')  users = users.filter((u) => u.invited_at && !u.last_sign_in_at)
+  if (params.status === 'disabled') users = users.filter((u) => u.disabled)
+
+  const total = users.length
+  const paginated = users.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   return {
     context,
     activeSupportSession,
-    users,
+    users: paginated,
+    total,
+    page,
     organizations: orgsResult.data ?? [],
   }
 }
 
-export async function getSecurityPageData() {
+export interface SecurityPageParams {
+  type?: string
+  page?: number
+}
+
+export async function getSecurityPageData(params: SecurityPageParams = {}) {
   const context = await requirePlatformAdmin()
   const service = createAdminClient()
   const activeSupportSession = await getActiveSupportSession(context.user.id)
+  const page = Math.max(1, params.page ?? 1)
 
-  const [auditResult, sessionsResult, adminsResult, orgsResult] = await Promise.all([
-    service.from('platform_audit_logs').select('*').order('created_at', { ascending: false }).limit(100),
+  const [auditResult, sessionsResult, adminsResult, orgsResult, authUsersResult] = await Promise.all([
+    service.from('platform_audit_logs').select('*').order('created_at', { ascending: false }).limit(500),
     service.from('support_sessions').select('*').order('started_at', { ascending: false }).limit(50),
     service.from('platform_admins').select('user_id, level, active, created_at, last_seen_at').order('created_at', { ascending: false }),
     service.from('organizations').select('id, name'),
+    service.auth.admin.listUsers({ page: 1, perPage: 1000 }),
   ])
 
-  const orgById = new Map((orgsResult.data ?? []).map((org) => [org.id, org.name]))
+  const orgById    = new Map((orgsResult.data ?? []).map((o) => [o.id, o.name]))
+  const authById   = new Map((authUsersResult.data?.users ?? []).map((u) => [u.id, u]))
+
+  let logs = (auditResult.data ?? []).map((log) => ({
+    ...log,
+    org_name: log.org_id ? orgById.get(log.org_id) : null,
+  }))
+  if (params.type) logs = logs.filter((l) => l.event_type.includes(params.type as string))
+
+  const totalLogs = logs.length
+  const paginatedLogs = logs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const admins = (adminsResult.data ?? []).map((a) => {
+    const auth = authById.get(a.user_id)
+    return { ...a, email: auth?.email ?? null }
+  })
+
+  // Users available to be added as admins (have a profile, not already active admin)
+  const existingAdminIds = new Set(admins.filter((a) => a.active).map((a) => a.user_id))
+  const profilesResult = await service.from('profiles').select('id, full_name, org_id').order('full_name')
+  const eligibleUsers = ((profilesResult.data ?? []) as ProfileRow[])
+    .filter((p) => !existingAdminIds.has(p.id))
+    .map((p) => ({
+      id: p.id,
+      label: authById.get(p.id)?.email ?? p.full_name ?? p.id.slice(0, 8),
+    }))
 
   return {
     context,
     activeSupportSession,
-    auditLogs: (auditResult.data ?? []).map((log) => ({ ...log, org_name: log.org_id ? orgById.get(log.org_id) : null })),
-    supportSessions: ((sessionsResult.data ?? []) as SupportSessionRow[]).map((session) => ({
-      ...session,
-      org_name: orgById.get(session.org_id) ?? 'Unknown organization',
+    auditLogs:  paginatedLogs,
+    totalLogs,
+    auditPage:  page,
+    supportSessions: ((sessionsResult.data ?? []) as SupportSessionRow[]).map((s) => ({
+      ...s,
+      org_name: orgById.get(s.org_id) ?? 'Unknown',
     })),
-    admins: adminsResult.data ?? [],
+    admins,
+    eligibleUsers,
+  }
+}
+
+export async function getAnalyticsData(rangeDays = 7) {
+  const context = await requirePlatformAdmin()
+  const service = createAdminClient()
+  const activeSupportSession = await getActiveSupportSession(context.user.id)
+
+  const since = new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+
+  const [orgsResult, profilesResult, athletesResult, scoreResult, notificationsResult] = await Promise.all([
+    service.from('organizations').select('id, name, status, created_at').order('name'),
+    service.from('profiles').select('id, created_at').order('created_at'),
+    service.from('athletes').select('id, org_id, active, consent_date'),
+    service
+      .from('score_history')
+      .select('id, athlete_id, score_date, total_score')
+      .gte('score_date', since)
+      .order('score_date'),
+    service.from('notifications').select('id, org_id, read_by, created_at').order('created_at', { ascending: false }).limit(1000),
+  ])
+
+  const orgs     = orgsResult.data ?? []
+  const profiles = profilesResult.data ?? []
+  const athletes = athletesResult.data ?? []
+  const scores   = scoreResult.data ?? []
+  const notifications = notificationsResult.data ?? []
+
+  // Day series
+  const days = Array.from({ length: rangeDays }, (_, i) => {
+    const d = new Date(Date.now() - (rangeDays - 1 - i) * 24 * 60 * 60 * 1000)
+    return d.toISOString().slice(0, 10)
+  })
+
+  const riskSeries = days.map((day) => ({
+    label:    day.slice(5),
+    highRisk: scores.filter((s) => s.score_date === day && Number(s.total_score) >= 0.65).length,
+  }))
+
+  // Cumulative user signups
+  const signupSeries = days.map((day) => ({
+    label:   day.slice(5),
+    signups: profiles.filter((p) => p.created_at.slice(0, 10) <= day).length,
+  }))
+
+  const orgFreshness = [...orgs]
+    .sort((a, b) => {
+      const aA = athletes.filter((ath) => ath.org_id === a.id && ath.active).length
+      const bA = athletes.filter((ath) => ath.org_id === b.id && ath.active).length
+      return bA - aA
+    })
+    .slice(0, 8)
+    .map((o) => ({
+      label:    o.name.slice(0, 12),
+      athletes: athletes.filter((a) => a.org_id === o.id && a.active).length,
+    }))
+
+  const missingConsent = athletes.filter((a) => a.active && !a.consent_date).length
+  const notificationReadRate = notifications.length
+    ? Math.round(
+        (notifications.filter((n) => Array.isArray(n.read_by) && n.read_by.length > 0).length /
+          notifications.length) *
+          100
+      )
+    : 0
+
+  return {
+    context,
+    activeSupportSession,
+    riskSeries,
+    signupSeries,
+    orgFreshness,
+    metrics: {
+      staleOrgs:           orgs.filter((o) => o.status === 'active').length,
+      highRiskScores:      scores.filter((s) => Number(s.total_score) >= 0.65).length,
+      notificationReadRate,
+      missingConsent,
+    },
+    orgRows: orgs.map((o) => ({
+      id:                  o.id,
+      name:                o.name,
+      users_count:         0,
+      athletes_count:      athletes.filter((a) => a.org_id === o.id && a.active).length,
+      missing_consent_count: athletes.filter((a) => a.org_id === o.id && a.active && !a.consent_date).length,
+    })),
   }
 }
 

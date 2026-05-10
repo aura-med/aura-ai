@@ -1,0 +1,64 @@
+{
+  "nav": {
+    "overview": "Visão Geral",
+    "organizations": "Organizações",
+    "users": "Utilizadores",
+    "analytics": "Analytics",
+    "operations": "Operações",
+    "security": "Segurança",
+    "settings": "Definições"
+  },
+  "common": {
+    "signOut": "Terminar sessão",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Guardar",
+    "search": "Pesquisar…",
+    "allStatuses": "Todos os estados",
+    "allRoles": "Todas as funções",
+    "prev": "← Anterior",
+    "next": "Seguinte →",
+    "noResults": "Sem resultados para este filtro.",
+    "internal": "ADMIN INTERNO"
+  },
+  "users": {
+    "title": "Utilizadores & Acessos",
+    "description": "Convidar utilizadores, alterar funções e gerir acessos.",
+    "inviteUser": "Convidar utilizador",
+    "invite": "Convidar",
+    "disable": "Desativar",
+    "enable": "Reativar",
+    "profiles": "Perfis",
+    "pendingInvites": "Convites pendentes",
+    "disabled": "Desativados",
+    "organizations": "Organizações"
+  },
+  "organizations": {
+    "title": "Organizações",
+    "description": "Gerir estado, planos, módulos e saúde dos dados das organizações.",
+    "create": "Criar organização",
+    "suspend": "Suspender",
+    "activate": "Ativar",
+    "total": "Total",
+    "active": "Ativas",
+    "suspended": "Suspensas",
+    "missingConsent": "Sem consentimento"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "description": "Analytics operacionais e de adoção."
+  },
+  "security": {
+    "title": "Segurança",
+    "description": "Registo de admins, sessões de suporte e log de auditoria.",
+    "adminRegistry": "Registo de Admins",
+    "addAdmin": "Adicionar admin",
+    "revoke": "Revogar",
+    "auditLog": "Log de auditoria",
+    "supportSessions": "Sessões de suporte"
+  },
+  "overview": {
+    "title": "Visão Geral da Plataforma",
+    "description": "Saúde operacional agregada das organizações Aura."
+  }
+}

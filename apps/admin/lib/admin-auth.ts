@@ -10,6 +10,7 @@ export interface PlatformAdminContext {
   user: {
     id: string
     email?: string
+    fullName?: string | null
   }
   admin: {
     level: PlatformAdminLevel
@@ -39,10 +40,18 @@ export async function requirePlatformAdmin(): Promise<PlatformAdminContext> {
     .update({ last_seen_at: new Date().toISOString() })
     .eq('user_id', user.id)
 
+  // Fetch display name (may not exist for all platform admins)
+  const { data: profile } = await service
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user.id)
+    .maybeSingle()
+
   return {
     user: {
-      id: user.id,
-      email: user.email,
+      id:       user.id,
+      email:    user.email,
+      fullName: profile?.full_name ?? null,
     },
     admin: {
       level: admin.level as PlatformAdminLevel,

@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+apps/admin/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -12,6 +13,8 @@
 
 # testing
 /coverage
+/test-results
+.playwright-mcp
 
 # next.js
 /.next/
@@ -44,3 +47,6 @@ next-env.d.ts
 # workspace vs code
 aura.code-workspace
 .worktrees/
+
+# local planning docs
+docs/

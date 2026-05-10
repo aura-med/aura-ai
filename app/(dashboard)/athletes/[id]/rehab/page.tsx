@@ -1,14 +1,25 @@
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { DashboardSkeleton } from '@/components/ui/DashboardSkeleton'
 
-export const dynamic = 'force-dynamic'
-
-export default async function RehabPage({
-  params,
-}: {
+export default function RehabPage(props: {
   params: Promise<{ id: string }>
 }) {
-  const { id } = await params
+  return (
+    <Suspense fallback={<DashboardSkeleton title="A carregar reabilitacao" />}>
+      {props.params.then(({ id }) => (
+        <RehabContent id={id} />
+      ))}
+    </Suspense>
+  )
+}
+
+async function RehabContent({
+  id,
+}: {
+  id: string
+}) {
   const supabase = await createClient()
 
   const [{ data: athlete }, { data: session }] = await Promise.all([

@@ -2,6 +2,13 @@
 
 # dependencies
 /node_modules
+apps/admin/node_modules/
+
+# local tool configs
+.codex/
+
+# local docs / planning artifacts
+docs/
 /.pnp
 .pnp.*
 .yarn/*

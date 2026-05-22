@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aura — Demo FPF</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080b10;--bg2:#0f1520;--bg3:#161d2e;--bg4:#1c2540;--bg5:#222d4a;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);--border3:rgba(255,255,255,0.2);
+  --green:#00e5a0;--gd:rgba(0,229,160,0.12);--gd2:rgba(0,229,160,0.06);
+  --blue:#4d9aff;--bd:rgba(77,154,255,0.12);
+  --warn:#f6ad55;--wd:rgba(246,173,85,0.1);
+  --danger:#ff4d6d;--dd:rgba(255,77,109,0.1);
+  --purple:#b48dfc;--pd:rgba(180,141,252,0.1);
+  --text:#e8eaf4;--t2:#8892a8;--t3:#4a5570;
+  --mono:'DM Mono',monospace;--body:'Outfit',sans-serif;--disp:'Fraunces',serif;
+  --r8:8px;--r12:12px;--r16:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;min-height:100vh;overflow-x:hidden;}
+
+/* ── NOISE TEXTURE ── */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;}
+
+/* ── HEADER ── */
+.header{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:56px;background:var(--bg2);border-bottom:1px solid var(--border2);position:sticky;top:0;z-index:100;}
+.header-logo{display:flex;align-items:center;gap:12px;}
+.logo-mark{width:32px;height:32px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:18px;font-weight:900;color:#000;}
+.logo-name{font-family:var(--disp);font-size:20px;font-weight:700;color:var(--text);letter-spacing:-0.5px;}
+.logo-sub{font-size:11px;color:var(--t3);font-family:var(--mono);margin-left:8px;padding-left:8px;border-left:1px solid var(--border2);}
+.header-right{display:flex;align-items:center;gap:16px;}
+.fpf-badge{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border2);padding:6px 12px;border-radius:var(--r8);}
+.fpf-flag{font-size:18px;}
+.fpf-text{font-size:11px;font-family:var(--mono);color:var(--t2);}
+.time-badge{font-family:var(--mono);font-size:11px;color:var(--t3);}
+.role-selector{background:var(--bg3);border:1px solid var(--border2);padding:6px 12px;border-radius:var(--r8);font-family:var(--mono);font-size:11px;color:var(--text);cursor:pointer;}
+.demo-badge{background:rgba(180,141,252,0.15);border:1px solid rgba(180,141,252,0.3);color:var(--purple);font-family:var(--mono);font-size:10px;letter-spacing:1.5px;padding:4px 10px;border-radius:20px;text-transform:uppercase;}
+
+/* ── NAV ── */
+.nav{display:flex;align-items:center;gap:0;padding:0 28px;background:var(--bg2);border-bottom:1px solid var(--border);}
+.nav-btn{padding:12px 20px;cursor:pointer;font-size:13px;font-weight:500;color:var(--t3);border:none;background:none;position:relative;transition:color .2s;white-space:nowrap;}
+.nav-btn:hover{color:var(--t2);}
+.nav-btn.on{color:var(--text);}
+.nav-btn.on::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--green);}
+.nav-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle;}
+
+/* ── MAIN ── */
+.main{padding:24px 28px;max-width:1400px;margin:0 auto;}
+.section{display:none;}
+.section.on{display:block;}
+
+/* ── STAT CARDS ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r12);padding:18px 20px;}
+.stat-val{font-family:var(--disp);font-size:36px;font-weight:700;line-height:1;margin-bottom:4px;}
+.stat-lbl{font-size:12px;color:var(--t2);font-family:var(--mono);}
+.stat-sub{font-size:11px;color:var(--t3);margin-top:4px;}
+
+/* ── TEAM GRID ── */
+.team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.athlete-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r12);padding:16px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;}
+.athlete-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+.athlete-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;border-radius:3px 0 0 3px;}
+.ac-green::before{background:var(--green);}
+.ac-warn::before{background:var(--warn);}
+.ac-danger::before{background:var(--danger);}
+.ac-purple::before{background:var(--purple);}
+.ac-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.ac-name{font-family:var(--disp);font-size:15px;font-weight:700;}
+.ac-pos{font-size:11px;color:var(--t3);font-family:var(--mono);}
+.ac-score{font-family:var(--disp);font-size:28px;font-weight:700;line-height:1;}
+.ac-bar{height:4px;background:var(--bg4);border-radius:2px;margin:8px 0;}
+.ac-bar-fill{height:4px;border-radius:2px;transition:width .3s;}
+.ac-vars{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+.ac-var{font-size:10px;font-family:var(--mono);padding:2px 7px;border-radius:20px;background:var(--bg3);}
+.ac-rehab{background:rgba(77,154,255,0.1);border:1px solid rgba(77,154,255,0.2);color:var(--blue);font-size:10px;font-family:var(--mono);padding:3px 8px;border-radius:20px;display:inline-block;margin-top:4px;}
+
+/* ── ALERTS ── */
+.alerts{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r12);padding:16px 20px;margin-bottom:24px;}
+.alerts-title{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:12px;}
+.alert-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:var(--r8);margin-bottom:8px;font-size:13px;line-height:1.5;}
+.alert-item:last-child{margin-bottom:0;}
+.ai-r{background:var(--dd);border:1px solid rgba(255,77,109,0.2);}
+.ai-w{background:var(--wd);border:1px solid rgba(246,173,85,0.2);}
+.ai-b{background:var(--bd);border:1px solid rgba(77,154,255,0.2);}
+.alert-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.alert-item strong{color:var(--text);}
+
+/* ── LIVE SCORE SECTION ── */
+.live-layout{display:grid;grid-template-columns:380px 1fr;gap:20px;}
+.vars-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r16);padding:20px;}
+.vars-title{font-family:var(--disp);font-size:16px;font-weight:700;margin-bottom:4px;}
+.vars-sub{font-size:12px;color:var(--t2);margin-bottom:20px;}
+.var-row{margin-bottom:16px;}
+.var-row:last-child{margin-bottom:0;}
+.var-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.var-label{font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;}
+.var-val{font-family:var(--mono);font-size:12px;color:var(--text);background:var(--bg3);padding:2px 8px;border-radius:4px;min-width:50px;text-align:center;}
+.var-partial{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:20px;}
+.slider{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;background:var(--bg4);outline:none;cursor:pointer;}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:var(--green);cursor:pointer;border:2px solid var(--bg2);box-shadow:0 2px 8px rgba(0,229,160,0.4);}
+.slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--green);cursor:pointer;border:2px solid var(--bg2);}
+.slider.warn::-webkit-slider-thumb{background:var(--warn);}
+.slider.danger::-webkit-slider-thumb{background:var(--danger);}
+.var-desc{font-size:10px;color:var(--t3);font-family:var(--mono);margin-top:3px;}
+
+/* ── SCORE PANEL ── */
+.score-panel{display:flex;flex-direction:column;gap:16px;}
+.gauge-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r16);padding:24px;display:flex;align-items:center;gap:24px;}
+.gauge-wrap{position:relative;width:160px;height:160px;flex-shrink:0;}
+.gauge-wrap svg{transform:rotate(-90deg);}
+.gauge-bg{fill:none;stroke:var(--bg4);stroke-width:12;}
+.gauge-fill{fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1),stroke .3s;}
+.gauge-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
+.gauge-num{font-family:var(--disp);font-size:42px;font-weight:900;line-height:1;transition:color .3s;}
+.gauge-label{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;transition:color .3s;}
+.score-info{flex:1;}
+.score-info h2{font-family:var(--disp);font-size:22px;font-weight:700;margin-bottom:6px;}
+.score-risk-label{font-size:14px;color:var(--t2);margin-bottom:10px;line-height:1.5;}
+.conf-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-family:var(--mono);}
+.cp-high{background:var(--gd);color:var(--green);border:1px solid rgba(0,229,160,0.2);}
+.cp-med{background:var(--wd);color:var(--warn);border:1px solid rgba(246,173,85,0.2);}
+.cp-low{background:var(--dd);color:var(--danger);border:1px solid rgba(255,77,109,0.2);}
+
+/* ── DECOMPOSITION ── */
+.decomp-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r16);padding:20px;}
+.decomp-title{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:14px;}
+.decomp-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.decomp-row:last-child{margin-bottom:0;}
+.dr-name{font-size:12px;color:var(--t2);width:140px;flex-shrink:0;}
+.dr-track{flex:1;height:5px;background:var(--bg4);border-radius:3px;}
+.dr-fill{height:5px;border-radius:3px;transition:width .4s ease;}
+.dr-val{font-family:var(--mono);font-size:11px;width:36px;text-align:right;}
+.dr-weight{font-family:var(--mono);font-size:10px;color:var(--t3);width:32px;text-align:right;}
+.dominant-tag{font-family:var(--mono);font-size:9px;padding:1px 6px;border-radius:20px;background:rgba(255,77,109,0.15);color:var(--danger);border:1px solid rgba(255,77,109,0.2);margin-left:6px;}
+
+/* ── RECOMMENDATIONS LIVE ── */
+.rec-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r16);padding:20px;}
+.rec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
+.rec-col{background:var(--bg3);border-radius:var(--r12);padding:14px;}
+.rec-col-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.rch-icon{font-size:18px;}
+.rch-title{font-family:var(--disp);font-size:13px;font-weight:700;}
+.rch-role{font-size:10px;color:var(--t3);font-family:var(--mono);}
+.rec-item{display:flex;gap:8px;padding:8px 10px;border-radius:var(--r8);margin-bottom:6px;font-size:12px;line-height:1.5;border-left:2px solid;}
+.rec-item:last-child{margin-bottom:0;}
+.ri-g{background:var(--gd2);border-color:var(--green);}
+.ri-w{background:var(--wd);border-color:var(--warn);}
+.ri-r{background:var(--dd);border-color:var(--danger);}
+.ri-b{background:var(--bd);border-color:var(--blue);}
+.rec-item strong{color:var(--text);}
+.rec-timing{font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:3px;display:block;letter-spacing:1px;}
+
+/* ── REHAB SECTION ── */
+.rehab-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+.rehab-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r16);overflow:hidden;cursor:pointer;transition:all .15s;}
+.rehab-card:hover{border-color:var(--border2);}
+.rehab-header{display:flex;align-items:flex-start;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);}
+.rh-left h3{font-family:var(--disp);font-size:17px;font-weight:700;margin-bottom:2px;}
+.rh-left p{font-size:12px;color:var(--t2);}
+.rh-right{text-align:right;}
+.rh-phase{font-size:11px;font-family:var(--mono);color:var(--blue);background:var(--bd);padding:3px 10px;border-radius:20px;border:1px solid rgba(77,154,255,0.2);}
+.rh-rtp{font-size:11px;color:var(--t3);font-family:var(--mono);margin-top:6px;}
+.rehab-body{padding:18px 20px;}
+.timeline-bar{position:relative;margin-bottom:16px;}
+.tl-label{font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;}
+.tl-track{height:8px;background:var(--bg4);border-radius:4px;position:relative;overflow:visible;}
+.tl-fill{height:8px;border-radius:4px;position:absolute;left:0;top:0;transition:width .6s ease;}
+.tl-marker{position:absolute;top:-4px;width:16px;height:16px;border-radius:50%;border:2px solid var(--bg2);transform:translateX(-50%);transition:left .6s ease;}
+.phases-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.phase-tag{font-size:10px;font-family:var(--mono);padding:3px 8px;border-radius:20px;}
+.pt-done{background:var(--gd);color:var(--green);border:1px solid rgba(0,229,160,0.2);}
+.pt-current{background:var(--bd);color:var(--blue);border:1px solid rgba(77,154,255,0.3);}
+.pt-pending{background:var(--bg3);color:var(--t3);border:1px solid var(--border);}
+.criteria-list{display:flex;flex-direction:column;gap:6px;}
+.crit-item{display:flex;align-items:center;gap:8px;font-size:12px;}
+.crit-check{width:16px;height:16px;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;}
+.cc-ok{background:var(--gd);color:var(--green);border:1px solid rgba(0,229,160,0.3);}
+.cc-no{background:var(--bg3);color:var(--t3);border:1px solid var(--border);}
+.cc-warn{background:var(--wd);color:var(--warn);border:1px solid rgba(246,173,85,0.2);}
+.next-milestone{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r8);padding:10px 14px;margin-top:12px;font-size:12px;color:var(--t2);}
+.next-milestone strong{color:var(--text);}
+
+/* ── ATHLETE DETAIL ── */
+.athlete-layout{display:grid;grid-template-columns:1fr 360px;gap:20px;}
+.history-chart{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r16);padding:20px;margin-bottom:16px;}
+.chart-wrap{position:relative;height:120px;margin-top:12px;}
+.chart-wrap canvas{width:100%;height:100%;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.info-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r12);padding:16px;}
+.ic-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:8px;}
+.ic-val{font-family:var(--disp);font-size:24px;font-weight:700;}
+.ic-sub{font-size:11px;color:var(--t2);margin-top:2px;}
+.screening-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r16);padding:20px;}
+.sc-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;}
+.sc-item:last-child{border:none;}
+.sc-box{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.sc-box.checked{background:var(--green);border-color:var(--green);color:#000;font-size:10px;}
+.sc-text{flex:1;font-size:13px;}
+.sc-ref{font-family:var(--mono);font-size:10px;color:var(--t3);}
+.side-panel{display:flex;flex-direction:column;gap:14px;}
+.sp-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r12);padding:16px;}
+
+/* ── UTILS ── */
+.section-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;}
+.sh-title{font-family:var(--disp);font-size:20px;font-weight:700;}
+.sh-sub{font-size:12px;color:var(--t2);margin-top:2px;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-family:var(--mono);font-size:10px;}
+.b-g{background:var(--gd);color:var(--green);border:1px solid rgba(0,229,160,0.2);}
+.b-w{background:var(--wd);color:var(--warn);border:1px solid rgba(246,173,85,0.2);}
+.b-r{background:var(--dd);color:var(--danger);border:1px solid rgba(255,77,109,0.2);}
+.b-b{background:var(--bd);color:var(--blue);border:1px solid rgba(77,154,255,0.2);}
+.b-p{background:var(--pd);color:var(--purple);border:1px solid rgba(180,141,252,0.2);}
+.divider{height:1px;background:var(--border);margin:16px 0;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.card-title{font-family:var(--disp);font-size:15px;font-weight:700;margin-bottom:12px;}
+.mono-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);}
+.t-green{color:var(--green);}
+.t-warn{color:var(--warn);}
+.t-danger{color:var(--danger);}
+.t-blue{color:var(--blue);}
+.btn{padding:8px 18px;border-radius:var(--r8);border:1px solid var(--border2);background:var(--bg3);color:var(--t2);font-family:var(--body);font-size:12px;cursor:pointer;transition:all .15s;}
+.btn:hover{background:var(--bg4);color:var(--text);}
+.btn-primary{background:var(--green);color:#000;border-color:transparent;font-weight:600;}
+.btn-primary:hover{opacity:.85;}
+
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s ease infinite;margin-right:5px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.fade-in{animation:fadeUp .3s ease forwards;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">
+    <div class="logo-mark">A</div>
+    <div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="logo-name">Aura</span>
+        <span class="logo-sub">Health &amp; Performance Intelligence</span>
+      </div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="fpf-badge">
+      <span class="fpf-flag">🇵🇹</span>
+      <span class="fpf-text">FPF · Seleção A</span>
+    </div>
+    <select class="role-selector" id="role-sel" onchange="updateRole()">
+      <option value="physio">👤 Fisioterapeuta</option>
+      <option value="doctor">🩺 Médico</option>
+      <option value="coach">🎽 Treinador</option>
+      <option value="perf">⚡ Prep. Físico</option>
+    </select>
+    <span class="time-badge" id="clock">--:--</span>
+    <span class="demo-badge"><span class="live-dot"></span>Demo</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn on" onclick="showSection('dashboard')"><span class="nav-dot" style="background:var(--green)"></span>Dashboard</button>
+  <button class="nav-btn" onclick="showSection('live')"><span class="nav-dot" style="background:var(--blue)"></span>Score ao Vivo</button>
+  <button class="nav-btn" onclick="showSection('rehab')"><span class="nav-dot" style="background:var(--warn)"></span>Reabilitação</button>
+  <button class="nav-btn" onclick="showSection('athlete')"><span class="nav-dot" style="background:var(--danger)"></span>Paulo Oliveira</button>
+</div>
+
+<div class="main">
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 1: DASHBOARD
+═══════════════════════════════════════════════════════════ -->
+<div class="section on" id="s-dashboard">
+  <div class="section-header">
+    <div>
+      <div class="sh-title">Dashboard do Plantel</div>
+      <div class="sh-sub">Estágio · 8 Abril 2026 · Dia 3/10 &nbsp;·&nbsp; 22 atletas convocados</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn">↓ Exportar</button>
+      <button class="btn btn-primary">+ Check-in manual</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val t-green">17</div>
+      <div class="stat-lbl">Disponíveis</div>
+      <div class="stat-sub">Score &lt; 40% · sem restrições</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val t-warn">3</div>
+      <div class="stat-lbl">Atenção aumentada</div>
+      <div class="stat-sub">Score 40–65% · monitorizar</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val t-danger">1</div>
+      <div class="stat-lbl">Risco alto</div>
+      <div class="stat-sub">Score &gt; 65% · intervenção</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val t-blue">1</div>
+      <div class="stat-lbl">Em reabilitação</div>
+      <div class="stat-sub">Protocolo activo · sem jogo</div>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div class="alerts">
+    <div class="alerts-title">Alertas activos hoje</div>
+    <div class="alert-item ai-r">
+      <div class="alert-dot" style="background:var(--danger)"></div>
+      <div><strong>Paulo Oliveira</strong> — Score 86% · ACWR 1.47 + HRV -22% + Historial ×2. Screening funcional obrigatório antes do treino. <span class="badge b-r" style="margin-left:6px">AGORA</span></div>
+    </div>
+    <div class="alert-item ai-w">
+      <div class="alert-dot" style="background:var(--warn)"></div>
+      <div><strong>Diogo Jota</strong> — Score 58% · MD+1 após jogo clube. Treino regenerativo recomendado hoje. <span class="badge b-w" style="margin-left:6px">HOJE</span></div>
+    </div>
+    <div class="alert-item ai-w">
+      <div class="alert-dot" style="background:var(--warn)"></div>
+      <div><strong>Rúben Neves</strong> — Score 52% · Sono 5.9h (3 noites consecutivas). Protocolo de sono urgente. <span class="badge b-w" style="margin-left:6px">HOJE</span></div>
+    </div>
+    <div class="alert-item ai-b">
+      <div class="alert-dot" style="background:var(--blue)"></div>
+      <div><strong>Rúben Costa</strong> — Reabilitação LCA · Semana 10/24 · Aprovado para treino em campo com restrições. <span class="badge b-b" style="margin-left:6px">ACTUALIZADO</span></div>
+    </div>
+  </div>
+
+  <!-- Team Grid -->
+  <div class="mono-label" style="margin-bottom:12px">Todos os atletas · ordenados por score de risco</div>
+  <div class="team-grid">
+    <div class="athlete-card ac-danger" onclick="showSection('athlete')" style="border-color:rgba(255,77,109,0.3)">
+      <div class="ac-header">
+        <div><div class="ac-name">Paulo Oliveira</div><div class="ac-pos">MC · 24a · Sporting CP</div></div>
+        <div class="ac-score t-danger">86%</div>
+      </div>
+      <div class="ac-bar"><div class="ac-bar-fill" style="width:86%;background:var(--danger)"></div></div>
+      <div class="ac-vars">
+        <span class="ac-var" style="background:var(--dd);color:var(--danger)">Historial ×2</span>
+        <span class="ac-var" style="background:var(--dd);color:var(--danger)">ACWR 1.47</span>
+        <span class="ac-var" style="background:var(--dd);color:var(--danger)">HRV -22%</span>
+      </div>
+    </div>
+    <div class="athlete-card ac-warn">
+      <div class="ac-header">
+        <div><div class="ac-name">Diogo Jota</div><div class="ac-pos">AV · 27a · Liverpool FC</div></div>
+        <div class="ac-score t-warn">58%</div>
+      </div>
+      <div class="ac-bar"><div class="ac-bar-fill" style="width:58%;background:var(--warn)"></div></div>
+      <div class="ac-vars">
+        <span class="ac-var" style="background:var(--wd);color:var(--warn)">MD+1</span>
+        <span class="ac-var" style="background:var(--wd);color:var(--warn)">Fadiga 6/7</span>
+      </div>
+    </div>
+    <div class="athlete-card ac-warn">
+      <div class="ac-header">
+        <div><div class="ac-name">Rúben Neves</div><div class="ac-pos">MC · 28a · Al-Hilal</div></div>
+        <div class="ac-score t-warn">52%</div>
+      </div>
+      <div class="ac-bar"><div class="ac-bar-fill" style="width:52%;background:var(--warn)"></div></div>
+      <div class="ac-vars">
+        <span class="ac-var" style="background:var(--wd);color:var(--warn)">Sono 5.9h</span>
+        <span class="ac-var" style="background:var(--wd);color:var(--warn)">Viagem longa</span>
+      </div>
+    </div>
+    <div class="athlete-card ac-blue">
+      <div class="ac-header">
+        <div><div class="ac-name">Rúben Costa</div><div class="ac-pos">DD · 26a · SL Benfica</div></div>
+        <div class="ac-score t-blue">—</div>
+      </div>
+      <span class="ac-rehab">🦴 LCA · Semana 10/24</span>
+      <div class="ac-vars" style="margin-top:8px">
+        <span class="ac-var" style="background:var(--gd);color:var(--green)">Treino campo ✓</span>
+      </div>
+    </div>
+    <div class="athlete-card ac-green">
+      <div class="ac-header">
+        <div><div class="ac-name">Bernardo Silva</div><div class="ac-pos">MC · 29a · Manchester City</div></div>
+        <div class="ac-score t-green">28%</div>
+      </div>
+      <div class="ac-bar"><div class="ac-bar-fill" style="width:28%;background:var(--green)"></div></div>
+      <div class="ac-vars"><span class="ac-var" style="background:var(--gd);color:var(--green)">Disponível ✓</span></div>
+    </div>
+    <div class="athlete-card ac-green">
+      <div class="ac-header">
+        <div><div class="ac-name">Vitinha</div><div class="ac-pos">MC · 24a · PSG</div></div>
+        <div class="ac-score t-green">31%</div>
+      </div>
+      <div class="ac-bar"><div class="ac-bar-fill" style="width:31%;background:var(--green)"></div></div>
+      <div class="ac-vars"><span class="ac-var" style="background:var(--gd);color:var(--green)">Disponível ✓</span></div>
+    </div>
+    <div class="athlete-card ac-green">
+      <div class="ac-header">
+        <div><div class="ac-name">Rafael Leão</div><div class="ac-pos">EE · 25a · AC Milan</div></div>
+        <div class="ac-score t-green">34%</div>
+      </div>
+      <div class="ac-bar"><div class="ac-bar-fill" style="width:34%;background:var(--green)"></div></div>
+      <div class="ac-vars"><span class="ac-var" style="background:var(--gd);color:var(--green)">Disponível ✓</span></div>
+    </div>
+    <div class="athlete-card ac-green">
+      <div class="ac-header">
+        <div><div class="ac-name">João Cancelo</div><div class="ac-pos">DE · 30a · FC Barcelona</div></div>
+        <div class="ac-score t-green">41%</div>
+      </div>
+      <div class="ac-bar"><div class="ac-bar-fill" style="width:41%;background:var(--warn)"></div></div>
+      <div class="ac-vars"><span class="ac-var" style="background:var(--wd);color:var(--warn)">ACWR 1.28</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 2: LIVE SCORE
+═══════════════════════════════════════════════════════════ -->
+<div class="section" id="s-live">
+  <div class="section-header">
+    <div>
+      <div class="sh-title">Score ao Vivo <span class="live-dot" style="margin-left:8px;"></span></div>
+      <div class="sh-sub">Ajusta as variáveis e vê o score actualizar em tempo real · Paulo Oliveira</div>
+    </div>
+  </div>
+
+  <div class="live-layout">
+    <!-- Variables Panel -->
+    <div class="vars-panel">
+      <div class="vars-title">Variáveis do Modelo</div>
+      <div class="vars-sub">v1.1 · 9 variáveis · pesos baseados em literatura</div>
+
+      <!-- History -->
+      <div class="var-row">
+        <div class="var-header">
+          <div class="var-label">📋 Historial lesões <span id="vp-history" class="var-partial badge b-r">1.00</span></div>
+          <select id="sl-history" onchange="calcScore()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:3px 8px;border-radius:6px;font-family:var(--mono);font-size:11px;">
+            <option value="0">0 episódios</option>
+            <option value="0.5">1 episódio</option>
+            <option value="1" selected>≥2 mesmo segmento</option>
+          </select>
+        </div>
+        <div class="var-desc">Preditor mais forte · Ekstrand BJSM 2022/23 · peso 0.20</div>
+      </div>
+      <div class="divider" style="margin:10px 0"></div>
+
+      <!-- ACWR -->
+      <div class="var-row">
+        <div class="var-header">
+          <div class="var-label">📡 ACWR GPS <span id="vp-acwr" class="var-partial badge b-r">0.90</span></div>
+          <span id="sv-acwr" class="var-val">1.47</span>
+        </div>
+        <input type="range" class="slider" id="sl-acwr" min="0.5" max="2.2" step="0.01" value="1.47" oninput="calcScore()">
+        <div class="var-desc">Rácio carga aguda/crónica · EWMA · zona segura 0.8–1.3 · peso 0.20</div>
+      </div>
+      <div class="divider" style="margin:10px 0"></div>
+
+      <!-- HRV -->
+      <div class="var-row">
+        <div class="var-header">
+          <div class="var-label">🧬 HRV Δ baseline <span id="vp-hrv" class="var-partial badge b-r">0.82</span></div>
+          <span id="sv-hrv" class="var-val">-22%</span>
+        </div>
+        <input type="range" class="slider" id="sl-hrv" min="-40" max="20" step="1" value="-22" oninput="calcScore()">
+        <div class="var-desc">Delta % face ao baseline individual · Plews 2013 · peso 0.18</div>
+      </div>
+      <div class="divider" style="margin:10px 0"></div>
+
+      <!-- Fatigue -->
+      <div class="var-row">
+        <div class="var-header">
+          <div class="var-label">💬 Fadiga (Hooper) <span id="vp-fatigue" class="var-partial badge b-r">0.80</span></div>
+          <span id="sv-fatigue" class="var-val">6/7</span>
+        </div>
+        <input type="range" class="slider" id="sl-fatigue" min="1" max="7" step="1" value="6" oninput="calcScore()">
+        <div class="var-desc">Escala 1–7 · Hooper 1995 · peso 0.13</div>
+      </div>
+      <div class="divider" style="margin:10px 0"></div>
+
+      <!-- Sleep -->
+      <div class="var-row">
+        <div class="var-header">
+          <div class="var-label">😴 Sono (horas) <span id="vp-sleep" class="var-partial badge b-r">0.75</span></div>
+          <span id="sv-sleep" class="var-val">5.8h</span>
+        </div>
+        <input type="range" class="slider" id="sl-sleep" min="3" max="10" step="0.5" value="5.8" oninput="calcScore()">
+        <div class="var-desc">OR=1.34 para &lt;7h · meta-análise 2025 · peso 0.12</div>
+      </div>
+      <div class="divider" style="margin:10px 0"></div>
+
+      <!-- TQR -->
+      <div class="var-row">
+        <div class="var-header">
+          <div class="var-label">🔄 TQR <span id="vp-tqr" class="var-partial badge b-r">0.85</span></div>
+          <span id="sv-tqr" class="var-val">9/20</span>
+        </div>
+        <input type="range" class="slider" id="sl-tqr" min="6" max="20" step="1" value="9" oninput="calcScore()">
+        <div class="var-desc">Total Quality Recovery · Kenttä 1998 · peso 0.07</div>
+      </div>
+      <div class="divider" style="margin:10px 0"></div>
+
+      <!-- Stress -->
+      <div class="var-row">
+        <div class="var-header">
+          <div class="var-label">🧠 Stress percebido <span id="vp-stress" class="var-partial badge b-w">0.60</span></div>
+          <span id="sv-stress" class="var-val">7/10</span>
+        </div>
+        <input type="range" class="slider" id="sl-stress" min="0" max="10" step="1" value="7" oninput="calcScore()">
+        <div class="var-desc">VAS 0–10 · peso reduzido 0.04 · evidência fraca em pro</div>
+      </div>
+      <div class="divider" style="margin:10px 0"></div>
+
+      <!-- Decel -->
+      <div class="var-row">
+        <div class="var-header">
+          <div class="var-label">⚡ Dec. alta int. ACWR <span id="vp-decel" class="var-partial badge b-w">0.72</span></div>
+          <span id="sv-decel" class="var-val">1.38</span>
+        </div>
+        <input type="range" class="slider" id="sl-decel" min="0.5" max="2.2" step="0.01" value="1.38" oninput="calcScore()">
+        <div class="var-desc">ACWR desacelerações &gt;3 m/s² · GPS · peso 0.04</div>
+      </div>
+      <div class="divider" style="margin:10px 0"></div>
+
+      <!-- MD -->
+      <div class="var-row">
+        <div class="var-header">
+          <div class="var-label">📅 MD+n <span id="vp-md" class="var-partial badge b-r">1.00</span></div>
+          <select id="sl-md" onchange="calcScore()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:3px 8px;border-radius:6px;font-family:var(--mono);font-size:11px;">
+            <option value="0">MD+4 ou mais</option>
+            <option value="0.4">MD+3</option>
+            <option value="0.7">MD+2</option>
+            <option value="1" selected>MD+1</option>
+          </select>
+        </div>
+        <div class="var-desc">Dias desde último jogo · calculado do calendário · peso 0.02</div>
+      </div>
+    </div>
+
+    <!-- Score Panel -->
+    <div class="score-panel">
+      <!-- Gauge -->
+      <div class="gauge-card">
+        <div class="gauge-wrap">
+          <svg width="160" height="160" viewBox="0 0 160 160">
+            <circle class="gauge-bg" cx="80" cy="80" r="66"/>
+            <circle class="gauge-fill" id="gauge-fill" cx="80" cy="80" r="66" stroke-dasharray="414.7" stroke-dashoffset="58" stroke="var(--danger)"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-num" id="gauge-num" style="color:var(--danger)">86%</div>
+            <div class="gauge-label" id="gauge-label" style="color:var(--danger)">ALTO</div>
+          </div>
+        </div>
+        <div class="score-info">
+          <h2 id="score-title">Risco Alto</h2>
+          <div class="score-risk-label" id="score-desc">Convergência de múltiplos factores de risco. Intervenção clínica recomendada. Variável dominante: <strong id="dominant-var">Historial de lesões</strong></div>
+          <span class="conf-pill cp-high" id="conf-pill"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>Alta confiança · 9/9 variáveis</span>
+        </div>
+      </div>
+
+      <!-- Decomposition -->
+      <div class="decomp-card">
+        <div class="decomp-title">Decomposição por variável</div>
+        <div id="decomp-rows">
+          <div class="decomp-row"><div class="dr-name">📋 Historial<span id="dt-history" class="dominant-tag">dominante</span></div><div class="dr-track"><div class="dr-fill" id="df-history" style="width:100%;background:var(--danger)"></div></div><div class="dr-val t-danger" id="dv-history">100%</div><div class="dr-weight">×0.20</div></div>
+          <div class="decomp-row"><div class="dr-name">📡 ACWR GPS</div><div class="dr-track"><div class="dr-fill" id="df-acwr" style="width:90%;background:var(--danger)"></div></div><div class="dr-val t-danger" id="dv-acwr">90%</div><div class="dr-weight">×0.20</div></div>
+          <div class="decomp-row"><div class="dr-name">🧬 HRV delta</div><div class="dr-track"><div class="dr-fill" id="df-hrv" style="width:82%;background:var(--danger)"></div></div><div class="dr-val t-danger" id="dv-hrv">82%</div><div class="dr-weight">×0.18</div></div>
+          <div class="decomp-row"><div class="dr-name">💬 Fadiga</div><div class="dr-track"><div class="dr-fill" id="df-fatigue" style="width:80%;background:var(--danger)"></div></div><div class="dr-val t-danger" id="dv-fatigue">80%</div><div class="dr-weight">×0.13</div></div>
+          <div class="decomp-row"><div class="dr-name">😴 Sono</div><div class="dr-track"><div class="dr-fill" id="df-sleep" style="width:75%;background:var(--danger)"></div></div><div class="dr-val t-danger" id="dv-sleep">75%</div><div class="dr-weight">×0.12</div></div>
+          <div class="decomp-row"><div class="dr-name">🔄 TQR</div><div class="dr-track"><div class="dr-fill" id="df-tqr" style="width:85%;background:var(--danger)"></div></div><div class="dr-val t-danger" id="dv-tqr">85%</div><div class="dr-weight">×0.07</div></div>
+          <div class="decomp-row"><div class="dr-name">🧠 Stress</div><div class="dr-track"><div class="dr-fill" id="df-stress" style="width:60%;background:var(--warn)"></div></div><div class="dr-val t-warn" id="dv-stress">60%</div><div class="dr-weight">×0.04</div></div>
+          <div class="decomp-row"><div class="dr-name">⚡ Dec. GPS</div><div class="dr-track"><div class="dr-fill" id="df-decel" style="width:72%;background:var(--purple)"></div></div><div class="dr-val" style="color:var(--purple)" id="dv-decel">72%</div><div class="dr-weight">×0.04</div></div>
+          <div class="decomp-row"><div class="dr-name">📅 MD+n</div><div class="dr-track"><div class="dr-fill" id="df-md" style="width:100%;background:var(--purple)"></div></div><div class="dr-val" style="color:var(--purple)" id="dv-md">100%</div><div class="dr-weight">×0.02</div></div>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="rec-card">
+        <div class="card-title">Recomendações · <span id="rec-var-title" style="color:var(--danger)">Historial de lesões + Risco Alto</span></div>
+        <div class="rec-grid" id="rec-grid">
+          <!-- dynamically rendered -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 3: REHABILITATION
+═══════════════════════════════════════════════════════════ -->
+<div class="section" id="s-rehab">
+  <div class="section-header">
+    <div>
+      <div class="sh-title">Reabilitação Activa</div>
+      <div class="sh-sub">4 atletas em protocolo · Timelines e critérios de progressão</div>
+    </div>
+    <button class="btn btn-primary">+ Novo protocolo</button>
+  </div>
+
+  <div class="rehab-grid">
+
+    <!-- ATLETA 1: LCA -->
+    <div class="rehab-card">
+      <div class="rehab-header">
+        <div class="rh-left">
+          <h3>Rúben Costa</h3>
+          <p>DD · 26a · SL Benfica &nbsp;·&nbsp; LCA Direito Pós-Cirúrgico</p>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <span class="badge b-b">Semana 10/24</span>
+            <span class="badge b-g">42% concluído</span>
+          </div>
+        </div>
+        <div class="rh-right">
+          <div class="rh-phase">Fase 3: Força e Controlo</div>
+          <div class="rh-rtp">RTP previsto: 12 Setembro 2026</div>
+        </div>
+      </div>
+      <div class="rehab-body">
+        <div class="timeline-bar">
+          <div class="tl-label"><span>SEMANA 1</span><span>SEMANA 24</span></div>
+          <div class="tl-track">
+            <div class="tl-fill" style="width:42%;background:linear-gradient(90deg,var(--green),var(--blue))"></div>
+            <div class="tl-marker" style="left:42%;background:var(--blue);border-color:var(--bg2)"></div>
+          </div>
+        </div>
+        <div class="phases-row">
+          <span class="phase-tag pt-done">✓ F1: Imobilização</span>
+          <span class="phase-tag pt-done">✓ F2: Mobilidade</span>
+          <span class="phase-tag pt-current">▶ F3: Força</span>
+          <span class="phase-tag pt-pending">F4: Corrida</span>
+          <span class="phase-tag pt-pending">F5: Agilidade</span>
+          <span class="phase-tag pt-pending">F6: RTP</span>
+        </div>
+        <div class="divider"></div>
+        <div class="mono-label" style="margin-bottom:8px">Critérios actuais (Fase 3)</div>
+        <div class="criteria-list">
+          <div class="crit-item"><div class="crit-check cc-ok">✓</div><span>Extensão completa do joelho sem dor</span></div>
+          <div class="crit-item"><div class="crit-check cc-ok">✓</div><span>Leg Press: 100% da força contralateral</span></div>
+          <div class="crit-item"><div class="crit-check cc-ok">✓</div><span>Corrida em linha recta a 60%</span></div>
+          <div class="crit-item"><div class="crit-check cc-warn">~</div><span>Squat unilateral sem compensação (em progresso)</span></div>
+          <div class="crit-item"><div class="crit-check cc-no">○</div><span>LSI Quad ≥ 80% (Leg Press isocinético)</span></div>
+          <div class="crit-item"><div class="crit-check cc-no">○</div><span>Salto unilateral ≥ 80% contralateral</span></div>
+        </div>
+        <div class="next-milestone">📍 <strong>Próximo marco:</strong> Semana 12 — progressão para corrida com mudança de direcção se LSI ≥ 80%</div>
+      </div>
+    </div>
+
+    <!-- ATLETA 2: Isquiotibial -->
+    <div class="rehab-card">
+      <div class="rehab-header">
+        <div class="rh-left">
+          <h3>André Martins</h3>
+          <p>MC · 29a · FC Porto &nbsp;·&nbsp; Isquiotibial Grau II Esquerdo</p>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <span class="badge b-w">Semana 3/6</span>
+            <span class="badge b-g">50% concluído</span>
+          </div>
+        </div>
+        <div class="rh-right">
+          <div class="rh-phase" style="color:var(--warn);background:var(--wd);border-color:rgba(246,173,85,0.3)">Fase 2: Força Excêntrica</div>
+          <div class="rh-rtp">RTP previsto: 29 Abril 2026</div>
+        </div>
+      </div>
+      <div class="rehab-body">
+        <div class="timeline-bar">
+          <div class="tl-label"><span>DIA 1</span><span>SEMANA 6</span></div>
+          <div class="tl-track">
+            <div class="tl-fill" style="width:50%;background:linear-gradient(90deg,var(--green),var(--warn))"></div>
+            <div class="tl-marker" style="left:50%;background:var(--warn);border-color:var(--bg2)"></div>
+          </div>
+        </div>
+        <div class="phases-row">
+          <span class="phase-tag pt-done">✓ F1: Aguda</span>
+          <span class="phase-tag pt-current">▶ F2: Força exc.</span>
+          <span class="phase-tag pt-pending">F3: Corrida</span>
+          <span class="phase-tag pt-pending">F4: RTP</span>
+        </div>
+        <div class="divider"></div>
+        <div class="mono-label" style="margin-bottom:8px">Critérios actuais (Fase 2 — Askling 2013)</div>
+        <div class="criteria-list">
+          <div class="crit-item"><div class="crit-check cc-ok">✓</div><span>Askling H-test negativo</span></div>
+          <div class="crit-item"><div class="crit-check cc-ok">✓</div><span>NHE 3 séries × 6 reps sem dor</span></div>
+          <div class="crit-item"><div class="crit-check cc-ok">✓</div><span>Single-leg RDL simétrico bilateral</span></div>
+          <div class="crit-item"><div class="crit-check cc-warn">~</div><span>Corrida progressiva a 80% sem sintomas (em progresso)</span></div>
+          <div class="crit-item"><div class="crit-check cc-no">○</div><span>Sprint a 95% sem alteração de padrão (GPS)</span></div>
+        </div>
+        <div class="next-milestone">📍 <strong>Próximo marco:</strong> Semana 4 — sprint progressivo com GPS se corrida a 80% OK</div>
+      </div>
+    </div>
+
+    <!-- ATLETA 3: Tendinopatia -->
+    <div class="rehab-card">
+      <div class="rehab-header">
+        <div class="rh-left">
+          <h3>Gonçalo Guedes</h3>
+          <p>EE · 27a · FC Porto &nbsp;·&nbsp; Tendinopatia Aquiliana Direita</p>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <span class="badge b-w">Semana 6/10</span>
+            <span class="badge b-g">60% concluído</span>
+          </div>
+        </div>
+        <div class="rh-right">
+          <div class="rh-phase" style="color:var(--warn);background:var(--wd);border-color:rgba(246,173,85,0.3)">Fase 3: Carga Reactiva</div>
+          <div class="rh-rtp">RTP previsto: 2 Maio 2026</div>
+        </div>
+      </div>
+      <div class="rehab-body">
+        <div class="timeline-bar">
+          <div class="tl-label"><span>DIA 1</span><span>SEMANA 10</span></div>
+          <div class="tl-track">
+            <div class="tl-fill" style="width:60%;background:linear-gradient(90deg,var(--green),var(--warn))"></div>
+            <div class="tl-marker" style="left:60%;background:var(--warn);border-color:var(--bg2)"></div>
+          </div>
+        </div>
+        <div class="phases-row">
+          <span class="phase-tag pt-done">✓ F1: Isométrico</span>
+          <span class="phase-tag pt-done">✓ F2: Isotónico</span>
+          <span class="phase-tag pt-current">▶ F3: Reactivo</span>
+          <span class="phase-tag pt-pending">F4: Específico</span>
+          <span class="phase-tag pt-pending">F5: RTP</span>
+        </div>
+        <div class="divider"></div>
+        <div class="mono-label" style="margin-bottom:8px">Critérios actuais (Alfredson + Cook 2009)</div>
+        <div class="criteria-list">
+          <div class="crit-item"><div class="crit-check cc-ok">✓</div><span>Heel-raise 25 reps × 3 bilateral sem dor</span></div>
+          <div class="crit-item"><div class="crit-check cc-ok">✓</div><span>Heel-raise unilateral 15 reps sem dor</span></div>
+          <div class="crit-item"><div class="crit-check cc-warn">~</div><span>VISA-A score ≥ 80 (actual: 72)</span></div>
+          <div class="crit-item"><div class="crit-check cc-no">○</div><span>Salto unilateral sem dor</span></div>
+          <div class="crit-item"><div class="crit-check cc-no">○</div><span>Corrida contínua 20 min sem exacerbação</span></div>
+        </div>
+        <div class="next-milestone">📍 <strong>Próximo marco:</strong> Semana 7 — salto unilateral progressivo se VISA-A ≥ 80</div>
+      </div>
+    </div>
+
+    <!-- ATLETA 4: Tornozelo -->
+    <div class="rehab-card">
+      <div class="rehab-header">
+        <div class="rh-left">
+          <h3>Nuno Mendes</h3>
+          <p>DE · 22a · PSG &nbsp;·&nbsp; Entorse Lateral Tornozelo Esq. Grau II</p>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <span class="badge b-g">Semana 3/4</span>
+            <span class="badge b-g">75% concluído</span>
+          </div>
+        </div>
+        <div class="rh-right">
+          <div class="rh-phase" style="color:var(--green);background:var(--gd);border-color:rgba(0,229,160,0.3)">Fase 3: RTP</div>
+          <div class="rh-rtp">RTP previsto: 15 Abril 2026 ✓</div>
+        </div>
+      </div>
+      <div class="rehab-body">
+        <div class="timeline-bar">
+          <div class="tl-label"><span>DIA 1</span><span>SEMANA 4</span></div>
+          <div class="tl-track">
+            <div class="tl-fill" style="width:75%;background:linear-gradient(90deg,var(--warn),var(--green))"></div>
+            <div class="tl-marker" style="left:75%;background:var(--green);border-color:var(--bg2)"></div>
+          </div>
+        </div>
+        <div class="phases-row">
+          <span class="phase-tag pt-done">✓ F1: RICE/Edema</span>
+          <span class="phase-tag pt-done">✓ F2: Mobilidade</span>
+          <span class="phase-tag pt-current">▶ F3: RTP</span>
+        </div>
+        <div class="divider"></div>
+        <div class="mono-label" style="margin-bottom:8px">Critérios RTP (ROAST 2019)</div>
+        <div class="criteria-list">
+          <div class="crit-item"><div class="crit-check cc-ok">✓</div><span>Amplitude de movimento completa sem dor</span></div>
+          <div class="crit-item"><div class="crit-check cc-ok">✓</div><span>Força peroneal simétrica bilateral</span></div>
+          <div class="crit-item"><div class="crit-check cc-ok">✓</div><span>Y-Balance Test: diferença &lt;4 cm</span></div>
+          <div class="crit-item"><div class="crit-check cc-ok">✓</div><span>Salto triplo unilateral ≥ 90% contralateral</span></div>
+          <div class="crit-item"><div class="crit-check cc-warn">~</div><span>Treino de grupo completo sem restrições (última sessão)</span></div>
+        </div>
+        <div class="next-milestone" style="background:var(--gd2);border-color:rgba(0,229,160,0.2)">🎯 <strong>Clearance esperado:</strong> Após treino completo hoje — RTP total para jogo dia 15 Abril</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 4: ATHLETE DETAIL — PAULO OLIVEIRA
+═══════════════════════════════════════════════════════════ -->
+<div class="section" id="s-athlete">
+  <div class="section-header">
+    <div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="sh-title">Paulo Oliveira</div>
+        <span class="badge b-r">86% · Risco Alto</span>
+        <span class="badge b-p">MC · 24a · Sporting CP</span>
+      </div>
+      <div class="sh-sub">Estágio FPF · Dia 3 · Jogo amanhã · Screening obrigatório hoje</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn">📋 Exportar ficha</button>
+      <button class="btn btn-primary">+ Registar screening</button>
+    </div>
+  </div>
+
+  <div class="athlete-layout">
+    <div>
+      <!-- Score History Chart -->
+      <div class="history-chart">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div class="card-title">Score de Risco — Últimos 30 dias</div>
+            <div style="font-size:12px;color:var(--t2);">Dados clube (Sporting CP) + estágio FPF</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <span class="badge b-g" style="font-size:10px">Clube</span>
+            <span class="badge b-b" style="font-size:10px">Estágio</span>
+          </div>
+        </div>
+        <div class="chart-wrap" style="height:140px;margin-top:16px;position:relative;">
+          <svg width="100%" height="140" id="history-svg" style="overflow:visible;"></svg>
+        </div>
+      </div>
+
+      <!-- Key metrics grid -->
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="ic-label">ACWR (EWMA)</div>
+          <div class="ic-val t-danger">1.47</div>
+          <div class="ic-sub">Zona risco &gt;1.3 · Carga +47% vs. crónica</div>
+        </div>
+        <div class="info-card">
+          <div class="ic-label">HRV Δ Baseline</div>
+          <div class="ic-val t-danger">-22%</div>
+          <div class="ic-sub">68ms → 53ms · SNA comprometido</div>
+        </div>
+        <div class="info-card">
+          <div class="ic-label">Sono</div>
+          <div class="ic-val t-danger">5.8h</div>
+          <div class="ic-sub">Abaixo de 6h · OR=1.34 risco lesão</div>
+        </div>
+        <div class="info-card">
+          <div class="ic-label">TQR</div>
+          <div class="ic-val t-danger">9/20</div>
+          <div class="ic-sub">Recuperação percebida muito insuficiente</div>
+        </div>
+      </div>
+
+      <!-- Screening Checklist -->
+      <div class="screening-card">
+        <div class="card-title">Screening Funcional — Obrigatório hoje</div>
+        <div style="font-size:12px;color:var(--t2);margin-bottom:14px;">Clica para marcar como concluído · Negativo em todos → score previsto baixa para ~65%</div>
+        <div class="sc-item" onclick="toggleCheck(this)">
+          <div class="sc-box"></div>
+          <div class="sc-text"><strong>Askling H-test</strong> — palpação em tensão neural. Positivo = indisponível independentemente de outros resultados.</div>
+          <span class="sc-ref">Askling 2013</span>
+        </div>
+        <div class="sc-item" onclick="toggleCheck(this)">
+          <div class="sc-box"></div>
+          <div class="sc-text"><strong>Palpação proximal isquiotibial</strong> — origem isquiática e ventre muscular. Qualquer dor = paragem imediata.</div>
+          <span class="sc-ref">Ekstrand 2016</span>
+        </div>
+        <div class="sc-item" onclick="toggleCheck(this)">
+          <div class="sc-box"></div>
+          <div class="sc-text"><strong>Single-leg RDL bilateral</strong> — excêntrico controlado. Assimetria &gt;15% ou dor = não avança para sprint.</div>
+          <span class="sc-ref">Croisier 2008</span>
+        </div>
+        <div class="sc-item" onclick="toggleCheck(this)">
+          <div class="sc-box"></div>
+          <div class="sc-text"><strong>NHE avaliativo</strong> — execução bilateral. Observar compensação ou dor.</div>
+          <span class="sc-ref">van der Horst 2015</span>
+        </div>
+        <div class="sc-item" onclick="toggleCheck(this)">
+          <div class="sc-box"></div>
+          <div class="sc-text"><strong>Sprint progressivo 40-60-80%</strong> — com GPS. Alteração de stride ou assimetria pélvica = flag vermelho.</div>
+          <span class="sc-ref">Duhig 2016</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side panel -->
+    <div class="side-panel">
+      <!-- Score card -->
+      <div class="sp-card" style="border-color:rgba(255,77,109,0.3);">
+        <div class="gauge-wrap" style="width:120px;height:120px;margin:0 auto 14px;">
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            <circle fill="none" stroke="var(--bg4)" stroke-width="10" cx="60" cy="60" r="50"/>
+            <circle fill="none" stroke="var(--danger)" stroke-width="10" stroke-linecap="round" cx="60" cy="60" r="50"
+              stroke-dasharray="314" stroke-dashoffset="44" transform="rotate(-90 60 60)"/>
+          </svg>
+          <div class="gauge-center">
+            <div style="font-family:var(--disp);font-size:32px;font-weight:900;color:var(--danger)">86%</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--danger);letter-spacing:1px">ALTO</div>
+          </div>
+        </div>
+        <div class="conf-pill cp-high" style="width:100%;justify-content:center;margin-bottom:10px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>
+          Alta confiança · 28 dias dados
+        </div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.6;text-align:center">Variável dominante:<br><strong style="color:var(--text)">Historial de lesões</strong></div>
+      </div>
+
+      <!-- History card -->
+      <div class="sp-card">
+        <div class="mono-label" style="margin-bottom:10px">Historial clínico relevante</div>
+        <div style="background:var(--dd);border:1px solid rgba(255,77,109,0.2);border-radius:var(--r8);padding:10px 12px;margin-bottom:8px;font-size:12px;line-height:1.6;">
+          <div style="color:var(--danger);font-weight:600;margin-bottom:2px">Set 2023 — Isquiotibial Grau I Direito</div>
+          <div style="color:var(--t2)">Mecanismo: sprint máximo MD+1 · 12 dias indisponível · ACWR 1.38 na semana anterior</div>
+        </div>
+        <div style="background:var(--dd);border:1px solid rgba(255,77,109,0.2);border-radius:var(--r8);padding:10px 12px;font-size:12px;line-height:1.6;">
+          <div style="color:var(--danger);font-weight:600;margin-bottom:2px">Mar 2022 — Isquiotibial Grau I Direito</div>
+          <div style="color:var(--t2)">Mecanismo: aceleração em transição · 9 dias indisponível · Mesmo segmento</div>
+        </div>
+        <div style="background:var(--wd);border:1px solid rgba(246,173,85,0.2);border-radius:var(--r8);padding:8px 12px;margin-top:8px;font-size:11px;color:var(--warn);">
+          ⚠ Padrão: ambas as lesões com ACWR &gt;1.35 nos 7 dias anteriores
+        </div>
+      </div>
+
+      <!-- Recommendations card -->
+      <div class="sp-card">
+        <div class="mono-label" style="margin-bottom:10px">Acções prioritárias hoje</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div class="rec-item ri-r" style="font-size:12px;padding:8px 10px;">
+            <div>🚨</div>
+            <div><strong>Screening funcional agora</strong><span class="rec-timing">ANTES DO TREINO</span></div>
+          </div>
+          <div class="rec-item ri-w" style="font-size:12px;padding:8px 10px;">
+            <div>⬇</div>
+            <div><strong>Reduzir volume 25-30%</strong><span class="rec-timing">TREINO HOJE</span></div>
+          </div>
+          <div class="rec-item ri-w" style="font-size:12px;padding:8px 10px;">
+            <div>❄️</div>
+            <div><strong>Crioterapia à tarde</strong><span class="rec-timing">URGENTE</span></div>
+          </div>
+          <div class="rec-item ri-b" style="font-size:12px;padding:8px 10px;">
+            <div>😴</div>
+            <div><strong>Meta 8h sono esta noite</strong><span class="rec-timing">ESTA NOITE</span></div>
+          </div>
+          <div class="rec-item ri-b" style="font-size:12px;padding:8px 10px;">
+            <div>📊</div>
+            <div><strong>HRV amanhã 07:30 — se &lt;58ms rever titular</strong><span class="rec-timing">AMANHÃ</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coach message -->
+      <div class="sp-card" style="border-color:rgba(246,173,85,0.2);">
+        <div class="mono-label" style="margin-bottom:8px;color:var(--warn)">Mensagem ao treinador</div>
+        <div style="font-size:13px;color:var(--t2);line-height:1.7;font-style:italic;padding:10px 12px;background:var(--wd);border-radius:var(--r8);border:1px solid rgba(246,173,85,0.15);">
+          "O Paulo está disponível mas com sobrecarga acumulada. Recomendo aquecimento específico alargado e plano de substituição aos 60-70 min se GPS acima do baseline."
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end main -->
+
+<script>
+// ── CLOCK ────────────────────────────────────────────────────────────────────
+function updateClock(){
+  const d = new Date();
+  const h = String(d.getHours()).padStart(2,'0');
+  const m = String(d.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${m} · 8 Abr 2026`;
+}
+setInterval(updateClock,10000);
+updateClock();
+
+// ── NAVIGATION ───────────────────────────────────────────────────────────────
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('s-'+id).classList.add('on');
+  const btns = document.querySelectorAll('.nav-btn');
+  const map = {dashboard:0,live:1,rehab:2,athlete:3};
+  btns[map[id]].classList.add('on');
+  if(id==='live') calcScore();
+  if(id==='athlete') drawChart();
+}
+
+function updateRole(){
+  // could adapt view based on role
+}
+
+// ── SCORE ALGORITHM ──────────────────────────────────────────────────────────
+const WEIGHTS = {history:0.20,acwr:0.20,hrv:0.18,fatigue:0.13,sleep:0.12,tqr:0.07,stress:0.04,decel:0.04,md:0.02};
+
+function normalize(key,val){
+  switch(key){
+    case 'acwr':   return Math.max(0,Math.min(1,(val-0.8)/(1.5-0.8)));
+    case 'hrv':    return Math.max(0,Math.min(1,(-val-5)/(25-5)));
+    case 'fatigue':return Math.max(0,Math.min(1,(val-4)/(7-4)));
+    case 'sleep':  return Math.max(0,Math.min(1,(7-val)/(7-4)));
+    case 'tqr':    return Math.max(0,Math.min(1,(13-val)/(13-6)));
+    case 'stress': return Math.max(0,Math.min(1,(val-4)/(10-4)));
+    case 'decel':  return Math.max(0,Math.min(1,(val-0.8)/(1.5-0.8)));
+    case 'history':return parseFloat(val);
+    case 'md':     return parseFloat(val);
+    default: return 0;
+  }
+}
+
+function getColor(p){
+  if(p>=0.65) return 'var(--danger)';
+  if(p>=0.35) return 'var(--warn)';
+  return 'var(--green)';
+}
+
+function calcScore(){
+  const vals = {
+    history: document.getElementById('sl-history').value,
+    acwr:    parseFloat(document.getElementById('sl-acwr').value),
+    hrv:     parseFloat(document.getElementById('sl-hrv').value),
+    fatigue: parseFloat(document.getElementById('sl-fatigue').value),
+    sleep:   parseFloat(document.getElementById('sl-sleep').value),
+    tqr:     parseFloat(document.getElementById('sl-tqr').value),
+    stress:  parseFloat(document.getElementById('sl-stress').value),
+    decel:   parseFloat(document.getElementById('sl-decel').value),
+    md:      document.getElementById('sl-md').value
+  };
+
+  // Update display values
+  document.getElementById('sv-acwr').textContent = vals.acwr.toFixed(2);
+  document.getElementById('sv-hrv').textContent = vals.hrv+'%';
+  document.getElementById('sv-fatigue').textContent = vals.fatigue+'/7';
+  document.getElementById('sv-sleep').textContent = vals.sleep+'h';
+  document.getElementById('sv-tqr').textContent = vals.tqr+'/20';
+  document.getElementById('sv-stress').textContent = vals.stress+'/10';
+  document.getElementById('sv-decel').textContent = vals.decel.toFixed(2);
+
+  // Calculate partials
+  const partials = {};
+  let totalScore = 0;
+  let dominant = {key:'history',val:0};
+
+  for(const [k,v] of Object.entries(vals)){
+    const p = normalize(k,v);
+    partials[k] = p;
+    totalScore += p * WEIGHTS[k];
+    if(p > dominant.val){ dominant = {key:k,val:p}; }
+  }
+
+  // Update decomposition rows
+  for(const [k,p] of Object.entries(partials)){
+    const pct = Math.round(p*100);
+    const col = getColor(p);
+    const fill = document.getElementById('df-'+k);
+    const valEl = document.getElementById('dv-'+k);
+    const partEl = document.getElementById('vp-'+k);
+    const tagEl = document.getElementById('dt-'+k);
+    if(fill){ fill.style.width=pct+'%'; fill.style.background=col; }
+    if(valEl){ valEl.textContent=pct+'%'; valEl.style.color=col; }
+    if(partEl){
+      partEl.textContent=p.toFixed(2);
+      partEl.className='var-partial badge '+(p>=0.65?'b-r':p>=0.35?'b-w':'b-g');
+    }
+    if(tagEl) tagEl.style.display = (k===dominant.key)?'inline':'none';
+  }
+
+  // Update slider colors
+  const keys = ['acwr','hrv','fatigue','sleep','tqr','stress','decel'];
+  keys.forEach(k=>{
+    const sl = document.getElementById('sl-'+k);
+    if(!sl) return;
+    const p = partials[k];
+    sl.className = 'slider '+(p>=0.65?'danger':p>=0.35?'warn':'');
+  });
+
+  // Update gauge
+  const sp = Math.round(totalScore*100);
+  const circumference = 414.7;
+  const offset = circumference * (1 - totalScore);
+  const gcol = totalScore>=0.65?'var(--danger)':totalScore>=0.4?'var(--warn)':'var(--green)';
+  const gauge = document.getElementById('gauge-fill');
+  gauge.style.strokeDashoffset = offset;
+  gauge.style.stroke = gcol;
+  document.getElementById('gauge-num').textContent = sp+'%';
+  document.getElementById('gauge-num').style.color = gcol;
+  const riskLabel = totalScore>=0.85?'CRÍTICO':totalScore>=0.65?'ALTO':totalScore>=0.4?'MODERADO':'BAIXO';
+  document.getElementById('gauge-label').textContent = riskLabel;
+  document.getElementById('gauge-label').style.color = gcol;
+
+  const titleMap = {'':'',low:'Risco Baixo',mod:'Risco Moderado',high:'Risco Alto',crit:'Risco Crítico'};
+  const tKey = totalScore>=0.85?'crit':totalScore>=0.65?'high':totalScore>=0.4?'mod':'low';
+  const titles = {low:'Risco Baixo',mod:'Risco Moderado',high:'Risco Alto',crit:'Risco Crítico'};
+  const descs = {
+    low:'Score dentro dos parâmetros normais. Monitorização de rotina.',
+    mod:'Atenção aumentada. Verificar variáveis em alerta. Considerar redução de intensidade.',
+    high:'Intervenção clínica recomendada. Variável dominante:',
+    crit:'Acção imediata necessária. Risco elevado de lesão. Variável dominante:'
+  };
+  document.getElementById('score-title').textContent = titles[tKey];
+  const domNames={history:'Historial de lesões',acwr:'ACWR carga GPS',hrv:'HRV delta baseline',fatigue:'Fadiga (Hooper)',sleep:'Sono',tqr:'TQR',stress:'Stress percebido',decel:'Desacelerações GPS',md:'MD+n'};
+  document.getElementById('score-desc').innerHTML = descs[tKey] + (tKey==='high'||tKey==='crit'?' <strong>'+domNames[dominant.key]+'</strong>':'');
+  document.getElementById('dominant-var').textContent = domNames[dominant.key];
+
+  const domColor = partials[dominant.key]>=0.65?'var(--danger)':partials[dominant.key]>=0.35?'var(--warn)':'var(--green)';
+  document.getElementById('rec-var-title').textContent = domNames[dominant.key]+' + Risco '+riskLabel.charAt(0)+riskLabel.slice(1).toLowerCase();
+  document.getElementById('rec-var-title').style.color = domColor;
+
+  // Update recommendations
+  renderRecs(dominant.key, tKey, domColor);
+}
+
+function renderRecs(varKey, riskLevel, domColor){
+  const recs = {
+    history:{
+      high:{
+        clinical:[
+          {t:'ri-r',i:'🚨',l:'<strong>Screening funcional obrigatório</strong> antes do treino. Askling H-test + palpação proximal + SL-RDL.',tm:'AGORA'},
+          {t:'ri-r',i:'🏃',l:'<strong>Sprint progressivo 40-60-80%</strong> com GPS. Assimetria = paragem.',tm:'PRÉ-TREINO'},
+          {t:'ri-w',i:'📝',l:'<strong>Documentar avaliação</strong> — registo clínico escrito independentemente da decisão.',tm:'HOJE'}
+        ],
+        coach:[
+          {t:'ri-r',i:'⬇',l:'<strong>Reduzir volume treino 25-30%.</strong> Sem sprints máximos.',tm:'HOJE'},
+          {t:'ri-w',i:'🔄',l:'<strong>Substituição preventiva 60-70 min</strong> como plano de contingência.',tm:'JOGO'}
+        ],
+        athlete:[
+          {t:'ri-r',i:'🔥',l:'<strong>Aquecimento Askling 15 min</strong> — não negociável antes de qualquer sprint.',tm:'HOJE'},
+          {t:'ri-w',i:'😴',l:'<strong>Meta 8h sono esta noite.</strong> Quarto escuro, sem ecrãs 90 min antes.',tm:'ESTA NOITE'},
+          {t:'ri-b',i:'❄️',l:'<strong>Crioterapia hoje à tarde</strong> — não foi feita após o jogo.',tm:'TARDE'}
+        ]
+      },
+      crit:{
+        clinical:[
+          {t:'ri-r',i:'🚨',l:'<strong>Não treinar alta intensidade.</strong> Screening completo primeiro.',tm:'AGORA'},
+          {t:'ri-r',i:'👨‍⚕️',l:'<strong>Reunião multidisciplinar</strong> — médico + fisio + preparador.',tm:'HOJE'},
+          {t:'ri-w',i:'📊',l:'<strong>HRV amanhã 07:30.</strong> Se &lt;58ms após sono adequado, rever titular.',tm:'AMANHÃ'}
+        ],
+        coach:[
+          {t:'ri-r',i:'🚨',l:'<strong>Não titular sem clearance clínico.</strong> Risco grave real.',tm:'JOGO'},
+          {t:'ri-r',i:'🔄',l:'<strong>Substituto preparado.</strong>',tm:'HOJE'}
+        ],
+        athlete:[
+          {t:'ri-r',i:'🛑',l:'<strong>Reportar ao fisio antes de qualquer actividade.</strong>',tm:'AGORA'},
+          {t:'ri-w',i:'😴',l:'<strong>Sono 8-9h obrigatório.</strong>',tm:'ESTA NOITE'}
+        ]
+      }
+    },
+    acwr:{
+      high:{
+        clinical:[
+          {t:'ri-r',i:'📉',l:'<strong>ACWR &gt;1.5 — reduzir volume 25-30%.</strong> Sem sprints máximos.',tm:'HOJE'},
+          {t:'ri-w',i:'📊',l:'<strong>Monitorização GPS em tempo real</strong> durante treino.',tm:'TREINO'}
+        ],
+        coach:[
+          {t:'ri-r',i:'⬇',l:'<strong>Treino regenerativo ou táctico.</strong> ACWR elevado = músculo sobrecarregado.',tm:'HOJE'},
+          {t:'ri-w',i:'🔄',l:'<strong>Substituição preventiva 65-70 min</strong> se HI distance acima do baseline.',tm:'JOGO'}
+        ],
+        athlete:[
+          {t:'ri-r',i:'😴',l:'<strong>Sono é a intervenção mais importante.</strong> Meta 8-9h.',tm:'ESTA NOITE'},
+          {t:'ri-w',i:'❄️',l:'<strong>Crioterapia após treino.</strong>',tm:'APÓS TREINO'},
+          {t:'ri-b',i:'🥗',l:'<strong>Janela nutricional 2h pós-treino.</strong> Proteína + hidratos.',tm:'APÓS TREINO'}
+        ]
+      },
+      crit:{
+        clinical:[
+          {t:'ri-r',i:'🚨',l:'<strong>ACWR &gt;2.0 — treino intenso contraindicado.</strong> Recuperação activa apenas.',tm:'HOJE'},
+          {t:'ri-r',i:'🦵',l:'<strong>Avaliação clínica imediata</strong> se qualquer queixa muscular.',tm:'AGORA'}
+        ],
+        coach:[
+          {t:'ri-r',i:'🛑',l:'<strong>Indisponível para treino intenso.</strong> Piscina ou repouso.',tm:'HOJE'},
+          {t:'ri-r',i:'⚠',l:'<strong>Decisão de jogar requer clearance médico.</strong>',tm:'JOGO'}
+        ],
+        athlete:[
+          {t:'ri-r',i:'🛑',l:'<strong>Corpo em sobrecarga máxima.</strong> Hoje é recuperação.',tm:'HOJE'},
+          {t:'ri-w',i:'😴',l:'<strong>9h sono, 3 refeições completas, hidratação.</strong>',tm:'HOJE'}
+        ]
+      }
+    },
+    sleep:{
+      high:{
+        clinical:[
+          {t:'ri-r',i:'😴',l:'<strong>Sono &lt;6h — risco aumentado</strong> (OR=1.34). Reduzir intensidade.',tm:'HOJE'},
+          {t:'ri-w',i:'🧠',l:'<strong>Vigilância neuromuscular.</strong> Tempo de reacção comprometido.',tm:'TREINO'}
+        ],
+        coach:[
+          {t:'ri-r',i:'⬇',l:'<strong>Reduzir componente de alta velocidade.</strong>',tm:'HOJE'},
+          {t:'ri-w',i:'⏱',l:'<strong>Sesta antes do jogo.</strong> Priorizar descanso.',tm:'JOGO'}
+        ],
+        athlete:[
+          {t:'ri-r',i:'😴',l:'<strong>8-9h obrigatórios esta noite.</strong> Quarto 18°C, escuridão total.',tm:'ESTA NOITE'},
+          {t:'ri-w',i:'☕',l:'<strong>Sem cafeína após o almoço.</strong>',tm:'HOJE'},
+          {t:'ri-b',i:'🛁',l:'<strong>Banho quente 1h antes de dormir.</strong>',tm:'ESTA NOITE'}
+        ]
+      },
+      crit:{
+        clinical:[
+          {t:'ri-r',i:'🚨',l:'<strong>Sono &lt;5h + outros factores.</strong> Treino intenso contraindicado.',tm:'HOJE'}
+        ],
+        coach:[{t:'ri-r',i:'🛑',l:'<strong>Não submeter a esforço máximo.</strong>',tm:'HOJE'}],
+        athlete:[{t:'ri-r',i:'😴',l:'<strong>Sesta obrigatória + 9h esta noite.</strong>',tm:'HOJE'}]
+      }
+    },
+    hrv:{
+      high:{
+        clinical:[
+          {t:'ri-r',i:'🧬',l:'<strong>HRV &gt;10% abaixo do baseline.</strong> Reduzir carga de treino.',tm:'HOJE'},
+          {t:'ri-w',i:'🔍',l:'<strong>Excluir factores confundidores:</strong> viagem, doença, stress.',tm:'HOJE'},
+          {t:'ri-b',i:'📊',l:'<strong>Reavaliar HRV amanhã</strong> em condições padronizadas.',tm:'AMANHÃ'}
+        ],
+        coach:[
+          {t:'ri-r',i:'⬇',l:'<strong>Treino leve ou recuperativo.</strong>',tm:'HOJE'},
+          {t:'ri-b',i:'📅',l:'<strong>Adiar sessão de alta intensidade</strong> para MD-2 ou MD-3.',tm:'ESTA SEMANA'}
+        ],
+        athlete:[
+          {t:'ri-r',i:'😴',l:'<strong>Sono prioritário — 8-9h.</strong>',tm:'ESTA NOITE'},
+          {t:'ri-w',i:'☕',l:'<strong>Limitar cafeína após as 14h.</strong>',tm:'HOJE'},
+          {t:'ri-b',i:'🧘',l:'<strong>Respiração controlada 10 min</strong> antes de dormir.',tm:'ESTA NOITE'}
+        ]
+      },
+      crit:{
+        clinical:[
+          {t:'ri-r',i:'🚨',l:'<strong>HRV &gt;20% abaixo do baseline.</strong> Overreaching. Avaliação médica.',tm:'HOJE'},
+          {t:'ri-w',i:'📅',l:'<strong>Redução de carga 3-5 dias</strong> com monitorização diária.',tm:'ESTA SEMANA'}
+        ],
+        coach:[{t:'ri-r',i:'🛑',l:'<strong>Repouso ou recuperação activa apenas.</strong>',tm:'HOJE'}],
+        athlete:[{t:'ri-r',i:'🛑',l:'<strong>Corpo a pedir recuperação. 9h de sono.</strong>',tm:'HOJE'}]
+      }
+    }
+  };
+
+  // fallback generic
+  const genericRec = {
+    high:{
+      clinical:[{t:'ri-w',i:'⚠',l:'<strong>Atenção aumentada.</strong> Monitorizar evolução e considerar redução de carga.',tm:'HOJE'}],
+      coach:[{t:'ri-w',i:'⬇',l:'<strong>Reduzir intensidade do treino.</strong>',tm:'HOJE'}],
+      athlete:[{t:'ri-w',i:'💪',l:'<strong>Foco em recuperação activa</strong> — sono, nutrição, crioterapia.',tm:'HOJE'}]
+    },
+    crit:{
+      clinical:[{t:'ri-r',i:'🚨',l:'<strong>Acção imediata.</strong> Avaliação clínica completa antes de qualquer treino.',tm:'AGORA'}],
+      coach:[{t:'ri-r',i:'🛑',l:'<strong>Não submeter a esforço elevado.</strong>',tm:'HOJE'}],
+      athlete:[{t:'ri-r',i:'🛑',l:'<strong>Reportar ao fisio imediatamente.</strong>',tm:'AGORA'}]
+    },
+    mod:{
+      clinical:[{t:'ri-b',i:'👁',l:'<strong>Monitorização aumentada.</strong> Registar evolução ao longo do dia.',tm:'HOJE'}],
+      coach:[{t:'ri-b',i:'📊',l:'<strong>Controlar intensidade.</strong> Nada de novo hoje.',tm:'HOJE'}],
+      athlete:[{t:'ri-b',i:'💧',l:'<strong>Hidratação e recuperação activa.</strong>',tm:'HOJE'}]
+    },
+    low:{
+      clinical:[{t:'ri-g',i:'✓',l:'<strong>Score dentro do normal.</strong> Monitorização de rotina.',tm:'ROTINA'}],
+      coach:[{t:'ri-g',i:'✓',l:'<strong>Atleta disponível.</strong> Programa normal.',tm:'HOJE'}],
+      athlete:[{t:'ri-g',i:'💪',l:'<strong>Bom estado de forma.</strong> Continua o programa.',tm:'HOJE'}]
+    }
+  };
+
+  const recData = (recs[varKey]&&recs[varKey][riskLevel]) ? recs[varKey][riskLevel] : genericRec[riskLevel] || genericRec['mod'];
+
+  const cols = [
+    {key:'clinical',icon:'🩺',title:'Equipa clínica',role:'Médico · Fisioterapeuta',cls:'si-clinical'},
+    {key:'coach',icon:'🎽',title:'Equipa técnica',role:'Treinador · Prep. físico',cls:'si-coach'},
+    {key:'athlete',icon:'⚽',title:'Atleta',role:'Mensagem personalizada',cls:'si-athlete'}
+  ];
+
+  let html = '';
+  cols.forEach(col=>{
+    const items = (recData[col.key]||genericRec.low[col.key]||[]);
+    html+=`<div class="rec-col">
+      <div class="rec-col-header">
+        <div class="rch-icon">${col.icon}</div>
+        <div><div class="rch-title">${col.title}</div><div class="rch-role">${col.role}</div></div>
+      </div>
+      ${items.map(r=>`
+        <div class="rec-item ${r.t}">
+          <div style="flex-shrink:0">${r.i}</div>
+          <div>${r.l}<span class="rec-timing">${r.tm}</span></div>
+        </div>
+      `).join('')}
+    </div>`;
+  });
+  document.getElementById('rec-grid').innerHTML = html;
+}
+
+// ── HISTORY CHART ─────────────────────────────────────────────────────────────
+function drawChart(){
+  const svg = document.getElementById('history-svg');
+  if(!svg) return;
+  const W = svg.parentElement.clientWidth || 600;
+  const H = 140;
+  svg.setAttribute('width',W);
+
+  const clubData = [22,24,28,31,26,29,33,30,27,35,38,32,29,34,37,41,38,44,40,35];
+  const stageData = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,68,72,78,82,86];
+  const allData = [...clubData,...stageData.slice(20)];
+  const total = allData.length;
+
+  const pad = {l:20,r:20,t:10,b:30};
+  const cW = W-pad.l-pad.r;
+  const cH = H-pad.t-pad.b;
+
+  function xp(i){return pad.l + (i/(total-1))*cW;}
+  function yp(v){return pad.t + (1-v/100)*cH;}
+
+  let clubPath='',stagePath='';
+  let first=true;
+  clubData.forEach((v,i)=>{
+    clubPath += (first?'M ':'L ')+xp(i).toFixed(1)+' '+yp(v).toFixed(1)+' ';
+    first=false;
+  });
+  first=true;
+  stageData.forEach((v,i)=>{
+    if(v===null) return;
+    stagePath += (first?'M ':'L ')+xp(i).toFixed(1)+' '+yp(v).toFixed(1)+' ';
+    first=false;
+  });
+
+  // Zone fill under stage line
+  let stageFill = stagePath;
+  const lastStage = stageData.reduce((a,v,i)=>v!==null?i:a,-1);
+  const firstStage = stageData.findIndex(v=>v!==null);
+  if(lastStage>-1){
+    stageFill += `L ${xp(lastStage).toFixed(1)} ${(pad.t+cH).toFixed(1)} L ${xp(firstStage).toFixed(1)} ${(pad.t+cH).toFixed(1)} Z`;
+  }
+
+  // Threshold line
+  const thresholdY = yp(65);
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="sgrd" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ff4d6d" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="#ff4d6d" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="cgrd" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#4d9aff" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#4d9aff" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Grid lines -->
+    ${[20,40,60,80].map(v=>`
+      <line x1="${pad.l}" y1="${yp(v)}" x2="${W-pad.r}" y2="${yp(v)}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <text x="${pad.l-4}" y="${yp(v)+4}" font-size="9" fill="rgba(255,255,255,0.25)" text-anchor="end" font-family="DM Mono">${v}</text>
+    `).join('')}
+
+    <!-- Threshold line -->
+    <line x1="${pad.l}" y1="${thresholdY}" x2="${W-pad.r}" y2="${thresholdY}" stroke="rgba(255,77,109,0.4)" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="${W-pad.r+4}" y="${thresholdY+4}" font-size="9" fill="rgba(255,77,109,0.6)" font-family="DM Mono">65%</text>
+
+    <!-- Divider club/stage -->
+    <line x1="${xp(20)}" y1="${pad.t}" x2="${xp(20)}" y2="${pad.t+cH}" stroke="rgba(77,154,255,0.3)" stroke-width="1" stroke-dasharray="3 3"/>
+    <text x="${xp(20)}" y="${pad.t+cH+18}" font-size="9" fill="rgba(77,154,255,0.5)" text-anchor="middle" font-family="DM Mono">Estágio →</text>
+
+    <!-- Club area fill -->
+    <path d="${clubPath} L ${xp(19)} ${pad.t+cH} L ${xp(0)} ${pad.t+cH} Z" fill="url(#cgrd)"/>
+
+    <!-- Stage area fill -->
+    <path d="${stageFill}" fill="url(#sgrd)"/>
+
+    <!-- Club line -->
+    <path d="${clubPath}" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round"/>
+
+    <!-- Stage line -->
+    <path d="${stagePath}" fill="none" stroke="var(--danger)" stroke-width="2.5" stroke-linejoin="round"/>
+
+    <!-- Club dots -->
+    ${clubData.map((v,i)=>`<circle cx="${xp(i)}" cy="${yp(v)}" r="3" fill="var(--blue)" stroke="var(--bg)" stroke-width="1.5"/>`).join('')}
+
+    <!-- Stage dots -->
+    ${stageData.map((v,i)=>v!==null?`<circle cx="${xp(i)}" cy="${yp(v)}" r="${i===total-1?5:3}" fill="${i===total-1?'var(--danger)':'rgba(255,77,109,0.8)'}" stroke="var(--bg)" stroke-width="1.5"/>`:'').join('')}
+
+    <!-- Today label -->
+    <text x="${xp(total-1)}" y="${yp(86)-10}" font-size="10" fill="var(--danger)" text-anchor="middle" font-family="DM Mono" font-weight="500">86% hoje</text>
+
+    <!-- X axis labels -->
+    <text x="${xp(0)}" y="${pad.t+cH+16}" font-size="9" fill="rgba(255,255,255,0.25)" text-anchor="middle" font-family="DM Mono">Mar 10</text>
+    <text x="${xp(Math.floor(total/2))}" y="${pad.t+cH+16}" font-size="9" fill="rgba(255,255,255,0.25)" text-anchor="middle" font-family="DM Mono">Mar 24</text>
+    <text x="${xp(total-1)}" y="${pad.t+cH+16}" font-size="9" fill="rgba(255,255,255,0.25)" text-anchor="middle" font-family="DM Mono">Abr 8</text>
+  `;
+}
+
+// ── SCREENING CHECKLIST ───────────────────────────────────────────────────────
+function toggleCheck(el){
+  const box = el.querySelector('.sc-box');
+  box.classList.toggle('checked');
+  if(box.classList.contains('checked')){
+    box.innerHTML='✓';
+    el.querySelector('.sc-text').style.opacity='0.5';
+    el.querySelector('.sc-text').style.textDecoration='line-through';
+  } else {
+    box.innerHTML='';
+    el.querySelector('.sc-text').style.opacity='1';
+    el.querySelector('.sc-text').style.textDecoration='none';
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+calcScore();
+</script>
+</body>
+</html>

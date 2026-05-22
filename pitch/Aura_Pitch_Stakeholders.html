@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GreenCard — O que é?</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,300&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0c0e14;--paper:#f4f1eb;--paper2:#ece8df;--paper3:#e2ddd3;
+  --green:#1a6b45;--green2:#2d9164;--green-light:#e8f5ee;
+  --red:#c0392b;--red-light:#fdf0ee;
+  --gold:#b8861a;--gold-light:#fdf6e3;
+  --blue:#1a3a6b;--blue-light:#e8eef8;
+  --accent:#e85d26;
+  --mono:'DM Mono',monospace;--body:'Outfit',sans-serif;--display:'Fraunces',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);overflow-x:hidden;}
+
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:100;opacity:.5;}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 64px;position:relative;overflow:hidden;background:var(--ink);}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 70% 50%,#1a3a2a 0%,#0c0e14 70%);z-index:0;}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:60px 60px;z-index:1;}
+.hero-content{position:relative;z-index:2;max-width:780px;}
+.hero-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--green2);margin-bottom:24px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow::before{content:'';width:32px;height:1px;background:var(--green2);}
+.hero h1{font-family:var(--display);font-size:clamp(48px,6vw,88px);font-weight:900;line-height:1.0;color:#f4f1eb;margin-bottom:32px;letter-spacing:-2px;}
+.hero h1 em{color:var(--green2);font-style:italic;}
+.hero-sub{font-size:18px;color:rgba(244,241,235,0.6);line-height:1.7;max-width:560px;font-weight:300;margin-bottom:48px;}
+.hero-sub strong{color:rgba(244,241,235,0.9);}
+.hero-cta{display:inline-flex;align-items:center;gap:10px;background:var(--green2);color:#fff;font-family:var(--mono);font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:14px 28px;border:none;cursor:pointer;text-decoration:none;transition:all .2s;}
+.hero-cta:hover{background:var(--green);gap:16px;}
+.hero-cta span{transition:transform .2s;}
+.hero-cta:hover span{transform:translateX(4px);}
+.hero-stat{position:absolute;right:64px;top:50%;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;gap:24px;}
+.stat-box{background:rgba(244,241,235,0.04);border:1px solid rgba(244,241,235,0.08);padding:20px 24px;min-width:168px;}
+.stat-num{font-family:var(--display);font-size:42px;font-weight:700;color:var(--green2);line-height:1;}
+.stat-label{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(244,241,235,0.4);margin-top:4px;line-height:1.4;}
+
+/* ── DEPT BANNER ── */
+.dept-banner{background:var(--green-light);border-top:2px solid var(--green2);border-bottom:2px solid var(--green2);padding:20px 64px;display:flex;align-items:center;gap:32px;overflow-x:auto;}
+.dept-item{display:flex;align-items:center;gap:10px;white-space:nowrap;font-family:var(--mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);flex-shrink:0;}
+.dept-item::before{content:'';width:8px;height:8px;background:var(--green2);border-radius:50%;}
+.dept-sep{color:var(--paper3);font-size:20px;flex-shrink:0;}
+
+/* ── SECTIONS ── */
+section{padding:100px 64px;}
+.section-label{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--green2);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.section-label::before{content:'';width:24px;height:1px;background:var(--green2);}
+.section-title{font-family:var(--display);font-size:clamp(32px,4vw,52px);font-weight:700;line-height:1.1;letter-spacing:-1px;margin-bottom:16px;}
+
+/* ── PROBLEMA ── */
+.problem{background:var(--ink);color:var(--paper);}
+.problem .section-title{color:var(--paper);}
+.problem .section-label{color:var(--accent);}
+.problem .section-label::before{background:var(--accent);}
+.problem-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:rgba(244,241,235,0.08);margin-top:60px;}
+.problem-card{background:var(--ink);padding:40px 32px;}
+.problem-card .num{font-family:var(--display);font-size:64px;font-weight:900;color:rgba(200,57,37,0.2);line-height:1;margin-bottom:12px;}
+.problem-card h3{font-family:var(--display);font-size:22px;font-weight:700;color:var(--paper);margin-bottom:12px;}
+.problem-card p{font-size:14px;color:rgba(244,241,235,0.5);line-height:1.7;font-weight:300;}
+.problem-card .highlight{color:var(--accent);font-weight:600;}
+
+/* ── QUEM USA ── */
+.users{background:var(--paper2);}
+.users-intro{font-size:18px;color:rgba(12,14,20,0.6);line-height:1.7;max-width:600px;margin-bottom:64px;font-weight:300;}
+.users-intro strong{color:var(--ink);}
+.users-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--paper3);}
+.user-card{padding:32px 24px;border-right:1px solid var(--paper3);position:relative;transition:all .2s;cursor:default;}
+.user-card:last-child{border-right:none;}
+.user-card:hover{background:#fff;z-index:2;box-shadow:0 8px 32px rgba(0,0,0,0.08);}
+.user-icon{font-size:28px;margin-bottom:16px;}
+.user-role{font-family:var(--display);font-size:16px;font-weight:700;margin-bottom:8px;color:var(--ink);}
+.user-sees{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green2);margin-bottom:12px;}
+.user-access{font-size:12px;color:rgba(12,14,20,0.5);line-height:1.6;font-weight:300;}
+.user-tag{display:inline-block;font-family:var(--mono);font-size:9px;padding:3px 8px;margin-top:12px;background:var(--green-light);color:var(--green);border:1px solid rgba(45,145,100,0.2);}
+.user-tag.med{background:var(--blue-light);color:var(--blue);border-color:rgba(26,58,107,0.2);}
+.user-tag.perf{background:var(--gold-light);color:var(--gold);border-color:rgba(184,134,26,0.2);}
+.user-tag.coach{background:var(--red-light);color:var(--red);border-color:rgba(192,57,43,0.2);}
+.user-tag.data{background:var(--paper);color:var(--ink);border-color:var(--paper3);}
+
+/* ── SOLUÇÃO ── */
+.solution{background:var(--paper);}
+.solution-intro{font-size:20px;color:rgba(12,14,20,0.6);line-height:1.7;max-width:640px;margin-bottom:72px;font-weight:300;}
+.solution-intro strong{color:var(--ink);}
+.flow{display:flex;align-items:stretch;gap:0;margin-bottom:72px;}
+.flow-step{flex:1;position:relative;}
+.flow-step:not(:last-child)::after{content:'→';position:absolute;right:-16px;top:50%;transform:translateY(-50%);font-size:20px;color:rgba(12,14,20,0.2);font-family:var(--mono);z-index:2;}
+.flow-inner{background:var(--paper2);border:1px solid var(--paper3);padding:28px 24px;height:100%;transition:all .2s;cursor:default;}
+.flow-inner:hover{background:#fff;border-color:var(--green2);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.08);}
+.flow-num{font-family:var(--mono);font-size:11px;color:var(--green2);letter-spacing:2px;margin-bottom:12px;}
+.flow-icon{font-size:28px;margin-bottom:12px;}
+.flow-title{font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:8px;color:var(--ink);}
+.flow-desc{font-size:13px;color:rgba(12,14,20,0.55);line-height:1.65;font-weight:300;}
+.flow-tag{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;background:var(--green-light);color:var(--green);padding:3px 8px;margin-top:10px;}
+
+/* ── MODELO ── */
+.model{background:var(--paper2);}
+.vars-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:48px;}
+.var-card{background:var(--paper);border:1px solid var(--paper3);padding:24px;position:relative;}
+.var-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--green2);}
+.var-card.new-v::before{background:var(--gold);}
+.var-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:8px;}
+.var-name{font-family:var(--display);font-size:16px;font-weight:700;}
+.var-weight{font-family:var(--mono);font-size:16px;font-weight:500;color:var(--green);flex-shrink:0;}
+.var-weight.up{color:var(--green);}
+.var-weight.down{color:var(--red);}
+.var-weight.nw{color:var(--gold);}
+.var-ref{font-size:11px;color:rgba(12,14,20,0.4);font-family:var(--mono);margin-top:6px;}
+.delta{display:inline-block;font-family:var(--mono);font-size:9px;padding:2px 7px;margin-left:6px;}
+.d-up{background:var(--green-light);color:var(--green);}
+.d-down{background:var(--red-light);color:var(--red);}
+.d-new{background:var(--gold-light);color:var(--gold);}
+.d-rm{background:var(--red-light);color:var(--red);}
+
+/* ── DIFERENCIAIS ── */
+.diff{background:var(--ink);color:var(--paper);}
+.diff .section-title{color:var(--paper);}
+.diff .section-label{color:var(--gold);}
+.diff .section-label::before{background:var(--gold);}
+.diff-list{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(244,241,235,0.06);margin-top:60px;}
+.diff-item{background:var(--ink);padding:48px 40px;position:relative;}
+.diff-item::before{content:attr(data-n);position:absolute;top:48px;right:40px;font-family:var(--display);font-size:80px;font-weight:900;color:rgba(244,241,235,0.04);line-height:1;}
+.diff-item-icon{font-size:32px;margin-bottom:20px;}
+.diff-item h3{font-family:var(--display);font-size:24px;font-weight:700;color:var(--paper);margin-bottom:12px;}
+.diff-item p{font-size:14px;color:rgba(244,241,235,0.5);line-height:1.75;font-weight:300;max-width:360px;}
+.diff-item .vs{display:inline-block;margin-top:16px;font-family:var(--mono);font-size:11px;color:rgba(244,241,235,0.25);}
+.diff-item .vs strong{color:var(--gold);}
+
+/* ── MERCADO ── */
+.market{background:var(--paper);}
+.market-nums{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;margin-top:60px;}
+.mnum{border-top:2px solid var(--ink);padding-top:24px;}
+.mnum .n{font-family:var(--display);font-size:48px;font-weight:900;color:var(--ink);line-height:1;}
+.mnum .unit{font-family:var(--mono);font-size:12px;color:var(--green);margin-left:4px;}
+.mnum .label{font-size:13px;color:rgba(12,14,20,0.5);margin-top:8px;line-height:1.5;font-weight:300;}
+
+/* ── CTA ── */
+.cta-final{background:var(--green);color:#fff;padding:100px 64px;text-align:center;}
+.cta-final .section-label{justify-content:center;color:rgba(255,255,255,0.6);}
+.cta-final .section-label::before{background:rgba(255,255,255,0.4);}
+.cta-final .section-title{color:#fff;max-width:640px;margin:0 auto 32px;}
+.cta-final p{font-size:16px;color:rgba(255,255,255,0.7);max-width:520px;margin:0 auto 48px;font-weight:300;line-height:1.7;}
+.cta-pills{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;}
+.cta-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:14px 24px;}
+
+@media(max-width:1100px){
+  .users-grid{grid-template-columns:1fr 1fr;}.user-card{border:1px solid var(--paper3);margin-bottom:-1px;}
+  .vars-grid{grid-template-columns:1fr 1fr;}
+  .hero-stat{display:none;}
+}
+@media(max-width:768px){
+  .hero,.dept-banner,section{padding-left:28px;padding-right:28px;}
+  .problem-grid,.diff-list,.market-nums{grid-template-columns:1fr;}
+  .flow{flex-direction:column;}.flow-step::after{display:none;}
+  .users-grid,.vars-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">GreenCard &nbsp;·&nbsp; Departamento de Saúde e Performance</div>
+    <h1>O sistema operativo<br>do departamento<br><em>clínico do clube.</em></h1>
+    <p class="hero-sub">
+      Médico, fisioterapeuta, preparador físico, analista — todos a trabalhar sobre <strong>os mesmos dados, com a mesma linguagem, em tempo real.</strong> Com um score de risco diário que diz não só o número, mas porquê.
+    </p>
+    <a class="hero-cta" href="#problema">Descobrir como funciona <span>→</span></a>
+  </div>
+  <div class="hero-stat">
+    <div class="stat-box">
+      <div class="stat-num">24%</div>
+      <div class="stat-label">das lesões no futebol pro são isquiotibiais</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">2–6×</div>
+      <div class="stat-label">maior risco com historial no mesmo segmento</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">700+</div>
+      <div class="stat-label">clubes europeus Tier 2/3 sem solução adequada</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ BANNER DEPARTAMENTO ═══════════════ -->
+<div class="dept-banner">
+  <div class="dept-item">Médico de desporto</div>
+  <div class="dept-sep">·</div>
+  <div class="dept-item">Fisioterapeuta</div>
+  <div class="dept-sep">·</div>
+  <div class="dept-item">Preparador físico</div>
+  <div class="dept-sep">·</div>
+  <div class="dept-item">Analista de performance</div>
+  <div class="dept-sep">·</div>
+  <div class="dept-item">Treinador</div>
+  <div class="dept-sep">·</div>
+  <div class="dept-item">Nutricionista</div>
+  <div class="dept-sep">·</div>
+  <div class="dept-item">Psicólogo desportivo</div>
+</div>
+
+<!-- ═══════════════ PROBLEMA ═══════════════ -->
+<section class="problem" id="problema">
+  <div class="section-label">O problema</div>
+  <h2 class="section-title">O departamento clínico<br>trabalha em silos.</h2>
+  <div class="problem-grid">
+    <div class="problem-card">
+      <div class="num">01</div>
+      <h3>Cada profissional<br>tem o seu sistema.</h3>
+      <p>GPS no software do preparador. Registos clínicos no sistema do médico. Wellness na app do fisio. Nenhum vê o quadro completo. <span class="highlight">A decisão mais crítica — jogar ou não jogar — é tomada com informação fragmentada.</span></p>
+    </div>
+    <div class="problem-card">
+      <div class="num">02</div>
+      <h3>O risco acumula-se<br>em silêncio.</h3>
+      <p>Um atleta pode ter ACWR elevado, HRV em queda e historial de lesão no mesmo segmento — e ninguém cruza essa informação a tempo. <span class="highlight">Quando aparece a lesão, os sinais estavam todos lá.</span></p>
+    </div>
+    <div class="problem-card">
+      <div class="num">03</div>
+      <h3>As plataformas existentes<br>não resolvem isto.</h3>
+      <p>Ou são demasiado caras e complexas para clubes de Tier 2/3, ou são caixas negras sem interpretabilidade clínica, ou servem apenas uma função do departamento. <span class="highlight">Nenhuma foi construída para o departamento inteiro.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ QUEM USA ═══════════════ -->
+<section class="users">
+  <div class="section-label">Toda a equipa. Uma plataforma.</div>
+  <h2 class="section-title">Cada profissional vê<br>o que precisa de ver.</h2>
+  <p class="users-intro">
+    O GreenCard não é uma ferramenta de fisioterapia com acesso para outros. É um <strong>sistema partilhado com vistas personalizadas</strong> — cada papel acede exactamente à informação relevante para as suas decisões, com o nível de detalhe clínico adequado.
+  </p>
+  <div class="users-grid">
+    <div class="user-card">
+      <div class="user-icon">🩺</div>
+      <div class="user-role">Médico</div>
+      <div class="user-sees">Vê e gere</div>
+      <div class="user-access">Score de risco completo, dados clínicos, historial, diagnósticos, eventos de lesão, gestão de utilizadores.</div>
+      <div class="user-tag med">Acesso total clínico</div>
+    </div>
+    <div class="user-card">
+      <div class="user-icon">🦴</div>
+      <div class="user-role">Fisioterapeuta</div>
+      <div class="user-sees">Vê e gere</div>
+      <div class="user-access">Score de risco, wellness, protocolos de reabilitação, critérios RTP, historial de lesões.</div>
+      <div class="user-tag">Acesso clínico</div>
+    </div>
+    <div class="user-card">
+      <div class="user-icon">⚡</div>
+      <div class="user-role">Preparador físico</div>
+      <div class="user-sees">Vê</div>
+      <div class="user-access">Dados GPS completos, ACWR, zonas de intensidade, wellness parcial. Sem dados clínicos identificáveis.</div>
+      <div class="user-tag perf">Acesso performance</div>
+    </div>
+    <div class="user-card">
+      <div class="user-icon">🧑‍💼</div>
+      <div class="user-role">Treinador</div>
+      <div class="user-sees">Vê</div>
+      <div class="user-access">Disponibilidade do plantel (verde / amarelo / vermelho). Sem dados clínicos. Linguagem táctica, não fisiológica.</div>
+      <div class="user-tag coach">Disponibilidade</div>
+    </div>
+    <div class="user-card">
+      <div class="user-icon">📊</div>
+      <div class="user-role">Analista</div>
+      <div class="user-sees">Vê</div>
+      <div class="user-access">Dados agregados e anonimizados. Tendências do plantel. Sem dados individuais identificáveis.</div>
+      <div class="user-tag data">Agregados</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ SOLUÇÃO ═══════════════ -->
+<section class="solution">
+  <div class="section-label">Como funciona</div>
+  <h2 class="section-title">Do check-in matinal<br>à decisão clínica.</h2>
+  <p class="solution-intro">
+    Um fluxo simples, automático, e partilhado por todo o departamento. <strong>O atleta insere dados, o sistema cruza tudo, o departamento clínico decide</strong> — cada um com a vista certa para o seu papel.
+  </p>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-inner">
+        <div class="flow-num">01 ·</div>
+        <div class="flow-icon">📱</div>
+        <div class="flow-title">Atleta reporta</div>
+        <div class="flow-desc">Check-in matinal na app do atleta: fadiga, sono, HRV, RPE pós-treino. 90 segundos. O atleta não vê o score de risco.</div>
+        <div class="flow-tag">Athlete App</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-inner">
+        <div class="flow-num">02 ·</div>
+        <div class="flow-icon">📡</div>
+        <div class="flow-title">GPS integrado</div>
+        <div class="flow-desc">Dados de carga externa directamente dos sistemas Catapult / STATSports — ACWR, desacelerações, sprint distance.</div>
+        <div class="flow-tag">Automático</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-inner">
+        <div class="flow-num">03 ·</div>
+        <div class="flow-icon">⚙️</div>
+        <div class="flow-title">Score calculado</div>
+        <div class="flow-desc">9 variáveis cruzadas num score de risco 0–100%, com decomposição por factor e índice de confiança explícito.</div>
+        <div class="flow-tag">Motor de scoring</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-inner">
+        <div class="flow-num">04 ·</div>
+        <div class="flow-icon">🖥️</div>
+        <div class="flow-title">Departamento decide</div>
+        <div class="flow-desc">Cada profissional acede à sua vista — clínica, de performance, ou de disponibilidade. Mesmos dados, linguagens diferentes.</div>
+        <div class="flow-tag">Staff Platform</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-inner">
+        <div class="flow-num">05 ·</div>
+        <div class="flow-icon">📋</div>
+        <div class="flow-title">Protocolo activado</div>
+        <div class="flow-desc">Score elevado activa automaticamente o protocolo de screening ou reabilitação no mesmo sistema. Sem mudança de ferramenta.</div>
+        <div class="flow-tag">Integrado</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ MODELO ═══════════════ -->
+<section class="model">
+  <div class="section-label">O modelo preditivo — v1.1</div>
+  <h2 class="section-title">9 variáveis. Pesos baseados<br>na melhor evidência disponível.</h2>
+
+  <div class="vars-grid">
+    <div class="var-card">
+      <div class="var-header">
+        <div class="var-name">📋 Historial de lesões</div>
+        <div class="var-weight up">0.20 <span class="delta d-up">↑ era 0.10</span></div>
+      </div>
+      <div class="var-ref">Ekstrand et al. BJSM 2022/23 · UEFA ECIS 21 épocas · preditor mais consistente</div>
+    </div>
+    <div class="var-card">
+      <div class="var-header">
+        <div class="var-name">📡 ACWR carga GPS</div>
+        <div class="var-weight down">0.20 <span class="delta d-down">↓ era 0.25</span></div>
+      </div>
+      <div class="var-ref">Gabbett 2016 · Rev. Sist. 2024 · EWMA 7/28 dias · evidência inconclusiva em pro</div>
+    </div>
+    <div class="var-card">
+      <div class="var-header">
+        <div class="var-name">🧬 HRV Δ baseline</div>
+        <div class="var-weight down">0.18 <span class="delta d-down">↓ era 0.20</span></div>
+      </div>
+      <div class="var-ref">Plews 2013 · Sanchez et al. 2025 · delta % vs. baseline individual</div>
+    </div>
+    <div class="var-card">
+      <div class="var-header">
+        <div class="var-name">💬 Fadiga (Hooper)</div>
+        <div class="var-weight down">0.13 <span class="delta d-down">↓ era 0.15</span></div>
+      </div>
+      <div class="var-ref">Hooper 1995 · Neumann et al. Sports Med Open 2024</div>
+    </div>
+    <div class="var-card">
+      <div class="var-header">
+        <div class="var-name">😴 Sono</div>
+        <div class="var-weight up">0.12 <span class="delta d-up">↑ era 0.07</span></div>
+      </div>
+      <div class="var-ref">Meta-análise 2025 · OR=1.34 (IC 1.08–1.66) · Costa et al. 2021</div>
+    </div>
+    <div class="var-card">
+      <div class="var-header">
+        <div class="var-name">🔄 TQR</div>
+        <div class="var-weight" style="color:#888">0.07</div>
+      </div>
+      <div class="var-ref">Kenttä & Hassmén 1998 · Total Quality Recovery 6–20</div>
+    </div>
+    <div class="var-card">
+      <div class="var-header">
+        <div class="var-name">🧠 Stress percebido</div>
+        <div class="var-weight down">0.04 <span class="delta d-down">↓ era 0.10</span></div>
+      </div>
+      <div class="var-ref">Borato & Pedroni 2022 · evidência fraca em adultos profissionais</div>
+    </div>
+    <div class="var-card new-v">
+      <div class="var-header">
+        <div class="var-name">⚡ Desacelerações alt. int.</div>
+        <div class="var-weight nw">0.04 <span class="delta d-new">★ novo</span></div>
+      </div>
+      <div class="var-ref">Saberisani et al. Front Sports 2025 · ACWR Dec. >3 m/s² · carga mecânica excêntrica</div>
+    </div>
+    <div class="var-card new-v">
+      <div class="var-header">
+        <div class="var-name">📅 Dias desde último jogo</div>
+        <div class="var-weight nw">0.02 <span class="delta d-new">★ novo</span></div>
+      </div>
+      <div class="var-ref">Chang 2024 · Page et al. Sports Med 2023 · calculado automaticamente do calendário</div>
+    </div>
+  </div>
+
+  <div style="margin-top:24px;padding:20px 28px;background:var(--red-light);border-left:3px solid var(--red);font-size:13px;color:rgba(12,14,20,0.6);font-family:var(--mono);">
+    ✕ &nbsp;<strong style="color:var(--red)">Crioterapia removida do score</strong> &nbsp;— intervenção de recuperação, não preditor de risco (Racinais et al. BJSM 2024). Mantida na plataforma como recomendação de intervenção.
+  </div>
+
+  <div style="margin-top:16px;padding:20px 28px;background:var(--green-light);border-left:3px solid var(--green2);font-size:13px;color:rgba(12,14,20,0.6);font-family:var(--mono);">
+    ℹ &nbsp;<strong style="color:var(--green)">Pesos Fase 1</strong> &nbsp;— definidos por perito com base na literatura. Recalibração empírica com dados reais após 30 eventos de lesão registados (Fase 2).
+  </div>
+</section>
+
+<!-- ═══════════════ DIFERENCIAIS ═══════════════ -->
+<section class="diff">
+  <div class="section-label">Por que o GreenCard</div>
+  <h2 class="section-title">Não é mais um dashboard.<br>São quatro fossos reais.</h2>
+  <div class="diff-list">
+    <div class="diff-item" data-n="1">
+      <div class="diff-item-icon">🏥</div>
+      <h3>Construído para o departamento inteiro</h3>
+      <p>Não é uma ferramenta de fisioterapia com acesso partilhado. É um sistema de decisão clínica e de performance onde cada papel — médico, fisio, preparador, analista, treinador — tem a vista certa.</p>
+      <div class="vs">vs. concorrentes — <strong>construídos para uma função, adaptados para outras</strong></div>
+    </div>
+    <div class="diff-item" data-n="2">
+      <div class="diff-item-icon">🔍</div>
+      <h3>Score interpretável, não uma caixa negra</h3>
+      <p>O clínico vê qual variável está a puxar o risco — e qual a intervenção prioritária. Com referência bibliográfica por variável. Não é um número. É um raciocínio clínico externalizado.</p>
+      <div class="vs">vs. Kitman Labs — <strong>Risk Advisor sem decomposição visível</strong></div>
+    </div>
+    <div class="diff-item" data-n="3">
+      <div class="diff-item-icon">🔗</div>
+      <h3>Score + reabilitação no mesmo sistema</h3>
+      <p>O modelo preditivo e os protocolos clínicos coexistem na mesma plataforma. Um score elevado activa o protocolo de screening directamente. Sem mudança de ferramenta, sem perda de contexto.</p>
+      <div class="vs">vs. Teamworks AMS — <strong>sem modelo preditivo nativo integrado</strong></div>
+    </div>
+    <div class="diff-item" data-n="4">
+      <div class="diff-item-icon">🏳️</div>
+      <h3>Resolvido para seleções nacionais</h3>
+      <p>O único sistema com índice de confiança explícito para janelas de dados incompletas — o problema estrutural de todos os estágios de selecção nacional. Construído com a FPF, para este contexto.</p>
+      <div class="vs">vs. todos os concorrentes — <strong>nenhum considera este contexto operacional</strong></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ MERCADO ═══════════════ -->
+<section class="market">
+  <div class="section-label">Oportunidade de mercado</div>
+  <h2 class="section-title">Um mercado subservido.<br>Uma lacuna clara.</h2>
+  <div class="market-nums">
+    <div class="mnum">
+      <div class="n">700<span class="unit">+</span></div>
+      <div class="label">clubes e federações Tier 2/3 europeus sem solução de departamento integrada</div>
+    </div>
+    <div class="mnum">
+      <div class="n">€18.5<span class="unit">B</span></div>
+      <div class="label">mercado global de sports analytics (2024, crescimento anual ~25%)</div>
+    </div>
+    <div class="mnum">
+      <div class="n">24<span class="unit">%</span></div>
+      <div class="label">de todas as lesões no futebol pro são isquiotibiais — preveníveis com monitorização integrada</div>
+    </div>
+    <div class="mnum">
+      <div class="n">FPF<span class="unit"> piloto</span></div>
+      <div class="label">Federação Portuguesa de Futebol como primeiro parceiro de validação e prova de conceito</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ CTA ═══════════════ -->
+<section class="cta-final">
+  <div class="section-label">Em resumo</div>
+  <h2 class="section-title">Um departamento clínico que trabalha junto, com os mesmos dados, em tempo real.</h2>
+  <p>Do médico ao treinador — cada um vê o que precisa, com a linguagem certa para decidir. E quando o score sobe, o protocolo já está no mesmo ecrã.</p>
+  <div class="cta-pills">
+    <div class="cta-pill">⚽ &nbsp; Piloto FPF em curso</div>
+    <div class="cta-pill">🏥 &nbsp; 5 papéis clínicos integrados</div>
+    <div class="cta-pill">📊 &nbsp; Modelo preditivo v1.1</div>
+    <div class="cta-pill">🔬 &nbsp; Publicação científica planeada</div>
+  </div>
+</section>
+
+</body>
+</html>

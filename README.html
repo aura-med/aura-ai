@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Aura — Índice de Ficheiros</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0d12;--bg2:#111520;--bg3:#181e2e;--border:rgba(255,255,255,0.08);--green:#00e5a0;--blue:#4d9aff;--warn:#ffb347;--purple:#b48dfc;--text:#dde2ef;--text2:#7a8399;--text3:#3d4a63;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;padding:48px;min-height:100vh;}
+h1{font-family:'Fraunces',serif;font-size:36px;font-weight:900;color:var(--green);margin-bottom:4px;}
+.sub{font-size:13px;color:var(--text2);font-family:'DM Mono',monospace;margin-bottom:8px;}
+.version{display:inline-block;background:rgba(0,229,160,0.1);color:var(--green);border:1px solid rgba(0,229,160,0.2);padding:3px 10px;border-radius:20px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;margin-bottom:40px;}
+.section{margin-bottom:32px;}
+.section-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px;}
+.file-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;text-decoration:none;transition:all .15s;display:block;}
+.file-card:hover{border-color:var(--green);background:var(--bg3);transform:translateY(-1px);}
+.file-icon{font-size:22px;margin-bottom:10px;}
+.file-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.file-desc{font-size:12px;color:var(--text2);line-height:1.55;}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.tag{font-family:'DM Mono',monospace;font-size:9px;padding:2px 8px;border-radius:20px;}
+.tag-html{background:rgba(0,229,160,0.1);color:var(--green);border:1px solid rgba(0,229,160,0.2);}
+.tag-docx{background:rgba(77,154,255,0.1);color:var(--blue);border:1px solid rgba(77,154,255,0.2);}
+.tag-arch{background:rgba(255,179,71,0.1);color:var(--warn);border:1px solid rgba(255,179,71,0.2);}
+.tag-new{background:rgba(180,141,252,0.15);color:var(--purple);border:1px solid rgba(180,141,252,0.3);}
+.changelog{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px 22px;margin-bottom:32px;}
+.changelog h3{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;}
+.cl-item{display:flex;gap:10px;padding:5px 0;font-size:12px;color:var(--text2);border-bottom:1px solid var(--border);}
+.cl-item:last-child{border:none;}
+.cl-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px;}
+</style>
+</head>
+<body>
+
+<h1>Aura</h1>
+<div class="sub">Federação Portuguesa de Futebol · Health &amp; Performance Intelligence Platform</div>
+<div class="version">Versão Demo — Abril 2026</div>
+
+<div class="changelog">
+  <h3>📋 Últimas actualizações</h3>
+  <div class="cl-item"><div class="cl-dot"></div><div><strong>Calendar Intelligence</strong> — cálculo corrigido com acumulação progressiva de fadiga. 5 jogos consecutivos produzem agora escalada de risco fisiologicamente correcta.</div></div>
+  <div class="cl-item"><div class="cl-dot"></div><div><strong>Painel de Prontidão</strong> — semáforo de 4 indicadores (HRV, MD+n, Vmax%, Wellness) com nota metodológica de limitações em microciclos congestionados.</div></div>
+  <div class="cl-item"><div class="cl-dot"></div><div><strong>Reabilitação adaptativa</strong> — inserção de dados clínicos por protocolo: EVA dor, força excêntrica, Askling H-test (isquiotibial), equilíbrio, hop test (tornozelo). Comparação automática com critérios da fase actual.</div></div>
+  <div class="cl-item"><div class="cl-dot"></div><div><strong>Passaporte do Atleta</strong> — perfil portátil com simulação de transferência, Return to Full Performance e toggle de partilha.</div></div>
+  <div class="cl-item"><div class="cl-dot"></div><div><strong>Seleção Feminina</strong> — score ajustado por fase do ciclo menstrual com multiplicador LCA (evidência: Hewett 2007, Renstrom BJSM 2008).</div></div>
+  <div class="cl-item"><div class="cl-dot"></div><div><strong>Novo atleta</strong> — modal de adição com selector de atleta no módulo de inserção de dados.</div></div>
+  <div class="cl-item"><div class="cl-dot"></div><div><strong>Plantel expandido para 22 atletas</strong> com sparklines de tendência 7 dias e alertas dinâmicos na topbar.</div></div>
+</div>
+
+<div class="section">
+  <div class="section-title">📱 Demo — Apresentação FPF</div>
+  <div class="file-grid">
+    <a href="demo/Aura_Demo_FPF.html" class="file-card">
+      <div class="file-icon">🏟️</div>
+      <div class="file-name">Aura Demo FPF</div>
+      <div class="file-desc">Demo completa para apresentação à FPF. 12 módulos activos: Dashboard, Plantel 22 atletas, Avaliação clínica, Inserção de dados, Reabilitação adaptativa, Máximos & Performance, Carga & GPS, Passaporte, Calendar Intelligence, Prontidão, Seleção Feminina.</div>
+      <div class="tags"><span class="tag tag-html">HTML · 164 KB</span><span class="tag tag-new">v2.0 — Abril 2026</span></div>
+    </a>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">⚙️ Modelos</div>
+  <div class="file-grid">
+    <a href="modelos/Aura_Algoritmo_v1.1.html" class="file-card">
+      <div class="file-icon">🧠</div>
+      <div class="file-name">Algoritmo Preditivo v1.1</div>
+      <div class="file-desc">Esquema interactivo em 6 passos. Pesos v1.1, índice de confiança com redistribuição de pesos quando variáveis ausentes, fases de evolução do modelo, caso clínico Paulo Oliveira.</div>
+      <div class="tags"><span class="tag tag-html">HTML · 36 KB</span></div>
+    </a>
+    <a href="modelos/Aura_Motor_Recomendacoes.html" class="file-card">
+      <div class="file-icon">🎯</div>
+      <div class="file-name">Motor de Recomendações</div>
+      <div class="file-desc">Matriz interactiva 9 variáveis × 4 níveis de risco × 3 stakeholders (clínico, treinador, atleta). Recomendações accionáveis por papel e contexto.</div>
+      <div class="tags"><span class="tag tag-html">HTML · 49 KB</span></div>
+    </a>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">📊 Pitch & Comunicação</div>
+  <div class="file-grid">
+    <a href="pitch/Aura_Pitch_Stakeholders.html" class="file-card">
+      <div class="file-icon">🚀</div>
+      <div class="file-name">Pitch Aura</div>
+      <div class="file-desc">One-pager para stakeholders e investidores. Posicionamento como sistema operativo do departamento de saúde. 3 camadas comerciais: clínica → director desportivo → federações.</div>
+      <div class="tags"><span class="tag tag-html">HTML · 29 KB</span></div>
+    </a>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">📄 Documentos Técnicos e Clínicos</div>
+  <div class="file-grid">
+    <a href="documentos/Aura_Revisao_Literatura_v1.1.docx" class="file-card">
+      <div class="file-icon">🔬</div>
+      <div class="file-name">Revisão de Literatura v1.1</div>
+      <div class="file-desc">Para o médico de desporto. 9 variáveis com tabelas de evidência completas, nível de evidência, impact factor dos journals. Fundamentação da remoção da crioterapia. Pesos v1.0 → v1.1.</div>
+      <div class="tags"><span class="tag tag-docx">DOCX · 23 KB</span></div>
+    </a>
+    <a href="documentos/Aura_Arquitectura_Tecnica_v1.1.docx" class="file-card">
+      <div class="file-icon">⚙️</div>
+      <div class="file-name">Arquitectura Técnica v1.1</div>
+      <div class="file-desc">Para o engenheiro. Schema SQL completo (incluindo calendar_events, fatigue_profiles, athlete_passport), pseudocódigo scoring engine, Python recalibração, RBAC/RLS, endpoints API, 3 fases de implementação.</div>
+      <div class="tags"><span class="tag tag-docx">DOCX · 21 KB</span></div>
+    </a>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">📦 Arquivo</div>
+  <div class="file-grid">
+    <a href="arquivo/PhysioElite_Algoritmo_v1.0.html" class="file-card">
+      <div class="file-icon">📜</div>
+      <div class="file-name">Algoritmo v1.0</div>
+      <div class="file-desc">Versão original do algoritmo antes das actualizações de variáveis.</div>
+      <div class="tags"><span class="tag tag-arch">Arquivo</span></div>
+    </a>
+    <a href="arquivo/PhysioElite_Platform_v1.html" class="file-card">
+      <div class="file-icon">📜</div>
+      <div class="file-name">Platform v1</div>
+      <div class="file-desc">Primeira versão da plataforma com posicionamento PhysioElite.</div>
+      <div class="tags"><span class="tag tag-arch">Arquivo</span></div>
+    </a>
+    <a href="arquivo/Wellness_Module.html" class="file-card">
+      <div class="file-icon">📜</div>
+      <div class="file-name">Wellness Module</div>
+      <div class="file-desc">Módulo de wellness standalone de iteração anterior.</div>
+      <div class="tags"><span class="tag tag-arch">Arquivo</span></div>
+    </a>
+  </div>
+</div>
+
+</body>
+</html>

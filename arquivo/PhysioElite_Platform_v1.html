@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhysioElite — Plataforma Staff</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0d12;--bg2:#111520;--bg3:#181e2e;--bg4:#1e2638;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);--accent:#00e5a0;--blue:#4d9aff;--warn:#f6ad55;--danger:#ff4d6d;--purple:#a78bfa;--text:#e8eaf2;--text2:#8892a4;--text3:#4a5568;--mono:'DM Mono',monospace;--sans:'Inter',sans-serif;--display:'Syne',sans-serif;--r:10px;--r2:16px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:232px;min-width:232px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 0;}
+.logo{padding:0 20px 18px;border-bottom:1px solid var(--border);margin-bottom:12px;}
+.logo-row{display:flex;align-items:center;gap:8px;}
+.logo-dot{width:10px;height:10px;background:var(--accent);border-radius:50%;}
+.logo-title{font-family:var(--display);font-size:17px;font-weight:800;}
+.logo-sub{font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
+.role-badge{margin:0 12px 12px;padding:8px 12px;border-radius:8px;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;gap:8px;}
+.rav{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:11px;font-weight:800;flex-shrink:0;}
+.rname{font-size:12px;font-weight:500;}
+.rtag{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;}
+.nav-section{padding:0 10px;margin-bottom:5px;}
+.nav-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:0 8px;margin-bottom:3px;}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:8px;cursor:pointer;color:var(--text2);font-size:13px;transition:all 0.15s;position:relative;}
+.ni:hover{background:var(--bg3);color:var(--text);}
+.ni.active{background:var(--bg3);color:var(--text);}
+.ni.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;background:var(--accent);border-radius:0 3px 3px 0;}
+.nico{width:15px;height:15px;opacity:0.55;flex-shrink:0;}
+.ni.active .nico{opacity:1;}
+.nbadge{margin-left:auto;font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:20px;}
+.nb-r{background:rgba(255,77,109,0.15);color:var(--danger);}
+.nb-b{background:rgba(77,154,255,0.15);color:var(--blue);}
+.sf{margin-top:auto;padding:14px 20px;border-top:1px solid var(--border);font-family:var(--mono);font-size:10px;color:var(--text3);}
+.live{display:inline-block;width:6px;height:6px;background:var(--accent);border-radius:50%;margin-right:6px;animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.main{flex:1;overflow-y:auto;}
+.topbar{height:54px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 26px;gap:12px;background:var(--bg);position:sticky;top:0;z-index:10;}
+.tb-title{font-family:var(--display);font-size:15px;font-weight:700;flex:1;}
+.rp{font-family:var(--mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border2);color:var(--text2);letter-spacing:1px;cursor:pointer;transition:all 0.15s;}
+.rp:hover{background:var(--bg3);}
+.rp.ar{border-color:var(--accent);color:var(--accent);background:rgba(0,229,160,0.07);}
+.content{padding:26px;}
+.screen{display:none;}
+.screen.active{display:block;animation:fu .18s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:20px;}
+.ctitle{font-family:var(--display);font-size:14px;font-weight:700;margin-bottom:14px;}
+.slabel{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.mb16{margin-bottom:16px;}
+.mb20{margin-bottom:20px;}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px;}
+.klabel{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.kval{font-family:var(--display);font-size:28px;font-weight:800;}
+.ksub{font-size:11px;color:var(--text2);margin-top:3px;}
+.cg{color:var(--accent);}.cw{color:var(--warn);}.cr{color:var(--danger);}.cb{color:var(--blue);}
+.al{border-radius:var(--r);padding:11px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:10px;font-size:13px;}
+.al-hi{background:rgba(255,77,109,0.07);border:1px solid rgba(255,77,109,0.2);}
+.al-me{background:rgba(246,173,85,0.06);border:1px solid rgba(246,173,85,0.2);}
+.ald{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.ald.r{background:var(--danger);}.ald.w{background:var(--warn);}.ald.g{background:var(--accent);}
+.alb{flex:1;color:var(--text2);line-height:1.5;}
+.alb strong{color:var(--text);}
+.alact{font-family:var(--mono);font-size:10px;color:var(--blue);cursor:pointer;white-space:nowrap;}
+table{width:100%;border-collapse:collapse;}
+th{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);padding:0 10px 10px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:9px 10px;font-size:12.5px;color:var(--text2);border-bottom:1px solid var(--border);}
+tr:last-child td{border:none;}
+td:first-child{color:var(--text);font-weight:500;}
+.pill{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:20px;}
+.p-ok{background:rgba(0,229,160,0.1);color:var(--accent);border:1px solid rgba(0,229,160,0.18);}
+.p-w{background:rgba(246,173,85,0.1);color:var(--warn);border:1px solid rgba(246,173,85,0.2);}
+.p-r{background:rgba(255,77,109,0.1);color:var(--danger);border:1px solid rgba(255,77,109,0.2);}
+.p-b{background:rgba(77,154,255,0.1);color:var(--blue);border:1px solid rgba(77,154,255,0.2);}
+.br{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.bn{font-size:12px;color:var(--text2);width:115px;flex-shrink:0;}
+.bt{flex:1;height:5px;background:var(--bg4);border-radius:3px;}
+.bf{height:5px;border-radius:3px;background:var(--accent);}
+.bv{font-family:var(--mono);font-size:10px;color:var(--text2);width:36px;text-align:right;}
+.risk-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:18px;position:relative;overflow:hidden;}
+.risk-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;}
+.rhi::after{background:var(--danger);}.rme::after{background:var(--warn);}.rlo::after{background:var(--accent);}
+.rpct{font-family:var(--display);font-size:38px;font-weight:800;margin:3px 0;}
+.rhi .rpct{color:var(--danger);}.rme .rpct{color:var(--warn);}.rlo .rpct{color:var(--accent);}
+.rname{font-family:var(--display);font-size:13px;font-weight:700;}
+.rpos{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:8px;}
+.rsub{font-size:11px;color:var(--text2);margin-bottom:8px;}
+.rfi{font-size:11.5px;color:var(--text2);padding:2px 0;display:flex;align-items:center;gap:6px;}
+.rfd{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.fbr{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.fbl{font-size:11px;color:var(--text2);width:110px;flex-shrink:0;}
+.fbt{flex:1;height:6px;background:var(--bg4);border-radius:3px;}
+.fbf{height:6px;border-radius:3px;}
+.fbv{font-family:var(--mono);font-size:10px;color:var(--text2);width:36px;text-align:right;}
+.ph-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.ph-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 13px;}
+.ph-num{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--text3);margin-bottom:3px;}
+.ph-name{font-family:var(--display);font-size:12px;font-weight:700;margin-bottom:2px;}
+.ph-time{font-family:var(--mono);font-size:10px;color:var(--accent);}
+.ph-item{font-size:11px;color:var(--text2);padding:2px 0;border-bottom:1px solid var(--border);}
+.ph-item:last-child{border:none;}
+.fg{margin-bottom:13px;}
+.fl{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:5px;display:block;}
+select,input[type="text"]{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:9px 13px;font-family:var(--sans);font-size:13px;outline:none;transition:border .15s;}
+select:focus,input[type="text"]:focus{border-color:var(--accent);}
+select option{background:var(--bg3);}
+.btn-p{width:100%;padding:11px;background:var(--accent);color:#000;border:none;border-radius:8px;font-family:var(--display);font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s;}
+.btn-p:hover{opacity:.85;}
+.refbox{background:var(--bg3);border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:10px 13px;margin-top:12px;font-size:11.5px;color:var(--text2);line-height:1.6;}
+.reftitle{font-family:var(--mono);font-size:9px;color:var(--blue);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.wrow{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
+.wrow:last-child{border:none;}
+.wlabel{font-size:12px;color:var(--text2);width:120px;flex-shrink:0;}
+.wval{font-family:var(--mono);font-size:12px;font-weight:500;}
+.wbt{flex:1;height:4px;background:var(--bg4);border-radius:2px;}
+.wbf{height:4px;border-radius:2px;}
+.ath-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.ath-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:18px;cursor:pointer;transition:all .15s;}
+.ath-card:hover{border-color:var(--border2);background:var(--bg3);transform:translateY(-1px);}
+.aav{width:44px;height:44px;border-radius:50%;background:var(--bg4);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:14px;font-weight:800;color:var(--accent);margin-bottom:10px;}
+.aname{font-family:var(--display);font-size:14px;font-weight:700;margin-bottom:1px;}
+.apos{font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.phdr{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:22px;display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:start;margin-bottom:16px;}
+.pav{width:68px;height:68px;border-radius:50%;background:var(--bg3);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:22px;font-weight:800;color:var(--accent);}
+.pname{font-family:var(--display);font-size:21px;font-weight:800;margin-bottom:3px;}
+.ppos{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.pmeta{display:flex;gap:16px;flex-wrap:wrap;}
+.pm{font-size:12px;color:var(--text2);}
+.pm span{color:var(--text);font-weight:500;}
+.ptabs{display:flex;gap:4px;margin-bottom:16px;}
+.ptab{padding:6px 16px;border-radius:8px;cursor:pointer;font-size:12.5px;color:var(--text2);border:1px solid transparent;transition:all .15s;}
+.ptab:hover{background:var(--bg2);}
+.ptab.active{background:var(--bg3);color:var(--text);border-color:var(--border2);}
+.gmc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;}
+.gml{font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--text3);margin-bottom:6px;}
+.gmv{font-family:var(--display);font-size:23px;font-weight:800;}
+.gmu{font-size:11px;color:var(--text2);margin-left:3px;font-family:var(--mono);}
+.gmd{font-size:11px;margin-top:2px;}
+.flow-row{display:flex;align-items:stretch;gap:0;margin-bottom:22px;}
+.fn{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:12px 14px;text-align:center;flex:1;}
+.fn.hi{border-color:var(--accent);background:rgba(0,229,160,0.05);}
+.fn.hb{border-color:var(--blue);background:rgba(77,154,255,0.04);}
+.fn.hr{border-color:var(--danger);background:rgba(255,77,109,0.04);}
+.fnt{font-family:var(--display);font-size:12px;font-weight:700;margin-bottom:2px;}
+.fns{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;}
+.fnb{font-size:11px;color:var(--text2);margin-top:6px;line-height:1.4;}
+.farr{color:var(--text3);font-size:18px;padding:0 5px;display:flex;align-items:center;flex-shrink:0;}
+.rbac-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.rbac-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:15px;}
+.rbac-role{display:flex;align-items:center;gap:8px;margin-bottom:11px;}
+.rbav{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:11px;font-weight:800;flex-shrink:0;}
+.rbn{font-size:13px;font-weight:500;}
+.rbt{font-family:var(--mono);font-size:9px;color:var(--text3);}
+.rbitem{font-size:11.5px;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+.rbitem:last-child{border:none;}
+.ck{color:var(--accent);font-size:10px;}.cx{color:var(--text3);font-size:10px;}
+.spark{display:flex;align-items:flex-end;gap:2px;height:24px;}
+.sb{width:5px;border-radius:2px;opacity:.4;}
+.sb:last-child{opacity:1;}
+.sb.lo{background:var(--danger)!important;}.sb.mi{background:var(--warn)!important;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="logo">
+    <div class="logo-row"><div class="logo-dot"></div><div class="logo-title">PhysioElite</div></div>
+    <div class="logo-sub">Staff Platform</div>
+  </div>
+  <div class="role-badge">
+    <div class="rav" id="rav" style="background:rgba(0,229,160,0.15);color:var(--accent)">FM</div>
+    <div><div class="rname" id="rname">F. Marques</div><div class="rtag" id="rtag">Fisioterapeuta</div></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Visão Geral</div>
+    <div class="ni active" onclick="nav('dashboard',this)">
+      <svg class="nico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="1.5"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="1.5"/></svg>
+      Dashboard
+    </div>
+    <div class="ni" onclick="nav('wellness',this)">
+      <svg class="nico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke-width="1.5"/></svg>
+      Wellness Plantel
+      <span class="nbadge nb-r">3</span>
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Clínico</div>
+    <div class="ni" onclick="nav('athletes',this)">
+      <svg class="nico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" stroke-width="1.5"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Atletas
+    </div>
+    <div class="ni" onclick="nav('rehab',this)">
+      <svg class="nico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Reabilitação
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Performance</div>
+    <div class="ni" onclick="nav('gps',this)">
+      <svg class="nico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 17l4-8 4 5 3-3 4 6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      GPS & Treino
+    </div>
+    <div class="ni" onclick="nav('games',this)">
+      <svg class="nico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="1.5"/><path d="M12 3c0 0 2 3 2 9s-2 9-2 9M3 12h18" stroke-width="1.5"/></svg>
+      Jogos
+    </div>
+    <div class="ni" onclick="nav('predictive',this)">
+      <svg class="nico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      Risco Preditivo
+      <span class="nbadge nb-r">3</span>
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Sistema</div>
+    <div class="ni" onclick="nav('access',this)">
+      <svg class="nico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" stroke-width="1.5"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke-width="1.5"/></svg>
+      Controlo de Acesso
+      <span class="nbadge nb-b">RBAC</span>
+    </div>
+  </div>
+  <div class="sf"><span class="live"></span>Tempo real · 2024/25</div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-title" id="tbtitle">Dashboard</div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-right:3px">PAPEL:</div>
+      <div class="rp ar" onclick="switchRole('fisio')">Fisioterapeuta</div>
+      <div class="rp" onclick="switchRole('medico')">Médico</div>
+      <div class="rp" onclick="switchRole('treinador')">Treinador</div>
+    </div>
+  </div>
+  <div class="content">
+
+  <!-- DASHBOARD -->
+  <div class="screen active" id="screen-dashboard">
+    <div class="g4 mb20">
+      <div class="kpi"><div class="klabel">Plantel Disponível</div><div class="kval cg">18</div><div class="ksub">de 22 activos hoje</div></div>
+      <div class="kpi"><div class="klabel">Alertas Wellness</div><div class="kval cr">3</div><div class="ksub">Intervenção recomendada</div></div>
+      <div class="kpi"><div class="klabel">ACWR Médio</div><div class="kval cw">1.28</div><div class="ksub">Zona de atenção (&gt;1.3)</div></div>
+      <div class="kpi"><div class="klabel">Compliance App</div><div class="kval cg">82%</div><div class="ksub">18/22 preenchido hoje</div></div>
+    </div>
+    <div class="card mb20">
+      <div class="ctitle">Fluxo de Dados — Athlete App → Plataforma Staff</div>
+      <div class="flow-row">
+        <div class="fn hi">
+          <div class="fnt" style="color:var(--accent)">Athlete App</div>
+          <div class="fns">ATLETA APENAS</div>
+          <div class="fnb">Fadiga · Sono · DOMS<br>Stress · TQR · HRV<br>Peso · RPE · Urina · Crioterapia</div>
+        </div>
+        <div class="farr">→</div>
+        <div class="fn hb">
+          <div class="fnt" style="color:var(--blue)">API Segura</div>
+          <div class="fns">ENCRIPTADO · RGPD</div>
+          <div class="fnb">Auth MFA<br>Row Level Security<br>Supabase EU West</div>
+        </div>
+        <div class="farr">→</div>
+        <div class="fn">
+          <div class="fnt">Dados Integrados</div>
+          <div class="fns">WELLNESS + GPS</div>
+          <div class="fnb">Hooper · TQR · HRV<br>ACWR · Session-RPE<br>Peso · Crioterapia</div>
+        </div>
+        <div class="farr">→</div>
+        <div class="fn hr">
+          <div class="fnt" style="color:var(--danger)">Modelo Preditivo</div>
+          <div class="fns">5 DIMENSÕES</div>
+          <div class="fnb">Score risco 14d<br>Alertas automáticos<br>Recomendações RTP</div>
+        </div>
+        <div class="farr">→</div>
+        <div class="fn hi">
+          <div class="fnt" style="color:var(--accent)">Staff Dashboard</div>
+          <div class="fns">ACESSO POR PAPEL</div>
+          <div class="fnb">Fisio · Médico<br>Treinador · Prep. Fís.<br>Analista · Admin</div>
+        </div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ctitle">Estado do Plantel</div>
+        <table>
+          <thead><tr><th>Atleta</th><th>Estado</th><th>Wellness</th><th>ACWR</th><th>RTP</th></tr></thead>
+          <tbody>
+            <tr><td>R. Silva</td><td><span class="pill p-r">Indisponível</span></td><td>—</td><td>—</td><td>~18 sem</td></tr>
+            <tr><td>D. Mendes</td><td><span class="pill p-w">Reabilitação</span></td><td><span class="cg">OK</span></td><td class="cw">1.31</td><td>~3 sem</td></tr>
+            <tr><td>P. Oliveira</td><td><span class="pill p-ok">Disponível</span></td><td><span class="cr">⚠ Alerta</span></td><td class="cr">1.47</td><td>—</td></tr>
+            <tr><td>L. Rodrigues</td><td><span class="pill p-ok">Disponível</span></td><td><span class="cw">Atenção</span></td><td class="cw">1.32</td><td>—</td></tr>
+            <tr><td>M. Sousa</td><td><span class="pill p-ok">Disponível</span></td><td><span class="cg">Excelente</span></td><td class="cg">1.05</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="ctitle">Alertas Activos</div>
+        <div class="al al-hi"><div class="ald r"></div><div class="alb"><strong>P. Oliveira</strong> — Fadiga 8/10 + Sono 4/10 + HRV −22% + ACWR 1.47. Risco: <strong style="color:var(--danger)">82%</strong></div><div class="alact" onclick="nav('predictive',null)">→ Preditivo</div></div>
+        <div class="al al-me"><div class="ald w"></div><div class="alb"><strong>L. Rodrigues</strong> — DOMS 7/10 + Peso −2.1% + historial ísquiotibial. Risco: <strong style="color:var(--warn)">61%</strong></div></div>
+        <div class="al al-me"><div class="ald w"></div><div class="alb"><strong>B. Alves</strong> — TQR 11 (Mau) + Volume +35% vs. média 4 sem. Risco: <strong style="color:var(--warn)">58%</strong></div></div>
+        <div style="margin-top:12px;padding-top:11px;border-top:1px solid var(--border)">
+          <div class="slabel">Sem preenchimento hoje (4 atletas)</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="pill p-w">J. Santos</span><span class="pill p-w">A. Pereira</span><span class="pill p-w">C. Neves</span><span class="pill p-w">M. Tavares</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WELLNESS -->
+  <div class="screen" id="screen-wellness">
+    <div class="g4 mb20">
+      <div class="kpi"><div class="klabel">Fadiga Média</div><div class="kval cw">5.8</div><div class="ksub">Hooper item 1 · ↑ vs. ontem</div></div>
+      <div class="kpi"><div class="klabel">Sono Médio</div><div class="kval cg">6.4</div><div class="ksub">Qualidade percebida</div></div>
+      <div class="kpi"><div class="klabel">TQR Médio</div><div class="kval cw">12.8</div><div class="ksub">Razoável (alvo &gt;14)</div></div>
+      <div class="kpi"><div class="klabel">HRV Plantel</div><div class="kval cg">64.7ms</div><div class="ksub">Dentro do normal</div></div>
+    </div>
+    <div class="g2 mb16">
+      <div class="card">
+        <div class="ctitle">Wellness Individual — Hoje</div>
+        <table>
+          <thead><tr><th>Atleta</th><th>Fadiga</th><th>Sono</th><th>DOMS</th><th>Stress</th><th>TQR</th><th>HRV Δ</th><th>Peso Δ</th><th>Score</th></tr></thead>
+          <tbody id="w-table"></tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card mb16">
+          <div class="ctitle">Compliance de Preenchimento</div>
+          <div id="comp-bars"></div>
+          <div style="margin-top:12px;padding-top:11px;border-top:1px solid var(--border)">
+            <div class="slabel">Crioterapia Hoje (MD / MD+1)</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:5px"><span class="pill p-b">D. Mendes</span><span class="pill p-b">B. Alves</span><span class="pill p-b">L. Rodrigues</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Tendência Semanal — Plantel</div>
+          <div id="w-trends"></div>
+        </div>
+      </div>
+    </div>
+    <div class="refbox"><div class="reftitle">Instrumentos & Referências</div>Hooper Index (Hooper & Mackinnon, 1995) · TQR (Kenttä & Hassmén, 1998) · Session-RPE (Foster et al., 2001) · Armstrong Hydration Scale · HRV como marcador SNA (Plews et al., 2013) · Meeuwisse 1994 — modelo integrado de risco</div>
+  </div>
+
+  <!-- ATHLETES -->
+  <div class="screen" id="screen-athletes">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <input type="text" placeholder="Pesquisar atleta…" style="max-width:250px;flex:1">
+      <select style="max-width:140px"><option>Todas posições</option><option>GR</option><option>DC</option><option>MC</option><option>ED/EE</option><option>AV</option></select>
+      <button class="btn-p" style="width:auto;padding:9px 18px;font-size:12px">+ Novo Atleta</button>
+    </div>
+    <div class="ath-grid" id="ath-grid"></div>
+  </div>
+
+  <!-- ATHLETE PROFILE -->
+  <div class="screen" id="screen-profile">
+    <div style="margin-bottom:12px"><span onclick="nav('athletes',null)" style="font-family:var(--mono);font-size:10px;color:var(--text3);cursor:pointer;letter-spacing:1px">← ATLETAS</span></div>
+    <div class="phdr" id="phdr"></div>
+    <div class="ptabs">
+      <div class="ptab active" onclick="ptab(this,'pc')">Clínico</div>
+      <div class="ptab" onclick="ptab(this,'pw')">Wellness</div>
+      <div class="ptab" onclick="ptab(this,'ph')">Historial Lesões</div>
+      <div class="ptab" onclick="ptab(this,'pr')">Reabilitação</div>
+    </div>
+    <div id="pc" class="ptc"><div class="g2" id="pclin"></div></div>
+    <div id="pw" class="ptc" style="display:none"><div id="pwel"></div></div>
+    <div id="ph" class="ptc" style="display:none"><div class="card" id="phist"></div></div>
+    <div id="pr" class="ptc" style="display:none"><div class="card" id="preh"></div></div>
+  </div>
+
+  <!-- REHAB -->
+  <div class="screen" id="screen-rehab">
+    <div class="g2 mb20">
+      <div class="card">
+        <div class="ctitle">Gerador de Protocolo Evidence-Based</div>
+        <div class="fg"><label class="fl">Diagnóstico clínico</label>
+          <select id="rdiag" onchange="genRehab()">
+            <option value="">Seleccionar…</option>
+            <optgroup label="Muscular"><option value="h2">Lesão Isquiotibial Grau II</option><option value="lca">LCA Pós-Cirúrgico</option><option value="ach">Tendinopatia Aquiliana</option><option value="pat">Tendinopatia Patelar</option><option value="ank">Entorse Lateral Tornozelo</option></optgroup>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Atleta</label>
+          <select><option>— Sem associar —</option><option>D. Mendes</option><option>R. Silva</option></select>
+        </div>
+        <div class="fg"><label class="fl">Mecanismo</label>
+          <select><option>Alta velocidade / sprint</option><option>Contacto directo</option><option>Sobrecarga cumulativa</option><option>Pós-cirúrgico</option></select>
+        </div>
+        <button class="btn-p" onclick="genRehab()">Gerar Protocolo</button>
+      </div>
+      <div class="card" id="rcrit-box" style="display:flex;align-items:center;justify-content:center;color:var(--text3)">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:1px;text-align:center">Seleccione diagnóstico<br>para critérios rápidos</div>
+      </div>
+    </div>
+    <div class="card" id="rprot-box" style="display:none"></div>
+  </div>
+
+  <!-- GPS -->
+  <div class="screen" id="screen-gps">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
+      <div class="gmc"><div class="gml">DISTÂNCIA TOTAL</div><div class="gmv cg">8.4<span class="gmu">km</span></div><div class="gmd cg">↑ +6% vs. média</div></div>
+      <div class="gmc"><div class="gml">HI DISTANCE (&gt;21km/h)</div><div class="gmv">1.12<span class="gmu">km</span></div><div class="gmd" style="color:var(--text2)">→ estável</div></div>
+      <div class="gmc"><div class="gml">ACELERAÇÕES (&gt;3m/s²)</div><div class="gmv">42</div><div class="gmd cg">↑ +11%</div></div>
+      <div class="gmc"><div class="gml">VEL. MÁXIMA</div><div class="gmv">31.4<span class="gmu">km/h</span></div><div class="gmd" style="color:var(--text2)">→ estável</div></div>
+      <div class="gmc"><div class="gml">ACWR PLANTEL</div><div class="gmv cw">1.28</div><div class="gmd cw">⚠ Monitorizar</div></div>
+      <div class="gmc"><div class="gml">SESSION-RPE MÉDIO</div><div class="gmv">487<span class="gmu">UA</span></div><div class="gmd cg">Zona óptima</div></div>
+    </div>
+    <div class="g2">
+      <div class="card"><div class="ctitle">Carga Semanal — Plantel</div><div id="gps-bars" style="margin-top:4px"></div></div>
+      <div class="card">
+        <div class="ctitle">Registar Sessão</div>
+        <div class="fg"><label class="fl">Atleta</label><select><option>Seleccionar…</option><option>D. Mendes</option></select></div>
+        <div class="fg"><label class="fl">Tipo</label><select><option>Treino táctico</option><option>Treino físico</option><option>Jogo</option></select></div>
+        <div class="fg"><label class="fl">Distância (km)</label><input type="text" placeholder="ex: 8.4"></div>
+        <div class="fg"><label class="fl">HI Distance (km)</label><input type="text" placeholder="ex: 1.1"></div>
+        <button class="btn-p">Guardar Sessão</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAMES -->
+  <div class="screen" id="screen-games">
+    <div class="card mb16">
+      <div class="ctitle">Jogos 2024/25</div>
+      <table>
+        <thead><tr><th>Data</th><th>Adversário</th><th>Resultado</th><th>Dist. Méd.</th><th>HI Dist.</th><th>Session-RPE Méd.</th><th>Lesões</th></tr></thead>
+        <tbody>
+          <tr><td>15 Mar</td><td>Sporting CP</td><td>1–1</td><td>10.8km</td><td>2.14km</td><td>742 UA</td><td>—</td></tr>
+          <tr><td>08 Mar</td><td>FC Porto</td><td>0–2</td><td>10.2km</td><td>1.98km</td><td>688 UA</td><td>1 (D. Mendes)</td></tr>
+          <tr><td>02 Mar</td><td>Braga</td><td>3–0</td><td>11.1km</td><td>2.31km</td><td>798 UA</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="g2">
+      <div class="card"><div class="ctitle">Top Distância — Média por Jogo</div><div id="game-bars" style="margin-top:4px"></div></div>
+      <div class="card">
+        <div class="ctitle">Novo Jogo</div>
+        <div class="fg"><label class="fl">Adversário</label><input type="text" placeholder="Nome do adversário"></div>
+        <div class="fg"><label class="fl">Data</label><input type="text" placeholder="DD/MM/AAAA"></div>
+        <div class="fg"><label class="fl">Resultado</label><input type="text" placeholder="ex: 2-1"></div>
+        <button class="btn-p">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PREDICTIVE -->
+  <div class="screen" id="screen-predictive">
+    <div class="card mb16" style="border-color:rgba(160,120,250,0.3);background:rgba(160,120,250,0.04)">
+      <div style="display:flex;align-items:flex-start;gap:14px">
+        <div style="flex:1">
+          <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--purple);margin-bottom:5px">Modelo Preditivo Integrado — 5 Dimensões</div>
+          <div style="font-size:12.5px;color:var(--text2);line-height:1.6">
+            <strong style="color:var(--text)">1. Carga externa GPS</strong> (ACWR, HI distance, acelerações, velocidade máxima) ·
+            <strong style="color:var(--text)">2. Carga interna</strong> (Hooper, TQR, Session-RPE) ·
+            <strong style="color:var(--text)">3. Recuperação biológica</strong> (HRV, sono, peso, crioterapia) ·
+            <strong style="color:var(--text)">4. Estado psicológico</strong> (stress percebido) ·
+            <strong style="color:var(--text)">5. Historial clínico</strong> (lesões anteriores, localização anatómica, tempo de indisponibilidade).
+            <br><em style="color:var(--text3)">Meeuwisse 1994 · Gabbett 2016 (ACWR) · Plews 2013 (HRV) · UEFA ECIS · Andersen & Williams 1988</em>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:3px">ACTUALIZADO</div>
+          <div style="font-family:var(--display);font-size:13px;font-weight:800;color:var(--purple)" id="pred-time"></div>
+        </div>
+      </div>
+    </div>
+    <div class="g3 mb16" id="risk-cards"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ctitle">Contribuição por Factor — P. Oliveira (82%)</div>
+        <div id="fbars"></div>
+        <div class="refbox">
+          <div class="reftitle">Recomendações Imediatas</div>
+          <div style="font-size:12px;line-height:1.75;color:var(--text2)">
+            • Reduzir volume 20–25% nos próximos 5 dias<br>
+            • Manter intensidade relativa (não eliminar HI)<br>
+            • Screening isquiotibial bilateral (NHE) amanhã<br>
+            • Monitorização HRV diária — alerta se &lt;58ms<br>
+            • Protocolo de higiene do sono · reavaliação em 72h
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Evolução 14 dias — P. Oliveira</div>
+        <div id="pred-trends"></div>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+          <div class="ctitle" style="margin-bottom:8px;font-size:13px">Critérios Wellness para RTP</div>
+          <div id="rtp-crit"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCESS CONTROL -->
+  <div class="screen" id="screen-access">
+    <div class="card mb20">
+      <div class="ctitle">Arquitectura de Papéis (RBAC) — PhysioElite</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">
+        Dois ambientes completamente separados. O atleta <strong style="color:var(--accent)">só acede à Athlete App</strong> (wellness self-reporting).
+        O staff acede à <strong style="color:var(--text)">Plataforma Principal</strong> com visibilidade definida pelo papel.
+        Os dados fluem <strong style="color:var(--text)">unidireccionalmente</strong>: atleta → API segura (Supabase EU, MFA, Row Level Security) → plataforma staff.
+      </div>
+      <div style="background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.2);border-radius:var(--r);padding:14px;margin-bottom:16px">
+        <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px">Athlete App — Acesso Exclusivo do Atleta</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <span class="pill p-ok">Check-in manhã (Hooper + TQR + HRV + peso)</span>
+          <span class="pill p-ok">RPE pós-sessão</span>
+          <span class="pill p-ok">Histórico pessoal (14 dias)</span>
+        </div>
+        <div style="font-size:12px;color:var(--text2)">O atleta NÃO vê dados de outros atletas · NÃO acede à plataforma staff · NÃO vê o score de risco preditivo</div>
+      </div>
+      <div class="rbac-grid">
+        <div class="rbac-card">
+          <div class="rbac-role"><div class="rbav" style="background:rgba(0,229,160,0.15);color:var(--accent)">FT</div><div><div class="rbn">Fisioterapeuta</div><div class="rbt">ACESSO TOTAL CLÍNICO</div></div></div>
+          <div class="rbitem"><span class="ck">✓</span>Perfis clínicos completos</div>
+          <div class="rbitem"><span class="ck">✓</span>Historial de lesões</div>
+          <div class="rbitem"><span class="ck">✓</span>Protocolos de reabilitação</div>
+          <div class="rbitem"><span class="ck">✓</span>Wellness completo (todas vars.)</div>
+          <div class="rbitem"><span class="ck">✓</span>Modelo preditivo + alertas</div>
+          <div class="rbitem"><span class="ck">✓</span>GPS + carga + jogos</div>
+        </div>
+        <div class="rbac-card">
+          <div class="rbac-role"><div class="rbav" style="background:rgba(77,154,255,0.15);color:var(--blue)">MD</div><div><div class="rbn">Médico</div><div class="rbt">CLÍNICO + MÉDICO</div></div></div>
+          <div class="rbitem"><span class="ck">✓</span>Perfis clínicos + exames</div>
+          <div class="rbitem"><span class="ck">✓</span>Historial completo</div>
+          <div class="rbitem"><span class="ck">✓</span>Protocolos de reabilitação</div>
+          <div class="rbitem"><span class="ck">✓</span>Wellness completo</div>
+          <div class="rbitem"><span class="ck">✓</span>Modelo preditivo</div>
+          <div class="rbitem"><span class="ck">✓</span>Gestão de utilizadores</div>
+        </div>
+        <div class="rbac-card">
+          <div class="rbac-role"><div class="rbav" style="background:rgba(246,173,85,0.15);color:var(--warn)">TR</div><div><div class="rbn">Treinador Principal</div><div class="rbt">TÁCTICO / DISPONIBILIDADE</div></div></div>
+          <div class="rbitem"><span class="ck">✓</span>Disponibilidade do atleta</div>
+          <div class="rbitem"><span class="ck">✓</span>Score de risco (sem detalhe)</div>
+          <div class="rbitem"><span class="ck">✓</span>GPS + carga + jogos</div>
+          <div class="rbitem"><span class="cx">✗</span><span style="color:var(--text3)">Dados clínicos detalhados</span></div>
+          <div class="rbitem"><span class="cx">✗</span><span style="color:var(--text3)">Historial médico</span></div>
+          <div class="rbitem"><span class="cx">✗</span><span style="color:var(--text3)">Wellness individual detalhado</span></div>
+        </div>
+        <div class="rbac-card">
+          <div class="rbac-role"><div class="rbav" style="background:rgba(160,120,250,0.15);color:var(--purple)">PF</div><div><div class="rbn">Preparador Físico</div><div class="rbt">ACESSO PERFORMANCE</div></div></div>
+          <div class="rbitem"><span class="ck">✓</span>GPS + carga (completo)</div>
+          <div class="rbitem"><span class="ck">✓</span>Wellness: fadiga, sono, RPE</div>
+          <div class="rbitem"><span class="ck">✓</span>ACWR + Session-RPE</div>
+          <div class="rbitem"><span class="ck">✓</span>Alertas de sobrecarga</div>
+          <div class="rbitem"><span class="cx">✗</span><span style="color:var(--text3)">Dados clínicos / médicos</span></div>
+          <div class="rbitem"><span class="cx">✗</span><span style="color:var(--text3)">Historial de lesões</span></div>
+        </div>
+        <div class="rbac-card">
+          <div class="rbac-role"><div class="rbav" style="background:rgba(255,77,109,0.12);color:var(--danger)">AN</div><div><div class="rbn">Analista</div><div class="rbt">DADOS AGREGADOS</div></div></div>
+          <div class="rbitem"><span class="ck">✓</span>Dashboard agregado (anónimo)</div>
+          <div class="rbitem"><span class="ck">✓</span>Tendências de carga plantel</div>
+          <div class="rbitem"><span class="ck">✓</span>Dados de jogo (métricas)</div>
+          <div class="rbitem"><span class="cx">✗</span><span style="color:var(--text3)">Dados individuais identificados</span></div>
+          <div class="rbitem"><span class="cx">✗</span><span style="color:var(--text3)">Dados clínicos</span></div>
+          <div class="rbitem"><span class="cx">✗</span><span style="color:var(--text3)">Wellness individual</span></div>
+        </div>
+        <div class="rbac-card">
+          <div class="rbac-role"><div class="rbav" style="background:rgba(255,255,255,0.08);color:var(--text)">AD</div><div><div class="rbn">Administrador</div><div class="rbt">ACESSO TOTAL + GESTÃO</div></div></div>
+          <div class="rbitem"><span class="ck">✓</span>Tudo o anterior</div>
+          <div class="rbitem"><span class="ck">✓</span>Gestão de utilizadores</div>
+          <div class="rbitem"><span class="ck">✓</span>Logs de auditoria</div>
+          <div class="rbitem"><span class="ck">✓</span>Exportação de dados</div>
+          <div class="rbitem"><span class="ck">✓</span>Configuração de alertas</div>
+          <div class="rbitem"><span class="ck">✓</span>DPA / RGPD compliance</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+<script>
+const players=[
+  {id:1,init:'RS',name:'R. Silva',pos:'MC',age:26,h:'181cm',w:'76kg',foot:'Direito',status:'danger',stxt:'Indisponível',fatigue:null,sleep:null,doms:null,stress:null,tqr:null,hrv:null,hrv_b:62,wd:null,acwr:null,score:'danger',ap:'Rotura LCA grau II (Mar 2025). Cirurgia 10/03/2025.',inj:['LCA grau II — 2025 (actual)','Entorse tornozelo — 2023']},
+  {id:2,init:'DM',name:'D. Mendes',pos:'ED',age:23,h:'176cm',w:'71kg',foot:'Esquerdo',status:'warn',stxt:'Reabilitação',fatigue:5,sleep:7,doms:3,stress:3,tqr:15,hrv:62,hrv_b:68,wd:-0.4,acwr:1.31,score:'ok',ap:'Isquiotibial grau II (Mar 2025).',inj:['Isquiotibial grau II — 2025','Entorse tornozelo — 2024']},
+  {id:3,init:'PO',name:'P. Oliveira',pos:'MC',age:24,h:'177cm',w:'72kg',foot:'Esquerdo',status:'ok',stxt:'Disponível',fatigue:8,sleep:4,doms:6,stress:7,tqr:9,hrv:53,hrv_b:68,wd:-0.8,acwr:1.47,score:'danger',ap:'2× lesões isquiotibiais (2022, 2023).',inj:['Isquiotibial grau I — 2023','Isquiotibial grau I — 2022']},
+  {id:4,init:'LR',name:'L. Rodrigues',pos:'DD',age:28,h:'179cm',w:'75kg',foot:'Direito',status:'ok',stxt:'Disponível',fatigue:6,sleep:6,doms:7,stress:5,tqr:12,hrv:61,hrv_b:66,wd:-2.1,acwr:1.32,score:'warn',ap:'3× lesões isquiotibiais.',inj:['Isquiotibial grau I — 2023','Isquiotibial grau I — 2021','Isquiotibial grau I — 2019']},
+  {id:5,init:'MS',name:'M. Sousa',pos:'DE',age:25,h:'179cm',w:'74kg',foot:'Direito',status:'ok',stxt:'Disponível',fatigue:2,sleep:9,doms:1,stress:2,tqr:18,hrv:74,hrv_b:70,wd:0.2,acwr:1.05,score:'ok',ap:'Sem antecedentes relevantes.',inj:[]},
+  {id:6,init:'BA',name:'B. Alves',pos:'MC',age:21,h:'177cm',w:'72kg',foot:'Esquerdo',status:'ok',stxt:'Disponível',fatigue:6,sleep:6,doms:5,stress:6,tqr:11,hrv:60,hrv_b:64,wd:-1.2,acwr:1.35,score:'warn',ap:'Sem antecedentes relevantes.',inj:[]},
+  {id:7,init:'JC',name:'J. Costa',pos:'DC',age:29,h:'188cm',w:'83kg',foot:'Direito',status:'warn',stxt:'Monitorizado',fatigue:5,sleep:8,doms:3,stress:3,tqr:16,hrv:71,hrv_b:69,wd:0.3,acwr:1.18,score:'ok',ap:'Síndrome sobrecarga patelar.',inj:['Sobrecarga rótula — 2025','Contractura isquiotibial — 2023']},
+];
+
+const protos={
+  h2:{diag:'Lesão Isquiotibial Grau II',ev:'Askling Protocol · van der Horst · UEFA ECIS',gr:'Grau A',
+    ph:[{n:'01',t:'Aguda & Protecção',d:'D1–D7',it:['Repouso relativo 48–72h','Crioterapia + compressão','TENS analgésico','Sliders neurais']},{n:'02',t:'Neuromuscular',d:'D5–D21',it:['Askling L-protocol','Excêntrico amplitude longa','Corrida 50–70%','Propriocepção avançada']},{n:'03',t:'Força Avançada',d:'D14–D35',it:['NHE bilateral→unilateral','Stiff-leg deadlift','Sprints ≤90%','Treino específico posição']},{n:'04',t:'Return to Play',d:'D28–D42',it:['Sprint máximo GPS','Jogo reduzido','Isocinético','Clearance multidisciplinar']}],
+    pass:['LSI isquiotibial ≥95%','H/Q ratio ≥65%','Dor 0/10 em sprint máximo','Askling H-test negativo'],
+    rtp:['Jogo reduzido sem limitação','GPS HI ≥90% baseline','Sem compensação na corrida'],
+    ref:'Askling CM et al. (2013). AJSM. | Croisier JL et al. (2008). AJSM. | Ekstrand J et al. (2016). BJSM.'},
+  lca:{diag:'Reconstrução LCA Pós-Cirúrgico',ev:'Grindem 2016 · Kyritsis · van Melick',gr:'Grau A',
+    ph:[{n:'01',t:'Pós-op Imediato',d:'Sem 1–4',it:['Edema + crioterapia','ROM 0°–90°','Activação quadricipital EMS','Carga parcial canadianas']},{n:'02',t:'Força & Estabilidade',d:'Sem 4–16',it:['CCA→CCC progressivo','Leg press unilateral','Bicicleta sem impacto','Propriocepção avançada']},{n:'03',t:'Neuromuscular & Corrida',d:'Sem 12–24',it:['Corrida recta progressiva','Pliometria bilateral→unilateral','NHE + cadeia posterior','Agilidade sem pivot']},{n:'04',t:'Return to Sport',d:'Sem 22–36+',it:['LSI isocinético ≥90%','Hop tests LSI ≥90%','Treino completo','Clearance multidisciplinar']}],
+    pass:['LSI quadricipital ≥90%','LSI isquiotibial ≥90%','4 hop tests LSI ≥90%','Mín. 9 meses pós-op'],
+    rtp:['Single-leg squat sem valgo','Y-Balance &lt;4cm assimetria','ACL-RSI &gt;65'],
+    ref:'Grindem H et al. (2016). BJSM. | Kyritsis P et al. (2016). BJSM. | van Melick N et al. (2016). BJSM.'},
+  ach:{diag:'Tendinopatia Aquiliana',ev:'Alfredson · Cook & Purdam · Beyer',gr:'Grau A',
+    ph:[{n:'01',t:'Carga Isométrica',d:'Sem 1–2',it:['Isométrico enc. 5×45s','Controlo carga total','Bicicleta sem impacto','Educação sobre carga']},{n:'02',t:'Carga Isotónica',d:'Sem 2–8',it:['Alfredson heel drop exc.','3×15 reps 2×/dia','Progressão com mochila','Corrida em piscina']},{n:'03',t:'Energia Armazenada',d:'Sem 6–14',it:['Pliometria bilateral','Saltos duplo→simples','Corrida recta progressiva','Skip + bound']},{n:'04',t:'Return to Sport',d:'Sem 12–20',it:['VISA-A ≥90','Sprint monitorizado','Mudanças de direcção','Treino específico futebol']}],
+    pass:['VISA-A ≥90','Heel raise ≥25 reps','Dor 0–2/10 em carga','Hop test sem limitação'],
+    rtp:['Corrida 5km sem dor','Sprint máximo sem alteração','Retorno progressivo treino'],
+    ref:'Alfredson H et al. (1998). AJSM. | Cook JL & Purdam CR (2009). BJSM. | Beyer R et al. (2015). AJSM.'},
+  pat:{diag:'Tendinopatia Patelar',ev:'Kongsgaard · Beyer · VISA-P',gr:'Grau A',
+    ph:[{n:'01',t:'Carga Isométrica',d:'Sem 1–3',it:['Leg ext. 70° 5×45s','Efeito analgésico documentado','4–5 séries 2×/dia','Manutenção treino não-doloroso']},{n:'02',t:'Isotónico Pesado (HSR)',d:'Sem 3–12',it:['Heavy Slow Resistance','Leg press + squat declinado','3–4×6–8RM progressivo','Bilateral→unilateral']},{n:'03',t:'Energia & Reactividade',d:'Sem 10–20',it:['Pliometria progressiva','Single-leg hop','Corrida plano→irregular','Treino com bola']},{n:'04',t:'Return to Sport',d:'Sem 16–24',it:['VISA-P ≥80','Treino completo','Ecografia tendão','Gestão carga longo prazo']}],
+    pass:['VISA-P ≥80','Dor ≤3/10 decline squat','Força exc. ≥90% contralateral','Sem dor 24h pós-carga'],
+    rtp:['Decline squat simétrico','Hop test sem alteração','Treino futebol completo'],
+    ref:'Kongsgaard M et al. (2009). AJSM. | Beyer R et al. (2015). AJSM. | Rudavsky & Cook (2014). JOSPT.'},
+  ank:{diag:'Entorse Lateral Tornozelo Grau II',ev:'ROAST Consensus 2019 · Bleakley',gr:'Grau A',
+    ph:[{n:'01',t:'Aguda',d:'D1–D5',it:['POLICE protocol','Mobilização precoce','Taping funcional','ROM progressivo']},{n:'02',t:'Neuromuscular',d:'D3–D14',it:['Balance board','Fortalecimento eversor','Treino marcha','Cardiovascular sem impacto']},{n:'03',t:'Funcional',d:'D10–D21',it:['Corrida recta progressiva','Mudanças direcção graduais','Saltos progressivos','Gestos específicos posição']},{n:'04',t:'Return to Sport',d:'D14–D28',it:['Treino + taping','Sprint e pivot','Brace 6–12 sem','Clearance clínico']}],
+    pass:['Edema ≥80% resolvido','Eversão ≥90% contralateral','Single-leg balance &gt;20s','Corrida sem alteração'],
+    rtp:['Figure-8 run sem dor','Hop test sem limitação','Y-Balance &lt;4cm assimetria'],
+    ref:'Bleakley CM et al. (2010). BMJ. | ROAST Consensus 2019. | Wikstrom EA (2020). JOSPT.'},
+};
+
+// ── ROLE ──────────────────────────────────────────────────────────────────
+const roles={fisio:{n:'F. Marques',t:'Fisioterapeuta',c:'var(--accent)',bg:'rgba(0,229,160,0.15)',i:'FM'},medico:{n:'Dr. A. Cunha',t:'Médico do Clube',c:'var(--blue)',bg:'rgba(77,154,255,0.15)',i:'AC'},treinador:{n:'J. Monteiro',t:'Treinador Principal',c:'var(--warn)',bg:'rgba(246,173,85,0.15)',i:'JM'}};
+function switchRole(r){
+  const d=roles[r];
+  document.getElementById('rname').textContent=d.n;
+  document.getElementById('rtag').textContent=d.t;
+  const a=document.getElementById('rav');a.textContent=d.i;a.style.color=d.c;a.style.background=d.bg;
+  document.querySelectorAll('.rp').forEach(p=>p.classList.remove('ar'));
+  document.querySelector(`.rp[onclick="switchRole('${r}')"]`).classList.add('ar');
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────
+function nav(id,el){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  const tt={dashboard:'Dashboard',wellness:'Wellness Plantel',athletes:'Atletas',profile:'Perfil do Atleta',rehab:'Reabilitação Evidence-Based',gps:'GPS & Treino',games:'Dados de Jogo',predictive:'Modelo Preditivo de Risco',access:'Controlo de Acesso (RBAC)'};
+  document.getElementById('tbtitle').textContent=tt[id]||id;
+  if(id==='athletes')buildAthletes();
+  if(id==='wellness')buildWellness();
+  if(id==='gps')buildGPSBars();
+  if(id==='games')buildGameBars();
+  if(id==='predictive')buildPredictive();
+}
+
+// ── ATHLETES ──────────────────────────────────────────────────────────────
+function buildAthletes(){
+  document.getElementById('ath-grid').innerHTML=players.map(p=>{
+    const sc=p.score==='ok'?'p-ok':p.score==='warn'?'p-w':'p-r';
+    const st=p.status==='ok'?'p-ok':p.status==='warn'?'p-w':'p-r';
+    return`<div class="ath-card" onclick="openProfile(${p.id})">
+      <div class="aav">${p.init}</div><div class="aname">${p.name}</div><div class="apos">${p.pos}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:9px">
+        <div style="font-size:11px;color:var(--text2)">Idade <span style="color:var(--text)">${p.age}a</span></div>
+        <div style="font-size:11px;color:var(--text2)">Alt. <span style="color:var(--text)">${p.h}</span></div>
+        <div style="font-size:11px;color:var(--text2)">Peso <span style="color:var(--text)">${p.w}</span></div>
+        <div style="font-size:11px;color:var(--text2)">Pé <span style="color:var(--text)">${p.foot}</span></div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="pill ${st}">${p.stxt}</span>
+        ${p.score!=='ok'?`<span class="pill ${sc}">Risco ${p.score==='warn'?'Médio':'Alto'}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openProfile(id){
+  const p=players.find(x=>x.id===id);
+  nav('profile',null);
+  document.getElementById('tbtitle').textContent='Perfil — '+p.name;
+  const sc=p.status==='ok'?'p-ok':p.status==='warn'?'p-w':'p-r';
+  document.getElementById('phdr').innerHTML=`
+    <div class="pav">${p.init}</div>
+    <div><div class="pname">${p.name}</div><div class="ppos">${p.pos}</div>
+    <div class="pmeta"><div class="pm">Idade <span>${p.age}a</span></div><div class="pm">Altura <span>${p.h}</span></div><div class="pm">Peso <span>${p.w}</span></div><div class="pm">Pé <span>${p.foot}</span></div></div></div>
+    <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">
+      <span class="pill ${sc}">${p.stxt}</span>
+      ${p.acwr?`<span class="pill ${p.acwr>1.4?'p-r':p.acwr>1.25?'p-w':'p-ok'}">ACWR ${p.acwr}</span>`:''}
+    </div>`;
+  document.getElementById('pclin').innerHTML=`
+    <div class="card"><div class="ctitle">Antecedentes Pessoais</div><div style="font-size:13px;color:var(--text2);line-height:1.7">${p.ap}</div></div>
+    <div class="card"><div class="ctitle">Biometria</div>
+      ${[['Altura',p.h],['Peso',p.w],['Pé dominante',p.foot],['Posição',p.pos]].map(([l,v])=>`<div class="wrow"><div class="wlabel">${l}</div><div class="wval">${v}</div></div>`).join('')}
+    </div>`;
+  if(p.fatigue!==null){
+    const hp=Math.round(((p.hrv-p.hrv_b)/p.hrv_b)*100);
+    document.getElementById('pwel').innerHTML=`<div class="g2">
+      <div class="card"><div class="ctitle">Wellness Hoje</div>
+        ${[['Fadiga (Hooper)',p.fatigue,10,p.fatigue>=8?'var(--danger)':p.fatigue>=6?'var(--warn)':'var(--accent)'],
+           ['Sono (qualidade)',p.sleep,10,p.sleep<=4?'var(--danger)':p.sleep<=5?'var(--warn)':'var(--accent)'],
+           ['DOMS',p.doms,10,p.doms>=7?'var(--danger)':p.doms>=5?'var(--warn)':'var(--accent)'],
+           ['Stress percebido',p.stress,10,p.stress>=7?'var(--danger)':p.stress>=5?'var(--warn)':'var(--accent)'],
+           ['TQR',p.tqr,20,p.tqr<=9?'var(--danger)':p.tqr<=12?'var(--warn)':'var(--accent)']
+          ].map(([l,v,mx,c])=>`<div class="wrow"><div class="wlabel">${l}</div><div class="wval" style="color:${c}">${v}/${mx}</div><div class="wbt"><div class="wbf" style="width:${Math.round(v/mx*100)}%;background:${c}"></div></div></div>`).join('')}
+        <div class="wrow" style="border:none"><div class="wlabel">HRV Δ baseline</div><div class="wval" style="color:${hp<=-10?'var(--danger)':hp<=-5?'var(--warn)':'var(--accent)'}">${hp>=0?'+':''}${hp}%</div></div>
+      </div>
+      <div class="card"><div class="ctitle">Score Preditivo</div>
+        <div style="font-family:var(--display);font-size:48px;font-weight:800;color:${p.score==='danger'?'var(--danger)':p.score==='warn'?'var(--warn)':'var(--accent)'};margin:8px 0">${p.score==='danger'?'82%':p.score==='warn'?'61%':'24%'}</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Risco de lesão — 14 dias</div>
+        <div class="refbox"><div class="reftitle">ACWR</div>${p.acwr} — ${p.acwr>1.4?'Zona vermelha — reduzir carga imediatamente':p.acwr>1.25?'Zona amarela — monitorizar':'Zona óptima (1.0–1.3)'}</div>
+      </div>
+    </div>`;
+  } else {
+    document.getElementById('pwel').innerHTML=`<div class="card"><div style="color:var(--text3);font-family:var(--mono);font-size:11px;text-align:center;padding:28px">Atleta indisponível — sem dados de wellness activos</div></div>`;
+  }
+  document.getElementById('phist').innerHTML=`<div class="ctitle">Historial de Lesões</div>${p.inj.length?p.inj.map(i=>`<div style="font-size:13px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);display:flex;gap:8px"><span style="color:var(--text3)">—</span>${i}</div>`).join(''):`<div style="color:var(--text3);font-size:13px">Sem lesões registadas</div>`}`;
+  document.getElementById('preh').innerHTML=`<div class="ctitle">Reabilitação Activa</div><div style="font-size:13px;color:var(--text2);line-height:1.7">${p.status==='warn'?'A cumprir protocolo de reabilitação. Próxima avaliação agendada.':'Sem protocolo activo.'}</div>`;
+}
+
+function ptab(el,id){
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.ptc').forEach(t=>t.style.display='none');
+  el.classList.add('active');
+  document.getElementById(id).style.display='block';
+}
+
+// ── WELLNESS ──────────────────────────────────────────────────────────────
+function buildWellness(){
+  const active=players.filter(p=>p.fatigue!==null);
+  document.getElementById('w-table').innerHTML=active.map(p=>{
+    const hp=Math.round(((p.hrv-p.hrv_b)/p.hrv_b)*100);
+    const sc=p.score==='ok'?'p-ok':p.score==='warn'?'p-w':'p-r';
+    return`<tr>
+      <td>${p.name} <span style="font-family:var(--mono);font-size:9px;color:var(--text3)">${p.pos}</span></td>
+      <td style="color:${p.fatigue>=8?'var(--danger)':p.fatigue>=6?'var(--warn)':'var(--text2)'}">${p.fatigue}/10</td>
+      <td style="color:${p.sleep<=4?'var(--danger)':p.sleep<=5?'var(--warn)':'var(--text2)'}">${p.sleep}/10</td>
+      <td style="color:${p.doms>=7?'var(--danger)':p.doms>=5?'var(--warn)':'var(--text2)'}">${p.doms}/10</td>
+      <td style="color:${p.stress>=7?'var(--danger)':p.stress>=5?'var(--warn)':'var(--text2)'}">${p.stress}/10</td>
+      <td style="color:${p.tqr<=9?'var(--danger)':p.tqr<=12?'var(--warn)':'var(--text2)'}">${p.tqr}/20</td>
+      <td style="color:${hp<=-10?'var(--danger)':hp<=-5?'var(--warn)':'var(--accent)'}">${hp>=0?'+':''}${hp}%</td>
+      <td style="color:${p.wd<-2?'var(--danger)':p.wd<-1?'var(--warn)':'var(--text2)'}">${p.wd>=0?'+':''}${p.wd}%</td>
+      <td><span class="pill ${sc}">${p.score==='ok'?'OK':p.score==='warn'?'Atenção':'Alerta'}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('comp-bars').innerHTML=[['Manhã (Hooper+TQR+HRV+Peso)',18,22],['RPE Pós-Treino',15,22],['HRV Matinal',12,22],['Peso Diário',20,22]].map(([l,v,t])=>{
+    const p=Math.round(v/t*100);
+    return`<div class="br"><div class="bn" style="width:180px">${l}</div><div class="bt"><div class="bf" style="width:${p}%;background:${p<70?'var(--danger)':p<85?'var(--warn)':'var(--accent)'}"></div></div><div class="bv">${v}/${t}</div></div>`;
+  }).join('');
+  document.getElementById('w-trends').innerHTML=[['Fadiga plantel',5.8,10,'var(--warn)'],['Sono plantel',6.4,10,'var(--accent)'],['TQR plantel',12.8,20,'var(--accent)'],['Stress plantel',4.3,10,'var(--accent)']].map(([l,v,mx,c])=>`<div class="br"><div class="bn">${l}</div><div class="bt"><div class="bf" style="width:${Math.round(v/mx*100)}%;background:${c}"></div></div><div class="bv">${v}</div></div>`).join('');
+}
+
+// ── REHAB ─────────────────────────────────────────────────────────────────
+function genRehab(){
+  const k=document.getElementById('rdiag').value;
+  const pb=document.getElementById('rprot-box'),cb=document.getElementById('rcrit-box');
+  if(!k){pb.style.display='none';return;}
+  const p=protos[k];
+  pb.style.display='block';
+  pb.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+      <div><div style="font-family:var(--display);font-size:18px;font-weight:800">${p.diag}</div><div style="font-family:var(--mono);font-size:10px;color:var(--accent);margin-top:2px">${p.ev}</div></div>
+      <div style="font-family:var(--mono);font-size:10px;padding:4px 12px;border:1px solid rgba(0,229,160,0.3);border-radius:20px;color:var(--accent)">${p.gr}</div>
+    </div>
+    <div class="ph-grid mb16">${p.ph.map(h=>`<div class="ph-box"><div class="ph-num">FASE ${h.n}</div><div class="ph-name">${h.t}</div><div class="ph-time">${h.d}</div><div style="margin-top:7px">${h.it.map(i=>`<div class="ph-item">${i}</div>`).join('')}</div></div>`).join('')}</div>
+    <div class="g2">
+      <div><div class="slabel">Critérios de progressão</div>${p.pass.map(c=>`<div style="font-size:12.5px;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--border);display:flex;gap:7px"><span style="color:var(--accent)">→</span>${c}</div>`).join('')}</div>
+      <div><div class="slabel">Critérios Return to Play</div>${p.rtp.map(c=>`<div style="font-size:12.5px;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--border);display:flex;gap:7px"><span style="color:var(--accent)">→</span>${c}</div>`).join('')}</div>
+    </div>
+    <div class="refbox"><div class="reftitle">Referências</div>${p.ref}</div>`;
+  cb.innerHTML=`<div style="padding:4px"><div class="ctitle">Critérios Rápidos</div>${p.pass.map(c=>`<div style="font-size:12px;color:var(--text2);padding:3px 0;display:flex;gap:6px"><span style="color:var(--accent)">→</span>${c}</div>`).join('')}</div>`;
+  cb.style.display='block';
+}
+
+// ── GPS / GAMES ───────────────────────────────────────────────────────────
+function buildGPSBars(){
+  document.getElementById('gps-bars').innerHTML=[['P. Oliveira',551,'var(--danger)'],['B. Alves',530,'var(--warn)'],['D. Mendes',512,'var(--accent)'],['M. Sousa',467,'var(--accent)'],['T. Ferreira',435,'var(--accent)'],['L. Rodrigues',408,'var(--accent)']].map(([n,v,c])=>`<div class="br"><div class="bn">${n}</div><div class="bt"><div class="bf" style="width:${Math.round(v/551*100)}%;background:${c}"></div></div><div class="bv" style="color:${c}">${v}</div></div>`).join('');
+}
+function buildGameBars(){
+  document.getElementById('game-bars').innerHTML=[['M. Sousa',11.8],['P. Oliveira',11.2],['L. Rodrigues',10.5],['D. Mendes',10.0]].map(([n,v])=>`<div class="br"><div class="bn">${n}</div><div class="bt"><div class="bf" style="width:${Math.round(v/11.8*100)}%"></div></div><div class="bv">${v}</div></div>`).join('');
+}
+
+// ── PREDICTIVE ────────────────────────────────────────────────────────────
+function buildPredictive(){
+  document.getElementById('pred-time').textContent=new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+  const rp=[
+    {name:'P. Oliveira',pos:'MC · 24a',pct:82,cls:'rhi',fi:[{l:'ACWR 1.47',v:90,c:'var(--danger)'},{l:'HRV −22%',v:82,c:'var(--danger)'},{l:'Fadiga 8/10',v:80,c:'var(--danger)'},{l:'TQR 9/20',v:85,c:'var(--danger)'},{l:'Sono 4/10',v:75,c:'var(--danger)'},{l:'Stress 7/10',v:70,c:'var(--warn)'},{l:'Historial ×2',v:55,c:'var(--warn)'},{l:'DOMS 6/10',v:60,c:'var(--warn)'},{l:'Session-RPE',v:45,c:'var(--accent)'},{l:'Crioterapia',v:0,c:'var(--danger)'}],rf:[{c:'danger',t:'ACWR 1.47 (zona vermelha)'},{c:'danger',t:'Sono 4/10 + 5.8h/noite'},{c:'danger',t:'HRV −22% vs. baseline'},{c:'warn',t:'2× lesões isquiotibiais (hist.)'},{c:'warn',t:'Stress percebido 7/10'},{c:'warn',t:'Sem crioterapia MD/MD+1'}]},
+    {name:'L. Rodrigues',pos:'DD · 28a',pct:61,cls:'rme',fi:[{l:'DOMS 7/10',v:70,c:'var(--warn)'},{l:'Peso −2.1%',v:75,c:'var(--danger)'},{l:'Historial ×3',v:70,c:'var(--warn)'},{l:'ACWR 1.32',v:62,c:'var(--warn)'},{l:'Fadiga 6/10',v:58,c:'var(--warn)'},{l:'HRV −8%',v:35,c:'var(--accent)'},{l:'Sono 6/10',v:52,c:'var(--warn)'},{l:'Stress 5/10',v:45,c:'var(--accent)'},{l:'TQR 12',v:52,c:'var(--warn)'},{l:'Session-RPE',v:40,c:'var(--accent)'}],rf:[{c:'danger',t:'DOMS 7/10'},{c:'danger',t:'Peso −2.1% baseline (desidratação?)'},{c:'warn',t:'ACWR 1.32 (zona amarela)'},{c:'warn',t:'3× historial isquiotibial'},{c:'ok',t:'HRV dentro do normal'}]},
+    {name:'B. Alves',pos:'MC · 21a',pct:58,cls:'rme',fi:[{l:'Session-RPE',v:68,c:'var(--warn)'},{l:'ACWR 1.35',v:60,c:'var(--warn)'},{l:'TQR 11',v:65,c:'var(--warn)'},{l:'Stress 6/10',v:58,c:'var(--warn)'},{l:'Fadiga 6/10',v:55,c:'var(--warn)'},{l:'Sono 6/10',v:50,c:'var(--warn)'},{l:'HRV −6%',v:38,c:'var(--accent)'},{l:'DOMS 5/10',v:45,c:'var(--accent)'},{l:'Historial',v:20,c:'var(--accent)'},{l:'Peso Δ',v:30,c:'var(--warn)'}],rf:[{c:'warn',t:'Volume treino +35% vs. média'},{c:'warn',t:'ACWR 1.35 (zona amarela)'},{c:'warn',t:'TQR 11 (Mau)'},{c:'ok',t:'HRV estável'},{c:'ok',t:'Sono adequado 7.5h'}]},
+  ];
+  document.getElementById('risk-cards').innerHTML=rp.map(r=>`
+    <div class="risk-card ${r.cls}">
+      <div class="rname">${r.name}</div><div class="rpos">${r.pos}</div>
+      <div class="rpct">${r.pct}%</div>
+      <div class="rsub">Risco lesão · 14 dias</div>
+      ${r.rf.map(f=>`<div class="rfi"><div class="rfd" style="background:${f.c==='danger'?'var(--danger)':f.c==='warn'?'var(--warn)':'var(--accent)'}"></div>${f.t}</div>`).join('')}
+    </div>`).join('');
+  document.getElementById('fbars').innerHTML=
+    `<div style="font-size:12px;color:var(--text2);margin-bottom:11px;line-height:1.5">Contribuição de cada variável no score <strong style="color:var(--danger)">82%</strong> de P. Oliveira:</div>`+
+    rp[0].fi.map(f=>`<div class="fbr"><div class="fbl">${f.l}</div><div class="fbt"><div class="fbf" style="width:${f.v}%;background:${f.c}"></div></div><div class="fbv">${f.v}%</div></div>`).join('');
+  document.getElementById('pred-trends').innerHTML=[
+    ['Fadiga',[4,5,5,6,6,7,7,8,7,8,7,8,8,8],'var(--danger)'],
+    ['HRV Δ%',[2,1,0,-2,-3,-5,-8,-10,-12,-15,-18,-20,-22,-22],'var(--warn)'],
+    ['TQR',[16,15,14,13,13,12,11,10,10,9,10,9,9,9],'var(--warn)'],
+    ['Sono',[8,7,7,6,7,6,5,5,6,5,4,5,4,4],'var(--danger)'],
+  ].map(([l,vals,c])=>{
+    const mx=Math.max(...vals.map(v=>Math.abs(v)));
+    const bars=vals.map((v,i)=>{
+      const h=Math.max(3,Math.round(Math.abs(v)/mx*24));
+      const cl=Math.abs(v)/mx>0.7?'lo':Math.abs(v)/mx>0.4?'mi':'';
+      return`<div class="sb ${cl}" style="height:${h}px;background:${c};opacity:${i===vals.length-1?1:.4}"></div>`;
+    }).join('');
+    return`<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><div style="font-size:11px;color:var(--text2)">${l}</div><div style="font-family:var(--mono);font-size:10px;color:${c}">${vals[vals.length-1]}${l==='TQR'?'/20':l.includes('Δ')?'%':'/10'}</div></div><div class="spark">${bars}</div></div>`;
+  }).join('');
+  document.getElementById('rtp-crit').innerHTML=[
+    {l:'ACWR ≤1.3',ok:false},{l:'Fadiga ≤5/10',ok:false},{l:'Sono ≥7/10 + ≥7h',ok:false},
+    {l:'TQR ≥13',ok:false},{l:'HRV ≥−5% baseline',ok:false},{l:'Stress ≤5/10',ok:false},
+  ].map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
+    <span style="color:${c.ok?'var(--accent)':'var(--danger)'}">${c.ok?'✓':'✗'}</span>
+    <span style="color:${c.ok?'var(--text2)':'var(--text3)'}">${c.l}</span>
+    <span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:${c.ok?'var(--accent)':'var(--danger)'}">${c.ok?'OK':'Não atingido'}</span>
+  </div>`).join('');
+}
+
+// INIT
+buildWellness();buildGPSBars();buildGameBars();
+</script>
+</body>
+</html>

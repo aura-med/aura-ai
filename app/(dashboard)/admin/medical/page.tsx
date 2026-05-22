@@ -6,8 +6,8 @@ import {
   Users, Brain, TrendingDown, TrendingUp,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { InjuryAccordionRow } from '@/components/medical/InjuryAccordionRow'
-import { RecordInjuryModal } from '@/components/medical/RecordInjuryModal'
+import { InjuryAccordionRow } from '@/components/admin/InjuryAccordionRow'
+import { RecordInjuryModal } from '@/components/admin/RecordInjuryModal'
 import { ToastContainer } from '@/components/admin/Toast'
 import { useToast } from '@/components/admin/useToast'
 import { useFederatedSync } from '@/lib/federated/useFederatedSync'

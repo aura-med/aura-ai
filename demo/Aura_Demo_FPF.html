@@ -1,0 +1,2641 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aura — Federação Portuguesa de Futebol</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900;1,9..144,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════ TOKENS ═══════════════════ */
+:root{
+  --bg:#08090f;--bg2:#0f1118;--bg3:#151923;--bg4:#1c2230;--bg5:#222a3a;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+  --green:#00d68f;--green2:#00e5a0;--green3:rgba(0,229,160,0.1);--green4:rgba(0,229,160,0.05);
+  --blue:#4d9aff;--blue2:rgba(77,154,255,0.1);
+  --warn:#ffb347;--warn2:rgba(255,179,71,0.1);
+  --danger:#ff4d6d;--danger2:rgba(255,77,109,0.1);
+  --orange:#ff7043;--orange2:rgba(255,112,67,0.1);
+  --text:#dde2ef;--text2:#7a8399;--text3:#3d4a63;
+  --mono:'DM Mono',monospace;--body:'Outfit',sans-serif;--display:'Fraunces',serif;
+  --sidebar:240px;--topbar:56px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:13px;}
+
+/* ═══════════════════ LAYOUT ═══════════════════ */
+.app{display:grid;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:var(--topbar) 1fr;height:100vh;}
+.topbar{grid-column:1/3;grid-row:1;background:var(--bg2);border-bottom:1px solid var(--border2);display:flex;align-items:center;padding:0 20px;gap:16px;z-index:100;}
+.sidebar{grid-column:1;grid-row:2;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;padding:16px 12px;}
+.main{grid-column:2;grid-row:2;overflow-y:auto;padding:24px;}
+
+/* ═══════════════════ TOPBAR ═══════════════════ */
+.logo{font-family:var(--display);font-size:20px;font-weight:900;color:var(--green2);letter-spacing:-0.5px;display:flex;align-items:center;gap:8px;}
+.logo-dot{width:8px;height:8px;background:var(--green2);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.fpf-badge{background:var(--bg3);border:1px solid var(--border2);padding:4px 10px;border-radius:4px;font-family:var(--mono);font-size:10px;color:var(--text2);letter-spacing:1px;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.role-selector{display:flex;gap:4px;}
+.role-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:var(--mono);font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .15s;}
+.role-btn.on{background:var(--green3);border-color:var(--green2);color:var(--green2);}
+.topbar-date{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.notif-dot{width:8px;height:8px;background:var(--danger);border-radius:50%;}
+
+/* ═══════════════════ SIDEBAR ═══════════════════ */
+.nav-section{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:8px 8px 6px;margin-top:12px;}
+.nav-section:first-child{margin-top:0;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;transition:all .15s;color:var(--text2);font-size:13px;font-weight:400;border:1px solid transparent;}
+.nav-item:hover{background:var(--bg3);color:var(--text);}
+.nav-item.on{background:var(--green3);border-color:rgba(0,229,160,0.15);color:var(--green2);}
+.nav-item.on .nav-icon{color:var(--green2);}
+.nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--danger2);color:var(--danger);border:1px solid rgba(255,77,109,0.25);padding:2px 7px;border-radius:20px;font-family:var(--mono);font-size:9px;}
+.nav-badge.warn{background:var(--warn2);color:var(--warn);border-color:rgba(255,179,71,0.2);}
+
+/* ═══════════════════ CARDS ═══════════════════ */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.card-sm{padding:14px;}
+.ctitle{font-family:var(--display);font-size:15px;font-weight:700;margin-bottom:12px;color:var(--text);letter-spacing:-0.3px;}
+.slabel{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+
+/* ═══════════════════ SCORE BADGE ═══════════════════ */
+.score-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-family:var(--mono);font-size:11px;font-weight:500;}
+.sb-low     {background:rgba(0,229,160,0.1);  color:var(--green2); border:1px solid rgba(0,229,160,0.2);}
+.sb-medium  {background:rgba(255,179,71,0.1); color:var(--warn);   border:1px solid rgba(255,179,71,0.2);}
+.sb-high    {background:rgba(255,112,67,0.1); color:var(--orange); border:1px solid rgba(255,112,67,0.2);}
+.sb-critical{background:rgba(255,77,109,0.1); color:var(--danger); border:1px solid rgba(255,77,109,0.2);}
+.sb-rehab   {background:rgba(77,154,255,0.1); color:var(--blue);   border:1px solid rgba(77,154,255,0.2);}
+
+/* ═══════════════════ ACTION ITEMS ═══════════════════ */
+.action-item{display:flex;gap:9px;align-items:flex-start;padding:10px 12px;border-radius:8px;border-left:2px solid;font-size:12.5px;line-height:1.55;margin-bottom:6px;}
+.action-item:last-child{margin-bottom:0;}
+.ai-c{background:var(--danger2);border-color:var(--danger);}
+.ai-w{background:var(--warn2);border-color:var(--warn);}
+.ai-g{background:var(--green4);border-color:var(--green2);}
+.ai-b{background:var(--blue2);border-color:var(--blue);}
+.ai-icon{font-size:13px;flex-shrink:0;margin-top:1px;}
+.ai-text{color:var(--text2);line-height:1.55;}
+.ai-text strong{color:var(--text);}
+.ai-timing{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:2px;letter-spacing:1px;text-transform:uppercase;}
+
+/* ═══════════════════ SLIDER ═══════════════════ */
+.slider-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.slider-label{font-size:12px;color:var(--text2);width:120px;flex-shrink:0;}
+.slider-val{font-family:var(--mono);font-size:12px;width:48px;text-align:right;flex-shrink:0;}
+input[type=range]{flex:1;height:4px;background:var(--bg4);border-radius:2px;outline:none;cursor:pointer;-webkit-appearance:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--green2);cursor:pointer;}
+
+/* ═══════════════════ ATHLETE CARD ═══════════════════ */
+.ath-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px;}
+.ath-card:hover{border-color:var(--border2);background:var(--bg3);}
+.ath-card.selected{border-color:var(--green2);background:var(--green4);}
+.ath-avatar{width:36px;height:36px;border-radius:8px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.ath-info{flex:1;min-width:0;}
+.ath-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ath-meta{font-size:11px;color:var(--text2);font-family:var(--mono);}
+.ath-score{font-family:var(--display);font-size:22px;font-weight:700;flex-shrink:0;}
+
+/* ═══════════════════ SCORE BIG ═══════════════════ */
+.score-big-wrap{text-align:center;padding:20px 0;}
+.score-big{font-family:var(--display);font-size:72px;font-weight:900;line-height:1;transition:all .3s;}
+.score-ring{width:120px;height:120px;border-radius:50%;margin:0 auto 12px;position:relative;display:flex;align-items:center;justify-content:center;}
+
+/* ═══════════════════ BARS ═══════════════════ */
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.bar-row:last-child{margin-bottom:0;}
+.bar-name{font-size:11px;color:var(--text2);width:140px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-track{flex:1;height:5px;background:var(--bg4);border-radius:3px;}
+.bar-fill{height:5px;border-radius:3px;transition:width .4s ease;}
+.bar-val{font-family:var(--mono);font-size:11px;width:36px;text-align:right;flex-shrink:0;}
+.bar-w{font-family:var(--mono);font-size:9px;color:var(--text3);width:28px;text-align:right;flex-shrink:0;}
+
+/* ═══════════════════ CONF BADGE ═══════════════════ */
+.conf{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-family:var(--mono);font-size:10px;}
+.conf-high{background:var(--green3);color:var(--green2);border:1px solid rgba(0,229,160,0.2);}
+.conf-med {background:var(--warn2); color:var(--warn);   border:1px solid rgba(255,179,71,0.2);}
+.conf-low {background:var(--danger2);color:var(--danger);border:1px solid rgba(255,77,109,0.2);}
+
+/* ═══════════════════ REHAB TIMELINE ═══════════════════ */
+.timeline{position:relative;padding-left:20px;margin:16px 0;}
+.timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--border2);}
+.tl-item{position:relative;margin-bottom:20px;}
+.tl-item:last-child{margin-bottom:0;}
+.tl-dot{position:absolute;left:-17px;top:4px;width:10px;height:10px;border-radius:50%;border:2px solid var(--bg);}
+.tl-content{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;}
+.tl-phase{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.tl-days{font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:8px;}
+.tl-ex{font-size:11px;color:var(--text2);line-height:1.6;}
+.tl-criteria{font-size:11px;color:var(--text3);margin-top:6px;font-style:italic;border-top:1px solid var(--border);padding-top:6px;}
+
+/* Phase progress bar */
+.phase-prog{height:6px;background:var(--bg4);border-radius:3px;margin:16px 0;overflow:hidden;display:flex;}
+.phase-seg{height:100%;transition:all .3s;position:relative;}
+.phase-seg.active::after{content:'';position:absolute;right:0;top:-3px;width:12px;height:12px;background:var(--text);border-radius:50%;border:2px solid var(--bg2);}
+
+/* RTP criteria */
+.rtp-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);}
+.rtp-item:last-child{border:none;}
+.rtp-check{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s;}
+.rtp-check.done{background:var(--green2);border-color:var(--green2);}
+.rtp-check.done::after{content:'✓';color:#000;font-size:9px;font-weight:700;}
+
+/* ═══════════════════ TABS ═══════════════════ */
+.tabs{display:flex;gap:2px;margin-bottom:18px;background:var(--bg3);padding:3px;border-radius:8px;width:fit-content;}
+.tab{padding:6px 16px;border-radius:6px;cursor:pointer;font-size:12px;color:var(--text3);transition:all .15s;font-weight:500;}
+.tab.on{background:var(--bg2);color:var(--text);}
+
+/* ═══════════════════ STAKEHOLDER TABS ═══════════════════ */
+.stabs{display:flex;gap:6px;margin-bottom:14px;}
+.stab{flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;text-align:center;transition:all .15s;}
+.stab:hover{background:var(--bg4);}
+.stab.on.clinical {background:var(--blue2); border-color:rgba(77,154,255,0.3);}
+.stab.on.coach    {background:var(--warn2); border-color:rgba(255,179,71,0.3);}
+.stab.on.athlete  {background:var(--green3);border-color:rgba(0,229,160,0.3);}
+.stab-icon{font-size:16px;margin-bottom:3px;}
+.stab-label{font-size:10px;font-family:var(--mono);color:var(--text2);}
+
+/* ═══════════════════ KPIS ═══════════════════ */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.kpi-num{font-family:var(--display);font-size:28px;font-weight:700;line-height:1;margin-bottom:4px;}
+.kpi-label{font-size:11px;color:var(--text2);}
+.kpi-sub{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:3px;}
+
+/* ═══════════════════ SECTION HEADER ═══════════════════ */
+.sec-hdr{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;}
+.sec-title{font-family:var(--display);font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+.sec-sub{font-size:12px;color:var(--text2);}
+
+/* ═══════════════════ DIVIDER ═══════════════════ */
+.divider{height:1px;background:var(--border);margin:16px 0;}
+
+/* ═══════════════════ EMPTY STATE ═══════════════════ */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px;text-align:center;color:var(--text3);}
+.empty-state .es-icon{font-size:36px;margin-bottom:12px;opacity:.4;}
+
+/* ═══════════════════ SCROLL ═══════════════════ */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px;}
+
+/* ═══════════════════ ANIMATIONS ═══════════════════ */
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.fade-in{animation:fadeIn .2s ease;}
+
+/* ═══════════════════ ALERT STRIP ═══════════════════ */
+.alert{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:8px;font-size:12.5px;line-height:1.55;margin-bottom:8px;}
+.alert:last-child{margin-bottom:0;}
+.alert-r{background:var(--danger2);border:1px solid rgba(255,77,109,0.2);}
+.alert-w{background:var(--warn2);border:1px solid rgba(255,179,71,0.2);}
+.alert-g{background:var(--green4);border:1px solid rgba(0,229,160,0.15);}
+.alert-b{background:var(--blue2);border:1px solid rgba(77,154,255,0.2);}
+.alert strong{color:var(--text);}
+.adot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.ad-r{background:var(--danger);}
+.ad-w{background:var(--warn);}
+.ad-g{background:var(--green2);}
+.ad-b{background:var(--blue);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ════════════════ TOPBAR ════════════════ -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      Aura
+    </div>
+    <div class="fpf-badge">FEDERAÇÃO PORTUGUESA DE FUTEBOL</div>
+    <div class="topbar-date" id="topbar-date"></div>
+    <div class="topbar-right">
+      <div class="role-selector">
+        <button class="role-btn on" onclick="setRole('physio')" id="r-physio">FISIO</button>
+        <button class="role-btn" onclick="setRole('doctor')" id="r-doctor">MÉDICO</button>
+        <button class="role-btn" onclick="setRole('coach')" id="r-coach">TREINADOR</button>
+        <button class="role-btn" onclick="setRole('fitness')" id="r-fitness">PREP.FÍSICO</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;" id="alert-count-wrap">
+        <div class="notif-dot" id="notif-dot"></div>
+        <span style="font-size:11px;color:var(--text2)" id="alert-count-label">a calcular...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ SIDEBAR ════════════════ -->
+  <div class="sidebar">
+    <div class="nav-section">Visão geral</div>
+    <div class="nav-item on" onclick="showView('dashboard')" id="nav-dashboard">
+      <span class="nav-icon">📊</span>Dashboard
+      <span class="nav-badge">3</span>
+    </div>
+    <div class="nav-item" onclick="showView('squad')" id="nav-squad">
+      <span class="nav-icon">👥</span>Plantel
+    </div>
+
+    <div class="nav-section">Clínico</div>
+    <div class="nav-item" onclick="showView('athlete')" id="nav-athlete">
+      <span class="nav-icon">🎯</span>Avaliação atleta
+    </div>
+    <div class="nav-item" onclick="showView('input')" id="nav-input">
+      <span class="nav-icon">✏️</span>Inserir dados
+    </div>
+    <div class="nav-item" onclick="openNewAthlete()" id="nav-new" style="border:1px dashed rgba(0,229,160,0.25);color:var(--green2);">
+      <span class="nav-icon">➕</span>Novo atleta
+    </div>
+    <div class="nav-item" onclick="showView('rehab')" id="nav-rehab">
+      <span class="nav-icon">🦴</span>Reabilitação
+      <span class="nav-badge warn">2</span>
+    </div>
+
+    <div class="nav-section">Passaporte & Visão</div>
+    <div class="nav-item" onclick="showView('passport')" id="nav-passport">
+      <span class="nav-icon">🪪</span>Passaporte Atleta
+    </div>
+    <div class="nav-item" onclick="showView('calint')" id="nav-calint">
+      <span class="nav-icon">📅</span>Calendar Intelligence
+    </div>
+
+    <div class="nav-section">Performance</div>
+    <div class="nav-item" onclick="showView('readiness')" id="nav-readiness">
+      <span class="nav-icon">🟢</span>Prontidao
+    </div>
+    <div class="nav-item" onclick="showView('load')" id="nav-load">
+      <span class="nav-icon">📡</span>Carga & GPS
+    </div>
+    <div class="nav-item" onclick="showView('perf')" id="nav-perf">
+      <span class="nav-icon">⚡</span>Máximos & Perfil
+    </div>
+
+    <div class="nav-section">Seleção Feminina</div>
+    <div class="nav-item" onclick="showView('female')" id="nav-female">
+      <span class="nav-icon">⚽</span>Plantel Feminino
+      <span class="nav-badge" style="background:rgba(180,141,252,0.15);color:#b48dfc;border-color:rgba(180,141,252,0.3);">Beta</span>
+    </div>
+
+    <div style="margin-top:auto;padding-top:20px;border-top:1px solid var(--border);margin-top:24px;">
+      <div style="padding:10px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;">Modelo v1.1</div>
+        <div style="font-size:11px;color:var(--text2);">Fase 1 · Pesos de perito</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;font-family:var(--mono);">0 eventos lesão ⁄ 30 target</div>
+        <div style="margin-top:6px;height:3px;background:var(--bg4);border-radius:2px;"><div style="width:0%;height:3px;background:var(--green2);border-radius:2px;"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ MAIN ════════════════ -->
+  <div class="main" id="main-content"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// ENGINE INLINE
+// ═══════════════════════════════════════════════════════════════════
+const W = {history:0.20,acwr:0.20,hrv:0.18,fatigue:0.13,sleep:0.12,tqr:0.07,stress:0.04,decel:0.04,md:0.02};
+
+function norm(variable, value) {
+  if (value === null || value === undefined) return null;
+  if (variable === 'history') { if(value===0)return 0;if(value===1)return 0.5;return 1.0; }
+  if (variable === 'md') { return [1.0,0.9,0.6,0.3,0.0][Math.min(value,4)]; }
+  if (variable === 'hrv') { return Math.min(1,Math.max(0,(value-(-5))/((-20)-(-5)))); }
+  if (variable === 'sleep') { return Math.min(1,Math.max(0,(7-value)/(7-5.5))); }
+  if (variable === 'tqr') { return Math.min(1,Math.max(0,(14-value)/(14-7))); }
+  if (variable === 'acwr'||variable==='decel') { return Math.min(1,Math.max(0,(value-0.8)/(1.5-0.8))); }
+  if (variable === 'fatigue'||variable==='stress') {
+    const lo=variable==='fatigue'?4:4, hi=variable==='fatigue'?7:8;
+    return Math.min(1,Math.max(0,(value-lo)/(hi-lo)));
+  }
+  return 0;
+}
+
+function calcScore(inputs) {
+  const partials = {};
+  let scoreSum = 0, weightSum = 0, nAvail = 0;
+  const missing = [];
+  for (const [k,w] of Object.entries(W)) {
+    const p = norm(k, inputs[k]);
+    partials[k] = p;
+    if (p !== null) { scoreSum += p*w; weightSum += w; nAvail++; }
+    else { missing.push(k); }
+  }
+  const score = weightSum > 0 ? Math.round((scoreSum/weightSum)*100) : 0;
+  const effectiveW = {};
+  for (const [k,w] of Object.entries(W)) {
+    effectiveW[k] = partials[k] !== null && weightSum > 0 ? parseFloat((w/weightSum).toFixed(3)) : 0;
+  }
+  const hasACWR = inputs.acwr != null, hasHRV = inputs.hrv != null;
+  let conf, confReason;
+  if (nAvail >= 7 && hasACWR && hasHRV) {
+    conf = "high"; confReason = nAvail+"/9 variaveis · ACWR presente · HRV presente";
+  } else if (nAvail >= 4) {
+    conf = "medium";
+    const reasons = [];
+    if (!hasACWR) reasons.push("ACWR ausente");
+    if (!hasHRV) reasons.push("HRV ausente");
+    if (nAvail < 7) reasons.push("apenas "+nAvail+"/9 variaveis");
+    confReason = reasons.join(" · ");
+  } else {
+    conf = "low"; confReason = "apenas "+nAvail+"/9 variaveis disponiveis";
+  }
+  let dom=null,domS=-1;
+  for(const [k,w] of Object.entries(W)){
+    if(partials[k]!==null&&partials[k]*effectiveW[k]>domS){domS=partials[k]*effectiveW[k];dom=k;}
+  }
+  return {score, partials, conf, confReason, dom, nAvail, missing, effectiveW, weightSum};
+}
+
+function riskLevel(s){return s<40?'low':s<65?'medium':s<85?'high':'critical';}
+function riskLabel(s){return{low:'Baixo',medium:'Moderado',high:'Alto',critical:'Crítico'}[riskLevel(s)];}
+function riskColor(s){return{low:'var(--green2)',medium:'var(--warn)',high:'var(--orange)',critical:'var(--danger)'}[riskLevel(s)];}
+function riskCls(s){return 'sb-'+riskLevel(s);}
+
+// ═══════════════════════════════════════════════════════════════════
+// SQUAD DATA
+// ═══════════════════════════════════════════════════════════════════
+const SQUAD = [
+  {id:1,name:'Paulo Oliveira',pos:'MC',age:24,club:'Sporting CP',num:8,
+   inputs:{history:2,acwr:1.47,hrv:-22,fatigue:8,sleep:5.8,tqr:9,stress:7,decel:1.44,md:1},
+   status:'available',
+   injuries:[{date:'Set 2023',type:'Isquiotibial grau I D',days:12},{date:'Mar 2022',type:'Isquiotibial grau I D',days:9}]},
+  {id:2,name:'Ricardo Mendes',pos:'DC',age:28,club:'FC Porto',num:4,
+   inputs:{history:1,acwr:1.15,hrv:-4,fatigue:4,sleep:7.5,tqr:15,stress:3,decel:1.10,md:3},
+   status:'available',
+   injuries:[{date:'Jan 2022',type:'Entorse tornozelo grau II E',days:18}]},
+  {id:3,name:'André Costa',pos:'EX',age:26,club:'Benfica',num:11,
+   inputs:{history:0,acwr:0.95,hrv:-3,fatigue:3,sleep:7.8,tqr:16,stress:2,decel:0.92,md:4},
+   status:'available',injuries:[]},
+  {id:4,name:'Miguel Santos',pos:'GR',age:31,club:'SC Braga',num:1,
+   inputs:{history:2,acwr:1.38,hrv:-14,fatigue:6,sleep:6.2,tqr:11,stress:5,decel:1.35,md:2},
+   status:'available',
+   injuries:[{date:'Out 2023',type:'LCA esq. — pós-cirúrgico',days:210},{date:'Fev 2021',type:'Isquiotibial grau II D',days:28}]},
+  {id:5,name:'Tiago Ferreira',pos:'MC',age:22,club:'Sporting CP',num:6,
+   inputs:{history:1,acwr:1.62,hrv:-18,fatigue:7,sleep:5.5,tqr:8,stress:6,decel:1.58,md:1},
+   status:'available',
+   injuries:[{date:'Nov 2023',type:'Tendinopatia patelar D',days:35}]},
+  {id:6,name:'João Pinto',pos:'DC',age:29,club:'FC Porto',num:5,
+   inputs:{history:0,acwr:1.08,hrv:-2,fatigue:3,sleep:8.0,tqr:17,stress:2,decel:1.05,md:5},
+   status:'available',injuries:[]},
+  {id:9,name:'Diogo Marques',pos:'GR',age:27,club:'Benfica',num:12,
+   inputs:{history:0,acwr:1.02,hrv:-1,fatigue:2,sleep:8.2,tqr:18,stress:2,decel:0.98,md:5},
+   status:'available',injuries:[]},
+  {id:10,name:'Gonçalo Brito',pos:'DC',age:25,club:'Sporting CP',num:3,
+   inputs:{history:1,acwr:1.22,hrv:-7,fatigue:5,sleep:6.9,tqr:12,stress:4,decel:1.18,md:2},
+   status:'available',
+   injuries:[{date:'Set 2022',type:'Entorse tornozelo grau I D',days:8}]},
+  {id:11,name:'Rui Fonseca',pos:'DC',age:30,club:'FC Porto',num:13,
+   inputs:{history:0,acwr:1.11,hrv:-5,fatigue:4,sleep:7.3,tqr:14,stress:3,decel:1.08,md:3},
+   status:'available',injuries:[]},
+  {id:12,name:'Luís Carvalho',pos:'MD',age:23,club:'Benfica',num:2,
+   inputs:{history:0,acwr:0.88,hrv:-2,fatigue:3,sleep:7.6,tqr:16,stress:2,decel:0.85,md:4},
+   status:'available',injuries:[]},
+  {id:13,name:'Filipe Sousa',pos:'MD',age:26,club:'SC Braga',num:17,
+   inputs:{history:1,acwr:1.31,hrv:-9,fatigue:5,sleep:6.7,tqr:13,stress:5,decel:1.28,md:2},
+   status:'available',
+   injuries:[{date:'Fev 2023',type:'Isquiotibial grau I E',days:10}]},
+  {id:14,name:'Bruno Leal',pos:'MC',age:29,club:'Sporting CP',num:16,
+   inputs:{history:2,acwr:1.19,hrv:-11,fatigue:6,sleep:6.4,tqr:11,stress:4,decel:1.15,md:2},
+   status:'available',
+   injuries:[{date:'Mar 2023',type:'Rotura fibrilar addutor D',days:21},{date:'Nov 2021',type:'Isquiotibial grau I D',days:11}]},
+  {id:15,name:'Nuno Tavares',pos:'EX',age:24,club:'FC Porto',num:10,
+   inputs:{history:0,acwr:1.44,hrv:-16,fatigue:6,sleep:6.1,tqr:10,stress:5,decel:1.39,md:1},
+   status:'available',injuries:[]},
+  {id:16,name:'Sérgio Monteiro',pos:'EX',age:27,club:'Benfica',num:9,
+   inputs:{history:1,acwr:1.05,hrv:-3,fatigue:3,sleep:7.9,tqr:17,stress:2,decel:1.01,md:4},
+   status:'available',
+   injuries:[{date:'Jan 2021',type:'Entorse tornozelo grau I E',days:6}]},
+  {id:17,name:'Vasco Rodrigues',pos:'AV',age:28,club:'SC Braga',num:19,
+   inputs:{history:0,acwr:0.97,hrv:-4,fatigue:4,sleep:7.4,tqr:15,stress:3,decel:0.94,md:3},
+   status:'available',injuries:[]},
+  {id:18,name:'Marcos Vieira',pos:'AV',age:25,club:'Sporting CP',num:20,
+   inputs:{history:1,acwr:1.55,hrv:-17,fatigue:7,sleep:5.7,tqr:9,stress:6,decel:1.51,md:1},
+   status:'available',
+   injuries:[{date:'Abr 2023',type:'Rotura fibrilar rectus femoris D',days:19}]},
+  {id:19,name:'Henrique Dias',pos:'DC',age:32,club:'FC Porto',num:15,
+   inputs:{history:2,acwr:1.09,hrv:-6,fatigue:4,sleep:7.1,tqr:14,stress:3,decel:1.06,md:3},
+   status:'available',
+   injuries:[{date:'Out 2022',type:'Isquiotibial grau I D',days:9},{date:'Jun 2020',type:'Isquiotibial grau II D',days:31}]},
+  {id:20,name:'Rafael Cunha',pos:'MC',age:21,club:'Benfica',num:21,
+   inputs:{history:0,acwr:1.18,hrv:-8,fatigue:5,sleep:7.0,tqr:13,stress:4,decel:1.14,md:2},
+   status:'available',injuries:[]},
+  {id:21,name:'Alexandre Pais',pos:'MD',age:33,club:'Sporting CP',num:22,
+   inputs:{history:1,acwr:0.92,hrv:-2,fatigue:3,sleep:7.7,tqr:16,stress:2,decel:0.89,md:4},
+   status:'available',
+   injuries:[{date:'Set 2021',type:'Entorse tornozelo grau II D',days:22}]},
+  {id:22,name:'Tomás Guerra',pos:'GR',age:26,club:'SC Braga',num:23,
+   inputs:{history:0,acwr:0.99,hrv:-3,fatigue:3,sleep:7.5,tqr:15,stress:2,decel:0.96,md:5},
+   status:'available',injuries:[]},
+  {id:7,name:'Carlos Neves',pos:'MC',age:27,club:'Benfica',num:14,
+   inputs:{history:2,acwr:null,hrv:-8,fatigue:5,sleep:6.8,tqr:12,stress:4,decel:null,md:null},
+   status:'rehab',rehabProtocol:'hamstring',rehabDay:18,
+   injuries:[{date:'Abr 2024',type:'Isquiotibial grau II D — ACTIVO',days:null}]},
+  {id:8,name:'Pedro Alves',pos:'EX',age:25,club:'SC Braga',num:7,
+   inputs:{history:1,acwr:null,hrv:-6,fatigue:4,sleep:7.2,tqr:14,stress:3,decel:null,md:null},
+   status:'rehab',rehabProtocol:'ankle',rehabDay:9,
+   injuries:[{date:'Abr 2024',type:'Entorse tornozelo grau II E — ACTIVO',days:null}]},
+];
+
+const PERF_DATA = {
+  // id: { vmax, dist_max, hsr_max, sprint_max, n_sprints_max, accel_max, decel_max, player_load_max, vmax_today_pct }
+  // vmax = velocidade máxima absoluta registada (km/h)
+  // dist_max = distância total máxima num jogo (km)
+  // hsr_max = distância alta velocidade máxima num jogo (m, >19.8 km/h)
+  // sprint_max = distância sprint máxima num jogo (m, >25 km/h)
+  // n_sprints_max = nº máximo de sprints num jogo
+  // accel_max = acelerações >3m/s² máximas numa sessão
+  // decel_max = desacelerações >3m/s² máximas numa sessão
+  // player_load_max = carga total máxima (u.a.)
+  // vmax_today_pct = % do vmax atingida hoje/sessão mais recente
+  1:  {vmax:34.2, dist_max:11.8, hsr_max:1820, sprint_max:680, n_sprints_max:22, accel_max:48, decel_max:44, player_load_max:1240, vmax_today_pct:91},
+  2:  {vmax:31.4, dist_max:12.1, hsr_max:1140, sprint_max:310, n_sprints_max:12, accel_max:38, decel_max:35, player_load_max:1180, vmax_today_pct:88},
+  3:  {vmax:35.8, dist_max:12.6, hsr_max:2240, sprint_max:920, n_sprints_max:31, accel_max:52, decel_max:48, player_load_max:1310, vmax_today_pct:96},
+  4:  {vmax:29.1, dist_max:8.2,  hsr_max:420,  sprint_max:90,  n_sprints_max:5,  accel_max:24, decel_max:22, player_load_max:880,  vmax_today_pct:82},
+  5:  {vmax:33.6, dist_max:11.4, hsr_max:1680, sprint_max:590, n_sprints_max:19, accel_max:44, decel_max:41, player_load_max:1190, vmax_today_pct:78},
+  6:  {vmax:30.8, dist_max:12.4, hsr_max:1050, sprint_max:280, n_sprints_max:10, accel_max:36, decel_max:33, player_load_max:1220, vmax_today_pct:94},
+  9:  {vmax:28.4, dist_max:7.8,  hsr_max:380,  sprint_max:75,  n_sprints_max:4,  accel_max:22, decel_max:20, player_load_max:820,  vmax_today_pct:90},
+  10: {vmax:31.9, dist_max:11.9, hsr_max:1180, sprint_max:340, n_sprints_max:13, accel_max:40, decel_max:37, player_load_max:1160, vmax_today_pct:86},
+  11: {vmax:30.2, dist_max:12.3, hsr_max:980,  sprint_max:260, n_sprints_max:10, accel_max:35, decel_max:32, player_load_max:1200, vmax_today_pct:92},
+  12: {vmax:32.4, dist_max:11.6, hsr_max:1320, sprint_max:420, n_sprints_max:15, accel_max:41, decel_max:38, player_load_max:1140, vmax_today_pct:97},
+  13: {vmax:31.1, dist_max:11.2, hsr_max:1240, sprint_max:380, n_sprints_max:14, accel_max:39, decel_max:36, player_load_max:1100, vmax_today_pct:85},
+  14: {vmax:32.8, dist_max:11.7, hsr_max:1580, sprint_max:510, n_sprints_max:17, accel_max:43, decel_max:40, player_load_max:1160, vmax_today_pct:83},
+  15: {vmax:36.4, dist_max:12.8, hsr_max:2380, sprint_max:1040,n_sprints_max:34, accel_max:55, decel_max:51, player_load_max:1350, vmax_today_pct:74},
+  16: {vmax:34.9, dist_max:12.4, hsr_max:2110, sprint_max:840, n_sprints_max:28, accel_max:50, decel_max:46, player_load_max:1290, vmax_today_pct:95},
+  17: {vmax:33.2, dist_max:11.5, hsr_max:1720, sprint_max:620, n_sprints_max:21, accel_max:46, decel_max:43, player_load_max:1170, vmax_today_pct:89},
+  18: {vmax:35.1, dist_max:12.2, hsr_max:1980, sprint_max:760, n_sprints_max:26, accel_max:49, decel_max:45, player_load_max:1280, vmax_today_pct:72},
+  19: {vmax:30.6, dist_max:12.0, hsr_max:1020, sprint_max:270, n_sprints_max:10, accel_max:34, decel_max:31, player_load_max:1190, vmax_today_pct:91},
+  20: {vmax:32.0, dist_max:11.3, hsr_max:1440, sprint_max:460, n_sprints_max:16, accel_max:42, decel_max:39, player_load_max:1120, vmax_today_pct:88},
+  21: {vmax:29.8, dist_max:11.8, hsr_max:860,  sprint_max:210, n_sprints_max:8,  accel_max:33, decel_max:30, player_load_max:1170, vmax_today_pct:93},
+  22: {vmax:28.8, dist_max:7.6,  hsr_max:360,  sprint_max:70,  n_sprints_max:3,  accel_max:20, decel_max:18, player_load_max:800,  vmax_today_pct:87},
+  // Rehab athletes - vmax_today_pct reflects current rehab progression
+  7:  {vmax:33.4, dist_max:11.6, hsr_max:1760, sprint_max:640, n_sprints_max:21, accel_max:47, decel_max:43, player_load_max:1220, vmax_today_pct:62},
+  8:  {vmax:35.2, dist_max:12.5, hsr_max:2180, sprint_max:880, n_sprints_max:30, accel_max:53, decel_max:49, player_load_max:1320, vmax_today_pct:55},
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+// SCORE HISTORY — 7 dias do estágio (simulado)
+// ═══════════════════════════════════════════════════════════════════
+const SCORE_HISTORY = {
+  1:  [71,74,78,80,83,85,86],  // Paulo Oliveira — subida progressiva
+  2:  [45,43,47,44,46,48,51],
+  3:  [22,25,20,18,21,24,22],
+  4:  [62,65,68,65,70,72,69],
+  5:  [55,60,65,70,74,79,82],  // Tiago Ferreira — subida rápida
+  6:  [18,20,18,22,19,21,18],
+  9:  [15,17,14,16,18,15,16],
+  10: [40,38,42,45,43,47,50],
+  11: [28,30,27,29,31,28,30],
+  12: [20,18,22,19,21,23,21],
+  13: [42,45,48,44,47,50,52],
+  14: [55,58,60,57,62,65,63],
+  15: [60,65,68,72,69,73,76],
+  16: [25,22,26,24,28,25,27],
+  17: [30,28,32,29,31,34,32],
+  18: [58,62,65,68,70,74,77],
+  19: [35,38,36,40,37,41,38],
+  20: [38,40,42,39,43,45,44],
+  21: [22,20,24,22,26,23,25],
+  22: [18,16,19,17,20,18,17],
+  7:  [null,null,null,38,42,45,48],  // em reab — scores parciais
+  8:  [null,null,null,null,31,35,38],
+};
+
+const CAMP_DAYS = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+
+
+// ═══════════════════════════════════════════════════════════════════
+// CALENDAR DATA
+// ═══════════════════════════════════════════════════════════════════
+const CALENDAR_BASE = [
+  {id:'c1', day:0, label:'Hoje',    type:'rest',     intensity:'low',   label_pt:'Repouso'},
+  {id:'c2', day:1, label:'Amanha',  type:'training',  intensity:'medium',label_pt:'Treino medio'},
+  {id:'c3', day:2, label:'D+2',     type:'training',  intensity:'high',  label_pt:'Treino alto'},
+  {id:'c4', day:3, label:'D+3',     type:'match',     intensity:'max',   label_pt:'Jogo'},
+  {id:'c5', day:4, label:'D+4',     type:'rest',      intensity:'low',   label_pt:'Repouso'},
+  {id:'c6', day:5, label:'D+5',     type:'training',  intensity:'medium',label_pt:'Treino medio'},
+  {id:'c7', day:6, label:'D+6',     type:'training',  intensity:'high',  label_pt:'Treino alto'},
+  {id:'c8', day:7, label:'D+7',     type:'rest',      intensity:'low',   label_pt:'Repouso'},
+  {id:'c9', day:8, label:'D+8',     type:'training',  intensity:'high',  label_pt:'Treino alto'},
+  {id:'c10',day:9, label:'D+9',     type:'training',  intensity:'max',   label_pt:'Treino max'},
+  {id:'c11',day:10,label:'D+10',    type:'match',     intensity:'max',   label_pt:'Jogo'},
+  {id:'c12',day:11,label:'D+11',    type:'rest',      intensity:'low',   label_pt:'Repouso'},
+  {id:'c13',day:12,label:'D+12',    type:'training',  intensity:'medium',label_pt:'Treino medio'},
+  {id:'c14',day:13,label:'D+13',    type:'match',     intensity:'max',   label_pt:'Jogo — Final'},
+];
+
+let calendarEvents = JSON.parse(JSON.stringify(CALENDAR_BASE));
+let selectedCalAthlete = 1;
+
+// ═══════════════════════════════════════════════════════════════════
+// FATIGUE PROFILES (individual recovery patterns)
+// ═══════════════════════════════════════════════════════════════════
+const FATIGUE_PROFILES = {
+  1:  {recovery_speed:0.85, congestion_sensitivity:1.3, typical_md1_drop:18, typical_md2_drop:10},
+  2:  {recovery_speed:1.10, congestion_sensitivity:0.9, typical_md1_drop:12, typical_md2_drop:6},
+  3:  {recovery_speed:1.20, congestion_sensitivity:0.8, typical_md1_drop:10, typical_md2_drop:5},
+  4:  {recovery_speed:0.80, congestion_sensitivity:1.4, typical_md1_drop:20, typical_md2_drop:12},
+  5:  {recovery_speed:0.90, congestion_sensitivity:1.2, typical_md1_drop:16, typical_md2_drop:9},
+  6:  {recovery_speed:1.15, congestion_sensitivity:0.85,typical_md1_drop:11, typical_md2_drop:5},
+  9:  {recovery_speed:1.10, congestion_sensitivity:0.9, typical_md1_drop:8,  typical_md2_drop:4},
+  10: {recovery_speed:1.00, congestion_sensitivity:1.0, typical_md1_drop:14, typical_md2_drop:7},
+  11: {recovery_speed:1.05, congestion_sensitivity:0.95,typical_md1_drop:12, typical_md2_drop:6},
+  12: {recovery_speed:1.25, congestion_sensitivity:0.75,typical_md1_drop:9,  typical_md2_drop:4},
+  13: {recovery_speed:0.95, congestion_sensitivity:1.1, typical_md1_drop:15, typical_md2_drop:8},
+  14: {recovery_speed:0.88, congestion_sensitivity:1.25,typical_md1_drop:17, typical_md2_drop:9},
+  15: {recovery_speed:0.92, congestion_sensitivity:1.15,typical_md1_drop:16, typical_md2_drop:8},
+  16: {recovery_speed:1.18, congestion_sensitivity:0.82,typical_md1_drop:10, typical_md2_drop:5},
+  17: {recovery_speed:1.08, congestion_sensitivity:0.92,typical_md1_drop:13, typical_md2_drop:6},
+  18: {recovery_speed:0.85, congestion_sensitivity:1.28,typical_md1_drop:18, typical_md2_drop:10},
+  19: {recovery_speed:0.78, congestion_sensitivity:1.5, typical_md1_drop:22, typical_md2_drop:13},
+  20: {recovery_speed:1.02, congestion_sensitivity:1.0, typical_md1_drop:14, typical_md2_drop:7},
+  21: {recovery_speed:1.12, congestion_sensitivity:0.88,typical_md1_drop:11, typical_md2_drop:5},
+  22: {recovery_speed:1.15, congestion_sensitivity:0.85,typical_md1_drop:9,  typical_md2_drop:4},
+};
+
+function projectScore(athleteId, currentScore, events) {
+  var profile = FATIGUE_PROFILES[athleteId] || {recovery_speed:1.0, congestion_sensitivity:1.0, typical_md1_drop:14, typical_md2_drop:7};
+  var scores = [currentScore];
+  var lastScore = currentScore;
+  // matchFatigue accumulates with each match and decays daily
+  // This models progressive neuromuscular fatigue in congested schedules
+  var matchFatigue = 0;
+
+  for (var i = 0; i < events.length; i++) {
+    var ev = events[i];
+
+    // Natural daily decay of accumulated match fatigue (half-life ~3 days)
+    matchFatigue = matchFatigue * 0.78;
+
+    var delta = 0;
+    if (ev.type === 'match') {
+      // Congestion multiplier: each consecutive match hits harder
+      var congestionFactor = 1 + matchFatigue * 0.025;
+      var matchImpact = profile.typical_md1_drop * profile.congestion_sensitivity * congestionFactor;
+      matchFatigue += matchImpact * 0.8;
+      delta = matchImpact;
+    } else if (ev.type === 'training') {
+      if (ev.intensity === 'low') {
+        // Active recovery: reduces risk slightly (clears lactate, reduces soreness)
+        delta = -3 * profile.recovery_speed;
+      } else if (ev.intensity === 'medium') {
+        delta = 2 * profile.congestion_sensitivity;
+      } else if (ev.intensity === 'high') {
+        delta = 6 * profile.congestion_sensitivity;
+      } else {
+        delta = 11 * profile.congestion_sensitivity;
+      }
+    } else {
+      // Full rest: strongest recovery signal
+      // Extra bonus if matchFatigue is high (body uses rest more efficiently)
+      delta = -(9 + matchFatigue * 0.12) * profile.recovery_speed;
+    }
+
+    var projected = Math.max(15, Math.min(98, lastScore + delta));
+    scores.push(Math.round(projected));
+    lastScore = projected;
+  }
+  return scores;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// FEMALE SQUAD DATA
+// ═══════════════════════════════════════════════════════════════════
+const FEMALE_SQUAD = [
+  {id:101, name:'Ana Martins',   pos:'GR',age:26,club:'Sporting CP',num:1,
+   menstrual_day:14, cycle_length:28,
+   inputs:{history:0,acwr:1.05,hrv:-3,fatigue:3,sleep:7.8,tqr:16,stress:2,decel:1.02,md:4},
+   status:'available', injuries:[]},
+  {id:102, name:'Beatriz Costa', pos:'DC',age:24,club:'Benfica',num:4,
+   menstrual_day:2,  cycle_length:28,
+   inputs:{history:1,acwr:1.22,hrv:-8,fatigue:5,sleep:6.9,tqr:12,stress:4,decel:1.18,md:2},
+   status:'available',
+   injuries:[{date:'Mar 2023',type:'Entorse tornozelo grau II D',days:18}]},
+  {id:103, name:'Carla Sousa',   pos:'MD',age:22,club:'Sporting CP',num:6,
+   menstrual_day:18, cycle_length:28,
+   inputs:{history:0,acwr:0.92,hrv:-2,fatigue:3,sleep:8.1,tqr:17,stress:2,decel:0.89,md:5},
+   status:'available', injuries:[]},
+  {id:104, name:'Diana Neves',   pos:'MC',age:27,club:'FC Porto',num:8,
+   menstrual_day:22, cycle_length:28,
+   inputs:{history:2,acwr:1.44,hrv:-15,fatigue:7,sleep:5.9,tqr:9,stress:6,decel:1.40,md:1},
+   status:'available',
+   injuries:[{date:'Jan 2024',type:'LCA direito — pos-cirurgico',days:240},{date:'Set 2021',type:'LCA esquerdo',days:210}]},
+  {id:105, name:'Elena Ferreira',pos:'EX',age:25,club:'Benfica',num:11,
+   menstrual_day:8,  cycle_length:28,
+   inputs:{history:1,acwr:1.31,hrv:-9,fatigue:5,sleep:6.8,tqr:13,stress:5,decel:1.28,md:3},
+   status:'available',
+   injuries:[{date:'Nov 2023',type:'Isquiotibial grau I E',days:10}]},
+  {id:106, name:'Fatima Silva',  pos:'AV',age:23,club:'SC Braga',num:9,
+   menstrual_day:1,  cycle_length:28,
+   inputs:{history:0,acwr:1.08,hrv:-6,fatigue:4,sleep:7.2,tqr:14,stress:3,decel:1.05,md:3},
+   status:'available', injuries:[]},
+  {id:107, name:'Gisela Pinto',  pos:'DC',age:29,club:'FC Porto',num:3,
+   menstrual_day:26, cycle_length:28,
+   inputs:{history:1,acwr:1.15,hrv:-5,fatigue:4,sleep:7.5,tqr:15,stress:3,decel:1.12,md:4},
+   status:'available',
+   injuries:[{date:'Jun 2022',type:'Entorse tornozelo grau I',days:8}]},
+  {id:108, name:'Helena Ramos',  pos:'MC',age:28,club:'Sporting CP',num:10,
+   menstrual_day:13, cycle_length:28,
+   inputs:{history:0,acwr:1.02,hrv:-4,fatigue:3,sleep:7.6,tqr:15,stress:2,decel:0.99,md:5},
+   status:'available', injuries:[]},
+  {id:109, name:'Ines Carvalho', pos:'EX',age:21,club:'Benfica',num:7,
+   menstrual_day:5,  cycle_length:28,
+   inputs:{history:0,acwr:0.95,hrv:-2,fatigue:3,sleep:8.0,tqr:16,stress:2,decel:0.92,md:4},
+   status:'available', injuries:[]},
+  {id:110, name:'Julia Tavares', pos:'GR',age:24,club:'SC Braga',num:12,
+   menstrual_day:19, cycle_length:28,
+   inputs:{history:0,acwr:0.98,hrv:-3,fatigue:3,sleep:7.9,tqr:17,stress:2,decel:0.96,md:5},
+   status:'available', injuries:[]},
+  // Reab
+  {id:111, name:'Leonor Santos', pos:'DC',age:26,club:'FC Porto',num:5,
+   menstrual_day:10, cycle_length:28,
+   inputs:{history:1,acwr:null,hrv:-7,fatigue:5,sleep:7.0,tqr:13,stress:4,decel:null,md:null},
+   status:'rehab', rehabProtocol:'ankle', rehabDay:12,
+   injuries:[{date:'Abr 2024',type:'Entorse tornozelo grau II E — ACTIVO',days:null}]},
+];
+
+FEMALE_SQUAD.forEach(function(a) { a.calc = calcScore(a.inputs); });
+
+// Menstrual cycle phase logic
+function getMenstrualPhase(day, cycleLength) {
+  cycleLength = cycleLength || 28;
+  if (day <= 5) return {phase:'menstrual',    label:'Fase menstrual',  color:'#ff4d6d', lca_risk:1.1, note:'Dor possivel. Monitorizar intensidade.'};
+  if (day <= 13) return {phase:'follicular',  label:'Fase folicular',  color:'#00e5a0', lca_risk:1.0, note:'Fase de maior resiliencia. Ideal para carga alta.'};
+  if (day === 14) return {phase:'ovulatory',  label:'Ovulacao',        color:'#ff7043', lca_risk:1.4, note:'Pico estrogeno: risco LCA 40% superior. Evitar arranques bruscos.'};
+  if (day <= 28) return {phase:'luteal',      label:'Fase lutea',      color:'#ffb347', lca_risk:1.2, note:'Maior laxidez ligamentar. Reforco propriocetivo recomendado.'};
+  return {phase:'follicular', label:'Fase folicular', color:'#00e5a0', lca_risk:1.0, note:''};
+}
+
+function getFemaleAdjustedScore(athlete) {
+  var baseCalc = athlete.calc;
+  var phase = getMenstrualPhase(athlete.menstrual_day, athlete.cycle_length);
+  var adjusted = Math.min(99, Math.round(baseCalc.score * phase.lca_risk));
+  return {score: adjusted, phase: phase, base_score: baseCalc.score};
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// REHAB CLINICAL DATA (entered by clinician per athlete per test)
+// ═══════════════════════════════════════════════════════════════════
+var rehabClinical = {
+  7: {pain_vas:2, strength_pct:72, test_ok:false, vmax_pct:62, balance_s:null, hop_pct:null},
+  8: {pain_vas:1, strength_pct:null, test_ok:true,  vmax_pct:55, balance_s:22, hop_pct:78},
+  111:{pain_vas:2, strength_pct:null, test_ok:true,  vmax_pct:45, balance_s:18, hop_pct:71},
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// READINESS SCORE (4-indicator semaphore)
+// ═══════════════════════════════════════════════════════════════════
+function getReadiness(athlete) {
+  var inp = athlete.inputs;
+  var perf = PERF_DATA[athlete.id] || {};
+  var indicators = [];
+
+  // 1. HRV vs baseline
+  if (inp.hrv != null) {
+    var hrvPct = inp.hrv; // already delta %
+    var hrvStatus = hrvPct >= -5 ? 'green' : hrvPct >= -15 ? 'amber' : 'red';
+    indicators.push({label:'HRV', status:hrvStatus, value:(hrvPct > 0 ? '+' : '') + hrvPct + '%'});
+  } else {
+    indicators.push({label:'HRV', status:'grey', value:'N/D'});
+  }
+
+  // 2. MD+n (days since match)
+  if (inp.md != null) {
+    var mdStatus = inp.md >= 4 ? 'green' : inp.md >= 2 ? 'amber' : 'red';
+    indicators.push({label:'MD+n', status:mdStatus, value:'MD+' + inp.md});
+  } else {
+    indicators.push({label:'MD+n', status:'grey', value:'N/D'});
+  }
+
+  // 3. Vmax% today
+  if (perf.vmax_today_pct != null) {
+    var vmaxStatus = perf.vmax_today_pct >= 90 ? 'green' : perf.vmax_today_pct >= 80 ? 'amber' : 'red';
+    indicators.push({label:'Vmax%', status:vmaxStatus, value:perf.vmax_today_pct + '%'});
+  } else {
+    indicators.push({label:'Vmax%', status:'grey', value:'N/D'});
+  }
+
+  // 4. Wellness composite (fatigue + sleep + TQR)
+  var wellCount = 0, wellScore = 0;
+  if (inp.fatigue != null) { wellScore += inp.fatigue <= 4 ? 2 : inp.fatigue <= 6 ? 1 : 0; wellCount++; }
+  if (inp.sleep != null)   { wellScore += inp.sleep >= 7 ? 2 : inp.sleep >= 6 ? 1 : 0; wellCount++; }
+  if (inp.tqr != null)     { wellScore += inp.tqr >= 14 ? 2 : inp.tqr >= 10 ? 1 : 0; wellCount++; }
+  if (wellCount > 0) {
+    var wellPct = wellScore / (wellCount * 2);
+    var wellStatus = wellPct >= 0.75 ? 'green' : wellPct >= 0.4 ? 'amber' : 'red';
+    var wellLabel = wellPct >= 0.75 ? 'Boa' : wellPct >= 0.4 ? 'Moderada' : 'Baixa';
+    indicators.push({label:'Wellness', status:wellStatus, value:wellLabel});
+  } else {
+    indicators.push({label:'Wellness', status:'grey', value:'N/D'});
+  }
+
+  // Overall: worst single indicator drives the result
+  var statusOrder = {red:0, amber:1, green:2, grey:3};
+  var overall = indicators.reduce(function(worst, ind) {
+    if (ind.status === 'grey') return worst;
+    return statusOrder[ind.status] < statusOrder[worst] ? ind.status : worst;
+  }, 'green');
+
+  var nGrey = indicators.filter(function(x){return x.status==='grey';}).length;
+  if (nGrey >= 3) overall = 'grey';
+
+  return {indicators: indicators, overall: overall};
+}
+
+function readinessColor(status) {
+  return {green:'var(--green2)', amber:'var(--warn)', red:'var(--danger)', grey:'var(--text3)'}[status] || 'var(--text3)';
+}
+function readinessLabel(status) {
+  return {green:'Pronto', amber:'Precaucao', red:'Limitado', grey:'Sem dados'}[status] || '—';
+}
+
+// Pre-calculate scores for all athletes
+SQUAD.forEach(a => { a.calc = calcScore(a.inputs); });
+
+// ═══════════════════════════════════════════════════════════════════
+// REHAB PROTOCOLS
+// ═══════════════════════════════════════════════════════════════════
+const REHAB = {
+  hamstring: {
+    name:'Isquiotibial Grau II',loc:'Bicípite femoral distal D',totalDays:28,
+    evidence:'Askling 2013 · Ekstrand BJSM 2022',color:'#ff4d6d',
+    phases:[
+      {name:'Protecção e controlo da dor',range:'Dias 1–5',d1:1,d2:5,col:'#ff4d6d',
+       ex:['Crioterapia 3×/dia (10 min, 12°C)','Contrações isométricas submáximas (60° flexão)','Aqua-running se tolerado','Mobilidade passiva suave'],
+       criteria:'Dor < 2/10 em repouso · sem edema activo'},
+      {name:'Força excêntrica precoce',range:'Dias 6–12',d1:6,d2:12,col:'#ff7043',
+       ex:['Nordic Hamstring progressivo (3×5→10)','SL-RDL bilateral → unilateral','Ponte nórdica assistida','Corrida linha recta 40-60% Vmax'],
+       criteria:'Askling H-test negativo · SL-RDL sem dor · força ≥60% contralateral'},
+      {name:'Força funcional e corrida',range:'Dias 13–20',d1:13,d2:20,col:'#f6ad55',
+       ex:['NHE 3×8–12 progressivo','Sprints progressivos 40→60→80% Vmax','Mudanças de direcção controladas','Pequenos jogos baixa intensidade'],
+       criteria:'Corrida 80% Vmax sem dor · força ≥80% contralateral'},
+      {name:'Retorno ao treino completo',range:'Dias 21–28',d1:21,d2:28,col:'#00e5a0',
+       ex:['Treino completo com equipa','Sprints máximos progressivos (90→95→100%)','Jogos 7×7 e 11×11','Monitorização GPS integrada'],
+       criteria:'Sprint 95% Vmax sem dor · força ≥90% · Askling negativo · LSI ≥90%'}
+    ],
+    rtp:[
+      {label:'Askling H-test negativo',done:true},
+      {label:'Sprint ≥95% Vmax sem dor',done:true},
+      {label:'Força excêntrica ≥90% contralateral',done:false},
+      {label:'LSI ≥90% (SL-CMJ)',done:false},
+      {label:'Clearance médico',done:false},
+      {label:'5 treinos completos consecutivos',done:false}
+    ]
+  },
+  ankle: {
+    name:'Entorse Tornozelo Grau II',loc:'Ligamento talofibular anterior E',totalDays:21,
+    evidence:'ROAST 2019 · Bleakley 2010 · JOSPT',color:'#4d9aff',
+    phases:[
+      {name:'PRICE e mobilidade precoce',range:'Dias 1–5',d1:1,d2:5,col:'#ff4d6d',
+       ex:['PRICE protocol','Mobilização precoce — círculos','Exercícios proprioceptivos carga parcial','Aqua-running se tolerado'],
+       criteria:'Carga total sem dor · edema ≤50%'},
+      {name:'Força e propriocepção',range:'Dias 6–14',d1:6,d2:14,col:'#f6ad55',
+       ex:['Treino equilíbrio unipodal progressivo','Reforço eversores/inversores com banda','Propriocepção superfícies instáveis','Corrida linha recta progressiva'],
+       criteria:'Hop test ≥75% · equilíbrio unipodal 10s · força inversores ≥70%'},
+      {name:'Retorno ao desporto',range:'Dias 15–21',d1:15,d2:21,col:'#00e5a0',
+       ex:['Mudanças direcção 45°→90°→135°','Sprints com mudança de direcção','Pequenos jogos e situações de jogo','Treino completo com equipa'],
+       criteria:'Hop test ≥90% · mudanças direcção sem dor · 3 treinos completos'}
+    ],
+    rtp:[
+      {label:'Hop test unipodal ≥90%',done:true},
+      {label:'Equilíbrio unipodal 30s',done:true},
+      {label:'Mudanças direcção sem dor',done:true},
+      {label:'Força inversores ≥90%',done:false},
+      {label:'Clearance médico',done:false},
+      {label:'3 treinos completos consecutivos',done:false}
+    ]
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// RECOMMENDATIONS
+// ═══════════════════════════════════════════════════════════════════
+const RDB = {
+  history:{
+    low:{c:['Monitorização de rotina. Historial documentado, sem convergência com outros factores.'],t:['Atleta disponível. Sem restrições.'],a:['Mantém aquecimento específico do segmento antes de cada sessão.']},
+    medium:{c:['Screening funcional recomendado antes de treino de alta intensidade.','Palpação do segmento afectado no início do treino.'],t:['Evitar sprints máximos sem aquecimento específico prévio.'],a:['Aquecimento isquiotibial alargado: 15 min protocolo excêntrico progressivo antes de qualquer sprint.']},
+    high:{c:['<strong>Screening obrigatório agora:</strong> Askling H-test + palpação proximal + SL-RDL bilateral.','Sprint progressivo 40→60→80% com GPS antes de qualquer decisão.','Documentar avaliação independentemente da decisão final.'],t:['Reduzir volume treino 25-30%. Sem sprints máximos hoje.','Substituição preventiva planeada 60-70 min como contingência.'],a:['Aquecimento Askling warm-up — 15 min, obrigatório, antes de qualquer sprint.','Crioterapia hoje à tarde — urgente.','Sono esta noite: meta 8h, quarto escuro, sem ecrãs 90 min antes.']},
+    critical:{c:['<strong>🚨 Não treinar alta intensidade.</strong> Screening completo primeiro.','Se Askling positivo ou dor à palpação: indisponível para jogo.','Reunião multidisciplinar: médico + fisio + preparador físico.'],t:['Risco alto de lesão grave. <strong>Não titular sem clearance clínico.</strong>','Substituto preparado — decisão depende do screening desta manhã.'],a:['Reporta ao fisio antes de qualquer actividade.','Sono 8-9h: prioridade absoluta esta noite.']}
+  },
+  acwr:{
+    low:{c:['ACWR zona segura (0.8–1.3). Carga crónica bem estabelecida.'],t:['Carga adequada. Progressão possível se gradual (&lt;10%/semana).'],a:['Boa adaptação à carga. Continua o programa normal.']},
+    medium:{c:['ACWR em alerta (1.3–1.5). Evitar cargas adicionais não planeadas.','Verificar sessões previstas — limitar sprints máximos.'],t:['Não aumentar intensidade hoje. Reduzir duração do treino 15-20%.'],a:['Aquecimento completo obrigatório. Hidratação e nutrição prioritárias.']},
+    high:{c:['<strong>ACWR > 1.5.</strong> Reduzir volume 25-30%. Sem sprints máximos.','GPS em tempo real: alerta se HI distance > 10% do plano.'],t:['Treino regenerativo ou táctico. Sem intensidade física alta.','Substituição preventiva 65-70 min se HI distance > baseline.'],a:['Sono é a intervenção mais importante esta noite: 8-9h.','Crioterapia após treino. Janela nutricional nas 2h pós-treino.']},
+    critical:{c:['<strong>🚨 ACWR > 2.0.</strong> Treino intenso contraindicado.','Avaliação clínica imediata se qualquer queixa muscular.'],t:['Indisponível para treino intenso. Recuperação activa apenas.'],a:['Corpo em sobrecarga máxima. Hoje é recuperação — não treino.']}
+  },
+  hrv:{
+    low:{c:['HRV dentro do baseline. Sistema nervoso autónomo em equilíbrio.'],t:['Atleta recuperado. Boa adaptação ao treino anterior.'],a:['Boa recuperação autonómica. Mantém hábitos de sono e recuperação.']},
+    medium:{c:['HRV 5–10% abaixo do baseline. Monitorizar evolução 2 dias.','Avaliar qualidade do sono das últimas 48h.'],t:['Reduzir intensidade 10-15%. SNA em recuperação.'],a:['Priorizar sono esta noite. Meta 8h, quarto 18°C.']},
+    high:{c:['<strong>HRV > 10% abaixo do baseline.</strong> Reduzir carga de treino.','Excluir factores confundidores: viagem, doença incipiente, stress.','Reavaliar HRV amanhã — dois dias consecutivos baixos = acção imediata.'],t:['Treino leve ou recuperativo. Adiar alta intensidade.'],a:['Sono 8-9h obrigatório. Sem cafeína após as 14h.','10 min respiração controlada antes de dormir.']},
+    critical:{c:['<strong>🚨 HRV > 20% abaixo.</strong> Overreaching provável. Avaliação médica.','Redução de carga 3–5 dias com monitorização diária de HRV.'],t:['Repouso ou recuperação activa. Não titular sem clearance.'],a:['Corpo a pedir recuperação. Respeita o sinal.']}
+  },
+  sleep:{
+    low:{c:['Sono adequado (≥7h). Sem impacto previsto na recuperação.'],t:['Atleta bem descansado. Performance dentro do normal.'],a:['Excelente sono. Mantém a rotina.']},
+    medium:{c:['Sono 6–7h — abaixo do óptimo. Monitorizar fadiga ao longo do dia.'],t:['Capacidade cognitiva ligeiramente reduzida. Complexidade táctica pode estar comprometida.'],a:['Sesta de 20–30 min esta tarde se possível.']},
+    high:{c:['<strong>Sono < 6h.</strong> OR=1.34 para lesão (meta-análise 2025).','Vigilância neuromuscular: coordenação e tempo de reacção comprometidos.'],t:['Reduzir componente de alta velocidade. Risco de decisão errada.'],a:['Esta noite: 8–9h obrigatórios. Quarto 18°C, escuridão total, sem ecrãs.','Sem cafeína após o almoço. Banho quente 1h antes de dormir.']},
+    critical:{c:['<strong>🚨 Sono < 5h + outros factores críticos.</strong> Treino intenso contraindicado.'],t:['Não submeter a esforço máximo.'],a:['Sesta 90 min hoje à tarde + 9h esta noite.']}
+  },
+  fatigue:{
+    low:{c:['Fadiga normal (Hooper ≤4). Sem alteração de protocolo.'],t:['Atleta disponível e descansado.'],a:['Boa recuperação. Mantém o programa.']},
+    medium:{c:['Fadiga moderada (Hooper 5–6). Verificar correlação com carga dos últimos 3 dias.'],t:['Reduzir densidade: mais descanso entre séries, menos sprints repetidos.'],a:['Alimentação de recuperação: 1.6g proteína/kg hoje.']},
+    high:{c:['<strong>Fadiga alta (Hooper ≥7).</strong> Reduzir volume 25%. Sem alta aceleração.','Avaliar origem: suplementação, nutrição, padrão de sono.'],t:['Treino regenerativo ou técnico de baixa intensidade.'],a:['3 refeições completas hoje. Sesta 20–30 min se possível antes do treino.']},
+    critical:{c:['<strong>🚨 Fadiga máxima + score crítico.</strong> Avaliar overreaching. Marcadores hormonais se indicado.'],t:['Sem treino intenso até nova avaliação clínica.'],a:['O teu corpo está no limite. Hoje é recuperação.']}
+  },
+  tqr:{
+    low:{c:['TQR excelente (≥14). Atleta bem recuperado.'],t:['Recuperação completa. Sessão planeada pode avançar.'],a:['Pronto para treinar.']},
+    medium:{c:['TQR 10–13. Cruzar com HRV. Se convergência, reduzir carga.','Conversa breve com atleta — TQR baixo pode reflectir factores psicológicos.'],t:['Treino moderado. Respeitar percepção de recuperação do atleta.'],a:['Sessão de mobilidade e activação antes do treino.']},
+    high:{c:['<strong>TQR ≤9.</strong> Risco real em conjunto com outros factores.','Considerar recuperação em piscina em vez de treino de campo.'],t:['Não submeter a esforço máximo.'],a:['Comunica ao fisio exactamente o que sentes. Esta informação é clínica.']},
+    critical:{c:['<strong>🚨 TQR mínimo + score crítico.</strong> Overreaching não-funcional.'],t:['Repouso.'],a:['Repouso activo: caminhada leve, piscina, sem carga.']}
+  },
+  decel:{
+    low:{c:['ACWR desacelerações normal. Stress excêntrico controlado.'],t:['Sem restrições de carga.'],a:['Boa gestão de carga mecânica.']},
+    medium:{c:['ACWR desacelerações em alerta. Stress excêntrico elevado.','NHE preventivo 2×/semana recomendado.'],t:['Reduzir exercícios com muitas paragens e arranques.'],a:['Aquecimento excêntrico progressivo: nórdico assistido ou SL-RDL antes do treino.']},
+    high:{c:['<strong>Desacelerações muito elevadas.</strong> Risco microlesão excêntrica.','Palpação isquiotibiais e quadriceps antes do treino.'],t:['Eliminar sprints com paragem brusca, mudanças de direcção 180°.'],a:['Crioterapia após treino nos grupos musculares posteriores.']},
+    critical:{c:['<strong>🚨 Carga excêntrica crítica.</strong> Screening muscular completo antes de campo.'],t:['Sem sprints nem mudanças de direcção.'],a:['Reporta ao fisio. Qualquer tensão posterior é sinal clínico real.']}
+  },
+  md:{
+    low:{c:['MD+4 ou mais. Recuperação neuromuscular pós-jogo completa.'],t:['Atleta totalmente disponível.'],a:['Recuperado do jogo.']},
+    medium:{c:['MD+2 ou MD+3. Glicogénio provavelmente não reposto.','Limitar sprints máximos — velocidade máxima comprometida até MD+72h.'],t:['Sessão regenerativa ou técnica.'],a:['Nutrição de recuperação prioritária. Hidratos complexos nas 3 refeições.']},
+    high:{c:['<strong>MD+1.</strong> Recuperação neuromuscular incompleta documentada.','Crioterapia prioritária se não foi feita ontem.'],t:['Treino regenerativo apenas. Piscina preferível a campo.'],a:['Reposição de glicogénio urgente. Sesta 90 min se possível.']},
+    critical:{c:['<strong>🚨 MD+1 + score crítico.</strong> Múltiplos factores convergentes.'],t:['Repouso ou recuperação activa exclusiva.'],a:['24h após jogo + corpo sobrecarregado. Recuperação é o treino de hoje.']}
+  }
+};
+
+const VAR_LABELS = {history:'Historial lesões',acwr:'ACWR carga GPS',hrv:'HRV Δ baseline',fatigue:'Fadiga (Hooper)',sleep:'Sono',tqr:'TQR',stress:'Stress percebido',decel:'Desacelerações',md:'MD+n'};
+const VAR_ICONS  = {history:'📋',acwr:'📡',hrv:'🧬',fatigue:'💬',sleep:'😴',tqr:'🔄',stress:'🧠',decel:'⚡',md:'📅'};
+
+// ═══════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════
+let currentView = 'dashboard';
+let currentRole = 'physio';
+let selectedAthlete = null;
+let currentStakeholder = 'clinical';
+let inputAthleteId = 1;
+let inputValues = {...SQUAD[0].inputs};
+let passportPortable = {};
+let passportShared = {};
+let selectedFemaleAthlete = null;
+
+// ═══════════════════════════════════════════════════════════════════
+// ROUTING
+// ═══════════════════════════════════════════════════════════════════
+function showView(v) {
+  currentView = v;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('on'));
+  const nav = document.getElementById('nav-'+v);
+  if(nav) nav.classList.add('on');
+  render();
+}
+
+function setRole(r) {
+  currentRole = r;
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('r-'+r).classList.add('on');
+  render();
+}
+
+function render() {
+  const el = document.getElementById('main-content');
+  el.className = 'main fade-in';
+  el.innerHTML = views[currentView]?.() || '';
+  updateAlertCount();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════
+function scoreBadge(s,label=null) {
+  const l = riskLevel(s);
+  const lbl = label || riskLabel(s);
+  return `<span class="score-badge sb-${l}"><span style="width:6px;height:6px;border-radius:50%;background:${riskColor(s)};display:inline-block"></span>${s}% ${lbl}</span>`;
+}
+
+function confBadge(c, reason, missing) {
+  reason = reason || '';
+  missing = missing || [];
+  const map = {
+    high:   ['conf-high', 'Alta confiança'],
+    medium: ['conf-med',  'Confiança média'],
+    low:    ['conf-low',  'Confiança baixa']
+  };
+  const [cls, lbl] = map[c] || ['conf-low','?'];
+  const missingNote = missing.length
+    ? '<span style="font-size:10px;color:var(--text3);margin-left:8px;font-family:var(--mono);">(' + missing.length + ' var. ausente' + (missing.length>1?'s':'') + ')</span>'
+    : '';
+  return '<span class="conf ' + cls + '" title="' + reason + '">' + lbl + '</span>' + missingNote;
+}
+
+function barColor(v) {
+  if(v < 0.3) return 'var(--green2)';
+  if(v < 0.6) return 'var(--warn)';
+  if(v < 0.8) return 'var(--orange)';
+  return 'var(--danger)';
+}
+
+function renderBars(partials, effectiveW, missing) {
+  effectiveW = effectiveW || {};
+  missing = missing || [];
+  const missingWeightTotal = missing.reduce((s,k) => s + (W[k]||0), 0);
+
+  let html = '';
+
+  // Header note if variables are missing
+  if (missing.length > 0) {
+    const redistPct = Math.round(missingWeightTotal * 100);
+    html += '<div style="background:var(--warn2);border:1px solid rgba(255,179,71,0.2);border-radius:7px;padding:8px 11px;margin-bottom:10px;font-size:11.5px;color:var(--text2);line-height:1.5;">'
+      + '<strong style="color:var(--warn);">⚠ ' + missing.length + ' variável' + (missing.length>1?'is':'') + ' ausente' + (missing.length>1?'s':'') + '</strong>'
+      + ' — peso total de <strong style="color:var(--warn);">' + redistPct + '%</strong> redistribuído proporcionalmente pelas restantes variáveis.'
+      + ' O score mantém-se accionável mas com confiança reduzida.'
+      + '</div>';
+  }
+
+  html += Object.entries(W).map(([k,w]) => {
+    const p = partials[k];
+    const effW = effectiveW[k] !== undefined ? effectiveW[k] : w;
+    const isAbsent = p === null;
+    const weightChanged = !isAbsent && Math.abs(effW - w) > 0.005;
+
+    if (isAbsent) {
+      return '<div class="bar-row" style="opacity:.4;">'
+        + '<div class="bar-name" style="text-decoration:line-through;color:var(--text3);">' + VAR_ICONS[k] + ' ' + VAR_LABELS[k] + '</div>'
+        + '<div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--text3)"></div></div>'
+        + '<div class="bar-val" style="color:var(--text3);font-size:10px;">ausente</div>'
+        + '<div class="bar-w" style="color:var(--text3);">—</div>'
+        + '</div>';
+    }
+
+    const pct = Math.round(p*100);
+    const col = barColor(p);
+    const wDisplay = weightChanged
+      ? '<span style="color:var(--warn);font-size:9px;" title="Redistribuído de ' + (w*100).toFixed(0) + '%">×' + (effW*100).toFixed(0) + '%↑</span>'
+      : '×' + (w*100).toFixed(0) + '%';
+
+    return '<div class="bar-row">'
+      + '<div class="bar-name">' + VAR_ICONS[k] + ' ' + VAR_LABELS[k] + '</div>'
+      + '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + col + '"></div></div>'
+      + '<div class="bar-val" style="color:' + col + '">' + pct + '%</div>'
+      + '<div class="bar-w" style="color:' + (weightChanged?'var(--warn)':'var(--text3)') + ';font-size:9px;">' + wDisplay + '</div>'
+      + '</div>';
+  }).join('');
+
+  return html;
+}
+
+function renderActions(dom, level, stakeholder) {
+  const recs = RDB[dom]?.[level];
+  if(!recs) return '<div class="empty-state"><div class="es-icon">📋</div><p>Sem recomendações disponíveis.</p></div>';
+  const items = stakeholder === 'clinical' ? recs.c : stakeholder === 'coach' ? recs.t : recs.a;
+  const colors = ['ai-c','ai-w','ai-g','ai-b'];
+  const icons  = ['🚨','⚠','✓','💡'];
+  return items.map((txt,i) => `
+    <div class="action-item ${i===0&&level==='critical'?'ai-c':i===0&&level==='high'?'ai-c':i===0?'ai-b':'ai-w'}">
+      <div class="ai-icon">${level==='critical'&&i===0?'🚨':level==='high'&&i===0?'⚠':level==='low'?'✓':'📌'}</div>
+      <div class="ai-text">${txt}</div>
+    </div>
+  `).join('');
+}
+
+function renderSparkBlock(athleteId, score) {
+  var hist = SCORE_HISTORY[athleteId] || [];
+  var col = riskColor(score);
+  var svg = sparkline(hist, col, 90, 32);
+  var days = CAMP_DAYS.map(function(d,i){
+    return '<div style="font-family:var(--mono);font-size:8px;color:'+(i===6?'var(--text)':'var(--text3)')+';text-align:center;flex:1;">'+d+'</div>';
+  }).join('');
+  return '<div style="display:flex;align-items:flex-end;">'+svg+'</div>'
+       + '<div style="display:flex;justify-content:space-between;margin-top:4px;width:90px;">'+days+'</div>';
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VIEWS
+// ═══════════════════════════════════════════════════════════════════
+const views = {
+
+  // ── DASHBOARD ─────────────────────────────────────────────────
+  dashboard() {
+    const available = SQUAD.filter(a=>a.status==='available');
+    const rehab = SQUAD.filter(a=>a.status==='rehab');
+    const highRisk = available.filter(a=>a.calc.score>=65);
+    const critical = available.filter(a=>a.calc.score>=85);
+
+    return `
+    <div class="sec-hdr">
+      <div class="sec-title">Dashboard — Estagio FPF</div>
+      <div class="sec-sub">Estágio · ${new Date().toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long'})}</div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-num" style="color:var(--text)">${SQUAD.length}</div>
+        <div class="kpi-label">Atletas convocados</div>
+        <div class="kpi-sub">${available.length} disp. · ${rehab.length} reab.</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num" style="color:var(--green2)">${available.length - highRisk.length}</div>
+        <div class="kpi-label">Disponíveis — risco baixo/moderado</div>
+        <div class="kpi-sub">Sem restrições</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num" style="color:var(--orange)">${highRisk.length}</div>
+        <div class="kpi-label">Risco alto/crítico</div>
+        <div class="kpi-sub">Intervenção recomendada</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num" style="color:var(--blue)">${rehab.length}</div>
+        <div class="kpi-label">Em reabilitação</div>
+        <div class="kpi-sub">RTP em curso</div>
+      </div>
+    </div>
+
+    <div class="g2" style="margin-bottom:16px;">
+      <div>
+        <div class="sec-hdr"><div class="sec-title" style="font-size:15px">⚠ Alertas clínicos</div></div>
+        ${highRisk.map(a=>
+          '<div class="alert ' + (a.calc.score>=85?'alert-r':'alert-w') + '" style="cursor:pointer;margin-bottom:8px;" onclick="selectAndView(' + a.id + ')">'
+          + '<div class="adot ' + (a.calc.score>=85?'ad-r':'ad-w') + '"></div>'
+          + '<div><strong>' + a.name + '</strong> (' + a.pos + ' · ' + a.club + ') — Score <strong style="color:' + riskColor(a.calc.score) + '">' + a.calc.score + '%</strong>'
+          + '<div style="font-size:11px;color:var(--text2);margin-top:2px;">Variável dominante: ' + VAR_ICONS[a.calc.dom] + ' ' + VAR_LABELS[a.calc.dom] + '</div></div></div>'
+        ).join('')}
+        ${highRisk.length===0?'<div class="alert alert-g"><div class="adot ad-g"></div><div>Sem alertas críticos hoje.</div></div>':''}
+      </div>
+
+      <div>
+        <div class="sec-hdr"><div class="sec-title" style="font-size:15px">🦴 Reabilitação activa</div></div>
+        ${rehab.map(a=>{
+          const proto = REHAB[a.rehabProtocol];
+          const phase = proto.phases.find(p=>a.rehabDay>=p.d1&&a.rehabDay<=p.d2)||proto.phases[proto.phases.length-1];
+          const pct = Math.round((a.rehabDay/proto.totalDays)*100);
+          return `
+            <div class="card card-sm" style="margin-bottom:10px;cursor:pointer;" onclick="selectAndView(${a.id},'rehab')">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <div>
+                  <div style="font-size:13px;font-weight:600;">${a.name}</div>
+                  <div style="font-size:11px;color:var(--text2);font-family:var(--mono);">${proto.name} · Dia ${a.rehabDay}/${proto.totalDays}</div>
+                </div>
+                <span class="score-badge sb-rehab">Dia ${a.rehabDay}</span>
+              </div>
+              <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">📍 Fase: ${phase.name}</div>
+              <div style="height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;">
+                <div style="width:${pct}%;height:4px;background:${proto.color};border-radius:2px;"></div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="sec-hdr"><div class="sec-title" style="font-size:15px">👥 Plantel completo — scores hoje</div></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+      ${available.map(a=>
+        '<div class="ath-card ' + (selectedAthlete===a.id?'selected':'') + '" onclick="selectAndView(' + a.id + ')">'
+        + '<div class="ath-avatar">' + a.num + '</div>'
+        + '<div class="ath-info"><div class="ath-name">' + a.name + '</div><div class="ath-meta">' + a.pos + ' · ' + a.club + '</div></div>'
+        + '<div style="text-align:right;">'
+        + '<div class="ath-score" style="color:' + riskColor(a.calc.score) + '">' + a.calc.score + '%</div>'
+        + '<div style="font-size:10px;color:var(--text2);text-align:right;font-family:var(--mono);margin-bottom:4px;">' + riskLabel(a.calc.score) + '</div>'
+        + sparkline(SCORE_HISTORY[a.id]||[], riskColor(a.calc.score), 56, 16)
+        + '</div></div>'
+      ).join('')}
+    </div>
+    `;
+  },
+
+  // ── ATHLETE DETAIL ────────────────────────────────────────────
+  athlete() {
+    const a = SQUAD.find(x=>x.id===selectedAthlete) || SQUAD[0];
+    const {score, partials, conf, confReason, dom, missing, effectiveW} = a.calc;
+    const level = riskLevel(score);
+
+    return `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+      <button onclick="showView('dashboard')" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text2);cursor:pointer;font-size:12px;">← Voltar</button>
+      <div>
+        <div style="font-family:var(--display);font-size:18px;font-weight:700;">${a.name}</div>
+        <div style="font-size:12px;color:var(--text2);font-family:var(--mono);">${a.pos} · ${a.age} anos · ${a.club}</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+        ${scoreBadge(score)}
+        ${confBadge(conf, confReason, missing)}
+        <button onclick="switchInputAthlete(${a.id});showView('input')"
+          style="padding:6px 12px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--mono);">
+          ✏️ Editar dados
+        </button>
+      </div>
+    </div>
+
+    <div class="g2" style="margin-bottom:16px;">
+      <!-- Score + bars -->
+      <div class="card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+          <div>
+            <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;">Score preditivo</div>
+            <div style="font-family:var(--display);font-size:52px;font-weight:900;color:${riskColor(score)};line-height:1;">${score}%</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:4px;">Variável dominante: <strong style="color:${riskColor(score)}">${VAR_ICONS[dom]} ${VAR_LABELS[dom]}</strong></div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1.5px;margin-bottom:6px;">TENDÊNCIA — 7 DIAS</div>
+            ${renderSparkBlock(a.id, score)}
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="slabel" style="margin-bottom:10px">Decomposição por factor (v1.1)</div>
+        ${renderBars(partials, effectiveW, missing)}
+      </div>
+
+      <!-- Historial + actions -->
+      <div>
+        <div class="card" style="margin-bottom:12px;">
+          <div class="ctitle">📋 Historial clínico</div>
+          ${a.injuries.length===0?'<div style="font-size:12px;color:var(--text2);">Sem lesões anteriores registadas.</div>':
+            a.injuries.map(i=>
+              '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;">'
+              + '<div style="width:80px;flex-shrink:0;font-family:var(--mono);font-size:10px;color:var(--text3);">'+i.date+'</div>'
+              + '<div style="color:'+(i.days?'var(--text2)':'var(--danger)')+';">'
+              + i.type + (i.days?' — '+i.days+' dias':' — ACTIVO')
+              + '</div></div>'
+            ).join('')
+          }
+        </div>
+
+        <div class="card">
+          <div class="ctitle">🎯 Recomendações</div>
+          <!-- Stakeholder tabs -->
+          <div class="stabs">
+            <div class="stab ${currentStakeholder==='clinical'?'on clinical':''}" onclick="setStakeholder('clinical')">
+              <div class="stab-icon">🩺</div>
+              <div class="stab-label">CLÍNICO</div>
+            </div>
+            <div class="stab ${currentStakeholder==='coach'?'on coach':''}" onclick="setStakeholder('coach')">
+              <div class="stab-icon">🎽</div>
+              <div class="stab-label">TREINADOR</div>
+            </div>
+            <div class="stab ${currentStakeholder==='athlete'?'on athlete':''}" onclick="setStakeholder('athlete')">
+              <div class="stab-icon">⚽</div>
+              <div class="stab-label">ATLETA</div>
+            </div>
+          </div>
+          ${renderActions(dom, level, currentStakeholder)}
+        </div>
+      </div>
+    </div>
+    `;
+  },
+
+  // ── REAL-TIME INPUT ───────────────────────────────────────────
+  input() {
+    const calc = calcScore(inputValues);
+    const {score, partials, conf, confReason, dom, missing, effectiveW} = calc;
+    const level = riskLevel(score);
+
+    const sliders = [
+      {k:'acwr',   label:'ACWR GPS',           min:0.5, max:2.5,step:0.01,dec:2,suffix:'',    ref:'Gabbett 2016'},
+      {k:'hrv',    label:'HRV Δ baseline',      min:-40, max:10, step:1,  dec:0,suffix:'%',   ref:'Plews 2013'},
+      {k:'fatigue',label:'Fadiga (Hooper)',      min:1,   max:7,  step:1,  dec:0,suffix:'/7',  ref:'Hooper 1995'},
+      {k:'sleep',  label:'Sono',                min:3,   max:10, step:0.5,dec:1,suffix:'h',   ref:'Meta-análise 2025'},
+      {k:'tqr',    label:'TQR',                 min:6,   max:20, step:1,  dec:0,suffix:'/20', ref:'Kenttä 1998'},
+      {k:'stress', label:'Stress percebido',    min:0,   max:10, step:1,  dec:0,suffix:'/10', ref:'Borato 2022'},
+      {k:'decel',  label:'Desacelerações ACWR', min:0.5, max:2.5,step:0.01,dec:2,suffix:'',   ref:'Saberisani 2025'},
+      {k:'md',     label:'Dias desde jogo',     min:0,   max:5,  step:1,  dec:0,suffix:'d',   ref:'Chang 2024'},
+    ];
+
+    const historyOpts = [0,1,2];
+
+    const inputAthlete = SQUAD.find(x=>x.id===inputAthleteId) || SQUAD[0];
+
+    return `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:var(--display);font-size:18px;font-weight:700;">✏️ Inserir dados</div>
+        <div style="font-size:12px;color:var(--text2);">Score recalculado em tempo real</div>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+        <div style="font-size:12px;color:var(--text2);">Atleta:</div>
+        <select id="input-athlete-sel" onchange="switchInputAthlete(parseInt(this.value))"
+          style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;color:var(--text);font-family:var(--body);font-size:13px;cursor:pointer;outline:none;">
+          ${SQUAD.filter(a=>a.status==='available').map(a=>
+            '<option value="'+a.id+'" '+(a.id===inputAthleteId?'selected':'')+'>'+a.num+'. '+a.name+' ('+a.pos+')</option>'
+          ).join('')}
+        </select>
+        <button onclick="saveInputData()" style="padding:7px 16px;border-radius:8px;border:none;background:var(--green2);color:#000;font-size:12px;font-weight:600;cursor:pointer;">
+          Guardar ✓
+        </button>
+      </div>
+    </div>
+
+    <div class="g2">
+      <!-- INPUTS -->
+      <div>
+        <div class="card" style="margin-bottom:12px;">
+          <div class="ctitle">Historial de lesões</div>
+          <div style="display:flex;gap:8px;">
+            ${historyOpts.map(v=>
+              '<button onclick="updateInput(\'history\',' + v + ')" style="flex:1;padding:8px;border-radius:8px;border:1px solid ' + (inputValues.history===v?'var(--green2)':'var(--border)') + ';background:' + (inputValues.history===v?'var(--green3)':'var(--bg3)') + ';color:' + (inputValues.history===v?'var(--green2)':'var(--text2)') + ';cursor:pointer;font-family:var(--mono);font-size:11px;transition:all .15s;">'
+              + (v===0?'0 lesões':v===1?'1 lesão':'≥2 mesmo seg.')
+              + '</button>'
+            ).join('')}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="ctitle">Variáveis de monitorização</div>
+          ${sliders.map(s=>{
+            const curVal = inputValues[s.k]??((s.min+s.max)/2);
+            const dispVal = parseFloat(curVal).toFixed(s.dec) + s.suffix;
+            const partial = partials[s.k];
+            const col = partial!==null ? barColor(partial) : 'var(--text3)';
+            const onInput = "updateInput('" + s.k + "',parseFloat(this.value));"
+              + "document.getElementById('sv-" + s.k + "').textContent=parseFloat(this.value).toFixed(" + s.dec + ")+'" + s.suffix + "';"
+              + "document.getElementById('sv-" + s.k + "').style.color=barColor(norm('" + s.k + "',parseFloat(this.value)));";
+            return `
+            <div class="slider-row">
+              <div class="slider-label">${VAR_ICONS[s.k]} ${s.label}</div>
+              <input type="range" min="${s.min}" max="${s.max}" step="${s.step}"
+                value="${curVal}" oninput="${onInput}" id="sl-${s.k}">
+              <div class="slider-val" id="sv-${s.k}" style="color:${col}">${dispVal}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- LIVE SCORE -->
+      <div>
+        <div class="card" style="text-align:center;margin-bottom:12px;">
+          <div class="slabel">Score em tempo real</div>
+          <div id="live-score" style="font-family:var(--display);font-size:80px;font-weight:900;color:${riskColor(score)};line-height:1;transition:all .3s;">${score}%</div>
+          <div style="font-size:14px;color:var(--text2);margin:8px 0;">${riskLabel(score)}</div>
+          <div id="live-conf">${confBadge(conf, confReason, missing)}</div>
+          <div id="live-dom" style="font-size:12px;color:var(--text2);margin-top:8px;">Variável dominante: <strong style="color:${riskColor(score)}">${VAR_ICONS[dom]} ${VAR_LABELS[dom]}</strong></div>
+        </div>
+
+        <div class="card" style="margin-bottom:12px;">
+          <div class="ctitle">Decomposição</div>
+          <div id="live-bars">${renderBars(partials, effectiveW, missing)}</div>
+        </div>
+
+        <div class="card">
+          <div class="ctitle">Recomendações — ${riskLabel(score)}</div>
+          <div class="stabs">
+            <div class="stab ${currentStakeholder==='clinical'?'on clinical':''}" onclick="setStakeholder('clinical');renderLive()">
+              <div class="stab-icon">🩺</div><div class="stab-label">CLÍNICO</div>
+            </div>
+            <div class="stab ${currentStakeholder==='coach'?'on coach':''}" onclick="setStakeholder('coach');renderLive()">
+              <div class="stab-icon">🎽</div><div class="stab-label">TREINADOR</div>
+            </div>
+            <div class="stab ${currentStakeholder==='athlete'?'on athlete':''}" onclick="setStakeholder('athlete');renderLive()">
+              <div class="stab-icon">⚽</div><div class="stab-label">ATLETA</div>
+            </div>
+          </div>
+          <div id="live-recs">${renderActions(dom, level, currentStakeholder)}</div>
+        </div>
+      </div>
+    </div>
+    `;
+  },
+
+  // ── REHAB ─────────────────────────────────────────────────────
+  rehab() {
+    const rehabAthletes = SQUAD.concat(FEMALE_SQUAD).filter(a=>a.status==='rehab');
+
+    // Adaptive logic: assess each athlete progression speed
+    function getAdaptiveStatus(a) {
+      var hrv = a.inputs.hrv || 0;
+      var fatigue = a.inputs.fatigue || 5;
+      var perf = PERF_DATA[a.id] || {};
+      var vmaxPct = perf.vmax_today_pct || 50;
+      var proto = REHAB[a.rehabProtocol];
+      if (!proto) return {status:'normal', label:'Progressao normal', color:'var(--text2)'};
+      var phase = proto.phases.find(function(p){return a.rehabDay>=p.d1&&a.rehabDay<=p.d2;}) || proto.phases[proto.phases.length-1];
+      var expectedVmax = {1:30, 2:55, 3:75, 4:90}[phase.id] || 70;
+      var score = 0;
+      if (hrv > -5) score += 2;
+      else if (hrv > -10) score += 1;
+      if (fatigue <= 4) score += 2;
+      else if (fatigue <= 6) score += 1;
+      if (vmaxPct >= expectedVmax + 10) score += 2;
+      else if (vmaxPct >= expectedVmax) score += 1;
+      if (score >= 5) return {status:'ahead',  label:'A frente do esperado', color:'var(--green2)', note:'Considera acelerar para proxima fase em ' + Math.max(1, Math.round((phase.d2-a.rehabDay)*0.7)) + ' dias'};
+      if (score >= 3) return {status:'normal', label:'Progressao normal',    color:'var(--warn)',   note:'Continuar protocolo. Reavaliar em ' + (phase.d2-a.rehabDay) + ' dias'};
+      return {status:'behind', label:'Abaixo do esperado',  color:'var(--danger)', note:'Considerar extensao da fase atual. HRV ou carga funcional insuficiente'};
+    }
+
+    return `
+    <div class="sec-hdr">
+      <div class="sec-title">🦴 Reabilitacao activa</div>
+      <div class="sec-sub">${rehabAthletes.length} atleta${rehabAthletes.length>1?'s':''} em protocolo · RTP adaptativo em curso</div>
+    </div>
+
+    ${rehabAthletes.map(a => {
+      const proto = REHAB[a.rehabProtocol];
+      const phase = proto.phases.find(p=>a.rehabDay>=p.d1&&a.rehabDay<=p.d2)||proto.phases[proto.phases.length-1];
+      const pct = Math.round((a.rehabDay/proto.totalDays)*100);
+      const rtpDone = proto.rtp.filter(r=>r.done).length;
+
+      return `
+      <div class="card" style="margin-bottom:20px;">
+        <!-- Header -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+          <div>
+            <div style="font-family:var(--display);font-size:17px;font-weight:700;">${a.name}</div>
+            <div style="font-size:12px;color:var(--text2);font-family:var(--mono);">${a.pos} · ${a.age} anos · ${a.club}</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:4px;">🩺 ${proto.name} <span style="color:var(--text3)">—</span> ${proto.loc}</div>
+            <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px;">Evidência: ${proto.evidence}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-family:var(--display);font-size:28px;font-weight:700;color:${proto.color};">Dia ${a.rehabDay}</div>
+            <div style="font-size:11px;color:var(--text2);">de ${proto.totalDays} dias previstos</div>
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:6px;">
+            <span>Início</span>
+            ${proto.phases.map(p=>'<span>'+p.range+'</span>').join('')}
+            <span>RTP</span>
+          </div>
+          <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;display:flex;">
+            ${proto.phases.map(p=>{
+              const segW = ((p.d2-p.d1+1)/proto.totalDays)*100;
+              const filled = a.rehabDay > p.d2 ? 100 : a.rehabDay >= p.d1 ? Math.round(((a.rehabDay-p.d1+1)/(p.d2-p.d1+1))*100) : 0;
+              return `<div style="width:${segW}%;height:100%;background:var(--bg5);margin-right:2px;border-radius:2px;overflow:hidden;"><div style="width:${filled}%;height:100%;background:${p.col};transition:width .5s;"></div></div>`;
+            }).join('')}
+          </div>
+          <div style="margin-top:6px;font-size:11px;color:var(--text2);">Fase actual: <strong style="color:${phase.col}">${phase.name}</strong> (${phase.range})</div>
+        </div>
+
+        <!-- Adaptive status -->
+        ${(function(){
+          var ads = getAdaptiveStatus(a);
+          return '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border-radius:8px;border-left:3px solid ' + ads.color + ';margin-bottom:14px;">'
+            + '<div style="width:8px;height:8px;border-radius:50%;background:' + ads.color + ';flex-shrink:0;"></div>'
+            + '<div><div style="font-size:12px;font-weight:600;color:' + ads.color + ';">' + ads.label + '</div>'
+            + (ads.note ? '<div style="font-size:11px;color:var(--text2);margin-top:2px;">' + ads.note + '</div>' : '')
+            + '</div>'
+            + '<span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--text3);">Reab. adaptativa</span>'
+            + '</div>';
+        })()}
+
+        <div class="g2">
+          <!-- Timeline -->
+          <div>
+            <div class="slabel">Protocolo por fases</div>
+            <div class="timeline">
+              ${proto.phases.map(p=>{
+                const isActive = a.rehabDay>=p.d1&&a.rehabDay<=p.d2;
+                const isDone = a.rehabDay>p.d2;
+                return `
+                <div class="tl-item">
+                  <div class="tl-dot" style="background:${isDone?'var(--green2)':isActive?p.col:'var(--bg5)'};border-color:var(--bg2);"></div>
+                  <div class="tl-content" style="${isActive?('border-color:'+p.col+';background:var(--bg3)'):''}">
+                    <div class="tl-phase">${isDone?'✓ ':''}${p.name}</div>
+                    <div class="tl-days">${p.range}</div>
+                    <div class="tl-ex">${p.ex.map(e=>'• '+e).join('<br>')}</div>
+                    <div class="tl-criteria">Critérios de progressão: ${p.criteria}</div>
+                  </div>
+                </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- RTP Criteria -->
+          <div>
+            <div class="slabel">Critérios de retorno ao jogo (${rtpDone}/${proto.rtp.length})</div>
+            <div class="card card-sm" style="margin-bottom:12px;">
+              ${proto.rtp.map((r,idx)=>
+                '<div class="rtp-item">'
+                + '<div class="rtp-check ' + (r.done?'done':'') + '" onclick="toggleRTP(\'' + a.rehabProtocol + '\',' + idx + ',' + a.id + ')"></div>'
+                + '<div style="color:' + (r.done?'var(--green2)':'var(--text2)') + ';">' + r.label + '</div>'
+                + '</div>'
+              ).join('')}
+            </div>
+
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;">
+              <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1.5px;margin-bottom:8px;">PROGRESSO RTP</div>
+              <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-bottom:6px;">
+                <div style="width:${Math.round((rtpDone/proto.rtp.length)*100)}%;height:6px;background:var(--green2);transition:width .5s;border-radius:3px;"></div>
+              </div>
+              <div style="font-size:11px;color:var(--text2);">${rtpDone} de ${proto.rtp.length} critérios cumpridos · ${Math.round((rtpDone/proto.rtp.length)*100)}%</div>
+            </div>
+
+            <div class="alert ${rtpDone===proto.rtp.length?'alert-g':'alert-w'}">
+              <div class="adot ${rtpDone===proto.rtp.length?'ad-g':'ad-w'}"></div>
+              <div>
+                ${rtpDone===proto.rtp.length
+                  ? '<strong>Critérios RTP cumpridos.</strong> Atleta apto para retorno ao treino completo.'
+                  : ('<strong>RTP pendente.</strong> ' + (proto.rtp.length-rtpDone) + ' critério' + (proto.rtp.length-rtpDone>1?'s':'') + ' em falta. Estimativa: ' + (proto.totalDays-a.rehabDay) + ' dias.')}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Clinical input section -->
+        <div style="margin-top:14px;">
+          <div class="slabel" style="margin-bottom:8px;">Avaliacao clinica — inserir resultados dos testes</div>
+          <div style="background:var(--bg3);border-radius:10px;padding:14px;" id="clin-${a.id}">
+            ${renderClinicalInputs(a)}
+          </div>
+        </div>
+      </div>
+      `;
+    }).join('')}
+    `;
+  },
+
+  // ── PERFORMANCE MAXIMUMS ──────────────────────────────────────
+  perf() {
+    const available = SQUAD.filter(a=>a.status==='available');
+    const rehab = SQUAD.filter(a=>a.status==='rehab');
+
+    // Sort by vmax descending for ranking
+    const ranked = [...SQUAD].sort((a,b)=>(PERF_DATA[b.id]?.vmax||0)-(PERF_DATA[a.id]?.vmax||0));
+
+    const metrics = [
+      {key:'vmax',        label:'Vmax',             unit:'km/h', icon:'🏃', desc:'Velocidade máxima absoluta registada',          hi:36, lo:28, higher_is_better:true},
+      {key:'dist_max',    label:'Dist. máx. jogo',  unit:'km',   icon:'📏', desc:'Distância total máxima num único jogo',         hi:13, lo:7,  higher_is_better:true},
+      {key:'hsr_max',     label:'HSR máx.',          unit:'m',    icon:'⚡', desc:'Distância alta velocidade máx. num jogo (>19.8 km/h)', hi:2500,lo:350, higher_is_better:true},
+      {key:'sprint_max',  label:'Sprint máx.',       unit:'m',    icon:'💨', desc:'Distância sprint máx. num jogo (>25 km/h)',    hi:1100,lo:70,  higher_is_better:true},
+      {key:'n_sprints_max',label:'Nº sprints máx.', unit:'',     icon:'🔢', desc:'Nº máximo de sprints num único jogo',          hi:35, lo:3,   higher_is_better:true},
+      {key:'accel_max',   label:'Acelerações',       unit:'',     icon:'📈', desc:'Acelerações >3 m/s² máx. numa sessão',        hi:56, lo:18,  higher_is_better:true},
+      {key:'decel_max',   label:'Desacelerações',    unit:'',     icon:'📉', desc:'Desacelerações >3 m/s² máx. numa sessão',     hi:52, lo:16,  higher_is_better:true},
+      {key:'player_load_max',label:'Player Load',    unit:'u.a.', icon:'🔋', desc:'Carga total máxima numa sessão (u.a.)',        hi:1360,lo:780, higher_is_better:true},
+    ];
+
+    function perfBar(val, lo, hi, higherBetter=true) {
+      const pct = Math.min(100, Math.max(0, Math.round(((val-lo)/(hi-lo))*100)));
+      const col = higherBetter
+        ? (pct>75?'var(--green2)':pct>40?'var(--warn)':'var(--text3)')
+        : (pct<30?'var(--green2)':pct<65?'var(--warn)':'var(--danger)');
+      return {pct, col};
+    }
+
+    function vmaxColor(pct) {
+      if(pct>=95) return 'var(--green2)';
+      if(pct>=85) return 'var(--warn)';
+      if(pct>=70) return 'var(--orange)';
+      return 'var(--danger)';
+    }
+
+    return `
+    <div class="sec-hdr">
+      <div class="sec-title">⚡ Máximos & Perfil de Performance</div>
+      <div class="sec-sub">Valores de referência individuais · Base de comparação para RTP</div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs" id="perf-tabs">
+      <div class="tab on" onclick="setPerfTab('squad')">Plantel</div>
+      <div class="tab" onclick="setPerfTab('ranking')">Ranking</div>
+      <div class="tab" onclick="setPerfTab('rtp')">RTP — Vmax%</div>
+    </div>
+
+    <div id="perf-content">
+      ${perfViews.squad()}
+    </div>
+    `;
+  },
+
+  squad() {
+    return `
+    <div class="sec-hdr">
+      <div class="sec-title">👥 Plantel — Visão completa</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+      ${SQUAD.map(a=>{
+        const {score,conf,confReason,dom,missing,effectiveW} = a.calc;
+        return `
+        <div class="ath-card ${a.status==='rehab'?'':''}${ selectedAthlete===a.id?' selected':''}" onclick="selectAndView(${a.id})">
+          <div class="ath-avatar" style="background:${a.status==='rehab'?'var(--blue2)':'var(--bg4)'};">${a.num}</div>
+          <div class="ath-info">
+            <div class="ath-name">${a.name}</div>
+            <div class="ath-meta">${a.pos} · ${a.club}</div>
+            <div style="margin-top:4px;">${a.status==='rehab'?'<span class="score-badge sb-rehab">REAB.</span>':scoreBadge(score)}</div>
+          </div>
+        </div>
+        `;
+      }).join('')}
+    </div>
+    `;
+  },
+
+  // ── READINESS PANEL ────────────────────────────────────────────
+  readiness() {
+    var available = SQUAD.filter(function(a){return a.status==='available';});
+    var rows = available.map(function(a) {
+      var r = getReadiness(a);
+      var riskScore = a.calc.score;
+      var rCol = riskColor(riskScore);
+      var oCol = readinessColor(r.overall);
+      var indicators = r.indicators.map(function(ind) {
+        var c = readinessColor(ind.status);
+        return '<div style="text-align:center;min-width:48px;">'
+          + '<div style="width:10px;height:10px;border-radius:50%;background:' + c + ';margin:0 auto 3px;"></div>'
+          + '<div style="font-family:var(--mono);font-size:8px;color:var(--text3);">' + ind.label + '</div>'
+          + '<div style="font-family:var(--mono);font-size:9px;color:' + c + ';">' + ind.value + '</div>'
+          + '</div>';
+      }).join('');
+
+      return '<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="selectAndView(' + a.id + ')" onmouseover="this.style.background=var(--bg3)" onmouseout="this.style.background=none">'
+        + '<td style="padding:10px 12px;"><strong>' + a.name + '</strong><br><span style="font-size:10px;color:var(--text2);">' + a.pos + ' · ' + a.club + '</span></td>'
+        + '<td style="padding:10px 8px;text-align:center;"><span class="score-badge ' + 'sb-' + riskLevel(riskScore) + '">' + riskScore + '%</span></td>'
+        + '<td style="padding:10px 8px;text-align:center;"><span style="font-family:var(--mono);font-size:11px;font-weight:600;color:' + oCol + ';">' + readinessLabel(r.overall) + '</span></td>'
+        + '<td style="padding:10px 8px;"><div style="display:flex;gap:6px;align-items:center;">' + indicators + '</div></td>'
+        + '</tr>';
+    }).join('');
+
+    var greenCount = available.filter(function(a){return getReadiness(a).overall==='green';}).length;
+    var amberCount = available.filter(function(a){return getReadiness(a).overall==='amber';}).length;
+    var redCount   = available.filter(function(a){return getReadiness(a).overall==='red';}).length;
+
+    return '<div class="sec-hdr"><div class="sec-title">🟢 Prontidao de Performance</div>'
+      + '<div class="sec-sub">Semaforo de 4 indicadores · Indicativo — nao preditivo</div></div>'
+
+      + '<div class="kpi-grid" style="margin-bottom:16px;">'
+      + '<div class="kpi"><div class="kpi-num" style="color:var(--green2);">' + greenCount + '</div><div class="kpi-label">Prontos</div></div>'
+      + '<div class="kpi"><div class="kpi-num" style="color:var(--warn);">' + amberCount + '</div><div class="kpi-label">Precaucao</div></div>'
+      + '<div class="kpi"><div class="kpi-num" style="color:var(--danger);">' + redCount + '</div><div class="kpi-label">Limitados</div></div>'
+      + '</div>'
+
+      + '<div class="alert alert-b" style="margin-bottom:16px;">'
+      + '<div class="adot ad-b"></div>'
+      + '<div style="font-size:12px;"><strong>Nota metodologica:</strong> O painel de prontidao e uma sintese de 4 indicadores de recuperacao — HRV, dias desde ultimo jogo, Vmax% da ultima sessao, e wellness subjectivo. Nao e um modelo preditivo de performance. Em semanas com dois jogos a confianca e reduzida. Utilizar como apoio a decisao, nao como substituto do julgamento clinico.</div>'
+      + '</div>'
+
+      + '<div class="card">'
+      + '<div class="ctitle">Estado do plantel — ' + new Date().toLocaleDateString("pt-PT",{weekday:"long",day:"numeric",month:"long"}) + '</div>'
+      + '<div style="overflow-x:auto;">'
+      + '<table style="width:100%;border-collapse:collapse;font-size:12px;">'
+      + '<thead><tr style="background:var(--bg3);">'
+      + '<th style="padding:10px 12px;text-align:left;font-family:var(--mono);font-size:9px;color:var(--text3);border-bottom:1px solid var(--border2);">Atleta</th>'
+      + '<th style="padding:10px 8px;text-align:center;font-family:var(--mono);font-size:9px;color:var(--text3);border-bottom:1px solid var(--border2);">Risco lesao</th>'
+      + '<th style="padding:10px 8px;text-align:center;font-family:var(--mono);font-size:9px;color:var(--text3);border-bottom:1px solid var(--border2);">Prontidao</th>'
+      + '<th style="padding:10px 8px;text-align:left;font-family:var(--mono);font-size:9px;color:var(--text3);border-bottom:1px solid var(--border2);">Indicadores</th>'
+      + '</tr></thead>'
+      + '<tbody>' + rows + '</tbody>'
+      + '</table></div></div>';
+  },
+
+  // ── LOAD ──────────────────────────────────────────────────────
+  load() {
+    return `
+    <div class="sec-hdr">
+      <div class="sec-title">📡 Carga & GPS</div>
+      <div class="sec-sub">ACWR do plantel — hoje</div>
+    </div>
+    <div class="card">
+      <div class="ctitle">ACWR por atleta</div>
+      ${SQUAD.filter(a=>a.inputs.acwr!=null).map(a=>{
+        const acwr = a.inputs.acwr;
+        const col = acwr<0.8?'var(--blue)':acwr<1.3?'var(--green2)':acwr<1.5?'var(--warn)':'var(--danger)';
+        const pct = Math.min(100,Math.round(((acwr-0.5)/2)*100));
+        return `
+        <div class="bar-row" style="margin-bottom:10px">
+          <div class="bar-name" style="width:160px;cursor:pointer;" onclick="selectAndView(${a.id})">${a.name} <span style="color:var(--text3);font-size:10px;">(${a.pos})</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div>
+          <div class="bar-val" style="color:${col}">${acwr}</div>
+          <div class="bar-w" style="width:60px;font-size:10px;color:${col}">${acwr<0.8?'baixo':acwr<1.3?'seguro':acwr<1.5?'alerta':'risco'}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    `;
+  },
+
+  // ── CALENDAR INTELLIGENCE ──────────────────────────────────────
+  calint() {
+    var a = SQUAD.find(function(x){return x.id===selectedCalAthlete;}) || SQUAD[0];
+    var profile = FATIGUE_PROFILES[a.id] || {recovery_speed:1.0,congestion_sensitivity:1.0,typical_md1_drop:14,typical_md2_drop:7};
+    var projScores = projectScore(a.id, a.calc.score, calendarEvents);
+    var typeColors = {match:'var(--danger)',training:'var(--blue)',rest:'var(--green2)',travel:'var(--warn)'};
+    var typeIcons  = {match:'⚽',training:'🏃',rest:'😴',travel:'✈️'};
+    var intensityColors = {max:'var(--danger)',high:'var(--orange)',medium:'var(--warn)',low:'var(--green2)'};
+
+    var athleteOptions = SQUAD.filter(function(x){return x.status==='available';}).map(function(x){
+      return '<option value="' + x.id + '"' + (x.id===selectedCalAthlete?' selected':'') + '>' + x.num + '. ' + x.name + '</option>';
+    }).join('');
+
+    var calendarCells = calendarEvents.map(function(ev, idx) {
+      var score = projScores[idx+1] || projScores[projScores.length-1];
+      var scoreCol = score<40?'var(--green2)':score<65?'var(--warn)':score<85?'var(--orange)':'var(--danger)';
+      var tCol = typeColors[ev.type] || 'var(--text2)';
+      var iCol = intensityColors[ev.intensity] || 'var(--text2)';
+      var isMatch = ev.type === 'match';
+      var border = isMatch ? 'border:1px solid rgba(255,77,109,0.4);' : 'border:1px solid var(--border);';
+      return '<div style="background:var(--bg3);border-radius:8px;padding:12px 10px;' + border + 'position:relative;">'
+        + '<div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:6px;">D+' + ev.day + '</div>'
+        + '<div style="font-size:18px;margin-bottom:4px;">' + (typeIcons[ev.type]||'•') + '</div>'
+        + '<div style="font-size:11px;font-weight:600;color:' + tCol + ';margin-bottom:3px;">' + ev.label_pt + '</div>'
+        + (ev.type==='training'||ev.type==='match' ? '<div style="font-size:9px;font-family:var(--mono);color:' + iCol + ';">' + ev.intensity.toUpperCase() + '</div>' : '')
+        + '<div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06);">'
+        + '<div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:2px;">Score proj.</div>'
+        + '<div style="font-family:var(--display);font-size:18px;font-weight:700;color:' + scoreCol + ';">' + score + '%</div>'
+        + '</div>'
+        + '<div style="position:absolute;top:8px;right:8px;display:flex;gap:3px;">'
+        + '<button onclick="changeCalEvent(' + idx + ',\'prev\')" style="width:16px;height:16px;background:var(--bg4);border:none;border-radius:3px;color:var(--text3);font-size:9px;cursor:pointer;">◀</button>'
+        + '<button onclick="changeCalEvent(' + idx + ',\'next\')" style="width:16px;height:16px;background:var(--bg4);border:none;border-radius:3px;color:var(--text3);font-size:9px;cursor:pointer;">▶</button>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+
+    var chartBars = projScores.map(function(s,i) {
+      var col = s<40?'var(--green2)':s<65?'var(--warn)':s<85?'var(--orange)':'var(--danger)';
+      var h = Math.round((s/100)*60);
+      var label = i===0?'Hoje':('D+'+calendarEvents[i-1].day);
+      var isMatch = i>0 && calendarEvents[i-1].type==='match';
+      return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:3px;">'
+        + '<div style="font-family:var(--mono);font-size:9px;font-weight:600;color:' + col + ';">' + s + '</div>'
+        + '<div style="width:100%;height:' + h + 'px;background:' + col + ';border-radius:2px 2px 0 0;opacity:' + (isMatch?'1':'0.7') + ';position:relative;">'
+        + (isMatch?'<div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:10px;">⚽</div>':'')
+        + '</div>'
+        + '<div style="font-family:var(--mono);font-size:8px;color:var(--text3);">' + label + '</div>'
+        + '</div>';
+    }).join('');
+
+    return `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:var(--display);font-size:18px;font-weight:700;">📅 Calendar Intelligence</div>
+        <div style="font-size:12px;color:var(--text2);">Score projectado por atleta · Simula o impacto das decisoes de carga</div>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+        <div style="font-size:12px;color:var(--text2);">Atleta:</div>
+        <select onchange="selectedCalAthlete=parseInt(this.value);showView('calint')"
+          style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;color:var(--text);font-family:var(--body);font-size:13px;cursor:pointer;outline:none;">
+          ${athleteOptions}
+        </select>
+      </div>
+    </div>
+
+    <div class="g2" style="margin-bottom:16px;">
+      <div class="card">
+        <div class="ctitle">Perfil de recuperacao — ${a.name}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div style="background:var(--bg3);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:4px;">VELOCIDADE RECUPERACAO</div>
+            <div style="font-family:var(--display);font-size:24px;font-weight:700;color:${profile.recovery_speed>=1.1?'var(--green2)':profile.recovery_speed>=0.9?'var(--warn)':'var(--danger)'};">${profile.recovery_speed.toFixed(2)}x</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:4px;">SENS. CONGESTIONAMENTO</div>
+            <div style="font-family:var(--display);font-size:24px;font-weight:700;color:${profile.congestion_sensitivity<=0.9?'var(--green2)':profile.congestion_sensitivity<=1.1?'var(--warn)':'var(--danger)'};">${profile.congestion_sensitivity.toFixed(2)}x</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:4px;">QUEDA POS-JOGO (MD+1)</div>
+            <div style="font-family:var(--display);font-size:24px;font-weight:700;color:var(--danger);">-${profile.typical_md1_drop}pp</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:4px;">QUEDA POS-JOGO (MD+2)</div>
+            <div style="font-family:var(--display);font-size:24px;font-weight:700;color:var(--warn);">-${profile.typical_md2_drop}pp</div>
+          </div>
+        </div>
+        <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text2);">
+          Score actual: <strong style="color:${riskColor(a.calc.score)}">${a.calc.score}%</strong> · 
+          ${a.calc.score>=85?'<span style="color:var(--danger)">Risco critico — calendario deve ser gerido com cuidado</span>':a.calc.score>=65?'<span style="color:var(--orange)">Risco alto — monitorizar cargas nas proximas sessoes</span>':'<span style="color:var(--green2)">Risco controlado — pode tolerar carga planeada</span>'}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ctitle">Score projectado — proximo 14 dias</div>
+        <div style="display:flex;align-items:flex-end;gap:4px;height:80px;margin-bottom:8px;padding:0 4px;">
+          ${chartBars}
+        </div>
+        <div class="alert alert-b" style="margin-bottom:0;">
+          <div class="adot ad-b"></div>
+          <div style="font-size:12px;">Usa os botoes <strong>◀ ▶</strong> em cada dia do calendario para mudar o tipo de sessao e ver como o score projectado muda em tempo real.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slabel" style="margin-bottom:10px;">Calendario — clica para modificar cada sessao</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:16px;">
+      ${calendarCells}
+    </div>
+
+    <div class="card">
+      <div class="ctitle">Impacto do periodo congestionado — plantel completo</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr style="background:var(--bg3);">
+              <th style="padding:8px 12px;text-align:left;font-family:var(--mono);font-size:9px;color:var(--text3);border-bottom:1px solid var(--border2);">Atleta</th>
+              <th style="padding:8px;text-align:center;font-family:var(--mono);font-size:9px;color:var(--text3);border-bottom:1px solid var(--border2);">Agora</th>
+              <th style="padding:8px;text-align:center;font-family:var(--mono);font-size:9px;color:var(--text3);border-bottom:1px solid var(--border2);">Jogo 1 (D+3)</th>
+              <th style="padding:8px;text-align:center;font-family:var(--mono);font-size:9px;color:var(--text3);border-bottom:1px solid var(--border2);">Jogo 2 (D+10)</th>
+              <th style="padding:8px;text-align:center;font-family:var(--mono);font-size:9px;color:var(--text3);border-bottom:1px solid var(--border2);">Final (D+13)</th>
+              <th style="padding:8px;text-align:center;font-family:var(--mono);font-size:9px;color:var(--text3);border-bottom:1px solid var(--border2);">Tendencia</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${SQUAD.filter(function(x){return x.status==='available';}).slice(0,10).map(function(at) {
+              var ps = projectScore(at.id, at.calc.score, calendarEvents);
+              var s0 = ps[0], s4 = ps[4]||ps[ps.length-1], s11 = ps[11]||ps[ps.length-1], s14 = ps[ps.length-1];
+              var c0=riskColor(s0),c4=riskColor(s4),c11=riskColor(s11),c14=riskColor(s14);
+              var trend = s14 > s0 + 10 ? '<span style="color:var(--danger)">↑ Sobe</span>' : s14 < s0 - 5 ? '<span style="color:var(--green2)">↓ Melhora</span>' : '<span style="color:var(--warn)">→ Estavel</span>';
+              return '<tr style="border-bottom:1px solid var(--border);" onmouseover="this.style.background=var(--bg3)" onmouseout="this.style.background=none">'
+                + '<td style="padding:8px 12px;font-weight:500;">' + at.name + ' <span style="font-size:10px;color:var(--text3);">(' + at.pos + ')</span></td>'
+                + '<td style="padding:8px;text-align:center;font-family:var(--mono);font-size:12px;color:' + c0 + ';">' + s0 + '%</td>'
+                + '<td style="padding:8px;text-align:center;font-family:var(--mono);font-size:12px;color:' + c4 + ';">' + s4 + '%</td>'
+                + '<td style="padding:8px;text-align:center;font-family:var(--mono);font-size:12px;color:' + c11 + ';">' + s11 + '%</td>'
+                + '<td style="padding:8px;text-align:center;font-family:var(--mono);font-size:12px;color:' + c14 + ';">' + s14 + '%</td>'
+                + '<td style="padding:8px;text-align:center;font-size:12px;">' + trend + '</td>'
+                + '</tr>';
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    `;
+  },
+
+  // ── PASSPORT ──────────────────────────────────────────────────
+  passport() {
+    var a = SQUAD.find(function(x){return x.id===selectedAthlete;}) || SQUAD[0];
+    var perf = PERF_DATA[a.id] || {};
+    var profile = FATIGUE_PROFILES[a.id] || {recovery_speed:1.0,congestion_sensitivity:1.0,typical_md1_drop:14,typical_md2_drop:7};
+    var history = SCORE_HISTORY[a.id] || [];
+    var avgScore = history.filter(function(v){return v!==null;}).reduce(function(s,v){return s+v;},0) / (history.filter(function(v){return v!==null;}).length||1);
+    var isPortable = passportPortable[a.id] !== false;
+    var isShared = passportShared[a.id] === true;
+
+    var athOptions = SQUAD.map(function(x){
+      return '<option value="' + x.id + '"' + (x.id===selectedAthlete?' selected':'') + '>' + x.num + '. ' + x.name + '</option>';
+    }).join('');
+
+    return `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:var(--display);font-size:18px;font-weight:700;">🪪 Passaporte do Atleta</div>
+        <div style="font-size:12px;color:var(--text2);">Perfil clinico e de performance portatil · Segue o atleta ao longo da carreira</div>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+        <select onchange="selectedAthlete=parseInt(this.value);showView('passport')"
+          style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;color:var(--text);font-family:var(--body);font-size:13px;cursor:pointer;outline:none;">
+          ${athOptions}
+        </select>
+      </div>
+    </div>
+
+    <div class="g2" style="margin-bottom:14px;">
+      <!-- LEFT: Passport card -->
+      <div>
+        <div class="card" style="border:1px solid ${isPortable?'rgba(0,229,160,0.3)':'var(--border)'};margin-bottom:12px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+            <div>
+              <div style="font-family:var(--display);font-size:22px;font-weight:900;color:var(--text);margin-bottom:2px;">${a.name}</div>
+              <div style="font-size:12px;color:var(--text2);font-family:var(--mono);">${a.pos} · ${a.age} anos · ${a.club}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:4px;">ESTADO PASSAPORTE</div>
+              <div style="display:flex;gap:6px;justify-content:flex-end;">
+                <span class="score-badge ${isPortable?'sb-low':'sb-critical'}" style="cursor:pointer;" onclick="togglePassportPortable(${a.id})">
+                  ${isPortable?'🔓 Portatil':'🔒 Privado'}
+                </span>
+              </div>
+              ${isPortable?'<div style="font-size:10px;color:var(--text3);margin-top:4px;font-family:var(--mono);">Partilhavel com clubes autorizados</div>':''}
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-bottom:3px;">VMAX REF.</div>
+              <div style="font-family:var(--display);font-size:18px;font-weight:700;color:var(--blue);">${perf.vmax||'N/D'} <span style="font-size:10px;">km/h</span></div>
+            </div>
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-bottom:3px;">HRV BASELINE</div>
+              <div style="font-family:var(--display);font-size:18px;font-weight:700;color:var(--purple);">62 <span style="font-size:10px;">ms</span></div>
+            </div>
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-bottom:3px;">SCORE MEDIO</div>
+              <div style="font-family:var(--display);font-size:18px;font-weight:700;color:${riskColor(Math.round(avgScore))};">${Math.round(avgScore)}%</div>
+            </div>
+          </div>
+
+          <div class="slabel" style="margin-bottom:8px;">Historial de lesoes (carreira)</div>
+          ${a.injuries.length===0
+            ? '<div style="font-size:12px;color:var(--green2);padding:10px;background:var(--green4);border-radius:8px;">Sem lesoes registadas</div>'
+            : a.injuries.map(function(inj){
+                return '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;">'
+                  + '<div style="width:80px;flex-shrink:0;font-family:var(--mono);font-size:10px;color:var(--text3);">' + inj.date + '</div>'
+                  + '<div style="color:' + (inj.days?'var(--text2)':'var(--danger)') + ';">' + inj.type + (inj.days?' — ' + inj.days + ' dias':' — ACTIVO') + '</div>'
+                  + '</div>';
+              }).join('')
+          }
+        </div>
+
+        <div class="card">
+          <div class="ctitle">Perfil de carga individual</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;">
+              <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:4px;">RECUPER. (vs. media)</div>
+              <div style="font-size:14px;font-weight:600;color:${profile.recovery_speed>=1.0?'var(--green2)':'var(--danger)'};">${profile.recovery_speed>=1.1?'Rapida':profile.recovery_speed>=0.9?'Media':'Lenta'}</div>
+              <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">${profile.recovery_speed.toFixed(2)}x</div>
+            </div>
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;">
+              <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:4px;">SENSIB. CONGESTIONAMENTO</div>
+              <div style="font-size:14px;font-weight:600;color:${profile.congestion_sensitivity<=1.0?'var(--green2)':'var(--danger)'};">${profile.congestion_sensitivity<=0.9?'Baixa':profile.congestion_sensitivity<=1.1?'Media':'Alta'}</div>
+              <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">${profile.congestion_sensitivity.toFixed(2)}x</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Portability simulation -->
+      <div>
+        <div class="card" style="margin-bottom:12px;">
+          <div class="ctitle">Simulacao — Novo clube recebe passaporte</div>
+          <div style="background:var(--bg3);border-radius:8px;padding:14px;margin-bottom:12px;">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1.5px;margin-bottom:10px;">CENARIO: TRANSFERENCIA PARA CLUBE CLIENTE AURA</div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+              <div style="font-size:24px;">🏟️</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;">${a.club}</div>
+                <div style="font-size:11px;color:var(--text2);">Clube actual (origem)</div>
+              </div>
+              <div style="font-size:20px;color:var(--text3);">→</div>
+              <div style="font-size:24px;">🏟️</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;">Novo Clube</div>
+                <div style="font-size:11px;color:var(--text2);">Cliente Aura</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:10px;">
+              <button onclick="togglePassportShared(${a.id})" style="flex:1;padding:9px;border-radius:8px;border:none;background:${isShared?'var(--green2)':'var(--bg4)'};color:${isShared?'#000':'var(--text2)'};cursor:pointer;font-size:12px;font-weight:${isShared?'600':'400'};">
+                ${isShared?'✓ Passaporte partilhado':'Partilhar passaporte'}
+              </button>
+            </div>
+            ${isShared ? (
+              '<div style="background:var(--green4);border:1px solid rgba(0,229,160,0.2);border-radius:8px;padding:12px;">'
+              + '<div style="font-family:var(--mono);font-size:9px;color:var(--green2);letter-spacing:1.5px;margin-bottom:8px;">NOVO CLUBE RECEBE:</div>'
+              + '<div style="font-size:12px;color:var(--text2);line-height:1.8;">'
+              + '✓ Historial completo de lesoes (' + a.injuries.length + ' episodios)<br>'
+              + '✓ Vmax de referencia: ' + (perf.vmax||'—') + ' km/h<br>'
+              + '✓ HRV baseline individual: ~62ms<br>'
+              + '✓ Perfil de recuperacao calibrado<br>'
+              + '✓ Score medio dos ultimos 7 dias de estagio FPF<br>'
+              + '✓ Score de risco actual: ' + a.calc.score + '%'
+              + '</div>'
+              + '<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,229,160,0.15);font-size:11px;color:var(--text3);">Tempo de onboarding: 0 dias. Baseline imediato.</div>'
+              + '</div>'
+            ) : (
+              '<div style="background:var(--bg4);border-radius:8px;padding:12px;font-size:12px;color:var(--text3);">Sem Aura: o novo clube começa do zero. Nenhum historico, nenhum baseline. Risco de lesao desconhecido nas primeiras semanas.</div>'
+            )}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="ctitle">Return to Full Performance</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Alem do RTP clinico — criterios de retorno ao nivel de performance pre-lesao</div>
+          ${perf.vmax_today_pct !== undefined ? (
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
+            + ['Vmax% (' + perf.vmax_today_pct + '%)', 'Player Load (' + Math.round((perf.player_load_max||0)*0.88) + ' u.a.)', 'Sprint dist. (' + Math.round((perf.sprint_max||0)*0.9) + 'm)', 'Desaceleracoes (' + Math.round((perf.decel_max||0)*0.88) + ')'].map(function(label, i) {
+              var pcts = [perf.vmax_today_pct||0, 88, 90, 88];
+              var pct = pcts[i];
+              var col = pct>=95?'var(--green2)':pct>=85?'var(--warn)':'var(--danger)';
+              return '<div style="background:var(--bg3);border-radius:8px;padding:10px;">'
+                + '<div style="font-size:11px;color:var(--text2);margin-bottom:6px;">' + label + '</div>'
+                + '<div style="height:5px;background:var(--bg4);border-radius:2px;overflow:hidden;"><div style="width:' + pct + '%;height:5px;background:' + col + ';border-radius:2px;"></div></div>'
+                + '<div style="font-family:var(--mono);font-size:10px;color:' + col + ';margin-top:3px;">' + pct + '% pre-lesao</div>'
+                + '</div>';
+            }).join('')
+            + '</div>'
+          ) : '<div style="font-size:12px;color:var(--text3);">Dados de performance nao disponiveis para este atleta.</div>'}
+        </div>
+      </div>
+    </div>
+    `;
+  },
+
+  // ── FEMALE ────────────────────────────────────────────────────
+  female() {
+    var available = FEMALE_SQUAD.filter(function(a){return a.status==='available';});
+    var rehab = FEMALE_SQUAD.filter(function(a){return a.status==='rehab';});
+    var highRisk = FEMALE_SQUAD.filter(function(a){
+      return a.status==='available' && getFemaleAdjustedScore(a).score >= 65;
+    });
+
+    var phaseGuide = [
+      {phase:'menstrual',  color:'#ff4d6d', days:'D1-5',  note:'Dor e fadiga possiveis. Reduzir impacto se necessario.'},
+      {phase:'follicular', color:'#00e5a0', days:'D6-13', note:'Fase ideal para carga alta e desenvolvimento de forca.'},
+      {phase:'ovulatory',  color:'#ff7043', days:'D14',   note:'Risco LCA +40%. Evitar arranques bruscos e aterragens.'},
+      {phase:'luteal',     color:'#ffb347', days:'D15-28',note:'Laxidez ligamentar aumentada. Reforco propriocetivo.'},
+    ];
+
+    return `
+    <div class="sec-hdr">
+      <div class="sec-title">⚽ Selecao Nacional Feminina</div>
+      <div class="sec-sub">Monitorizacao com ciclo menstrual integrado · Risco LCA ajustado</div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;border-color:rgba(180,141,252,0.3);">
+      <div class="ctitle" style="color:var(--purple);">🔬 Impacto do ciclo menstrual no risco de lesao</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px;">
+        ${phaseGuide.map(function(p){
+          return '<div style="background:var(--bg3);border-radius:8px;padding:12px;border-left:3px solid ' + p.color + ';">'
+            + '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:4px;">' + p.days + '</div>'
+            + '<div style="font-size:12px;font-weight:600;color:' + p.color + ';margin-bottom:4px;">' + p.phase.charAt(0).toUpperCase() + p.phase.slice(1) + '</div>'
+            + '<div style="font-size:11px;color:var(--text2);line-height:1.5;">' + p.note + '</div>'
+            + '</div>';
+        }).join('')}
+      </div>
+      <div class="alert alert-b" style="margin-bottom:0;">
+        <div class="adot ad-b"></div>
+        <div style="font-size:12px;"><strong>Evidencia:</strong> Risco de lesao LCA varia ate 4x ao longo do ciclo menstrual (Hewett et al. 2007; Renstrom et al. BJSM 2008). O pico de estrogeno na fase ovulatoria aumenta a laxidez ligamentar e reduz a rigidez neuromuscular. A Aura e a unica plataforma que integra este factor no score de risco.</div>
+      </div>
+    </div>
+
+    <div class="kpi-grid" style="margin-bottom:16px;">
+      <div class="kpi">
+        <div class="kpi-num" style="color:var(--text)">${FEMALE_SQUAD.length}</div>
+        <div class="kpi-label">Atletas convocadas</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num" style="color:var(--orange)">${highRisk.length}</div>
+        <div class="kpi-label">Score ajustado alto/critico</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num" style="color:var(--danger)">${FEMALE_SQUAD.filter(function(a){return getMenstrualPhase(a.menstrual_day,a.cycle_length).phase==='ovulatory';}).length}</div>
+        <div class="kpi-label">Em ovulacao hoje</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num" style="color:var(--blue)">${rehab.length}</div>
+        <div class="kpi-label">Em reabilitacao</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+      ${FEMALE_SQUAD.map(function(a) {
+        var adj = getFemaleAdjustedScore(a);
+        var phase = adj.phase;
+        var sc = adj.score;
+        var baseScore = adj.base_score;
+        var lcaAdjust = sc > baseScore;
+        return '<div class="ath-card" onclick="selectFemaleAthlete(' + a.id + ')" style="flex-direction:column;align-items:flex-start;gap:8px;">'
+          + '<div style="display:flex;align-items:center;gap:10px;width:100%;">'
+          + '<div class="ath-avatar">' + a.num + '</div>'
+          + '<div class="ath-info"><div class="ath-name">' + a.name + '</div><div class="ath-meta">' + a.pos + ' · ' + a.club + '</div></div>'
+          + '<div style="text-align:right;flex-shrink:0;"><div class="ath-score" style="color:' + riskColor(sc) + ';">' + sc + '%</div>'
+          + (lcaAdjust ? '<div style="font-size:9px;color:var(--orange);font-family:var(--mono);">+LCA</div>' : '') + '</div>'
+          + '</div>'
+          + '<div style="display:flex;align-items:center;gap:8px;width:100%;padding-top:8px;border-top:1px solid var(--border);">'
+          + '<div style="width:8px;height:8px;border-radius:50%;background:' + phase.color + ';flex-shrink:0;"></div>'
+          + '<div style="font-size:11px;color:var(--text2);">' + phase.label + ' · Dia ' + a.menstrual_day + '</div>'
+          + '</div>'
+          + (phase.phase==='ovulatory' || phase.phase==='menstrual' ? '<div style="font-size:10px;color:' + phase.color + ';line-height:1.4;width:100%;">' + phase.note + '</div>' : '')
+          + '</div>';
+      }).join('')}
+    </div>
+    `;
+  }
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+// REHAB CLINICAL INPUT RENDERER
+// ═══════════════════════════════════════════════════════════════════
+function renderClinicalInputs(a) {
+  var c = rehabClinical[a.id] || {};
+  var proto = REHAB[a.rehabProtocol];
+  var phase = proto ? (proto.phases.find(function(p){return a.rehabDay>=p.d1&&a.rehabDay<=p.d2;})||proto.phases[proto.phases.length-1]) : null;
+  var isH = a.rehabProtocol === 'hamstring';
+  var isA = a.rehabProtocol === 'ankle';
+  var id  = a.id;
+
+  var vasVal = c.pain_vas != null ? c.pain_vas : 5;
+  var vasCol = vasVal<=2?'var(--green2)':vasVal<=5?'var(--warn)':'var(--danger)';
+
+  var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">';
+
+  // 1. Pain VAS — use data-aid, data-field on range input
+  html += '<div>'
+    + '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">'
+    + '<span style="font-size:11px;color:var(--text2);">Dor (EVA 0-10)</span>'
+    + '<span id="rcs-' + id + '-pain_vas" style="font-family:var(--mono);font-size:11px;font-weight:600;color:' + vasCol + ';">' + vasVal + '/10</span>'
+    + '</div>'
+    + '<input type="range" min="0" max="10" step="1" value="' + vasVal + '" '
+    + 'data-aid="' + id + '" data-field="pain_vas" oninput="rehabSlider(this)" style="width:100%;">'
+    + '</div>';
+
+  if (isH) {
+    // 2. Eccentric strength buttons
+    var strVal = c.strength_pct;
+    html += '<div><div style="font-size:11px;color:var(--text2);margin-bottom:6px;">Forca exc. (% contralateral)</div>'
+      + '<div style="display:flex;gap:3px;flex-wrap:wrap;">';
+    [60,70,80,90,100].forEach(function(v) {
+      var active = strVal === v;
+      html += '<button data-aid="' + id + '" data-field="strength_pct" data-val="' + v + '" onclick="rehabBtn(this)" '
+        + 'style="padding:3px 8px;border-radius:4px;font-family:var(--mono);font-size:10px;cursor:pointer;'
+        + 'border:1px solid ' + (active?'var(--green2)':'var(--border)') + ';'
+        + 'background:' + (active?'var(--green3)':'var(--bg4)') + ';'
+        + 'color:' + (active?'var(--green2)':'var(--text2)') + ';">' + v + '%</button>';
+    });
+    html += '</div></div>';
+
+    // 3. Askling H-test
+    var ashOk = c.test_ok;
+    html += '<div><div style="font-size:11px;color:var(--text2);margin-bottom:6px;">Askling H-test</div>'
+      + '<div style="display:flex;gap:6px;">'
+      + '<button data-aid="' + id + '" data-field="test_ok" data-val="false" onclick="rehabBtn(this)" '
+      + 'style="flex:1;padding:5px;border-radius:6px;font-size:11px;cursor:pointer;'
+      + 'border:1px solid ' + (ashOk===false?'var(--danger)':'var(--border)') + ';'
+      + 'background:' + (ashOk===false?'var(--danger2)':'var(--bg4)') + ';'
+      + 'color:' + (ashOk===false?'var(--danger)':'var(--text2)') + ';">+ Positivo</button>'
+      + '<button data-aid="' + id + '" data-field="test_ok" data-val="true" onclick="rehabBtn(this)" '
+      + 'style="flex:1;padding:5px;border-radius:6px;font-size:11px;cursor:pointer;'
+      + 'border:1px solid ' + (ashOk===true?'var(--green2)':'var(--border)') + ';'
+      + 'background:' + (ashOk===true?'var(--green3)':'var(--bg4)') + ';'
+      + 'color:' + (ashOk===true?'var(--green2)':'var(--text2)') + ';">- Negativo</button>'
+      + '</div></div>';
+  }
+
+  if (isA) {
+    // 2. Balance test
+    var balVal = c.balance_s;
+    html += '<div><div style="font-size:11px;color:var(--text2);margin-bottom:6px;">Equilibrio unipodal (s)</div>'
+      + '<div style="display:flex;gap:3px;flex-wrap:wrap;">';
+    [10,15,20,25,30].forEach(function(v) {
+      var active = balVal === v;
+      html += '<button data-aid="' + id + '" data-field="balance_s" data-val="' + v + '" onclick="rehabBtn(this)" '
+        + 'style="padding:3px 8px;border-radius:4px;font-family:var(--mono);font-size:10px;cursor:pointer;'
+        + 'border:1px solid ' + (active?'var(--green2)':'var(--border)') + ';'
+        + 'background:' + (active?'var(--green3)':'var(--bg4)') + ';'
+        + 'color:' + (active?'var(--green2)':'var(--text2)') + ';">' + v + 's</button>';
+    });
+    html += '</div></div>';
+
+    // 3. Hop test
+    var hopVal = c.hop_pct;
+    html += '<div><div style="font-size:11px;color:var(--text2);margin-bottom:6px;">Hop test (%)</div>'
+      + '<div style="display:flex;gap:3px;flex-wrap:wrap;">';
+    [70,75,80,85,90,95].forEach(function(v) {
+      var active = hopVal === v;
+      html += '<button data-aid="' + id + '" data-field="hop_pct" data-val="' + v + '" onclick="rehabBtn(this)" '
+        + 'style="padding:3px 8px;border-radius:4px;font-family:var(--mono);font-size:10px;cursor:pointer;'
+        + 'border:1px solid ' + (active?'var(--green2)':'var(--border)') + ';'
+        + 'background:' + (active?'var(--green3)':'var(--bg4)') + ';'
+        + 'color:' + (active?'var(--green2)':'var(--text2)') + ';">' + v + '%</button>';
+    });
+    html += '</div></div>';
+  }
+
+  html += '</div>';
+
+  // Comparison vs expected criteria for current phase
+  if (phase) {
+    var comps = [];
+    if (c.pain_vas != null) {
+      var maxP = phase.d2<=5?4:phase.d2<=12?2:1;
+      comps.push({label:'EVA dor', ok:c.pain_vas<=maxP, val:c.pain_vas+'/10', exp:'<='+maxP});
+    }
+    if (isH && c.strength_pct) {
+      var expS = phase.d2<=12?60:phase.d2<=20?80:90;
+      comps.push({label:'Forca exc.', ok:c.strength_pct>=expS, val:c.strength_pct+'%', exp:'>='+expS+'%'});
+    }
+    if (isH && c.test_ok!=null) {
+      var needNeg = phase.d2>12;
+      comps.push({label:'Askling', ok:needNeg?c.test_ok===true:true, val:c.test_ok?'Neg.':'Pos.', exp:needNeg?'Negativo':'-'});
+    }
+    if (isA && c.hop_pct) {
+      var expH = phase.d2<=14?75:90;
+      comps.push({label:'Hop test', ok:c.hop_pct>=expH, val:c.hop_pct+'%', exp:'>='+expH+'%'});
+    }
+    if (isA && c.balance_s) {
+      var expB = phase.d2<=14?10:30;
+      comps.push({label:'Equilibrio', ok:c.balance_s>=expB, val:c.balance_s+'s', exp:'>='+expB+'s'});
+    }
+    if (comps.length > 0) {
+      html += '<div style="margin-top:12px;padding:10px 12px;background:var(--bg4);border-radius:8px;">'
+        + '<div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1.5px;margin-bottom:8px;">VS. CRITERIOS — ' + phase.name.toUpperCase() + '</div>'
+        + '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+      comps.forEach(function(comp) {
+        html += '<div style="display:flex;align-items:center;gap:4px;padding:4px 9px;border-radius:6px;'
+          + 'background:var(--bg3);border:1px solid ' + (comp.ok?'rgba(0,229,160,0.25)':'rgba(255,77,109,0.25)') + ';">'
+          + '<span style="font-size:11px;">' + (comp.ok?'✓':'✗') + '</span>'
+          + '<span style="font-size:11px;color:' + (comp.ok?'var(--green2)':'var(--danger)') + ';">' + comp.label + ': ' + comp.val + '</span>'
+          + '<span style="font-size:10px;color:var(--text3);">(esp. ' + comp.exp + ')</span>'
+          + '</div>';
+      });
+      html += '</div></div>';
+    }
+  }
+  return html;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PERF SUB-VIEWS
+// ═══════════════════════════════════════════════════════════════════
+const perfViews = {
+
+  squad() {
+    const metrics = [
+      {key:'vmax',         label:'Vmax',              unit:'km/h', icon:'🏃'},
+      {key:'dist_max',     label:'Dist. máx.',        unit:'km',   icon:'📏'},
+      {key:'hsr_max',      label:'HSR máx.',           unit:'m',    icon:'⚡'},
+      {key:'sprint_max',   label:'Sprint máx.',        unit:'m',    icon:'💨'},
+      {key:'n_sprints_max',label:'Nº sprints',         unit:'',     icon:'🔢'},
+      {key:'accel_max',    label:'Acelerações',        unit:'',     icon:'📈'},
+      {key:'decel_max',    label:'Desacelerações',     unit:'',     icon:'📉'},
+      {key:'player_load_max',label:'Player Load',      unit:'u.a.', icon:'🔋'},
+    ];
+    const available = SQUAD.filter(a=>a.status==='available');
+
+    return `
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="background:var(--bg3);">
+            <th style="padding:10px 12px;text-align:left;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);white-space:nowrap;border-bottom:1px solid var(--border2);">Atleta</th>
+            <th style="padding:10px 8px;text-align:left;font-family:var(--mono);font-size:9px;color:var(--text3);border-bottom:1px solid var(--border2);">Pos</th>
+            ${metrics.map(m=>'<th style="padding:10px 8px;text-align:center;font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);white-space:nowrap;border-bottom:1px solid var(--border2);">' + m.icon + ' ' + m.label + '<br><span style="color:var(--text3);font-size:8px;">' + m.unit + '</span></th>').join('')}
+            <th style="padding:10px 8px;text-align:center;font-family:var(--mono);font-size:9px;color:var(--text3);border-bottom:1px solid var(--border2);white-space:nowrap;">🏃 Vmax hoje</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${available.map((a,ri)=>{
+            const p = PERF_DATA[a.id];
+            if(!p) return '';
+            const vmaxCol = p.vmax_today_pct>=95?'var(--green2)':p.vmax_today_pct>=85?'var(--warn)':p.vmax_today_pct>=70?'var(--orange)':'var(--danger)';
+            return `
+            <tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="selectAndView(${a.id})" onmouseover="this.style.background=var(--bg3)" onmouseout="this.style.background=none">
+              <td style="padding:10px 12px;font-weight:600;color:var(--text);white-space:nowrap;">${a.name}</td>
+              <td style="padding:10px 8px;font-family:var(--mono);font-size:10px;color:var(--text2);">${a.pos}</td>
+              ${metrics.map(m=>{
+                const val = p[m.key];
+                return `<td style="padding:10px 8px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--text);font-weight:500;">${val ?? '—'}${m.unit==='km'?'':m.unit==='km/h'?'':''}</td>`;
+              }).join('')}
+              <td style="padding:10px 8px;text-align:center;">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+                  <span style="font-family:var(--mono);font-size:12px;font-weight:600;color:${vmaxCol};">${p.vmax_today_pct}%</span>
+                  <div style="width:56px;height:3px;background:var(--bg4);border-radius:2px;"><div style="width:${p.vmax_today_pct}%;height:3px;background:${vmaxCol};border-radius:2px;"></div></div>
+                </div>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--text3);font-family:var(--mono);">Vmax hoje = % da velocidade máxima absoluta atingida na sessão mais recente · Referência RTP: ≥95%</div>
+    `;
+  },
+
+  ranking() {
+    const metrics = [
+      {key:'vmax',           label:'Velocidade máxima',              unit:'km/h', icon:'🏃', desc:'O tecto de velocidade de cada jogador'},
+      {key:'hsr_max',        label:'Distância alta vel. máx.',        unit:'m',    icon:'⚡', desc:'Metros acima de 19.8 km/h num único jogo'},
+      {key:'sprint_max',     label:'Distância sprint máx.',           unit:'m',    icon:'💨', desc:'Metros acima de 25 km/h num único jogo'},
+      {key:'dist_max',       label:'Distância total máx.',            unit:'km',   icon:'📏', desc:'Quilómetros percorridos num único jogo'},
+      {key:'n_sprints_max',  label:'Nº sprints máx.',                 unit:'',     icon:'🔢', desc:'Nº máximo de acções de sprint num jogo'},
+      {key:'player_load_max',label:'Player Load máx.',                unit:'u.a.', icon:'🔋', desc:'Carga total máxima numa sessão'},
+    ];
+
+    return metrics.map(m=>{
+      const sorted = SQUAD
+        .filter(a=>PERF_DATA[a.id]?.[m.key]!=null)
+        .sort((a,b)=>(PERF_DATA[b.id][m.key])-(PERF_DATA[a.id][m.key]));
+      const maxVal = PERF_DATA[sorted[0]?.id]?.[m.key] || 1;
+
+      return `
+      <div class="card" style="margin-bottom:14px;">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px;">
+          <div class="ctitle" style="margin-bottom:0;">${m.icon} ${m.label}</div>
+          <div style="font-size:11px;color:var(--text3);">${m.desc}</div>
+          <div style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--text3);">${m.unit}</div>
+        </div>
+        ${sorted.slice(0,8).map((a,i)=>{
+          const val = PERF_DATA[a.id][m.key];
+          const pct = Math.round((val/maxVal)*100);
+          const col = i===0?'var(--green2)':i===1?'var(--blue)':i===2?'var(--warn)':'var(--text2)';
+          const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+          return `
+          <div class="bar-row" style="margin-bottom:9px;cursor:pointer;" onclick="selectAndView(${a.id})">
+            <div style="width:22px;text-align:center;flex-shrink:0;font-size:12px;">${medal||('<span style="font-family:var(--mono);font-size:10px;color:var(--text3);">'+( i+1)+'</span>')}</div>
+            <div class="bar-name" style="width:150px;">${a.name} <span style="color:var(--text3);font-size:10px;">(${a.pos})</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${col};"></div></div>
+            <div class="bar-val" style="color:${col};width:60px;text-align:right;">${val}${m.unit==='km'?' km':m.unit==='km/h'?' km/h':m.unit==='m'?' m':m.unit==='u.a.'?' u.a.':''}</div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }).join('');
+  },
+
+  rtp() {
+    const rehabAthletes = SQUAD.filter(a=>a.status==='rehab');
+    const available = SQUAD.filter(a=>a.status==='available');
+    const RTP_VMAX_THRESHOLD = 95; // % required for RTP clearance
+
+    return `
+    <div class="alert alert-b" style="margin-bottom:16px;">
+      <div class="adot ad-b"></div>
+      <div><strong>Critério Vmax para RTP:</strong> O atleta deve atingir ≥95% da sua velocidade máxima de referência em contexto controlado antes do clearance final. Este critério é complementar aos critérios clínicos e funcionais.</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px;">
+      ${rehabAthletes.map(a=>{
+        const p = PERF_DATA[a.id];
+        if(!p) return '';
+        const proto = REHAB[a.rehabProtocol];
+        const vmaxToday = Math.round(p.vmax * p.vmax_today_pct / 100 * 10) / 10;
+        const vmaxCol = p.vmax_today_pct>=95?'var(--green2)':p.vmax_today_pct>=85?'var(--warn)':p.vmax_today_pct>=70?'var(--orange)':'var(--danger)';
+        const rtpReady = p.vmax_today_pct >= RTP_VMAX_THRESHOLD;
+
+        return `
+        <div class="card" style="border-color:${rtpReady?'rgba(0,229,160,0.3)':'var(--border)'}">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+            <div>
+              <div style="font-weight:700;font-size:14px;">${a.name}</div>
+              <div style="font-size:11px;color:var(--text2);font-family:var(--mono);">${proto.name} · Dia ${a.rehabDay}/${proto.totalDays}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-family:var(--display);font-size:28px;font-weight:700;color:${vmaxCol};">${p.vmax_today_pct}%</div>
+              <div style="font-size:10px;color:var(--text3);font-family:var(--mono);">do Vmax pessoal</div>
+            </div>
+          </div>
+
+          <!-- Vmax gauge -->
+          <div style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:5px;">
+              <span>Vmax hoje: <strong style="color:${vmaxCol}">${vmaxToday} km/h</strong></span>
+              <span>Ref: <strong style="color:var(--text)">${p.vmax} km/h</strong></span>
+            </div>
+            <div style="height:10px;background:var(--bg4);border-radius:5px;overflow:hidden;position:relative;">
+              <div style="width:${p.vmax_today_pct}%;height:100%;background:${vmaxCol};border-radius:5px;transition:width .5s;"></div>
+              <!-- RTP threshold marker -->
+              <div style="position:absolute;left:${RTP_VMAX_THRESHOLD}%;top:-2px;bottom:-2px;width:2px;background:var(--green2);opacity:0.7;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:3px;">
+              <span>0%</span>
+              <span style="color:var(--green2);">≥95% = RTP clearance</span>
+              <span>100%</span>
+            </div>
+          </div>
+
+          <!-- Progression history -->
+          <div style="margin-bottom:12px;">
+            <div class="slabel" style="margin-bottom:6px;">Progressão Vmax% nas últimas sessões</div>
+            <div style="display:flex;align-items:flex-end;gap:4px;height:40px;">
+              ${(a.id===7
+                ? [38,45,52,56,60,62]
+                : [30,38,44,48,52,55]).map((v,i,arr)=>{
+                const col2 = v>=95?'var(--green2)':v>=85?'var(--warn)':v>=70?'var(--orange)':'var(--danger)';
+                const h = Math.round((v/100)*40);
+                return '<div style="flex:1;height:'+h+'px;background:'+col2+';border-radius:2px 2px 0 0;opacity:'+(0.5+i*0.1)+';position:relative;" title="Sess\u00e3o '+(i+1)+': '+v+'%">'
+                  + (i===arr.length-1?'<div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:9px;color:'+col2+';white-space:nowrap;">'+v+'%</div>':'')
+                  + '</div>';
+              }).join('')}
+            </div>
+            <div style="display:flex;gap:4px;margin-top:3px;">
+              ${['-5','-4','-3','-2','-1','Hoje'].map(l=>'<div style="flex:1;text-align:center;font-family:var(--mono);font-size:8px;color:var(--text3);">'+l+'</div>').join('')}
+            </div>
+          </div>
+
+          <div class="alert ${rtpReady?'alert-g':'alert-w'}" style="margin-bottom:0;">
+            <div class="adot ${rtpReady?'ad-g':'ad-w'}"></div>
+            <div style="font-size:12px;">
+              ${rtpReady
+                ? '<strong>Critério Vmax cumprido.</strong> Vmax ≥95% do máximo pessoal.'
+                : ('<strong>Vmax insuficiente para RTP.</strong> Faltam ' + (RTP_VMAX_THRESHOLD - p.vmax_today_pct) + 'pp para clearance. Continuar progressão de sprint.')}
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="card">
+      <div class="ctitle">📊 Vmax% do plantel disponível — sessão de hoje</div>
+      <div style="margin-bottom:8px;font-size:11px;color:var(--text3);">Percentagem da velocidade máxima pessoal atingida na sessão mais recente. Valores abaixo de 85% em atletas sem lesão activa podem indicar fadiga ou sub-motivação.</div>
+      ${[...available].sort((a,b)=>(PERF_DATA[b.id]?.vmax_today_pct||0)-(PERF_DATA[a.id]?.vmax_today_pct||0)).map(a=>{
+        const p = PERF_DATA[a.id];
+        if(!p) return '';
+        const col = p.vmax_today_pct>=95?'var(--green2)':p.vmax_today_pct>=85?'var(--warn)':p.vmax_today_pct>=70?'var(--orange)':'var(--danger)';
+        return `
+        <div class="bar-row" style="margin-bottom:7px;cursor:pointer;" onclick="selectAndView(${a.id})">
+          <div class="bar-name" style="width:160px;">${a.name} <span style="color:var(--text3);font-size:10px;">(${a.pos})</span></div>
+          <div class="bar-track" style="position:relative;">
+            <div class="bar-fill" style="width:${p.vmax_today_pct}%;background:${col};"></div>
+            <div style="position:absolute;left:95%;top:0;bottom:0;width:1px;background:var(--green2);opacity:0.4;"></div>
+          </div>
+          <div class="bar-val" style="color:${col};width:48px;">${p.vmax_today_pct}%</div>
+          <div style="font-family:var(--mono);font-size:10px;width:56px;text-align:right;color:${col}">${(p.vmax * p.vmax_today_pct / 100).toFixed(1)} km/h</div>
+        </div>`;
+      }).join('')}
+    </div>
+    `;
+  }
+};
+
+let currentPerfTab = 'squad';
+function setPerfTab(tab) {
+  currentPerfTab = tab;
+  document.querySelectorAll('#perf-tabs .tab').forEach((t,i)=>{
+    const tabs = ['squad','ranking','rtp'];
+    t.classList.toggle('on', tabs[i]===tab);
+  });
+  document.getElementById('perf-content').innerHTML = perfViews[tab]();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INTERACTIONS
+// ═══════════════════════════════════════════════════════════════════
+function selectAndView(id, view='athlete') {
+  selectedAthlete = id;
+  if(view === 'input') {
+    inputAthleteId = id;
+    const a = SQUAD.find(x=>x.id===id);
+    if(a) inputValues = {...a.inputs};
+  }
+  showView(view);
+}
+
+function switchInputAthlete(id) {
+  inputAthleteId = id;
+  const a = SQUAD.find(x=>x.id===id);
+  if(a) {
+    inputValues = {...a.inputs};
+    showView('input');
+  }
+}
+
+function saveInputData() {
+  const a = SQUAD.find(x=>x.id===inputAthleteId);
+  if(!a) return;
+  a.inputs = {...inputValues};
+  a.calc = calcScore(a.inputs);
+  updateAlertCount();
+  // Visual feedback
+  const btn = document.querySelector('button[onclick="saveInputData()"]');
+  if(btn) {
+    btn.textContent = 'Guardado ✓';
+    btn.style.background = 'var(--green)';
+    setTimeout(()=>{ btn.textContent = 'Guardar ✓'; btn.style.background = 'var(--green2)'; }, 1500);
+  }
+}
+
+function changeCalEvent(idx, dir) {
+  var types = ['rest','training','match','travel'];
+  var intensities = ['low','medium','high','max'];
+  var ev = calendarEvents[idx];
+  if (dir === 'next') {
+    if (ev.type === 'training') {
+      var iIdx = intensities.indexOf(ev.intensity);
+      if (iIdx < intensities.length - 1) {
+        ev.intensity = intensities[iIdx+1];
+      } else {
+        ev.type = 'match'; ev.intensity = 'max'; ev.label_pt = 'Jogo';
+      }
+    } else if (ev.type === 'match') {
+      ev.type = 'rest'; ev.intensity = 'low'; ev.label_pt = 'Repouso';
+    } else if (ev.type === 'rest') {
+      ev.type = 'training'; ev.intensity = 'low'; ev.label_pt = 'Treino leve';
+    }
+  } else {
+    if (ev.type === 'rest') {
+      ev.type = 'match'; ev.intensity = 'max'; ev.label_pt = 'Jogo';
+    } else if (ev.type === 'match') {
+      ev.type = 'training'; ev.intensity = 'max'; ev.label_pt = 'Treino max';
+    } else {
+      var iIdx2 = intensities.indexOf(ev.intensity);
+      if (iIdx2 > 0) {
+        ev.intensity = intensities[iIdx2-1];
+        ev.label_pt = 'Treino ' + intensities[iIdx2-1];
+      } else {
+        ev.type = 'rest'; ev.intensity = 'low'; ev.label_pt = 'Repouso';
+      }
+    }
+  }
+  showView('calint');
+}
+
+function togglePassportPortable(id) {
+  passportPortable[id] = !(passportPortable[id] !== false);
+  showView('passport');
+}
+
+function togglePassportShared(id) {
+  passportShared[id] = !passportShared[id];
+  showView('passport');
+}
+
+function selectFemaleAthlete(id) {
+  selectedFemaleAthlete = id;
+  showView('female');
+}
+
+// Shared rehab input handlers — use data-* to avoid quote nesting
+function rehabBtn(el) {
+  var aid   = parseInt(el.dataset.aid);
+  var field = el.dataset.field;
+  var val   = el.dataset.val;
+  // Convert val to correct type
+  if (val === 'true')  val = true;
+  else if (val === 'false') val = false;
+  else if (!isNaN(val) && val !== '') val = parseFloat(val);
+  if (!rehabClinical[aid]) rehabClinical[aid] = {};
+  rehabClinical[aid][field] = val;
+  showView('rehab');
+}
+function rehabSlider(el) {
+  var aid   = parseInt(el.dataset.aid);
+  var field = el.dataset.field;
+  var val   = parseFloat(el.value);
+  if (!rehabClinical[aid]) rehabClinical[aid] = {};
+  rehabClinical[aid][field] = val;
+  // Update display span (id = "rcs-" + aid + "-" + field)
+  var span = document.getElementById('rcs-' + aid + '-' + field);
+  if (span) span.textContent = val + '/10';
+  // Update span colour
+  var col = val<=2 ? 'var(--green2)' : val<=5 ? 'var(--warn)' : 'var(--danger)';
+  if (span) span.style.color = col;
+  // Recalculate adaptive status display if present
+  var adapEl = document.getElementById('adapt-' + aid);
+  if (adapEl) { /* re-render is handled on full showView */ }
+}
+
+function updateRehabClinical(athleteId, field, value) {
+  if (!rehabClinical[athleteId]) rehabClinical[athleteId] = {};
+  rehabClinical[athleteId][field] = value;
+  showView('rehab');
+}
+
+function updateAlertCount() {
+  const high = SQUAD.filter(a=>a.status==='available'&&a.calc&&a.calc.score>=65);
+  const label = document.getElementById('alert-count-label');
+  const dot = document.getElementById('notif-dot');
+  if(label) {
+    label.textContent = high.length + ' alerta' + (high.length!==1?'s':'');
+    label.style.color = high.length>0 ? 'var(--danger)' : 'var(--text2)';
+  }
+  if(dot) dot.style.background = high.length>0 ? 'var(--danger)' : 'var(--green2)';
+}
+
+function sparkline(history, color, width, height) {
+  if(!history || !history.length) return '';
+  const vals = history.filter(v=>v!==null);
+  if(!vals.length) return '';
+  const min = 0, max = 100;
+  const w = width || 80, h = height || 24;
+  const pts = history.map((v,i)=>{
+    const x = (i/(history.length-1))*w;
+    const y = v===null ? null : h - ((v-min)/(max-min))*(h-4) - 2;
+    return {x, y, v};
+  }).filter(p=>p.y!==null);
+  if(pts.length < 2) return '';
+  const polyline = pts.map((p,i)=>(i===0?'M':'L')+p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
+  const last = pts[pts.length-1];
+  return '<svg width="'+w+'" height="'+h+'" style="overflow:visible">'
+    + '<path d="'+polyline+'" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>'
+    + '<circle cx="'+last.x+'" cy="'+last.y+'" r="3" fill="'+color+'"/>'
+    + '</svg>';
+}
+
+function setStakeholder(s) {
+  currentStakeholder = s;
+  const el = document.getElementById('main-content');
+  // Re-render just the rec section if in input view
+  const liveRecs = document.getElementById('live-recs');
+  if(liveRecs) {
+    const calc = calcScore(inputValues);
+    liveRecs.innerHTML = renderActions(calc.dom, riskLevel(calc.score), currentStakeholder);
+    // update stabs
+    document.querySelectorAll('.stab').forEach(t=>t.classList.remove('on','clinical','coach','athlete'));
+    document.querySelectorAll('.stab').forEach(t=>{
+      if(t.textContent.includes('CLÍNICO')&&s==='clinical'){t.classList.add('on','clinical');}
+      if(t.textContent.includes('TREINADOR')&&s==='coach'){t.classList.add('on','coach');}
+      if(t.textContent.includes('ATLETA')&&s==='athlete'){t.classList.add('on','athlete');}
+    });
+    return;
+  }
+  render();
+}
+
+function updateInput(key, val) {
+  inputValues[key] = val;
+  renderLive();
+}
+
+function renderLive() {
+  const calc = calcScore(inputValues);
+  const {score, partials, conf, confReason, dom, missing, effectiveW} = calc;
+  const level = riskLevel(score);
+  const col = riskColor(score);
+
+  const ls = document.getElementById('live-score');
+  const lb = document.getElementById('live-bars');
+  const lr = document.getElementById('live-recs');
+  const lc = document.getElementById('live-conf');
+  const ldom = document.getElementById('live-dom');
+
+  if(ls){ ls.textContent = score+'%'; ls.style.color = col; }
+  if(lb){ lb.innerHTML = renderBars(partials, effectiveW, missing); }
+  if(lr){ lr.innerHTML = renderActions(dom, level, currentStakeholder); }
+  if(lc){ lc.innerHTML = confBadge(conf, confReason, missing); }
+  if(ldom){ ldom.innerHTML = 'Variável dominante: <strong style="color:'+col+'">'+VAR_ICONS[dom]+' '+VAR_LABELS[dom]+'</strong>'; }
+
+  // update slider colors
+  for(const [k] of Object.entries(W)){
+    const sv = document.getElementById('sv-'+k);
+    if(sv && partials[k]!==null) sv.style.color = barColor(partials[k]);
+  }
+}
+
+function toggleRTP(protocolKey, idx, athleteId) {
+  REHAB[protocolKey].rtp[idx].done = !REHAB[protocolKey].rtp[idx].done;
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
+function updateDate() {
+  document.getElementById('topbar-date').textContent =
+    new Date().toLocaleDateString('pt-PT',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+}
+
+updateDate();
+selectedAthlete = SQUAD[0].id;
+render();
+updateAlertCount();
+
+// ═══════════════════════════════════════════════════════════════════
+// NEW ATHLETE MODAL
+// ═══════════════════════════════════════════════════════════════════
+function openNewAthlete() {
+  document.getElementById('new-athlete-modal').style.display = 'flex';
+}
+function closeNewAthlete() {
+  document.getElementById('new-athlete-modal').style.display = 'none';
+  document.getElementById('na-form').reset();
+}
+function saveNewAthlete() {
+  const name  = document.getElementById('na-name').value.trim();
+  const pos   = document.getElementById('na-pos').value;
+  const age   = parseInt(document.getElementById('na-age').value)||25;
+  const club  = document.getElementById('na-club').value.trim();
+  const num   = parseInt(document.getElementById('na-num').value)||99;
+  if(!name){ alert('Nome obrigatório'); return; }
+
+  const newId = Math.max(...SQUAD.map(a=>a.id)) + 1;
+  const newAthlete = {
+    id: newId, name, pos, age, club: club||'—', num,
+    inputs:{history:0,acwr:null,hrv:null,fatigue:null,sleep:null,tqr:null,stress:null,decel:null,md:null},
+    status:'available', injuries:[],
+    _new: true
+  };
+  newAthlete.calc = calcScore(newAthlete.inputs);
+  SQUAD.push(newAthlete);
+
+  closeNewAthlete();
+  selectedAthlete = newId;
+  inputValues = {...newAthlete.inputs};
+  showView('input');
+}
+</script>
+
+<!-- ═══ NEW ATHLETE MODAL ═══ -->
+<div id="new-athlete-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:28px;width:420px;max-width:95vw;">
+    <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:4px;">➕ Adicionar atleta ao estágio</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:20px;">Após guardar, poderás inserir os dados de wellness imediatamente.</div>
+
+    <form id="na-form" onsubmit="event.preventDefault()">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div style="grid-column:1/3;">
+          <div class="slabel" style="margin-bottom:4px;">Nome completo *</div>
+          <input id="na-name" type="text" placeholder="Ex: Cristiano Fernandes"
+            style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--body);font-size:13px;outline:none;">
+        </div>
+        <div>
+          <div class="slabel" style="margin-bottom:4px;">Posição</div>
+          <select id="na-pos" style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--body);font-size:13px;outline:none;">
+            <option>GR</option><option>DC</option><option>MD</option>
+            <option selected>MC</option><option>EX</option><option>AV</option>
+          </select>
+        </div>
+        <div>
+          <div class="slabel" style="margin-bottom:4px;">Idade</div>
+          <input id="na-age" type="number" min="16" max="45" value="25"
+            style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--body);font-size:13px;outline:none;">
+        </div>
+        <div>
+          <div class="slabel" style="margin-bottom:4px;">Clube</div>
+          <input id="na-club" type="text" placeholder="Ex: FC Porto"
+            style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--body);font-size:13px;outline:none;">
+        </div>
+        <div>
+          <div class="slabel" style="margin-bottom:4px;">Nº camisola</div>
+          <input id="na-num" type="number" min="1" max="99" value=""
+            style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--body);font-size:13px;outline:none;">
+        </div>
+      </div>
+
+      <div style="background:var(--bg3);border:1px solid rgba(0,229,160,0.15);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text2);margin-bottom:20px;">
+        💡 O atleta será adicionado com <strong style="color:var(--text)">confiança baixa</strong> até inserires os dados de wellness. O score ficará disponível após o primeiro check-in.
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button onclick="closeNewAthlete()" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:13px;">Cancelar</button>
+        <button onclick="saveNewAthlete()" style="flex:2;padding:10px;border-radius:8px;border:none;background:var(--green2);color:#000;cursor:pointer;font-size:13px;font-weight:600;">Guardar e inserir dados →</button>
+      </div>
+    </form>
+  </div>
+</div>
+</body>
+</html>

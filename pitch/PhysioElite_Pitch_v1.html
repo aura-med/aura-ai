@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhysioElite — O que é?</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,300&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0c0e14;--paper:#f4f1eb;--paper2:#ece8df;--paper3:#e2ddd3;
+  --green:#1a6b45;--green2:#2d9164;--green-light:#e8f5ee;
+  --red:#c0392b;--red-light:#fdf0ee;
+  --gold:#b8861a;--gold-light:#fdf6e3;
+  --blue:#1a3a6b;--blue-light:#e8eef8;
+  --accent:#e85d26;
+  --mono:'DM Mono',monospace;--body:'Outfit',sans-serif;--display:'Fraunces',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);overflow-x:hidden;}
+
+/* ── GRAIN OVERLAY ── */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:100;opacity:.5;}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 64px;position:relative;overflow:hidden;background:var(--ink);}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 70% 50%, #1a3a2a 0%, #0c0e14 70%);z-index:0;}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:60px 60px;z-index:1;}
+.hero-content{position:relative;z-index:2;max-width:760px;}
+.hero-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--green2);margin-bottom:24px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow::before{content:'';width:32px;height:1px;background:var(--green2);}
+.hero h1{font-family:var(--display);font-size:clamp(48px,6vw,88px);font-weight:900;line-height:1.0;color:#f4f1eb;margin-bottom:32px;letter-spacing:-2px;}
+.hero h1 em{color:var(--green2);font-style:italic;}
+.hero-sub{font-size:18px;color:rgba(244,241,235,0.6);line-height:1.7;max-width:520px;font-weight:300;margin-bottom:48px;}
+.hero-cta{display:inline-flex;align-items:center;gap:10px;background:var(--green2);color:#fff;font-family:var(--mono);font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:14px 28px;border:none;cursor:pointer;text-decoration:none;transition:all .2s;}
+.hero-cta:hover{background:var(--green);gap:16px;}
+.hero-cta span{transition:transform .2s;}
+.hero-cta:hover span{transform:translateX(4px);}
+.hero-stat{position:absolute;right:64px;top:50%;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;gap:24px;}
+.stat-box{background:rgba(244,241,235,0.04);border:1px solid rgba(244,241,235,0.08);padding:20px 24px;min-width:160px;}
+.stat-num{font-family:var(--display);font-size:42px;font-weight:700;color:var(--green2);line-height:1;}
+.stat-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(244,241,235,0.4);margin-top:4px;}
+
+/* ── SECTIONS ── */
+section{padding:100px 64px;}
+.section-label{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--green2);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.section-label::before{content:'';width:24px;height:1px;background:var(--green2);}
+.section-title{font-family:var(--display);font-size:clamp(32px,4vw,52px);font-weight:700;line-height:1.1;letter-spacing:-1px;margin-bottom:16px;}
+
+/* ── PROBLEM ── */
+.problem{background:var(--ink);color:var(--paper);}
+.problem .section-title{color:var(--paper);}
+.problem .section-label{color:var(--accent);}
+.problem .section-label::before{background:var(--accent);}
+.problem-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:rgba(244,241,235,0.08);margin-top:60px;}
+.problem-card{background:var(--ink);padding:40px 32px;}
+.problem-card .num{font-family:var(--display);font-size:64px;font-weight:900;color:rgba(200,57,37,0.2);line-height:1;margin-bottom:12px;}
+.problem-card h3{font-family:var(--display);font-size:22px;font-weight:700;color:var(--paper);margin-bottom:12px;}
+.problem-card p{font-size:14px;color:rgba(244,241,235,0.5);line-height:1.7;font-weight:300;}
+.problem-card .highlight{color:var(--accent);font-weight:600;}
+
+/* ── SOLUTION ── */
+.solution{background:var(--paper);}
+.solution-intro{font-size:20px;color:rgba(12,14,20,0.6);line-height:1.7;max-width:640px;margin-bottom:72px;font-weight:300;}
+.solution-intro strong{color:var(--ink);}
+.flow{display:flex;align-items:stretch;gap:0;margin-bottom:72px;}
+.flow-step{flex:1;position:relative;}
+.flow-step:not(:last-child)::after{content:'→';position:absolute;right:-16px;top:50%;transform:translateY(-50%);font-size:20px;color:rgba(12,14,20,0.2);font-family:var(--mono);z-index:2;}
+.flow-inner{background:var(--paper2);border:1px solid var(--paper3);padding:28px 24px;height:100%;transition:all .2s;cursor:default;}
+.flow-inner:hover{background:#fff;border-color:var(--green2);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.08);}
+.flow-num{font-family:var(--mono);font-size:11px;color:var(--green2);letter-spacing:2px;margin-bottom:12px;}
+.flow-icon{font-size:28px;margin-bottom:12px;}
+.flow-title{font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:8px;color:var(--ink);}
+.flow-desc{font-size:13px;color:rgba(12,14,20,0.55);line-height:1.65;font-weight:300;}
+.flow-tag{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;background:var(--green-light);color:var(--green);padding:3px 8px;margin-top:10px;}
+
+/* ── MODEL ── */
+.model{background:var(--paper2);}
+.model-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:60px;}
+.dim-card{background:var(--paper);border:1px solid var(--paper3);padding:32px;position:relative;overflow:hidden;}
+.dim-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--green2);}
+.dim-card.new::before{background:var(--gold);}
+.dim-card.removed{opacity:.5;}
+.dim-card.removed::before{background:var(--red);}
+.dim-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.dim-ico{font-size:24px;}
+.dim-name{font-family:var(--display);font-size:18px;font-weight:700;color:var(--ink);}
+.dim-weight{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--green);margin-left:auto;}
+.dim-weight.up{color:var(--green);}
+.dim-weight.down{color:var(--red);}
+.dim-weight.new-w{color:var(--gold);}
+.dim-vars{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.var-pill{font-family:var(--mono);font-size:10px;background:var(--paper2);border:1px solid var(--paper3);padding:4px 10px;color:var(--ink);}
+.var-pill.new-p{background:var(--gold-light);border-color:rgba(184,134,26,0.3);color:var(--gold);}
+.var-pill.removed-p{text-decoration:line-through;opacity:.5;}
+.dim-ref{font-size:11px;color:rgba(12,14,20,0.4);font-family:var(--mono);}
+.delta-tag{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10px;padding:3px 8px;margin-left:8px;}
+.delta-up{background:var(--green-light);color:var(--green);}
+.delta-down{background:var(--red-light);color:var(--red);}
+.delta-new{background:var(--gold-light);color:var(--gold);}
+.delta-rm{background:var(--red-light);color:var(--red);text-decoration:line-through;}
+
+/* ── DIFFERENTIATORS ── */
+.diff{background:var(--ink);color:var(--paper);}
+.diff .section-title{color:var(--paper);}
+.diff .section-label{color:var(--gold);}
+.diff .section-label::before{background:var(--gold);}
+.diff-list{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(244,241,235,0.06);margin-top:60px;}
+.diff-item{background:var(--ink);padding:48px 40px;position:relative;}
+.diff-item::before{content:attr(data-n);position:absolute;top:48px;right:40px;font-family:var(--display);font-size:80px;font-weight:900;color:rgba(244,241,235,0.04);line-height:1;}
+.diff-item-icon{font-size:32px;margin-bottom:20px;}
+.diff-item h3{font-family:var(--display);font-size:24px;font-weight:700;color:var(--paper);margin-bottom:12px;}
+.diff-item p{font-size:14px;color:rgba(244,241,235,0.5);line-height:1.75;font-weight:300;max-width:360px;}
+.diff-item .vs{display:inline-block;margin-top:16px;font-family:var(--mono);font-size:11px;color:rgba(244,241,235,0.25);}
+.diff-item .vs strong{color:var(--gold);}
+
+/* ── WHO ── */
+.who{background:var(--paper);}
+.who-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:60px;}
+.who-card{padding:32px;background:var(--paper2);border:1px solid var(--paper3);transition:all .2s;}
+.who-card:hover{background:#fff;border-color:var(--ink);transform:translateY(-2px);}
+.who-icon{font-size:36px;margin-bottom:16px;}
+.who-name{font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:8px;}
+.who-desc{font-size:13px;color:rgba(12,14,20,0.55);line-height:1.7;font-weight:300;}
+
+/* ── MARKET ── */
+.market{background:var(--paper2);}
+.market-nums{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;margin-top:60px;}
+.mnum{border-top:2px solid var(--ink);padding-top:24px;}
+.mnum .n{font-family:var(--display);font-size:48px;font-weight:900;color:var(--ink);line-height:1;}
+.mnum .unit{font-family:var(--mono);font-size:12px;color:var(--green);margin-left:4px;}
+.mnum .label{font-size:13px;color:rgba(12,14,20,0.5);margin-top:8px;line-height:1.5;font-weight:300;}
+
+/* ── CTA FINAL ── */
+.cta-final{background:var(--green);color:#fff;padding:100px 64px;text-align:center;}
+.cta-final .section-label{justify-content:center;color:rgba(255,255,255,0.6);}
+.cta-final .section-label::before{background:rgba(255,255,255,0.4);}
+.cta-final .section-title{color:#fff;max-width:600px;margin:0 auto 32px;}
+.cta-final .cta-desc{font-size:16px;color:rgba(255,255,255,0.7);max-width:480px;margin:0 auto 48px;font-weight:300;line-height:1.7;}
+.cta-pill{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:14px 28px;transition:all .2s;cursor:pointer;}
+.cta-pill:hover{background:rgba(255,255,255,0.2);}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:none;}}
+.fade-in{opacity:0;animation:fadeUp .6s ease forwards;}
+.fade-in:nth-child(1){animation-delay:.1s;}
+.fade-in:nth-child(2){animation-delay:.2s;}
+.fade-in:nth-child(3){animation-delay:.3s;}
+.fade-in:nth-child(4){animation-delay:.4s;}
+.fade-in:nth-child(5){animation-delay:.5s;}
+
+@media(max-width:900px){
+  .hero{padding:60px 32px;}
+  .hero-stat{display:none;}
+  section{padding:72px 32px;}
+  .problem-grid,.model-grid,.diff-list,.who-grid{grid-template-columns:1fr;}
+  .flow{flex-direction:column;}
+  .flow-step::after{display:none;}
+  .market-nums{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">PhysioElite &nbsp;·&nbsp; Federação Portuguesa de Futebol</div>
+    <h1>Saber que um jogador<br>vai lesionar-se<br><em>antes</em> de acontecer.</h1>
+    <p class="hero-sub">Uma plataforma clínica que combina GPS, dados de bem-estar e historial médico num score de risco diário — interpretável, auditável, e desenhada para o fisioterapeuta de campo.</p>
+    <a class="hero-cta" href="#problema">Descobrir como funciona <span>→</span></a>
+  </div>
+  <div class="hero-stat">
+    <div class="stat-box">
+      <div class="stat-num">24%</div>
+      <div class="stat-label">das lesões são isquiotibiais no futebol pro</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">2–6×</div>
+      <div class="stat-label">maior risco de recidiva com historial no mesmo segmento</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">86%</div>
+      <div class="stat-label">score preditivo Paulo Oliveira na manhã da lesão</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ PROBLEMA ═══════════════════════ -->
+<section class="problem" id="problema">
+  <div class="section-label">O problema</div>
+  <h2 class="section-title">As lesões destroem épocas.<br>E ainda gerimos o risco às cegas.</h2>
+  <div class="problem-grid">
+    <div class="problem-card fade-in">
+      <div class="num">01</div>
+      <h3>Os dados existem.<br>A visão não.</h3>
+      <p>GPS, HRV, wellness, historial clínico — estão em quatro sistemas diferentes. O fisioterapeuta passa mais tempo a consolidar dados do que a tomar decisões. <span class="highlight">O risco acumula-se em silêncio.</span></p>
+    </div>
+    <div class="problem-card fade-in">
+      <div class="num">02</div>
+      <h3>Os modelos existentes são caixas negras.</h3>
+      <p>As plataformas com IA devolvem um número. Não dizem porquê. Um clínico não pode actuar sobre algo que não compreende — e não deve. <span class="highlight">Interpretabilidade não é opcional em medicina.</span></p>
+    </div>
+    <div class="problem-card fade-in">
+      <div class="num">03</div>
+      <h3>As seleções nacionais são o caso mais difícil.</h3>
+      <p>Estágios de 5–12 dias por mês. Acesso limitado a dados dos clubes. Decisões críticas com janelas de dados incompletas. <span class="highlight">Nenhuma plataforma actual resolve este contexto.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SOLUÇÃO ═══════════════════════ -->
+<section class="solution">
+  <div class="section-label">A solução</div>
+  <h2 class="section-title">Um score de risco diário.<br>Explicável. Accionável.</h2>
+  <p class="solution-intro">
+    A PhysioElite integra <strong>9 variáveis clínicas e de carga</strong> num score único entre 0 e 100%, com decomposição por factor. O fisioterapeuta sabe não só o número — sabe qual variável está a puxar o risco para cima e qual a intervenção prioritária.
+  </p>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-inner">
+        <div class="flow-num">01 ·</div>
+        <div class="flow-icon">📱</div>
+        <div class="flow-title">Atleta reporta</div>
+        <div class="flow-desc">Check-in matinal na Athlete App: fadiga, sono, HRV, RPE pós-treino. 90 segundos. Sem acesso ao score de risco.</div>
+        <div class="flow-tag">Athlete App</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-inner">
+        <div class="flow-num">02 ·</div>
+        <div class="flow-icon">📡</div>
+        <div class="flow-title">GPS integrado</div>
+        <div class="flow-desc">Dados de carga externa (ACWR, desacelerações de alta intensidade, sprint distance) directamente dos sistemas Catapult / STATSports.</div>
+        <div class="flow-tag">GPS automático</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-inner">
+        <div class="flow-num">03 ·</div>
+        <div class="flow-icon">⚙️</div>
+        <div class="flow-title">Motor de scoring</div>
+        <div class="flow-desc">9 variáveis normalizadas contra limiares da literatura, ponderadas por evidência, com índice de confiança explícito.</div>
+        <div class="flow-tag">Backend servidor</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-inner">
+        <div class="flow-num">04 ·</div>
+        <div class="flow-icon">🖥️</div>
+        <div class="flow-title">Staff vê o score</div>
+        <div class="flow-desc">Dashboard clínico com score, decomposição por variável, alerta de confiança, e recomendação de intervenção — só para staff autorizado.</div>
+        <div class="flow-tag">Staff Platform</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-inner">
+        <div class="flow-num">05 ·</div>
+        <div class="flow-icon">📋</div>
+        <div class="flow-title">Protocolo clínico</div>
+        <div class="flow-desc">O score activa automaticamente o protocolo de screening ou reabilitação correspondente. Tudo no mesmo sistema.</div>
+        <div class="flow-tag">Integrado</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ MODELO ═══════════════════════ -->
+<section class="model">
+  <div class="section-label">O modelo preditivo</div>
+  <h2 class="section-title">9 variáveis. Pesos com<br>base científica. Versão 1.1.</h2>
+
+  <div class="model-grid">
+    <div class="dim-card">
+      <div class="dim-header">
+        <div class="dim-ico">📋</div>
+        <div class="dim-name">Historial de lesões</div>
+        <div class="dim-weight up">0.20 <span class="delta-tag delta-up">↑ era 0.10</span></div>
+      </div>
+      <div class="dim-vars">
+        <span class="var-pill">Lesões anteriores</span>
+        <span class="var-pill">Mesmo segmento</span>
+        <span class="var-pill">Recidivas</span>
+      </div>
+      <div class="dim-ref">Ekstrand et al. BJSM 2022/23 · UEFA ECIS 21 épocas · 3909 jogadores</div>
+    </div>
+
+    <div class="dim-card">
+      <div class="dim-header">
+        <div class="dim-ico">📡</div>
+        <div class="dim-name">ACWR Carga GPS</div>
+        <div class="dim-weight down">0.20 <span class="delta-tag delta-down">↓ era 0.25</span></div>
+      </div>
+      <div class="dim-vars">
+        <span class="var-pill">HSR distance</span>
+        <span class="var-pill">Sprint distance</span>
+        <span class="var-pill">EWMA 7/28 dias</span>
+      </div>
+      <div class="dim-ref">Gabbett 2016 · Rev. Sist. 2024 · Evidência inconclusiva em futebol pro</div>
+    </div>
+
+    <div class="dim-card">
+      <div class="dim-header">
+        <div class="dim-ico">🧬</div>
+        <div class="dim-name">HRV Δ baseline</div>
+        <div class="dim-weight down">0.18 <span class="delta-tag delta-down">↓ era 0.20</span></div>
+      </div>
+      <div class="dim-vars">
+        <span class="var-pill">RMSSD matinal</span>
+        <span class="var-pill">Δ% vs baseline individual</span>
+      </div>
+      <div class="dim-ref">Plews 2013 · Sanchez et al. 2025 (prospectivo)</div>
+    </div>
+
+    <div class="dim-card">
+      <div class="dim-header">
+        <div class="dim-ico">💬</div>
+        <div class="dim-name">Fadiga (Hooper)</div>
+        <div class="dim-weight down">0.13 <span class="delta-tag delta-down">↓ era 0.15</span></div>
+      </div>
+      <div class="dim-vars">
+        <span class="var-pill">Hooper item fadiga</span>
+        <span class="var-pill">Session-RPE</span>
+        <span class="var-pill">DOMS</span>
+      </div>
+      <div class="dim-ref">Hooper 1995 · Neumann et al. Sports Med Open 2024</div>
+    </div>
+
+    <div class="dim-card">
+      <div class="dim-header">
+        <div class="dim-ico">😴</div>
+        <div class="dim-name">Sono</div>
+        <div class="dim-weight up">0.12 <span class="delta-tag delta-up">↑ era 0.07</span></div>
+      </div>
+      <div class="dim-vars">
+        <span class="var-pill">Horas de sono</span>
+        <span class="var-pill">Qualidade subjectiva</span>
+      </div>
+      <div class="dim-ref">Meta-análise 2025 · OR=1.34 (IC 1.08–1.66) · Costa et al. 2021</div>
+    </div>
+
+    <div class="dim-card">
+      <div class="dim-header">
+        <div class="dim-ico">🔄</div>
+        <div class="dim-name">TQR</div>
+        <div class="dim-weight" style="color:#888">0.07</div>
+      </div>
+      <div class="dim-vars">
+        <span class="var-pill">Total Quality Recovery</span>
+        <span class="var-pill">Escala 6–20</span>
+      </div>
+      <div class="dim-ref">Kenttä & Hassmén 1998</div>
+    </div>
+
+    <div class="dim-card">
+      <div class="dim-header">
+        <div class="dim-ico">🧠</div>
+        <div class="dim-name">Stress percebido</div>
+        <div class="dim-weight down">0.04 <span class="delta-tag delta-down">↓ era 0.10</span></div>
+      </div>
+      <div class="dim-vars">
+        <span class="var-pill">VAS stress 0–10</span>
+      </div>
+      <div class="dim-ref">Borato & Pedroni 2022 · Evidência fraca em adultos pro</div>
+    </div>
+
+    <div class="dim-card new">
+      <div class="dim-header">
+        <div class="dim-ico">⚡</div>
+        <div class="dim-name">Desacelerações alt. int.</div>
+        <div class="dim-weight new-w">0.04 <span class="delta-tag delta-new">★ NOVO</span></div>
+      </div>
+      <div class="dim-vars">
+        <span class="var-pill new-p">ACWR Dec. > 3 m/s²</span>
+        <span class="var-pill new-p">Carga excêntrica GPS</span>
+      </div>
+      <div class="dim-ref">Saberisani et al. Front Sports 2025 · AUC=0.91 (n=25, validação limitada)</div>
+    </div>
+
+    <div class="dim-card new" style="grid-column:1/3;">
+      <div class="dim-header">
+        <div class="dim-ico">📅</div>
+        <div class="dim-name">Dias desde último jogo (MD+n)</div>
+        <div class="dim-weight new-w">0.02 <span class="delta-tag delta-new">★ NOVO</span></div>
+      </div>
+      <div class="dim-vars">
+        <span class="var-pill new-p">Calculado do calendário</span>
+        <span class="var-pill new-p">Sem input do atleta</span>
+        <span class="var-pill new-p">MD+1 = risco máximo</span>
+      </div>
+      <div class="dim-ref">Chang et al. 2024 · Page et al. Sports Med 2023 · Recuperação neuromuscular incompleta até MD+72h</div>
+    </div>
+  </div>
+
+  <div style="margin-top:32px;padding:24px 32px;background:var(--red-light);border-left:3px solid var(--red);font-size:13px;color:rgba(12,14,20,0.6);font-family:var(--mono);">
+    ✕ &nbsp;<strong style="color:var(--red)">CRIOTERAPIA REMOVIDA</strong> &nbsp;— Racinais et al. BJSM 2024: intervenção de recuperação, não preditor de risco. Efeitos bidirecionais. Permanece na plataforma como recomendação de intervenção.
+  </div>
+</section>
+
+<!-- ═══════════════════════ DIFERENCIAIS ═══════════════════════ -->
+<section class="diff">
+  <div class="section-label">Por que a PhysioElite</div>
+  <h2 class="section-title">Não é mais um dashboard.<br>São três fossos competitivos.</h2>
+  <div class="diff-list">
+    <div class="diff-item" data-n="1">
+      <div class="diff-item-icon">🔍</div>
+      <h3>Interpretabilidade por design</h3>
+      <p>O clínico vê qual variável está a puxar o score — e porquê. Não é uma caixa negra com um número. É uma decomposição clínica accionável, com base bibliográfica explícita por variável.</p>
+      <div class="vs">vs. Kitman Labs — <strong>Risk Advisor sem decomposição visível</strong></div>
+    </div>
+    <div class="diff-item" data-n="2">
+      <div class="diff-item-icon">🔗</div>
+      <h3>Score + reabilitação no mesmo sistema</h3>
+      <p>O modelo preditivo e os protocolos de reabilitação coexistem na mesma plataforma, para o mesmo atleta, na mesma sessão clínica. Nenhum concorrente fecha este ciclo.</p>
+      <div class="vs">vs. Teamworks AMS — <strong>sem modelo preditivo nativo</strong></div>
+    </div>
+    <div class="diff-item" data-n="3">
+      <div class="diff-item-icon">🎯</div>
+      <h3>Desenhado para o clínico, não para o data scientist</h3>
+      <p>Sem necessidade de equipa de analytics. O fisioterapeuta lê o score, vê a decomposição, e decide. A tecnologia é invisível — só o insight é visível.</p>
+      <div class="vs">vs. soluções enterprise — <strong>requerem integração técnica complexa</strong></div>
+    </div>
+    <div class="diff-item" data-n="4">
+      <div class="diff-item-icon">🏳️</div>
+      <h3>Resolvido para seleções nacionais</h3>
+      <p>O único sistema com índice de confiança explícito, protocolo de chegada ao estágio, e arquitectura para dados fragmentados de clube. Construído com a FPF, para o contexto FPF.</p>
+      <div class="vs">vs. todos os concorrentes — <strong>nenhum considera este contexto</strong></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ PARA QUEM ═══════════════════════ -->
+<section class="who">
+  <div class="section-label">Para quem</div>
+  <h2 class="section-title">Fisioterapeutas e médicos<br>de futebol de elite.</h2>
+  <div class="who-grid">
+    <div class="who-card">
+      <div class="who-icon">🏟️</div>
+      <div class="who-name">Seleções nacionais</div>
+      <div class="who-desc">Estágios de 5–12 dias com acesso limitado a dados dos clubes. A plataforma resolve o problema de janelas de dados incompletas com o índice de confiança e protocolo de chegada.</div>
+    </div>
+    <div class="who-card">
+      <div class="who-icon">⚽</div>
+      <div class="who-name">Clubes profissionais Tier 2/3</div>
+      <div class="who-desc">~700 clubes europeus sem acesso às grandes plataformas enterprise. A PhysioElite oferece capacidade de predição de risco sem equipa de data science.</div>
+    </div>
+    <div class="who-card">
+      <div class="who-icon">🏥</div>
+      <div class="who-name">Departamentos médicos</div>
+      <div class="who-desc">Fisioterapeutas, médicos de desporto, e preparadores físicos que precisam de uma plataforma única para monitorização, predição e reabilitação — sem silos de informação.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ MERCADO ═══════════════════════ -->
+<section class="market">
+  <div class="section-label">Oportunidade de mercado</div>
+  <h2 class="section-title">Um mercado de €18.5B<br>com uma lacuna clara.</h2>
+  <div class="market-nums">
+    <div class="mnum">
+      <div class="n">700<span class="unit">+</span></div>
+      <div class="label">clubes e federações Tier 2/3 europeus não servidos pelas grandes plataformas</div>
+    </div>
+    <div class="mnum">
+      <div class="n">€18.5<span class="unit">B</span></div>
+      <div class="label">mercado global de sports analytics (2024, crescimento anual ~25%)</div>
+    </div>
+    <div class="mnum">
+      <div class="n">24<span class="unit">%</span></div>
+      <div class="label">de todas as lesões no futebol pro são isquiotibiais — preveníveis com monitorização correcta</div>
+    </div>
+    <div class="mnum">
+      <div class="n">FPF<span class="unit"> piloto</span></div>
+      <div class="label">Federação Portuguesa de Futebol como primeiro cliente e parceiro de validação científica</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ CTA FINAL ═══════════════════════ -->
+<section class="cta-final">
+  <div class="section-label">Em resumo</div>
+  <h2 class="section-title">Transformamos dados em decisões clínicas que protegem jogadores.</h2>
+  <p class="cta-desc">Um score de risco diário, interpretável, construído sobre a melhor evidência disponível — e desenhado para quem realmente precisa: o fisioterapeuta às 7h da manhã antes do treino.</p>
+  <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;">
+    <div class="cta-pill">⚽ &nbsp; Piloto FPF em curso</div>
+    <div class="cta-pill">📊 &nbsp; Modelo preditivo v1.1</div>
+    <div class="cta-pill">🔬 &nbsp; Publicação científica planeada</div>
+  </div>
+</section>
+
+</body>
+</html>

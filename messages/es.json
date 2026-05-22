@@ -19,6 +19,7 @@
       "performance": "Rendimiento",
       "intelligence": "Inteligencia",
       "special": "Especial",
+      "admin": "Admin",
       "system": "Sistema"
     },
     "nav": {
@@ -34,6 +35,9 @@
       "calendar": "Inteligencia Calendario",
       "passport": "Pasaporte Atleta",
       "female_squad": "Selección Femenina",
+      "admin_medical": "Panel Médico",
+      "admin_injuries": "Gestión de Lesiones",
+      "admin_protocols": "Protocolos de Rehab",
       "settings": "Configuración"
     },
     "version": "Aura v1.1 · FPF Pilot"

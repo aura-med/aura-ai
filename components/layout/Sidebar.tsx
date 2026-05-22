@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl'
 import {
   LayoutDashboard, Users, UserCircle, Activity, Calendar,
   Heart, Gauge, Zap, BookOpen, Settings,
-  ClipboardList, TrendingUp
+  ClipboardList, TrendingUp, Stethoscope, FileText, ClipboardPlus,
 } from 'lucide-react'
 
 interface NavItem {
@@ -20,26 +20,30 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   // Overview
-  { href: '/',           labelKey: 'dashboard',    icon: LayoutDashboard, badge: 3, sectionKey: 'overview' },
-  { href: '/squad',      labelKey: 'squad',          icon: Users,                     sectionKey: 'overview' },
+  { href: '/',             labelKey: 'dashboard',       icon: LayoutDashboard, badge: 3, sectionKey: 'overview' },
+  { href: '/squad',        labelKey: 'squad',           icon: Users,                     sectionKey: 'overview' },
   // Clinical
-  { href: '/athletes',   labelKey: 'athletes',       icon: UserCircle,                sectionKey: 'clinical' },
-  { href: '/input',      labelKey: 'input',          icon: ClipboardList,             sectionKey: 'clinical' },
-  { href: '/readiness',  labelKey: 'readiness',      icon: Heart,                     sectionKey: 'clinical' },
-  { href: '/rehab',      labelKey: 'rehab',          icon: Activity, badge: 2,        sectionKey: 'clinical' },
+  { href: '/athletes',     labelKey: 'athletes',        icon: UserCircle,                sectionKey: 'clinical' },
+  { href: '/input',        labelKey: 'input',           icon: ClipboardList,             sectionKey: 'clinical' },
+  { href: '/readiness',    labelKey: 'readiness',       icon: Heart,                     sectionKey: 'clinical' },
+  { href: '/rehab',        labelKey: 'rehab',           icon: Activity, badge: 2,        sectionKey: 'clinical' },
   // Performance
-  { href: '/load',       labelKey: 'load',           icon: Gauge,                     sectionKey: 'performance' },
-  { href: '/performance',labelKey: 'performance',    icon: TrendingUp,                sectionKey: 'performance' },
+  { href: '/load',         labelKey: 'load',            icon: Gauge,                     sectionKey: 'performance' },
+  { href: '/performance',  labelKey: 'performance',     icon: TrendingUp,                sectionKey: 'performance' },
   // Intelligence
-  { href: '/calendar',   labelKey: 'calendar',       icon: Calendar,                  sectionKey: 'intelligence' },
-  { href: '/passport',   labelKey: 'passport',       icon: BookOpen,                  sectionKey: 'intelligence' },
+  { href: '/calendar',     labelKey: 'calendar',        icon: Calendar,                  sectionKey: 'intelligence' },
+  { href: '/passport',     labelKey: 'passport',        icon: BookOpen,                  sectionKey: 'intelligence' },
   // Special
-  { href: '/female-squad', labelKey: 'female_squad', icon: Zap,                       sectionKey: 'special' },
+  { href: '/female-squad', labelKey: 'female_squad',   icon: Zap,                       sectionKey: 'special' },
   // Admin
-  { href: '/settings',   labelKey: 'settings',       icon: Settings,                  sectionKey: 'system' },
+  { href: '/admin/medical',   labelKey: 'admin_medical',   icon: ClipboardPlus,  sectionKey: 'admin' },
+  { href: '/admin/injuries',  labelKey: 'admin_injuries',  icon: Stethoscope,    sectionKey: 'admin' },
+  { href: '/admin/protocols', labelKey: 'admin_protocols', icon: FileText,       sectionKey: 'admin' },
+  // System
+  { href: '/settings',     labelKey: 'settings',        icon: Settings,                  sectionKey: 'system' },
 ]
 
-const SECTION_KEYS = ['overview', 'clinical', 'performance', 'intelligence', 'special', 'system'] as const
+const SECTION_KEYS = ['overview', 'clinical', 'performance', 'intelligence', 'special', 'admin', 'system'] as const
 
 export function Sidebar() {
   const pathname = usePathname()

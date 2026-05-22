@@ -1,3 +1,8 @@
+// Scoring engine — SERVER-SIDE ONLY
+// This module is imported exclusively by Next.js API routes and Edge Functions.
+// The weights table (BASE_WEIGHTS_V1) MUST NEVER reach the client bundle.
+// Enforced by: import 'server-only' below + Edge Function vault (predict-risk).
+import 'server-only'
 // Scoring engine — server-side implementation
 // Port of calcScore() from Aura_Demo_FPF.html
 // Architecture doc §3: "scoring corre no servidor, nunca no cliente"

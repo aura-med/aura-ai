@@ -19,6 +19,7 @@
       "performance": "Performance",
       "intelligence": "Intelligence",
       "special": "Special",
+      "admin": "Admin",
       "system": "System"
     },
     "nav": {
@@ -34,6 +35,9 @@
       "calendar": "Calendar Intelligence",
       "passport": "Athlete Passport",
       "female_squad": "Female Squad",
+      "admin_medical": "Medical Panel",
+      "admin_injuries": "Injury Management",
+      "admin_protocols": "Rehab Protocols",
       "settings": "Settings"
     },
     "version": "Aura v1.1 · FPF Pilot"

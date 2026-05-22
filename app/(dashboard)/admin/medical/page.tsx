@@ -191,7 +191,7 @@ export default function MedicalPage() {
       .select('id, squad_id, org_id, name, shirt_number, position, date_of_birth, club, status, active, consent_date, consent_version, created_at, updated_at')
       .eq('active', true)
       .order('shirt_number')
-    setAthletes((data ?? []) as Athlete[])
+    setAthletes((data ?? []) as unknown as Athlete[])
   }, [])
 
   useEffect(() => {

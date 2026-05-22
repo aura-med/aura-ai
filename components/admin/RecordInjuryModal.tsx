@@ -643,8 +643,8 @@ export function RecordInjuryModal({
         ? {
             id: athlete.id,
             name: athlete.name,
-            shirt_number: athlete.shirt_number,
-            position: athlete.position,
+            shirt_number: athlete.shirt_number ?? 0,
+            position: athlete.position ?? '',
             status: athlete.status,
           }
         : null,

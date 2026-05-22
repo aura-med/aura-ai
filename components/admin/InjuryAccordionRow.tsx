@@ -337,9 +337,9 @@ function PhaseStepper({
         </div>
 
         {/* Exercises */}
-        {currentPhase.exercises?.length > 0 && (
+        {(currentPhase.exercises ?? []).length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {currentPhase.exercises.map((ex, i) => (
+            {(currentPhase.exercises ?? []).map((ex, i) => (
               <span
                 key={i}
                 className="text-[10px] px-1.5 py-0.5 rounded"

@@ -353,18 +353,6 @@ export interface RecommendationSet {
   athlete: Recommendation[]
 }
 
-// ─── Readiness ─────────────────────────────────────────────────────────────
-
-export type ReadinessStatus = 'green' | 'amber' | 'red' | 'grey'
-
-export interface ReadinessIndicator {
-  key: string
-  label: string
-  value: number | null
-  status: ReadinessStatus
-  detail: string
-}
-
 // ─── OSIICS Codes (dim_osiics_codes) ──────────────────────────────────────────
 
 export interface OsiicsCode {
@@ -496,11 +484,3 @@ export interface RiskPredictResponse {
   dominantVariable: string
 }
 
-// ─── UI / store types ──────────────────────────────────────────────────────
-
-export interface AthleteWithScore extends Athlete {
-  latestScore?: ScoreResult
-  scoreHistory?: number[]
-  rehabSession?: RehabSession
-  injuryHistory?: InjuryEvent[]
-}

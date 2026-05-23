@@ -1,3 +1,4 @@
+// app/api/athletes/[id]/score/route.ts
 // POST /api/athletes/[id]/score
 // Recalculates and persists the injury risk score for a given athlete.
 // Architecture doc §3: "scoring corre no servidor, nunca no cliente"
@@ -6,6 +7,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { calculateScore, BASE_WEIGHTS_V1 } from '@/lib/scoring/engine'
 import { ScoreHistorySchema } from '@/lib/schemas/score'
+import { generateAndPersistRecommendations } from '@/lib/actions/recommendations'
 import type { ScoreInputs } from '@/types'
 
 export async function POST(
@@ -22,8 +24,13 @@ export async function POST(
 
   const today = new Date().toISOString().split('T')[0]
 
-  // Fetch latest wellness + GPS data
-  const [{ data: checkin }, { data: gps28 }, { data: injuries }] = await Promise.all([
+  // Fetch athlete org_id + latest wellness + GPS data
+  const [{ data: athlete }, { data: checkin }, { data: gps28 }, { data: injuries }] = await Promise.all([
+    supabase
+      .from('athletes')
+      .select('org_id')
+      .eq('id', id)
+      .maybeSingle(),
     supabase
       .from('wellness_checkins')
       .select('*')
@@ -44,13 +51,8 @@ export async function POST(
   ])
 
   // Compute ACWR via EWMA (HSR-based)
-  const acwr = computeAcwr(gps28 ?? [], 'hsr_distance_m')
+  const acwr      = computeAcwr(gps28 ?? [], 'hsr_distance_m')
   const decelAcwr = computeAcwr(gps28 ?? [], 'decel_high_count')
-
-  // Compute HRV delta from baseline (simple: last 7 days vs last 28 days)
-  const hrv = checkin?.hrv_ms !== null && checkin?.hrv_ms !== undefined
-    ? null  // Would need baseline to compute delta — null = missing
-    : null
 
   // Days since last match
   const lastMatch = gps28?.find((s) => s.session_type === 'match')
@@ -60,16 +62,16 @@ export async function POST(
 
   // Injury history: count same-segment recurrences
   const recurrences = injuries?.filter((i) => i.is_recurrence).length ?? 0
-  const historyVal = recurrences === 0 ? 0 : recurrences === 1 ? 1 : 2
+  const historyVal  = recurrences === 0 ? 0 : recurrences === 1 ? 1 : 2
 
   const inputs: ScoreInputs = {
     history: historyVal,
     acwr:    acwr,
-    hrv:     hrv,
-    fatigue: checkin?.fatigue ?? null,
-    sleep:   checkin?.sleep_hours ?? null,
-    tqr:     checkin?.tqr ?? null,
-    stress:  checkin?.stress ?? null,
+    hrv:     null,           // needs baseline delta — computed in normalization
+    fatigue: checkin?.fatigue      ?? null,
+    sleep:   checkin?.sleep_hours  ?? null,
+    tqr:     checkin?.tqr          ?? null,
+    stress:  checkin?.stress       ?? null,
     decel:   decelAcwr,
     md:      md,
   }
@@ -78,19 +80,19 @@ export async function POST(
 
   // Validate score payload before persisting
   const scoreObj = {
-    athlete_id:      id,
-    score_date:      today,
-    total_score:     result.score / 100,
-    acwr_partial:    result.partials.acwr,
-    hrv_partial:     result.partials.hrv,
-    fatigue_partial: result.partials.fatigue,
-    sleep_partial:   result.partials.sleep,
-    tqr_partial:     result.partials.tqr,
-    history_partial: result.partials.history,
-    stress_partial:  result.partials.stress,
-    decel_partial:   result.partials.decel,
+    athlete_id:       id,
+    score_date:       today,
+    total_score:      result.score / 100,
+    acwr_partial:     result.partials.acwr,
+    hrv_partial:      result.partials.hrv,
+    fatigue_partial:  result.partials.fatigue,
+    sleep_partial:    result.partials.sleep,
+    tqr_partial:      result.partials.tqr,
+    history_partial:  result.partials.history,
+    stress_partial:   result.partials.stress,
+    decel_partial:    result.partials.decel,
     days_since_match: md,
-    confidence:      result.confidence,
+    confidence:       result.confidence,
   }
 
   const validation = ScoreHistorySchema.safeParse(scoreObj)
@@ -99,18 +101,33 @@ export async function POST(
   }
 
   // Persist to score_history (upsert — one score per athlete per day)
-  const { error } = await supabase
+  // .select('id') returns the persisted row id for the recommendation log
+  const { data: savedScore, error } = await supabase
     .from('score_history')
-    .upsert({
-      ...scoreObj,
-      weights_version: 1,
-    }, { onConflict: 'athlete_id,score_date' })
+    .upsert(
+      { ...scoreObj, weights_version: 1 },
+      { onConflict: 'athlete_id,score_date' }
+    )
+    .select('id')
+    .single()
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ result })
+  // ── Generate and persist recommendations (EU AI Act Art. 12) ──────────────
+  // Runs after score is saved — non-blocking on failure (fallback in action).
+  const { recommendations } = await generateAndPersistRecommendations({
+    athleteId:        id,
+    orgId:            athlete?.org_id ?? '',
+    scoreHistoryId:   savedScore?.id,
+    riskLevel:        result.riskLevel,
+    dominantVariable: String(result.dominantVariable),
+    confidence:       result.confidence,
+    modelVersion:     1,
+  })
+
+  return NextResponse.json({ result, recommendations })
 }
 
 // EWMA-based ACWR calculation (7-day acute / 28-day chronic)

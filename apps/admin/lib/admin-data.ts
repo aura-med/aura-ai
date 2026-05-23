@@ -451,3 +451,65 @@ export async function getSensitiveOrgDetail(orgId: string) {
     users: profilesResult.data ?? [],
   }
 }
+  org_id:           string
+  risk_thresholds:  { medium: number; high: number; critical: number }
+  variable_weights: Record<string, number>
+  context_type:     'club' | 'federation'
+  language:         'pt' | 'en' | 'es'
+  updated_by:       string | null
+  updated_at:       string
+  created_at:       string
+}
+
+export interface OrgRecommendationOverrideRow {
+  id:            string
+  org_id:        string
+  variable:      string
+  risk_level:    'low' | 'medium' | 'high' | 'critical'
+  stakeholder:   'clinical' | 'coach' | 'athlete'
+  override_type: 'text_only' | 'add_rule' | 'deactivate'
+  custom_text:   string | null
+  custom_icon:   string | null
+  custom_timing: string | null
+  justification: string | null
+  is_active:     boolean
+  created_by:    string | null
+  created_at:    string
+  updated_at:    string
+}
+
+export async function getOrgRecommendationsData(orgId: string) {
+  const context            = await requirePlatformAdmin()
+  const service            = createAdminClient()
+  const activeSupportSession = await getActiveSupportSession(context.user.id)
+
+  const [orgResult, configResult, overridesResult] = await Promise.all([
+    service
+      .from('organizations')
+      .select('id, name, type, status')
+      .eq('id', orgId)
+      .maybeSingle(),
+
+    service
+      .from('org_recommendation_config')
+      .select('*')
+      .eq('org_id', orgId)
+      .maybeSingle(),
+
+    service
+      .from('org_recommendation_overrides')
+      .select('*')
+      .eq('org_id', orgId)
+      .order('variable')
+      .order('risk_level')
+      .order('stakeholder'),
+  ])
+
+  return {
+    context,
+    activeSupportSession,
+    organization:  orgResult.data,
+    config:        configResult.data   as OrgRecommendationConfigRow | null,
+    overrides:     (overridesResult.data ?? []) as OrgRecommendationOverrideRow[],
+  }
+}

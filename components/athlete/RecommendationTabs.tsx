@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { getRecommendations, type Stakeholder, type RiskLevel } from '@/lib/recommendations'
+import { getRecommendations, type Stakeholder } from '@/lib/recommendations'
+import type { RiskLevel } from '@/types'
 
 const STAKEHOLDERS: { value: Stakeholder; label: string; icon: string }[] = [
   { value: 'clinical', label: 'Clínico', icon: '🩺' },

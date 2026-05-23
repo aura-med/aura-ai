@@ -1,4 +1,5 @@
 const createNextIntlPlugin = require('next-intl/plugin')
+const path = require('path')
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
 
 /** @type {import('next').NextConfig} */
@@ -9,6 +10,10 @@ const nextConfig = {
         ? process.env.ADMIN_ALLOWED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
         : [],
     },
+  },
+  webpack(config) {
+    config.resolve.alias['@root'] = path.resolve(__dirname, '../..')
+    return config
   },
 }
 

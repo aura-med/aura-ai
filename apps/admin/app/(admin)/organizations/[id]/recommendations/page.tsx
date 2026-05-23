@@ -6,8 +6,8 @@ import Link from 'next/link'
 import { ArrowLeft, BookOpen, ChevronRight, FlaskConical, Info, Lock, Shield } from 'lucide-react'
 import { Card, PageHeader, StatusBadge } from '@/components/ui'
 import { getOrgRecommendationsData } from '@/lib/admin-data'
-import { ALL_VARIABLES, ALL_RISK_LEVELS, ALL_STAKEHOLDERS, RULES, FALLBACK, VARIABLE_META } from '@/../../../../lib/recommendations'
-import type { RiskLevel } from '@/../../../../types'
+import { ALL_VARIABLES, ALL_RISK_LEVELS, ALL_STAKEHOLDERS, RULES, FALLBACK, VARIABLE_META } from '@root/lib/recommendations'
+import type { RiskLevel } from '@root/types'
 import { RecommendationConfigClient } from './client'
 
 const DEFAULT_THRESHOLDS = { medium: 40, high: 65, critical: 85 }

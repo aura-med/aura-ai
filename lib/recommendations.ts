@@ -17,7 +17,23 @@
 //   can access the bibliographic basis for each recommendation.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { Recommendation, RecommendationSet, RiskLevel } from '@/types'
+// ─── Inlined base types (self-contained — imported cross-package by admin) ────
+// Keep in sync with types/index.ts
+
+export type RiskLevel = 'low' | 'medium' | 'high' | 'critical'
+
+export interface Recommendation {
+  type:   'success' | 'info' | 'warning' | 'critical'
+  icon:   string
+  text:   string
+  timing: string
+}
+
+export interface RecommendationSet {
+  clinical: Recommendation[]
+  coach:    Recommendation[]
+  athlete:  Recommendation[]
+}
 
 // ─── Extended types ───────────────────────────────────────────────────────────
 
@@ -1000,7 +1016,7 @@ export const RULES: RuleMap = {
 }
 
 // ─── Fallback rules (used when variable not in RULES) ────────────────────────
-const FALLBACK: Record<RiskLevel, Record<Stakeholder, BaseRule[]>> = {
+export const FALLBACK: Record<RiskLevel, Record<Stakeholder, BaseRule[]>> = {
   low: {
     clinical: [{
       type: 'success', icon: '✅', text: 'Parâmetro normal — sem acção necessária.', timing: '—',

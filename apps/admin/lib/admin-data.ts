@@ -451,6 +451,8 @@ export async function getSensitiveOrgDetail(orgId: string) {
     users: profilesResult.data ?? [],
   }
 }
+export interface OrgRecommendationConfigRow {
+  id:               string
   org_id:           string
   risk_thresholds:  { medium: number; high: number; critical: number }
   variable_weights: Record<string, number>

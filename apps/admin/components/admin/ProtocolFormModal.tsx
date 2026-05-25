@@ -1,7 +1,7 @@
 'use client'
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { saveRehabProtocol } from '@/lib/clinical-actions'
 import { Plus, Trash2, GripVertical, ChevronDown, ChevronUp } from 'lucide-react'
 import {
   Dialog,
@@ -114,7 +114,6 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
     }
 
     setSaving(true)
-    const supabase = createClient()
 
     // Only use confirmed columns — do NOT include status / osiics_codes / timestamps
     const payload = {
@@ -127,21 +126,11 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
 
     console.log('[ProtocolFormModal] submitting payload:', payload)
 
-    let dbError
-    if (isEdit && protocol) {
-      const res = await supabase.from('rehab_protocols').update(payload).eq('id', protocol.id)
-      dbError = res.error
-      console.log('[ProtocolFormModal] update result:', res.error ?? 'ok')
-    } else {
-      const res = await supabase.from('rehab_protocols').insert(payload)
-      dbError = res.error
-      console.log('[ProtocolFormModal] insert result:', res.error ?? 'ok')
-    }
-
+    const result = await saveRehabProtocol(isEdit && protocol ? { ...payload, id: protocol.id } : payload)
     setSaving(false)
-    if (dbError) {
-      console.error('[ProtocolFormModal] Supabase error:', dbError.code, dbError.message, dbError.details)
-      toast('error', `Erro: ${dbError.message} (código ${dbError.code})`)
+    if (!result.ok) {
+      console.error('[ProtocolFormModal] admin action error:', result.code, result.message)
+      toast('error', `Erro: ${result.message}${result.code ? ` (código ${result.code})` : ''}`)
       return
     }
 

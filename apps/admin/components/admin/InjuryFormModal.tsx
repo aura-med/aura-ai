@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createOsiicsCode } from '@/lib/clinical-actions'
 import {
   Dialog,
   DialogContent,
@@ -113,8 +113,6 @@ export function InjuryFormModal({ open, onClose, onSuccess, toast }: Props) {
     }
 
     setSaving(true)
-    const supabase = createClient()
-    console.log('[InjuryFormModal] submitting to dim_osiics_codes')
     const payload: OsiicsCode = {
       code: form.code.toUpperCase(),
       body_region: form.body_region.trim(),
@@ -125,15 +123,16 @@ export function InjuryFormModal({ open, onClose, onSuccess, toast }: Props) {
       expected_recovery_max: form.has_uefa_data ? Number(form.expected_recovery_max) : null,
     }
 
-    const { error } = await supabase.from('dim_osiics_codes').insert(payload)
+    console.log('[InjuryFormModal] submitting to dim_osiics_codes')
+    const result = await createOsiicsCode(payload)
     setSaving(false)
 
-    if (error) {
-      console.error('[InjuryFormModal] Supabase error:', error.code, error.message, error.details)
-      if (error.code === '23505') {
+    if (!result.ok) {
+      console.error('[InjuryFormModal] admin action error:', result.code, result.message)
+      if (result.code === '23505') {
         setErrors({ code: `Código ${payload.code} já existe` })
       } else {
-        toast('error', `Erro ao guardar: ${error.message} (código ${error.code})`)
+        toast('error', `Erro ao guardar: ${result.message}${result.code ? ` (código ${result.code})` : ''}`)
       }
       return
     }

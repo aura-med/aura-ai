@@ -233,11 +233,11 @@ export default function MedicalPage() {
             className="text-2xl font-bold"
             style={{ fontFamily: 'var(--font-syne)', color: 'var(--aura-text)' }}
           >
-            Painel Médico
+            Clinical Portal
           </h1>
           <p className="text-sm mt-1 flex items-center gap-2" style={{ color: 'var(--aura-text3)' }}>
             <Activity size={13} />
-            Lesões activas · reabilitação · RTP
+            Lesões activas · reabilitação · RTP · portal clínico
           </p>
         </div>
         <div className="flex items-center gap-2">

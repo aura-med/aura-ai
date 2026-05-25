@@ -30,14 +30,12 @@
       "input": "Wellness Input",
       "readiness": "Readiness",
       "rehab": "Rehabilitation",
+      "clinical_portal": "Clinical Portal",
       "load": "Load & GPS",
       "performance": "Max Values & Profile",
       "calendar": "Calendar Intelligence",
       "passport": "Athlete Passport",
       "female_squad": "Female Squad",
-      "admin_medical": "Medical Panel",
-      "admin_injuries": "Injury Management",
-      "admin_protocols": "Rehab Protocols",
       "settings": "Settings"
     },
     "version": "Aura v1.1 · FPF Pilot"

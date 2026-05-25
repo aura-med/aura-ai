@@ -30,14 +30,12 @@
       "input": "Datos Wellness",
       "readiness": "Disposición",
       "rehab": "Rehabilitación",
+      "clinical_portal": "Portal Clínico",
       "load": "Carga & GPS",
       "performance": "Máximos & Perfil",
       "calendar": "Inteligencia Calendario",
       "passport": "Pasaporte Atleta",
       "female_squad": "Selección Femenina",
-      "admin_medical": "Panel Médico",
-      "admin_injuries": "Gestión de Lesiones",
-      "admin_protocols": "Protocolos de Rehab",
       "settings": "Configuración"
     },
     "version": "Aura v1.1 · FPF Pilot"

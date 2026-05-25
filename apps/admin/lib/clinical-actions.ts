@@ -27,9 +27,14 @@ type DbErrorLike = {
 
 function errorResult(error: unknown): ActionResult {
   const dbError = error as DbErrorLike
+  const message =
+    dbError.code === '23503'
+      ? 'Cannot delete this record because it is still referenced by clinical data.'
+      : dbError.message ?? 'Unexpected error'
+
   return {
     ok: false,
-    message: dbError.message ?? 'Unexpected error',
+    message,
     code: dbError.code,
   }
 }
@@ -151,6 +156,76 @@ export async function saveRehabProtocol(input: RehabProtocolInput): Promise<Acti
       metadata: {
         key: payload.key,
         name: payload.name,
+      },
+    })
+
+    revalidatePath('/protocols')
+    return { ok: true }
+  } catch (error) {
+    return errorResult(error)
+  }
+}
+
+export async function deleteOsiicsCode(code: string): Promise<ActionResult> {
+  const context = await requirePlatformAdmin()
+
+  try {
+    const normalizedCode = requiredText(code, 'code').toUpperCase()
+    if (normalizedCode.length !== 4) throw new Error('code must be exactly 4 characters')
+
+    const service = createAdminClient()
+    const { data, error } = await service
+      .from('dim_osiics_codes')
+      .delete()
+      .eq('code', normalizedCode)
+      .select('code, body_region, injury_type')
+      .maybeSingle()
+
+    if (error) return errorResult(error)
+    if (!data) return { ok: false, message: 'Injury code not found' }
+
+    await recordAudit({
+      actor_user_id: context.user.id,
+      event_type: 'clinical.osiics_code_deleted',
+      target_type: 'dim_osiics_codes',
+      target_id: data.code,
+      metadata: {
+        body_region: data.body_region,
+        injury_type: data.injury_type,
+      },
+    })
+
+    revalidatePath('/injuries')
+    return { ok: true }
+  } catch (error) {
+    return errorResult(error)
+  }
+}
+
+export async function deleteRehabProtocol(id: string): Promise<ActionResult> {
+  const context = await requirePlatformAdmin()
+
+  try {
+    const protocolId = requiredText(id, 'id')
+    const service = createAdminClient()
+    const { data, error } = await service
+      .from('rehab_protocols')
+      .delete()
+      .eq('id', protocolId)
+      .select('id, key, name')
+      .maybeSingle()
+
+    if (error) return errorResult(error)
+    if (!data) return { ok: false, message: 'Rehab protocol not found' }
+
+    await recordAudit({
+      actor_user_id: context.user.id,
+      event_type: 'clinical.rehab_protocol_deleted',
+      target_type: 'rehab_protocols',
+      target_id: data.id,
+      metadata: {
+        key: data.key,
+        name: data.name,
       },
     })
 

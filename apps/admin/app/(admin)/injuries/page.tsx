@@ -2,8 +2,9 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { deleteOsiicsCode } from '@/lib/clinical-actions'
 import {
-  Plus, Search, Filter, RefreshCw, Stethoscope, AlertCircle,
+  Plus, Search, Filter, RefreshCw, Stethoscope, AlertCircle, Trash2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { InjuryFormModal } from '@/components/admin/InjuryFormModal'
@@ -28,6 +29,7 @@ export default function InjuriesPage() {
   const [searchQuery, setSearch]    = useState('')
   const [filterRegion, setRegion]   = useState<string>('all')
   const [filterType, setType]       = useState<string>('all')
+  const [deletingCode, setDeletingCode] = useState<string | null>(null)
   const { toasts, toast, dismiss }  = useToast()
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
@@ -96,6 +98,25 @@ export default function InjuriesPage() {
   }, [codes, filterRegion, filterType, searchQuery])
 
   const hasActiveFilters = filterRegion !== 'all' || filterType !== 'all' || searchQuery
+
+  async function handleDelete(code: OsiicsCode) {
+    const confirmed = window.confirm(`Eliminar o código OSIICS ${code.code}?`)
+    if (!confirmed) return
+
+    setDeletingCode(code.code)
+    try {
+      const result = await deleteOsiicsCode(code.code)
+      if (!result.ok) {
+        toast('error', `Erro ao eliminar: ${result.message}${result.code ? ` (código ${result.code})` : ''}`)
+        return
+      }
+
+      toast('success', `Lesão ${code.code} eliminada`)
+      await fetchCodes()
+    } finally {
+      setDeletingCode(null)
+    }
+  }
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -249,7 +270,7 @@ export default function InjuriesPage() {
                 <tr style={{ borderBottom: '1px solid var(--aura-border)' }}>
                   {[
                     'Código', 'Região Corporal', 'Tipo', 'Diagnóstico',
-                    'Severidade', 'Rec. Mín.', 'Rec. Máx.',
+                    'Severidade', 'Rec. Mín.', 'Rec. Máx.', 'Ações',
                   ].map((h) => (
                     <th
                       key={h}
@@ -329,6 +350,26 @@ export default function InjuriesPage() {
                     {/* Rec. Max */}
                     <td className="px-4 py-3 text-xs font-mono" style={{ color: 'var(--aura-text3)' }}>
                       {c.expected_recovery_max != null ? `${c.expected_recovery_max}d` : '—'}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-4 py-3">
+                      <Button
+                        aria-label={`Eliminar ${c.code}`}
+                        className="hover:bg-[var(--aura-danger-bg)]"
+                        disabled={deletingCode === c.code}
+                        onClick={() => handleDelete(c)}
+                        size="icon-sm"
+                        title="Eliminar"
+                        variant="ghost"
+                        style={{ color: 'var(--aura-danger)' }}
+                      >
+                        {deletingCode === c.code ? (
+                          <RefreshCw size={12} className="animate-spin" />
+                        ) : (
+                          <Trash2 size={12} />
+                        )}
+                      </Button>
                     </td>
                   </tr>
                 ))}

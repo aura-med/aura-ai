@@ -2,8 +2,9 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { deleteRehabProtocol } from '@/lib/clinical-actions'
 import {
-  Plus, RefreshCw, Edit2, FileText, AlertCircle, BookOpen,
+  Plus, RefreshCw, Edit2, FileText, AlertCircle, BookOpen, Trash2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProtocolFormModal } from '@/components/admin/ProtocolFormModal'
@@ -18,6 +19,7 @@ export default function ProtocolsPage() {
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [showForm, setShowForm]     = useState(false)
   const [editTarget, setEditTarget] = useState<RehabProtocolDB | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const { toasts, toast, dismiss }  = useToast()
 
   // ── Fetch ─────────────────────────────────────────────────────────────────
@@ -66,6 +68,25 @@ export default function ProtocolsPage() {
   function openCreate() { setEditTarget(null); setShowForm(true) }
   function openEdit(p: RehabProtocolDB) { setEditTarget(p); setShowForm(true) }
   function closeForm() { setShowForm(false); setEditTarget(null) }
+
+  async function handleDelete(protocol: RehabProtocolDB) {
+    const confirmed = window.confirm(`Eliminar o protocolo "${protocol.name}"?`)
+    if (!confirmed) return
+
+    setDeletingId(protocol.id)
+    try {
+      const result = await deleteRehabProtocol(protocol.id)
+      if (!result.ok) {
+        toast('error', `Erro ao eliminar: ${result.message}${result.code ? ` (código ${result.code})` : ''}`)
+        return
+      }
+
+      toast('success', 'Protocolo eliminado')
+      await fetchData()
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -234,15 +255,33 @@ export default function ProtocolsPage() {
 
                     {/* Actions */}
                     <td className="px-4 py-3">
-                      <button
-                        type="button"
-                        onClick={() => openEdit(p)}
-                        className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs border transition-colors hover:bg-[var(--aura-bg4)]"
-                        style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text2)' }}
-                      >
-                        <Edit2 size={11} />
-                        Editar
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openEdit(p)}
+                          className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs border transition-colors hover:bg-[var(--aura-bg4)]"
+                          style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text2)' }}
+                        >
+                          <Edit2 size={11} />
+                          Editar
+                        </button>
+                        <Button
+                          aria-label={`Eliminar ${p.name}`}
+                          className="hover:bg-[var(--aura-danger-bg)]"
+                          disabled={deletingId === p.id}
+                          onClick={() => handleDelete(p)}
+                          size="icon-sm"
+                          title="Eliminar"
+                          variant="ghost"
+                          style={{ color: 'var(--aura-danger)' }}
+                        >
+                          {deletingId === p.id ? (
+                            <RefreshCw size={12} className="animate-spin" />
+                          ) : (
+                            <Trash2 size={12} />
+                          )}
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}

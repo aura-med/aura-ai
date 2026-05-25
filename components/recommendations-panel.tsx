@@ -122,6 +122,7 @@ export function RecommendationsPanel({
   const [activeTab, setActiveTab]         = useState<keyof RecommendationSet>(defaultTab)
   const [isAcknowledging, setIsAck]       = useState(false)
   const [localAcknowledged, setLocalAck]  = useState(acknowledged)
+  const [ackError, setAckError]           = useState<string | null>(null)
 
   const visibleTabs  = STAKEHOLDER_TABS.filter((t) => t.roles.includes(viewerRole))
   const currentRecs  = recommendations[activeTab] ?? []
@@ -137,12 +138,17 @@ export function RecommendationsPanel({
   async function handleAcknowledge() {
     if (!onAcknowledge || !logId) return
     const stakeholder = activeTab === 'clinical' ? 'clinical' : 'coach'
+    setAckError(null)
     setIsAck(true)
     try {
       const res = await onAcknowledge(logId, stakeholder)
       if (res.success) {
         setLocalAck((prev) => ({ ...prev, [stakeholder]: true }))
+      } else {
+        setAckError(res.error ?? 'Não foi possível registar o visto.')
       }
+    } catch {
+      setAckError('Não foi possível registar o visto.')
     } finally {
       setIsAck(false)
     }
@@ -211,13 +217,20 @@ export function RecommendationsPanel({
 
       {/* Footer */}
       <div
-        className="flex items-center justify-between border-t px-4 py-2.5"
+        className="flex items-center justify-between gap-3 border-t px-4 py-2.5"
         style={{ borderColor: 'var(--aura-border)' }}
       >
-        <p className="text-[10px]" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono, monospace)' }}>
-          {new Date(generatedAt).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
-          {' · Suporte à decisão — não substitui julgamento clínico'}
-        </p>
+        <div>
+          <p className="text-[10px]" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono, monospace)' }}>
+            {new Date(generatedAt).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+            {' · Suporte à decisão — não substitui julgamento clínico'}
+          </p>
+          {ackError && (
+            <p className="mt-1 text-[11px]" role="alert" style={{ color: 'var(--aura-danger)' }}>
+              {ackError}
+            </p>
+          )}
+        </div>
 
         {canAcknowledge && logId && onAcknowledge && (
           <button

@@ -130,6 +130,7 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
         >
           <SelectTrigger
             size="sm"
+            aria-label="Choose squad"
             className="ml-1 min-w-32 max-w-52 border-[var(--aura-border2)] bg-[var(--aura-bg3)] text-xs text-[var(--aura-text)]"
             style={{ fontFamily: 'var(--font-mono)' }}
           >

@@ -5,46 +5,77 @@
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/service'
 import { calculateScore, BASE_WEIGHTS_V1 } from '@/lib/scoring/engine'
+import { authorizeScoreAccess, normalizeOrgId } from '@/lib/scoring/score-access'
 import { ScoreHistorySchema } from '@/lib/schemas/score'
 import { generateAndPersistRecommendations } from '@/lib/actions/recommendations'
 import type { ScoreInputs } from '@/types'
+
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const supabase = await createClient()
+  const response = await recalculateAthleteScore(id)
 
-  const { data: { user } } = await supabase.auth.getUser()
+  return NextResponse.json(response.body, { status: response.status })
+}
+
+export async function recalculateAthleteScore(id: string, supabase?: SupabaseClient) {
+  const client = supabase ?? await createClient()
+
+  const { data: { user } } = await client.auth.getUser()
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return { body: { error: 'Unauthorized' }, status: 401 }
   }
 
   const today = new Date().toISOString().split('T')[0]
 
-  // Fetch athlete org_id + latest wellness + GPS data
-  const [{ data: athlete }, { data: checkin }, { data: gps28 }, { data: injuries }] = await Promise.all([
-    supabase
+  const [{ data: profile }, { data: athlete }] = await Promise.all([
+    client
+      .from('profiles')
+      .select('org_id')
+      .eq('id', user.id)
+      .single(),
+    client
       .from('athletes')
       .select('org_id')
       .eq('id', id)
       .maybeSingle(),
-    supabase
+  ])
+
+  const access = authorizeScoreAccess({
+    userId: user.id,
+    profileOrgId: normalizeOrgId(profile?.org_id),
+    athleteOrgId: normalizeOrgId(athlete?.org_id),
+    athleteFound: !!athlete,
+  })
+
+  if (!access.ok) {
+    return { body: { error: access.error }, status: access.status }
+  }
+
+  const persistenceClient = createServiceRoleClient() ?? client
+
+  // Fetch latest wellness + GPS data after org authorization succeeds.
+  const [{ data: checkin }, { data: gps28 }, { data: injuries }] = await Promise.all([
+    client
       .from('wellness_checkins')
       .select('*')
       .eq('athlete_id', id)
       .eq('checkin_date', today)
       .eq('checkin_type', 'morning')
       .maybeSingle(),
-    supabase
+    client
       .from('gps_sessions')
       .select('*')
       .eq('athlete_id', id)
       .gte('session_date', new Date(Date.now() - 28 * 86400000).toISOString().split('T')[0])
       .order('session_date', { ascending: false }),
-    supabase
+    client
       .from('injury_events')
       .select('location, is_recurrence')
       .eq('athlete_id', id),
@@ -97,12 +128,12 @@ export async function POST(
 
   const validation = ScoreHistorySchema.safeParse(scoreObj)
   if (!validation.success) {
-    return NextResponse.json({ error: 'Invalid score payload' }, { status: 422 })
+    return { body: { error: 'Invalid score payload' }, status: 422 }
   }
 
   // Persist to score_history (upsert — one score per athlete per day)
   // .select('id') returns the persisted row id for the recommendation log
-  const { data: savedScore, error } = await supabase
+  const { data: savedScore, error } = await persistenceClient
     .from('score_history')
     .upsert(
       { ...scoreObj, weights_version: 1 },
@@ -112,22 +143,30 @@ export async function POST(
     .single()
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return { body: { error: error.message }, status: 500 }
   }
 
   // ── Generate and persist recommendations (EU AI Act Art. 12) ──────────────
   // Runs after score is saved — non-blocking on failure (fallback in action).
-  const { recommendations } = await generateAndPersistRecommendations({
+  const { recommendations, logId, error: recommendationError } = await generateAndPersistRecommendations({
     athleteId:        id,
-    orgId:            athlete?.org_id ?? '',
+    orgId:            access.orgId,
     scoreHistoryId:   savedScore?.id,
     riskLevel:        result.riskLevel,
-    dominantVariable: String(result.dominantVariable),
+    dominantVariable: result.dominantVariable ?? null,
     confidence:       result.confidence,
     modelVersion:     1,
-  })
+  }, persistenceClient)
 
-  return NextResponse.json({ result, recommendations })
+  return {
+    body: {
+      result,
+      recommendations,
+      recommendationLogId: logId,
+      recommendationLogError: recommendationError ?? null,
+    },
+    status: 200,
+  }
 }
 
 // EWMA-based ACWR calculation (7-day acute / 28-day chronic)

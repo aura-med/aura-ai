@@ -1,7 +1,8 @@
 import { z } from 'zod'
+import { postgresUuidSchema } from './ids'
 
 export const ScoreHistorySchema = z.object({
-  athlete_id: z.string().uuid(),
+  athlete_id: postgresUuidSchema,
   score_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   total_score: z.number().min(0).max(1),
   confidence: z.enum(['high', 'medium', 'low']),

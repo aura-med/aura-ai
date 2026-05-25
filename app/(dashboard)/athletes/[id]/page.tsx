@@ -124,7 +124,7 @@ async function AthleteDetailContent({
 
   // Age
   const age = athlete.date_of_birth
-    ? Math.floor((Date.now() - new Date(athlete.date_of_birth).getTime()) / (1000 * 60 * 60 * 24 * 365.25))
+    ? getAge(athlete.date_of_birth)
     : null
 
   // Readiness indicators
@@ -342,4 +342,8 @@ async function AthleteDetailContent({
       <GpsSection sessions={recentGps} />
     </div>
   )
+}
+
+function getAge(dateOfBirth: string) {
+  return Math.floor((Date.now() - new Date(dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365.25))
 }

@@ -1,5 +1,5 @@
-// app/api/rehab/[sessionId]/assessment/route.ts
-// Issue #20: server-side clinical assessment update with audit trail
+// app/api/rehab/[sessionId]/rtp/route.ts
+// Persists RTP (return-to-play) criteria checkmarks for a rehab session.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { asString, firstRecord } from '@/lib/data/records'
@@ -12,25 +12,23 @@ export async function POST(
   const { sessionId } = await params
   const supabase = await createClient()
 
-  // Auth check
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const body = await request.json()
-  const { field, value } = body as { field: string; value: unknown }
+  const { rtp_criteria } = body as { rtp_criteria: Array<{ label: string; done: boolean }> }
 
-  if (!field) {
-    return NextResponse.json({ error: 'Missing field' }, { status: 400 })
+  if (!Array.isArray(rtp_criteria)) {
+    return NextResponse.json({ error: 'Invalid rtp_criteria' }, { status: 400 })
   }
 
-  // Fetch caller's org and the session (with athlete org) in parallel
-  const [{ data: profile }, { data: session, error: fetchError }] = await Promise.all([
+  const [{ data: profile }, { data: session, error: sessionError }] = await Promise.all([
     supabase.from('profiles').select('org_id').eq('id', user.id).single(),
     supabase
       .from('rehab_sessions')
-      .select('clinical_data, athletes(org_id)')
+      .select('id, athletes(org_id)')
       .eq('id', sessionId)
       .single(),
   ])
@@ -39,7 +37,7 @@ export async function POST(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  if (fetchError || !session) {
+  if (sessionError || !session) {
     return NextResponse.json({ error: 'Session not found' }, { status: 404 })
   }
 
@@ -48,22 +46,14 @@ export async function POST(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const updatedClinical = {
-    ...(session.clinical_data as Record<string, unknown>),
-    [field]: value,
-  }
-
   const { error: updateError } = await supabase
     .from('rehab_sessions')
-    .update({
-      clinical_data: updatedClinical,
-      updated_at: new Date().toISOString(),
-    })
+    .update({ rtp_criteria, updated_at: new Date().toISOString() })
     .eq('id', sessionId)
 
   if (updateError) {
     return NextResponse.json({ error: updateError.message }, { status: 500 })
   }
 
-  return NextResponse.json({ ok: true, clinical_data: updatedClinical })
+  return NextResponse.json({ ok: true })
 }

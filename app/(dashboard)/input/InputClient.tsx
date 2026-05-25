@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
+import { useEffect, useMemo, useState, useTransition } from 'react'
 import { calcScore, riskColor, VAR_ICONS, VAR_LABELS } from '@/lib/scoring'
 import { DecompositionBars, ConfBadge } from '@/components/ui/aura'
 import { upsertWellnessCheckin } from '@/lib/data/actions'
@@ -39,7 +39,21 @@ export function InputClient({ dto }: { dto: InputPageDTO }) {
   const [values, setValues] = useState<Record<string, number | null>>({})
   const [history, setHistory] = useState<number>(selectedAthlete?.historyLevel ?? -1)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    if (dto.athletes.some((athlete) => athlete.id === selectedId)) return
+
+    const nextAthlete = dto.athletes[0]
+    queueMicrotask(() => {
+      setSelectedId(nextAthlete?.id ?? '')
+      setHistory(nextAthlete?.historyLevel ?? -1)
+      setValues({})
+      setSaveError(null)
+      setSaved(false)
+    })
+  }, [dto.athletes, selectedId])
 
   const score: AthleteScore = useMemo(() => calcScore({
     history: history >= 0 ? history : null,
@@ -54,17 +68,32 @@ export function InputClient({ dto }: { dto: InputPageDTO }) {
   }), [values, history])
 
   function handleSave() {
-    if (!selectedId) return
+    if (!selectedAthlete) return
     startTransition(async () => {
-      await upsertWellnessCheckin({
-        athleteId: selectedId,
-        fatigue: values.fatigue ?? null,
-        sleepHours: values.sleep ?? null,
-        tqr: values.tqr ?? null,
-        stress: values.stress ?? null,
-      })
-      setSaved(true)
-      window.setTimeout(() => setSaved(false), 2000)
+      setSaveError(null)
+      try {
+        await upsertWellnessCheckin({
+          athleteId: selectedAthlete.id,
+          fatigue: values.fatigue ?? null,
+          sleepHours: values.sleep ?? null,
+          tqr: values.tqr ?? null,
+          stress: values.stress ?? null,
+        })
+
+        const scoreResponse = await fetch(`/api/athletes/${selectedAthlete.id}/score`, {
+          method: 'POST',
+        })
+
+        if (!scoreResponse.ok) {
+          const payload = await scoreResponse.json().catch(() => null)
+          throw new Error(payload?.error ?? 'Falha ao recalcular score')
+        }
+
+        setSaved(true)
+        window.setTimeout(() => setSaved(false), 2000)
+      } catch (error) {
+        setSaveError(error instanceof Error ? error.message : 'Erro ao guardar')
+      }
     })
   }
 
@@ -100,7 +129,7 @@ export function InputClient({ dto }: { dto: InputPageDTO }) {
           </select>
           <button
             onClick={handleSave}
-            disabled={isPending || !selectedId}
+            disabled={isPending || !selectedAthlete}
             style={{
               minHeight: 40,
               padding: '7px 16px', borderRadius: 8, border: 'none',
@@ -110,6 +139,11 @@ export function InputClient({ dto }: { dto: InputPageDTO }) {
           >
             {isPending ? 'A guardar...' : saved ? 'Guardado' : 'Guardar'}
           </button>
+          {saveError && (
+            <div role="alert" style={{ flexBasis: '100%', fontSize: 12, color: 'var(--danger)', textAlign: 'right' }}>
+              {saveError}
+            </div>
+          )}
         </div>
       </div>
 

@@ -481,7 +481,12 @@ export default function RehabSessionClient({
                     i === idx ? { ...r, done: !r.done } : r
                   )
                   setRtp(updated)
-                  // TODO: persist to supabase via dedicated endpoint
+                  const res = await fetch(`/api/rehab/${session.id}/rtp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rtp_criteria: updated }),
+                  })
+                  if (!res.ok) setRtp(rtp)
                 }}
                 style={{
                   display: 'flex',
@@ -544,7 +549,6 @@ export default function RehabSessionClient({
           </div>
           <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px' }}>
             {protocol.phases.map(phase => {
-              const pe = phaseEligibilities.find(p => p.phase.id === phase.id)
               const isDone = phase.id < currentPhaseId
               const isActive = phase.id === currentPhaseId
               return (
@@ -657,7 +661,7 @@ export default function RehabSessionClient({
                 </div>
                 {entry.notes && (
                   <div style={{ color: 'var(--aura-text3)', marginTop: '4px', fontStyle: 'italic' }}>
-                    "{entry.notes}"
+                    &ldquo;{entry.notes}&rdquo;
                   </div>
                 )}
               </div>

@@ -2,6 +2,7 @@
 // Issue #20: phase advancement with optional override + full audit trail
 
 import { NextRequest, NextResponse } from 'next/server'
+import { asString, firstRecord } from '@/lib/data/records'
 import { createClient } from '@/lib/supabase/server'
 import { getProtocol, evaluatePhase } from '@/lib/rehab/protocol-engine'
 import type { ProgressionOverride, ClinicalAssessment } from '@/types/rehab'
@@ -29,15 +30,27 @@ export async function POST(
     override_notes?: string
   }
 
-  // Fetch session with current state
-  const { data: session, error } = await supabase
-    .from('rehab_sessions')
-    .select('*, rehab_protocols(key, phases)')
-    .eq('id', sessionId)
-    .single()
+  // Fetch caller's org and the session (with athlete org) in parallel
+  const [{ data: profile }, { data: session, error }] = await Promise.all([
+    supabase.from('profiles').select('org_id').eq('id', user.id).single(),
+    supabase
+      .from('rehab_sessions')
+      .select('*, rehab_protocols(key, phases), athletes(org_id)')
+      .eq('id', sessionId)
+      .single(),
+  ])
+
+  if (!profile?.org_id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   if (error || !session) {
     return NextResponse.json({ error: 'Session not found' }, { status: 404 })
+  }
+
+  const sessionOrgId = asString(firstRecord(session.athletes).org_id)
+  if (sessionOrgId !== profile.org_id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   const protocol = getProtocol(session.rehab_protocols?.key ?? '')

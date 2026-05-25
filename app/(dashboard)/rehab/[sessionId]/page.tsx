@@ -3,7 +3,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
-import { getProtocol, getActivePhase, evaluatePhase, getPhaseStatus } from '@/lib/rehab/protocol-engine'
+import { getProtocol, evaluatePhase, getPhaseStatus } from '@/lib/rehab/protocol-engine'
 import type { ClinicalAssessment, ProgressionOverride } from '@/types/rehab'
 import RehabSessionClient from './RehabSessionClient'
 
@@ -32,7 +32,6 @@ export default async function RehabSessionPage({ params }: Props) {
 
   const assessment = (session.clinical_data ?? {}) as ClinicalAssessment
   const currentPhaseId: number = session.current_phase_id ?? 1
-  const activePhase = getActivePhase(protocol, session.current_day)
 
   // Evaluate all phases
   const phaseEligibilities = protocol.phases.map(phase => ({

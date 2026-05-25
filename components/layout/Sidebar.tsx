@@ -47,7 +47,7 @@ export function Sidebar() {
 
   return (
     <aside
-      className="fixed left-0 top-14 bottom-0 w-60 flex flex-col border-r overflow-y-auto z-30"
+      className="fixed left-0 top-14 bottom-0 z-30 hidden w-60 flex-col overflow-y-auto border-r lg:flex"
       style={{ background: 'var(--aura-bg)', borderColor: 'var(--aura-border)' }}
     >
       <nav className="flex-1 px-3 py-4 space-y-6">

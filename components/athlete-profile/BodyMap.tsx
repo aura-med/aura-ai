@@ -12,8 +12,10 @@ const INJURY_COLORS: Record<'clear' | 'recent' | 'active', { fill: string; strok
 }
 
 // CSS variables → adapts to light AND dark mode
+// --aura-text2 is #5a6478 in light mode (dark enough to see on white)
+// --aura-text3 is #9aa3b2 in light mode (too light — don't use for strokes)
 const D_FILL   = 'transparent'
-const D_STROKE = 'var(--aura-text3)'
+const D_STROKE = 'var(--aura-text2)'
 
 // ── Region labels ─────────────────────────────────────────────────────────────
 
@@ -69,9 +71,9 @@ function FrontalDetails() {
   return (
     <g
       className="pointer-events-none"
-      stroke="var(--aura-text3)"
+      stroke="var(--aura-text2)"
       strokeWidth="0.5"
-      opacity={0.22}
+      opacity={0.35}
       fill="none"
     >
       {/* Clavicles */}
@@ -92,9 +94,9 @@ function DorsalDetails() {
   return (
     <g
       className="pointer-events-none"
-      stroke="var(--aura-text3)"
+      stroke="var(--aura-text2)"
       strokeWidth="0.5"
-      opacity={0.22}
+      opacity={0.35}
       fill="none"
     >
       {/* Spine */}
@@ -114,10 +116,10 @@ function BodyBase() {
   return (
     <g
       className="pointer-events-none"
-      fill="var(--aura-bg2)"
-      stroke="var(--aura-text3)"
-      strokeWidth="0.6"
-      opacity={0.45}
+      fill="var(--aura-bg3)"
+      stroke="var(--aura-text2)"
+      strokeWidth="0.7"
+      opacity={0.75}
     >
       {/* Head */}
       <ellipse cx="60" cy="21" rx="19" ry="20" />
@@ -407,7 +409,7 @@ export function BodyMap({ zoneMap, className }: BodyMapProps) {
         {legend.map((l) => (
           <div key={l.label} className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full" style={{ background: l.color }} />
-            <span className="text-[10px]" style={{ color: 'var(--aura-text3)' }}>{l.label}</span>
+            <span className="text-[10px]" style={{ color: 'var(--aura-text2)' }}>{l.label}</span>
           </div>
         ))}
       </div>
@@ -415,13 +417,13 @@ export function BodyMap({ zoneMap, className }: BodyMapProps) {
       {/* Views */}
       <div className="flex gap-4 justify-center" onClick={(e) => e.stopPropagation()}>
         <div className="flex flex-col items-center gap-1">
-          <p className="text-[9px] font-semibold uppercase tracking-widest" style={{ color: 'var(--aura-text3)' }}>
+          <p className="text-[9px] font-semibold uppercase tracking-widest" style={{ color: 'var(--aura-text2)' }}>
             Frontal
           </p>
           <FrontalSvg zoneMap={zoneMap} selected={selected} onSelect={handleSelect} />
         </div>
         <div className="flex flex-col items-center gap-1">
-          <p className="text-[9px] font-semibold uppercase tracking-widest" style={{ color: 'var(--aura-text3)' }}>
+          <p className="text-[9px] font-semibold uppercase tracking-widest" style={{ color: 'var(--aura-text2)' }}>
             Dorsal
           </p>
           <DorsalSvg zoneMap={zoneMap} selected={selected} onSelect={handleSelect} />

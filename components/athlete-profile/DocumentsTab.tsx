@@ -34,6 +34,16 @@ function formatBytes(bytes: number | null) {
 
 // ── Document Row ──────────────────────────────────────────────────────────────
 
+const BUCKET = 'medical-documents'
+
+// Extract the storage path from a Supabase Storage URL
+// URL format: .../storage/v1/object/public/medical-documents/[path]
+function extractStoragePath(fileUrl: string): string {
+  const marker = `/${BUCKET}/`
+  const idx = fileUrl.indexOf(marker)
+  return idx >= 0 ? fileUrl.slice(idx + marker.length) : fileUrl
+}
+
 function DocumentRow({
   doc, onArchive,
 }: {
@@ -43,7 +53,25 @@ function DocumentRow({
   const cfg = CATEGORY_CONFIG[doc.category]
   const Icon = cfg.icon
   const [confirmDel, setConfirmDel] = useState(false)
-  const [archiving, setArchiving]   = useState(false)
+  const [archiving,  setArchiving]  = useState(false)
+  const [opening,    setOpening]    = useState(false)
+
+  async function handleOpen() {
+    setOpening(true)
+    try {
+      const supabase = createClient()
+      const path = extractStoragePath(doc.file_url)
+      const { data, error } = await supabase.storage
+        .from(BUCKET)
+        .createSignedUrl(path, 300) // valid 5 min
+      if (error || !data?.signedUrl) throw error ?? new Error('Sem URL')
+      window.open(data.signedUrl, '_blank', 'noopener,noreferrer')
+    } catch (e) {
+      console.error('[doc-open]', e)
+    } finally {
+      setOpening(false)
+    }
+  }
 
   async function handleArchive() {
     if (!confirmDel) { setConfirmDel(true); return }
@@ -79,14 +107,18 @@ function DocumentRow({
 
       {/* Actions */}
       <div className="flex items-center gap-1 shrink-0">
-        <a
-          href={doc.file_url}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={handleOpen}
+          disabled={opening}
           className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
+          title="Abrir documento"
         >
-          <ExternalLink size={12} style={{ color: 'var(--aura-text3)' }} />
-        </a>
+          {opening
+            ? <Loader2 size={12} className="animate-spin" style={{ color: 'var(--aura-text3)' }} />
+            : <ExternalLink size={12} style={{ color: 'var(--aura-text3)' }} />
+          }
+        </button>
         <button
           type="button"
           onClick={handleArchive}

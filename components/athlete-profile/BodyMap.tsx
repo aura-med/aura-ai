@@ -4,57 +4,61 @@ import { useState } from 'react'
 import type { BodyZoneInfo, BodyRegion } from '@/types/athlete-profile'
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Design tokens
-// viewBox per figure: "0 0 88 272"   centre-x = 44
+// Premium body map — zero geometric primitives.
+// Every zone is a pure <path> with cubic Bézier curves for organic silhouette.
 //
-// Y landmarks        X landmarks (arms hang alongside torso)
-//  Head:   0–26       L-arm outer  6    R-arm outer 82
-//  Neck:  26–36       L-arm inner 22    R-arm inner 66
-//  Chest: 36–86       Chest:      22–66 (44 px wide)
-//  Abs:   86–118      Waist:      25–63
-//  Hip:  118–150      Hip wide:   18–70
-//  Thigh:150–200      L-thigh:    18–38   R-thigh: 50–70
-//  Knee: 200–220      Calf:       13–39   /  49–75
-//  Calf: 220–256      Ankle:      15–37   /  51–73
-//  Ankle:256–266      Foot:        9–39   /  49–79
-//  Foot: 266–272
+// viewBox per figure: "0 0 100 316"   centre-x = 50
+//
+// Y landmarks                  X landmarks
+//  Head:      4 – 37            Neck:       43 – 57
+//  Neck:     36 – 47            Chest:      28 – 72
+//  Chest:    47 – 100           Waist:      30 – 70
+//  Abdomen: 100 – 132           Hip:        22 – 78
+//  Hip:     132 – 171           L thigh:    16 – 44   R thigh: 56 – 84
+//  Thigh:   157 – 218           L calf:     14 – 44   R calf:  56 – 86
+//  Knee:    218 – 234           L ankle:    20 – 44   R ankle: 56 – 80
+//  Calf:    234 – 280           L arm:       6 – 28   R arm:   72 – 94
+//  Ankle:   280 – 294           Forearm:     6 – 28 / 72 – 94
+//  Foot:    294 – 314
+//  Arm:      88 – 144  (deltoid bottom → elbow)
+//  Forearm: 160 – 228
 // ─────────────────────────────────────────────────────────────────────────────
 
 const T = {
-  fillIdle:    'rgba(148,163,184,0.10)',   // slate-400 @ 10 %  — barely visible
-  fillHover:   'rgba(148,163,184,0.26)',   // slate-400 @ 26 %  — clear hover
-  strokeIdle:  'var(--aura-text2)',        // adapts to theme
-  sw:          0.8,
-  swSel:       1.6,
-  active: { fill: 'rgba(239,68,68,0.22)',    stroke: 'rgba(239,68,68,0.80)'    },
-  recent: { fill: 'rgba(245,158,11,0.22)',   stroke: 'rgba(245,158,11,0.80)'   },
+  fillIdle:  'rgba(248,250,252,0.13)',  // near-invisible wireframe
+  fillHover: 'rgba(148,163,184,0.28)',  // slate-400 @ 28 %
+  stroke:    'var(--aura-text2)',
+  sw:        1.0,
+  swSel:     1.8,
+  active: { fill: 'rgba(239,68,68,0.18)',   stroke: 'rgba(239,68,68,0.82)'   },
+  recent: { fill: 'rgba(245,158,11,0.18)',  stroke: 'rgba(245,158,11,0.82)'  },
 } as const
 
 const LABELS: Record<BodyRegion, string> = {
-  head:        'Cabeça',
-  neck:        'Pescoço',
-  chest:       'Tórax',
-  abdomen:     'Abdómen',
-  shoulder:    'Ombro',
-  arm:         'Braço',
-  elbow:       'Cotovelo',
-  forearm:     'Antebraço',
-  wrist:       'Pulso',
-  hand:        'Mão',
-  hip:         'Anca / Pélvis',
-  thigh:       'Coxa',
-  knee:        'Joelho',
-  calf:        'Gémeo',
-  ankle:       'Tornozelo',
-  foot:        'Pé',
-  upper_back:  'Costas sup.',
-  lower_back:  'Costas inf.',
-  glute:       'Glúteo',
-  hamstring:   'Isquiotibiais',
+  head:       'Cabeça',
+  neck:       'Pescoço',
+  chest:      'Tórax',
+  abdomen:    'Abdómen',
+  shoulder:   'Ombro',
+  arm:        'Braço',
+  elbow:      'Cotovelo',
+  forearm:    'Antebraço',
+  wrist:      'Pulso',
+  hand:       'Mão',
+  hip:        'Anca / Pélvis',
+  thigh:      'Coxa',
+  knee:       'Joelho',
+  calf:       'Gémeo',
+  ankle:      'Tornozelo',
+  foot:       'Pé',
+  upper_back: 'Costas sup.',
+  lower_back: 'Costas inf.',
+  glute:      'Glúteo',
+  hamstring:  'Isquiotibiais',
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Zone component — wraps any SVG children with interactive fill / stroke state
+// Zone — the single interactive wrapper used by every path
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface ZoneCtx {
@@ -80,7 +84,7 @@ function Zone({
     stroke = status === 'active' ? T.active.stroke : T.recent.stroke
   } else {
     fill   = isSel || isHov ? T.fillHover : T.fillIdle
-    stroke = T.strokeIdle
+    stroke = T.stroke
   }
 
   return (
@@ -97,7 +101,7 @@ function Zone({
         strokeLinejoin: 'round' as const,
         strokeLinecap:  'round' as const,
         cursor:         'pointer',
-        transition:     'fill 0.16s ease, stroke-width 0.12s ease',
+        transition:     'fill 0.2s ease, stroke-width 0.14s ease',
       }}
     >
       {children}
@@ -105,422 +109,389 @@ function Zone({
   )
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Frontal SVG  (anterior view)
-// ─────────────────────────────────────────────────────────────────────────────
-
 interface SvgProps extends ZoneCtx {}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Frontal (anterior) view
+// ─────────────────────────────────────────────────────────────────────────────
 
 function FrontalSvg({ zoneMap, selected, hovered, onSelect, onHover }: SvgProps) {
   const z: ZoneCtx = { zoneMap, selected, hovered, onSelect, onHover }
 
   return (
-    <svg viewBox="0 0 88 272" className="w-16" style={{ overflow: 'visible' }}>
+    <svg viewBox="0 0 100 316" className="w-20" style={{ overflow: 'visible' }}>
 
-      {/* ── HEAD ──────────────────────────────────────────────────── */}
+      {/* ── HEAD — organic cranial oval, not a <circle> ─────────── */}
       <Zone region="head" {...z}>
-        <ellipse cx="44" cy="13" rx="12.5" ry="13" />
+        <path d="
+          M 50,4
+          C 60,4 72,9 72,19
+          C 72,28 67,34 59,36
+          C 55,37 50,38 50,38
+          C 50,38 45,37 41,36
+          C 33,34 28,28 28,19
+          C 28,9 40,4 50,4 Z
+        " />
       </Zone>
 
-      {/* ── NECK ──────────────────────────────────────────────────── */}
+      {/* ── NECK — slight trapezoid with organic curves ──────────── */}
       <Zone region="neck" {...z}>
-        {/* slim trapezoid, slightly wider at base */}
-        <path d="M 40,25.5 C 40,28 39,32 39,36 L 49,36 C 49,32 48,28 48,25.5 Z" />
+        <path d="
+          M 43,36
+          C 43,39 42,43 42,47
+          L 58,47
+          C 58,43 57,39 57,36 Z
+        " />
       </Zone>
 
-      {/* ── SHOULDERS — deltoid crescent on each side ─────────────── */}
+      {/* ── SHOULDERS — bilateral deltoid caps ──────────────────── */}
       <Zone region="shoulder" {...z}>
         {/* Left deltoid */}
         <path d="
-          M 22,44
-          C 15,42 8,46 6,55
-          C 4,63 6,71 8,77
-          C 13,71 17,69 22,69
-          L 22,44 Z
+          M 28,56
+          C 22,57 14,62 10,70
+          C 8,78 10,87 14,91
+          C 18,87 23,85 28,86
+          L 28,56 Z
         " />
-        {/* Right deltoid */}
+        {/* Right deltoid (mirror) */}
         <path d="
-          M 66,44
-          L 66,69
-          C 71,69 75,71 80,77
-          C 82,71 84,63 82,55
-          C 80,46 73,42 66,44 Z
+          M 72,56
+          L 72,86
+          C 77,85 82,87 86,91
+          C 90,87 92,78 90,70
+          C 86,62 78,57 72,56 Z
         " />
       </Zone>
 
-      {/* ── CHEST — upper torso, V-taper trapezoid ────────────────── */}
+      {/* ── CHEST — V-taper upper torso ─────────────────────────── */}
       <Zone region="chest" {...z}>
         <path d="
-          M 39,36 L 49,36
-          C 53,38 61,42 66,46
-          L 66,86 L 22,86
-          L 22,46
-          C 27,42 35,38 39,36 Z
+          M 42,47 L 58,47
+          C 62,49 68,53 72,57
+          L 72,100
+          L 28,100
+          L 28,57
+          C 32,53 38,49 42,47 Z
         " />
       </Zone>
 
-      {/* ── ABDOMEN ───────────────────────────────────────────────── */}
+      {/* ── ABDOMEN ─────────────────────────────────────────────── */}
       <Zone region="abdomen" {...z}>
         <path d="
-          M 22,86 L 66,86
-          C 65,97 63,108 63,118
-          L 25,118
-          C 25,108 23,97 22,86 Z
+          M 28,100 L 72,100
+          C 71,112 70,122 70,132
+          L 30,132
+          C 30,122 29,112 28,100 Z
         " />
       </Zone>
 
-      {/* ── HIP / PELVIS — widens then curves to crotch ───────────── */}
+      {/* ── HIP / PELVIS — widens then curves to crotch ─────────── */}
       <Zone region="hip" {...z}>
         <path d="
-          M 25,118 L 63,118
-          C 67,125 70,133 70,143
-          C 66,150 58,154 52,154
-          L 44,157 L 36,154
-          C 30,154 22,150 18,143
-          C 18,133 21,125 25,118 Z
+          M 30,132 L 70,132
+          C 74,138 78,148 78,157
+          C 74,163 66,167 60,169
+          L 50,171 L 40,169
+          C 34,167 26,163 22,157
+          C 22,148 26,138 30,132 Z
         " />
       </Zone>
 
-      {/* ── UPPER ARMS ────────────────────────────────────────────── */}
-      <Zone region="arm" {...z}>
-        {/* Left — tapered athletic arm */}
-        <path d="
-          M 7,57
-          C 5,65 4,79 5,97
-          L 5,114
-          C 5,119 8,123 13,123
-          L 18,123
-          C 22,122 22,118 22,114
-          L 22,69
-          C 17,69 12,71 8,77
-          C 6,71 6,63 7,57 Z
-        " />
-        {/* Right — mirror */}
-        <path d="
-          M 81,57
-          C 82,63 82,71 80,77
-          C 76,71 71,69 66,69
-          L 66,114
-          C 66,118 66,122 70,123
-          L 75,123
-          C 80,123 83,119 83,114
-          L 83,97
-          C 84,79 83,65 81,57 Z
-        " />
-      </Zone>
-
-      {/* ── ELBOWS ────────────────────────────────────────────────── */}
-      <Zone region="elbow" {...z}>
-        {/* Left */}
-        <path d="
-          M 5,114 L 5,128
-          C 5,132 8,135 13,135
-          L 17,135
-          C 21,134 22,130 22,126
-          L 22,118
-          C 21,122 17,123 13,123 Z
-        " />
-        {/* Right */}
-        <path d="
-          M 83,114 L 83,126
-          C 83,130 84,134 80,135
-          L 75,135
-          C 71,134 66,130 66,118
-          L 66,126
-          C 66,130 67,122 71,123
-          L 75,123
-          C 80,123 83,119 83,114 Z
-        " />
-      </Zone>
-
-      {/* ── FOREARMS ──────────────────────────────────────────────── */}
-      <Zone region="forearm" {...z}>
-        {/* Left — slightly tapered toward wrist */}
-        <path d="
-          M 5,130
-          C 3,138 3,152 5,164
-          L 7,187
-          C 7,190 10,192 14,192
-          L 18,192
-          C 21,192 22,189 22,185
-          L 22,160
-          C 22,148 22,136 21,131
-          C 16,130 10,130 5,130 Z
-        " />
-        {/* Right */}
-        <path d="
-          M 83,130
-          C 78,130 72,130 67,131
-          L 66,160
-          L 66,185
-          C 66,189 67,192 70,192
-          L 74,192
-          C 78,192 81,190 81,187
-          L 83,164
-          C 85,152 85,138 83,130 Z
-        " />
-      </Zone>
-
-      {/* ── THIGHS ────────────────────────────────────────────────── */}
+      {/* ── THIGHS (bilateral) ───────────────────────────────────── */}
       <Zone region="thigh" {...z}>
-        {/* Left */}
+        {/* Left quad */}
         <path d="
-          M 18,150
-          C 15,157 14,171 15,189
-          L 15,200 L 38,200
-          L 38,186
-          C 37,170 37,157 37,152
-          Z
+          M 22,157
+          C 18,164 16,178 16,198
+          L 16,218 L 44,218
+          L 44,196
+          C 43,178 43,167 44,168
+          C 40,169 34,167 30,164
+          C 26,162 22,160 22,157 Z
         " />
-        {/* Right */}
+        {/* Right quad */}
         <path d="
-          M 70,150
-          L 51,152
-          C 51,157 51,170 50,186
-          L 50,200 L 73,200
-          L 73,189
-          C 74,171 73,157 70,150 Z
+          M 78,157
+          C 78,160 74,162 70,164
+          C 66,167 60,169 56,168
+          C 57,167 57,178 56,196
+          L 56,218 L 84,218
+          L 84,198
+          C 84,178 82,164 78,157 Z
         " />
       </Zone>
 
-      {/* ── KNEES ─────────────────────────────────────────────────── */}
+      {/* ── KNEES (bilateral) ───────────────────────────────────── */}
       <Zone region="knee" {...z}>
         {/* Left */}
         <path d="
-          M 15,200 L 15,214
-          C 15,218 19,221 25,221
-          L 29,221
-          C 35,221 38,218 38,214
-          L 38,200 Z
+          M 16,218
+          C 14,222 14,230 16,234
+          L 44,234
+          C 44,230 44,226 44,222
+          L 44,218 Z
         " />
         {/* Right */}
         <path d="
-          M 50,200 L 50,214
-          C 50,218 53,221 59,221
-          L 63,221
-          C 69,221 73,218 73,214
-          L 73,200 Z
+          M 56,218 L 56,222
+          C 56,226 56,230 56,234
+          L 84,234
+          C 86,230 86,222 84,218 Z
         " />
       </Zone>
 
-      {/* ── CALVES — organic gastrocnemius shape ──────────────────── */}
+      {/* ── CALVES — natural gastrocnemius belly ─────────────────── */}
       <Zone region="calf" {...z}>
         {/* Left */}
         <path d="
-          M 13,221 L 39,221
-          C 40,229 41,241 39,251
-          C 37,257 32,260 26,260
-          C 20,260 16,257 14,251
-          C 12,241 12,229 13,221 Z
+          M 14,234 L 44,234
+          C 46,244 47,258 44,270
+          C 42,276 38,280 32,280
+          C 26,280 22,276 20,270
+          C 17,258 16,244 14,234 Z
         " />
         {/* Right */}
         <path d="
-          M 49,221 L 75,221
-          C 76,229 76,241 74,251
-          C 72,257 68,260 62,260
-          C 56,260 51,257 49,251
-          C 47,241 47,229 49,221 Z
+          M 56,234 L 86,234
+          C 84,244 83,258 80,270
+          C 78,276 74,280 68,280
+          C 62,280 58,276 56,270
+          C 53,258 54,244 56,234 Z
         " />
       </Zone>
 
-      {/* ── ANKLES ────────────────────────────────────────────────── */}
+      {/* ── ANKLES (bilateral) ───────────────────────────────────── */}
       <Zone region="ankle" {...z}>
         {/* Left */}
-        <path d="M 16,260 L 36,260 C 37,262 37,266 36,267 L 16,267 C 15,266 15,262 16,260 Z" />
+        <path d="
+          M 20,280
+          C 19,284 19,290 20,294
+          L 44,294
+          C 44,290 44,284 44,280 Z
+        " />
         {/* Right */}
-        <path d="M 52,260 L 72,260 C 73,262 73,266 72,267 L 52,267 C 51,266 51,262 52,260 Z" />
+        <path d="
+          M 56,280 L 80,280
+          C 81,284 81,290 80,294
+          L 56,294
+          C 56,290 56,284 56,280 Z
+        " />
       </Zone>
 
-      {/* ── FEET ──────────────────────────────────────────────────── */}
+      {/* ── FEET (bilateral) ────────────────────────────────────── */}
       <Zone region="foot" {...z}>
         {/* Left */}
         <path d="
-          M 10,267 L 37,267
-          C 39,269 40,272 37,272
-          L 10,272
-          C 7,272 7,269 10,267 Z
+          M 14,294 L 45,294
+          C 47,298 48,306 44,310
+          L 14,310
+          C 10,310 10,302 14,294 Z
         " />
         {/* Right */}
         <path d="
-          M 51,267 L 78,267
-          C 81,269 81,272 78,272
-          L 51,272
-          C 48,272 48,269 51,267 Z
+          M 55,294 L 86,294
+          C 90,302 90,310 86,310
+          L 56,310
+          C 52,306 53,298 55,294 Z
         " />
       </Zone>
 
-      {/* ── Anatomy reference lines (non-interactive) ─────────────── */}
+      {/* ── UPPER ARMS (bilateral) ───────────────────────────────── */}
+      <Zone region="arm" {...z}>
+        {/* Left — tapers from deltoid base toward elbow */}
+        <path d="
+          M 10,88
+          C 6,100 4,118 5,134
+          L 6,144
+          C 6,150 10,154 15,154
+          L 19,154
+          C 24,154 28,150 28,144
+          L 28,88
+          C 22,86 16,86 10,88 Z
+        " />
+        {/* Right */}
+        <path d="
+          M 90,88
+          C 94,100 96,118 95,134
+          L 94,144
+          C 94,150 90,154 85,154
+          L 81,154
+          C 76,154 72,150 72,144
+          L 72,88
+          C 78,86 84,86 90,88 Z
+        " />
+      </Zone>
+
+      {/* ── ELBOWS (bilateral) ───────────────────────────────────── */}
+      <Zone region="elbow" {...z}>
+        {/* Left */}
+        <path d="
+          M 6,144
+          C 4,150 4,158 6,162
+          L 28,162
+          C 28,158 28,150 28,146 Z
+        " />
+        {/* Right */}
+        <path d="
+          M 94,144 L 94,146
+          C 94,150 94,158 94,162
+          L 72,162
+          C 72,158 72,150 72,144 Z
+        " />
+      </Zone>
+
+      {/* ── FOREARMS (bilateral) — taper toward wrist ───────────── */}
+      <Zone region="forearm" {...z}>
+        {/* Left */}
+        <path d="
+          M 6,162
+          C 4,174 4,192 6,208
+          L 8,228
+          C 9,232 13,234 17,234
+          L 21,234
+          C 25,234 26,230 26,226
+          L 28,204
+          C 28,188 28,172 28,164
+          C 22,163 14,163 6,162 Z
+        " />
+        {/* Right */}
+        <path d="
+          M 94,162
+          C 86,163 78,163 72,164
+          L 72,204
+          L 74,226
+          C 74,230 75,234 79,234
+          L 83,234
+          C 87,234 91,232 92,228
+          L 94,208
+          C 96,192 96,174 94,162 Z
+        " />
+      </Zone>
+
+      {/* ── Anatomy reference lines (non-interactive, subtle) ────── */}
       <g
         className="pointer-events-none"
         stroke="var(--aura-text2)"
-        strokeWidth="0.45"
+        strokeWidth="0.5"
         fill="none"
-        opacity={0.22}
+        opacity={0.2}
       >
         {/* Clavicles */}
-        <path d="M 44,36 C 40,38 32,41 24,46" />
-        <path d="M 44,36 C 48,38 56,41 64,46" />
+        <path d="M 50,47 C 44,49 36,52 28,57" />
+        <path d="M 50,47 C 56,49 64,52 72,57" />
         {/* Sternal midline */}
-        <line x1="44" y1="36" x2="44" y2="86" />
+        <line x1="50" y1="47" x2="50" y2="100" />
         {/* Linea alba */}
-        <line x1="44" y1="86" x2="44" y2="118" strokeDasharray="2 2.5" />
-        {/* Inguinal lines */}
-        <path d="M 44,150 C 38,148 30,148 22,143" strokeDasharray="2 2.5" />
-        <path d="M 44,150 C 50,148 58,148 66,143" strokeDasharray="2 2.5" />
+        <line x1="50" y1="100" x2="50" y2="132" strokeDasharray="2 3" />
+        {/* Inguinal ligaments */}
+        <path d="M 50,160 C 44,157 36,153 28,149" strokeDasharray="2 3" />
+        <path d="M 50,160 C 56,157 64,153 72,149" strokeDasharray="2 3" />
       </g>
     </svg>
   )
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Dorsal SVG  (posterior view)
-// Same paths, different zone mappings:
-//   chest → upper_back   |  abdomen → lower_back   |  hip → glute
-//   thigh → hamstring     |  rest identical to front
+// Dorsal (posterior) view
+// Same bezier coordinate system — only zone labels differ:
+//   chest → upper_back  |  abdomen → lower_back  |  hip → glute
+//   thigh → hamstring   |  all others identical
 // ─────────────────────────────────────────────────────────────────────────────
 
 function DorsalSvg({ zoneMap, selected, hovered, onSelect, onHover }: SvgProps) {
   const z: ZoneCtx = { zoneMap, selected, hovered, onSelect, onHover }
 
   return (
-    <svg viewBox="0 0 88 272" className="w-16" style={{ overflow: 'visible' }}>
+    <svg viewBox="0 0 100 316" className="w-20" style={{ overflow: 'visible' }}>
 
       <Zone region="head" {...z}>
-        <ellipse cx="44" cy="13" rx="12.5" ry="13" />
+        <path d="M 50,4 C 60,4 72,9 72,19 C 72,28 67,34 59,36 C 55,37 50,38 50,38 C 50,38 45,37 41,36 C 33,34 28,28 28,19 C 28,9 40,4 50,4 Z" />
       </Zone>
 
       <Zone region="neck" {...z}>
-        <path d="M 40,25.5 C 40,28 39,32 39,36 L 49,36 C 49,32 48,28 48,25.5 Z" />
+        <path d="M 43,36 C 43,39 42,43 42,47 L 58,47 C 58,43 57,39 57,36 Z" />
       </Zone>
 
       <Zone region="shoulder" {...z}>
-        <path d="M 22,44 C 15,42 8,46 6,55 C 4,63 6,71 8,77 C 13,71 17,69 22,69 L 22,44 Z" />
-        <path d="M 66,44 L 66,69 C 71,69 75,71 80,77 C 82,71 84,63 82,55 C 80,46 73,42 66,44 Z" />
+        <path d="M 28,56 C 22,57 14,62 10,70 C 8,78 10,87 14,91 C 18,87 23,85 28,86 L 28,56 Z" />
+        <path d="M 72,56 L 72,86 C 77,85 82,87 86,91 C 90,87 92,78 90,70 C 86,62 78,57 72,56 Z" />
       </Zone>
 
-      {/* ── UPPER BACK ────────────────────────────────────────────── */}
+      {/* ── UPPER BACK (same coords as chest front) ─────────────── */}
       <Zone region="upper_back" {...z}>
-        <path d="
-          M 39,36 L 49,36
-          C 53,38 61,42 66,46
-          L 66,86 L 22,86
-          L 22,46
-          C 27,42 35,38 39,36 Z
-        " />
+        <path d="M 42,47 L 58,47 C 62,49 68,53 72,57 L 72,100 L 28,100 L 28,57 C 32,53 38,49 42,47 Z" />
       </Zone>
 
-      {/* ── LOWER BACK ────────────────────────────────────────────── */}
+      {/* ── LOWER BACK ───────────────────────────────────────────── */}
       <Zone region="lower_back" {...z}>
-        <path d="
-          M 22,86 L 66,86
-          C 65,97 63,108 63,118
-          L 25,118
-          C 25,108 23,97 22,86 Z
-        " />
+        <path d="M 28,100 L 72,100 C 71,112 70,122 70,132 L 30,132 C 30,122 29,112 28,100 Z" />
       </Zone>
 
-      {/* ── GLUTES ────────────────────────────────────────────────── */}
+      {/* ── GLUTES ───────────────────────────────────────────────── */}
       <Zone region="glute" {...z}>
-        <path d="
-          M 25,118 L 63,118
-          C 67,125 70,133 70,143
-          C 66,150 58,154 52,154
-          L 44,157 L 36,154
-          C 30,154 22,150 18,143
-          C 18,133 21,125 25,118 Z
-        " />
+        <path d="M 30,132 L 70,132 C 74,138 78,148 78,157 C 74,163 66,167 60,169 L 50,171 L 40,169 C 34,167 26,163 22,157 C 22,148 26,138 30,132 Z" />
       </Zone>
 
       <Zone region="arm" {...z}>
-        <path d="
-          M 7,57 C 5,65 4,79 5,97 L 5,114
-          C 5,119 8,123 13,123 L 18,123
-          C 22,122 22,118 22,114 L 22,69
-          C 17,69 12,71 8,77 C 6,71 6,63 7,57 Z
-        " />
-        <path d="
-          M 81,57 C 82,63 82,71 80,77
-          C 76,71 71,69 66,69 L 66,114
-          C 66,118 66,122 70,123 L 75,123
-          C 80,123 83,119 83,114 L 83,97
-          C 84,79 83,65 81,57 Z
-        " />
+        <path d="M 10,88 C 6,100 4,118 5,134 L 6,144 C 6,150 10,154 15,154 L 19,154 C 24,154 28,150 28,144 L 28,88 C 22,86 16,86 10,88 Z" />
+        <path d="M 90,88 C 94,100 96,118 95,134 L 94,144 C 94,150 90,154 85,154 L 81,154 C 76,154 72,150 72,144 L 72,88 C 78,86 84,86 90,88 Z" />
       </Zone>
 
       <Zone region="elbow" {...z}>
-        <path d="M 5,114 L 5,128 C 5,132 8,135 13,135 L 17,135 C 21,134 22,130 22,126 L 22,118 C 21,122 17,123 13,123 Z" />
-        <path d="M 83,114 L 83,126 C 83,130 84,134 80,135 L 75,135 C 71,134 66,130 66,118 L 66,126 C 66,130 67,122 71,123 L 75,123 C 80,123 83,119 83,114 Z" />
+        <path d="M 6,144 C 4,150 4,158 6,162 L 28,162 C 28,158 28,150 28,146 Z" />
+        <path d="M 94,144 L 94,146 C 94,150 94,158 94,162 L 72,162 C 72,158 72,150 72,144 Z" />
       </Zone>
 
       <Zone region="forearm" {...z}>
-        <path d="
-          M 5,130 C 3,138 3,152 5,164 L 7,187
-          C 7,190 10,192 14,192 L 18,192
-          C 21,192 22,189 22,185 L 22,160
-          C 22,148 22,136 21,131
-          C 16,130 10,130 5,130 Z
-        " />
-        <path d="
-          M 83,130 C 78,130 72,130 67,131
-          L 66,160 L 66,185
-          C 66,189 67,192 70,192 L 74,192
-          C 78,192 81,190 81,187 L 83,164
-          C 85,152 85,138 83,130 Z
-        " />
+        <path d="M 6,162 C 4,174 4,192 6,208 L 8,228 C 9,232 13,234 17,234 L 21,234 C 25,234 26,230 26,226 L 28,204 C 28,188 28,172 28,164 C 22,163 14,163 6,162 Z" />
+        <path d="M 94,162 C 86,163 78,163 72,164 L 72,204 L 74,226 C 74,230 75,234 79,234 L 83,234 C 87,234 91,232 92,228 L 94,208 C 96,192 96,174 94,162 Z" />
       </Zone>
 
-      {/* ── HAMSTRINGS ────────────────────────────────────────────── */}
+      {/* ── HAMSTRINGS ───────────────────────────────────────────── */}
       <Zone region="hamstring" {...z}>
-        <path d="
-          M 18,150 C 15,157 14,171 15,189
-          L 15,200 L 38,200 L 38,186
-          C 37,170 37,157 37,152 Z
-        " />
-        <path d="
-          M 70,150 L 51,152
-          C 51,157 51,170 50,186
-          L 50,200 L 73,200 L 73,189
-          C 74,171 73,157 70,150 Z
-        " />
+        <path d="M 22,157 C 18,164 16,178 16,198 L 16,218 L 44,218 L 44,196 C 43,178 43,167 44,168 C 40,169 34,167 30,164 C 26,162 22,160 22,157 Z" />
+        <path d="M 78,157 C 78,160 74,162 70,164 C 66,167 60,169 56,168 C 57,167 57,178 56,196 L 56,218 L 84,218 L 84,198 C 84,178 82,164 78,157 Z" />
       </Zone>
 
       <Zone region="knee" {...z}>
-        <path d="M 15,200 L 15,214 C 15,218 19,221 25,221 L 29,221 C 35,221 38,218 38,214 L 38,200 Z" />
-        <path d="M 50,200 L 50,214 C 50,218 53,221 59,221 L 63,221 C 69,221 73,218 73,214 L 73,200 Z" />
+        <path d="M 16,218 C 14,222 14,230 16,234 L 44,234 C 44,230 44,226 44,222 L 44,218 Z" />
+        <path d="M 56,218 L 56,222 C 56,226 56,230 56,234 L 84,234 C 86,230 86,222 84,218 Z" />
       </Zone>
 
       <Zone region="calf" {...z}>
-        <path d="M 13,221 L 39,221 C 40,229 41,241 39,251 C 37,257 32,260 26,260 C 20,260 16,257 14,251 C 12,241 12,229 13,221 Z" />
-        <path d="M 49,221 L 75,221 C 76,229 76,241 74,251 C 72,257 68,260 62,260 C 56,260 51,257 49,251 C 47,241 47,229 49,221 Z" />
+        <path d="M 14,234 L 44,234 C 46,244 47,258 44,270 C 42,276 38,280 32,280 C 26,280 22,276 20,270 C 17,258 16,244 14,234 Z" />
+        <path d="M 56,234 L 86,234 C 84,244 83,258 80,270 C 78,276 74,280 68,280 C 62,280 58,276 56,270 C 53,258 54,244 56,234 Z" />
       </Zone>
 
       <Zone region="ankle" {...z}>
-        <path d="M 16,260 L 36,260 C 37,262 37,266 36,267 L 16,267 C 15,266 15,262 16,260 Z" />
-        <path d="M 52,260 L 72,260 C 73,262 73,266 72,267 L 52,267 C 51,266 51,262 52,260 Z" />
+        <path d="M 20,280 C 19,284 19,290 20,294 L 44,294 C 44,290 44,284 44,280 Z" />
+        <path d="M 56,280 L 80,280 C 81,284 81,290 80,294 L 56,294 C 56,290 56,284 56,280 Z" />
       </Zone>
 
-      {/* ── Anatomy reference lines (posterior) ───────────────────── */}
+      {/* ── Anatomy reference lines — posterior ─────────────────── */}
       <g
         className="pointer-events-none"
         stroke="var(--aura-text2)"
-        strokeWidth="0.45"
+        strokeWidth="0.5"
         fill="none"
-        opacity={0.22}
+        opacity={0.2}
       >
-        {/* Spine */}
-        <line x1="44" y1="36" x2="44" y2="150" />
-        {/* Scapulae outlines */}
-        <path d="M 44,46 C 40,48 34,54 32,64 C 30,74 33,82 36,86" />
-        <path d="M 44,46 C 48,48 54,54 56,64 C 58,74 55,82 52,86" />
-        {/* SI joint hint */}
-        <path d="M 38,136 C 40,138 44,139 44,139 C 44,139 48,138 50,136" strokeDasharray="2 2.5" />
+        {/* Vertebral column */}
+        <line x1="50" y1="47" x2="50" y2="157" />
+        {/* Left scapula outline */}
+        <path d="M 50,52 C 46,54 36,58 32,68 C 28,78 32,90 36,98" />
+        {/* Right scapula outline */}
+        <path d="M 50,52 C 54,54 64,58 68,68 C 72,78 68,90 64,98" />
+        {/* Sacro-iliac hint */}
+        <path d="M 44,150 C 46,152 50,153 50,153 C 50,153 54,152 56,150" strokeDasharray="2 2.5" />
       </g>
     </svg>
   )
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Zone detail panel  (shown below the maps when a region is selected)
+// Zone detail panel
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ZoneDetail({ info }: { info: BodyZoneInfo }) {
@@ -543,7 +514,6 @@ function ZoneDetail({ info }: { info: BodyZoneInfo }) {
           {cfg.label}
         </span>
       </div>
-
       {info.injuries.map((inj) => (
         <div
           key={inj.id}
@@ -573,7 +543,7 @@ function ZoneDetail({ info }: { info: BodyZoneInfo }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface BodyMapProps {
-  zoneMap:   Map<BodyRegion, BodyZoneInfo>
+  zoneMap:    Map<BodyRegion, BodyZoneInfo>
   className?: string
 }
 
@@ -581,44 +551,37 @@ export function BodyMap({ zoneMap, className }: BodyMapProps) {
   const [selected, setSelected] = useState<BodyRegion | null>(null)
   const [hovered,  setHovered]  = useState<BodyRegion | null>(null)
 
-  function handleSelect(region: BodyRegion) {
-    setSelected((prev) => (prev === region ? null : region))
-  }
-
-  const selectedInfo = selected ? (zoneMap.get(selected) ?? null) : null
-
   const svgProps: SvgProps = {
     zoneMap,
     selected,
     hovered,
-    onSelect: handleSelect,
+    onSelect: (r) => setSelected((p) => (p === r ? null : r)),
     onHover:  setHovered,
   }
+
+  const selectedInfo = selected ? (zoneMap.get(selected) ?? null) : null
 
   return (
     <div className={className} onClick={() => setSelected(null)}>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 mb-3 flex-wrap">
-        {([
-          { label: 'Lesão ativa',   color: 'rgba(239,68,68,0.85)'    },
-          { label: 'Lesão recente', color: 'rgba(245,158,11,0.85)'   },
-        ] as const).map((l) => (
-          <div key={l.label} className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full" style={{ background: l.color }} />
+      <div className="flex items-center gap-4 mb-3">
+        {[
+          { label: 'Lesão ativa',   color: 'rgba(239,68,68,0.85)'   },
+          { label: 'Lesão recente', color: 'rgba(245,158,11,0.85)'  },
+        ].map(({ label, color }) => (
+          <div key={label} className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full" style={{ background: color }} />
             <span className="text-[10px]" style={{ color: 'var(--aura-text2)' }}>
-              {l.label}
+              {label}
             </span>
           </div>
         ))}
       </div>
 
-      {/* Both SVG figures */}
-      <div
-        className="flex gap-8 justify-center"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex flex-col items-center gap-1.5">
+      {/* SVG pair */}
+      <div className="flex gap-8 justify-center" onClick={(e) => e.stopPropagation()}>
+        <div className="flex flex-col items-center gap-2">
           <p
             className="text-[9px] font-semibold uppercase tracking-widest"
             style={{ color: 'var(--aura-text2)' }}
@@ -627,8 +590,7 @@ export function BodyMap({ zoneMap, className }: BodyMapProps) {
           </p>
           <FrontalSvg {...svgProps} />
         </div>
-
-        <div className="flex flex-col items-center gap-1.5">
+        <div className="flex flex-col items-center gap-2">
           <p
             className="text-[9px] font-semibold uppercase tracking-widest"
             style={{ color: 'var(--aura-text2)' }}
@@ -639,10 +601,8 @@ export function BodyMap({ zoneMap, className }: BodyMapProps) {
         </div>
       </div>
 
-      {/* Region detail on selection */}
-      {selected && selectedInfo && (
-        <ZoneDetail info={selectedInfo} />
-      )}
+      {/* Selection detail */}
+      {selected && selectedInfo && <ZoneDetail info={selectedInfo} />}
       {selected && !selectedInfo && (
         <div
           className="mt-3 rounded-xl border p-3 text-xs text-center"

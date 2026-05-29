@@ -33,20 +33,8 @@ export function AthleteCard({
   return (
     <Link href={href} style={{ textDecoration: 'none' }}>
       <div
-        className="flex flex-col overflow-hidden rounded-2xl border transition-all duration-200 group cursor-pointer"
-        style={{
-          background:   'var(--aura-bg2)',
-          borderColor:  'var(--aura-border)',
-          boxShadow:    '0 1px 3px rgba(0,0,0,0.18)',
-        }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--aura-border2)'
-          ;(e.currentTarget as HTMLDivElement).style.boxShadow  = '0 4px 16px rgba(0,0,0,0.28)'
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--aura-border)'
-          ;(e.currentTarget as HTMLDivElement).style.boxShadow  = '0 1px 3px rgba(0,0,0,0.18)'
-        }}
+        className="fut-card flex flex-col overflow-hidden rounded-2xl cursor-pointer"
+        style={{ background: 'var(--aura-bg2)' }}
       >
         {/* ── Hero photo (top ~65%) ──────────────────────────────────── */}
         <div

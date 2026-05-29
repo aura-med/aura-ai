@@ -1,6 +1,5 @@
-// Shared athlete avatar — photo fills the rectangle via absolute inset-0 + object-cover.
-// Dimensions are controlled by .ath-avatar in globals.css (currently 56×56, border-radius 10px).
-// Falls back to shirt number when no photo is available.
+// Shared athlete avatar: shows photo when available, falls back to shirt number.
+// Matches .ath-avatar dimensions (34×34, border-radius 8px) by default.
 
 interface AthleteAvatarProps {
   photoUrl?: string | null
@@ -11,20 +10,12 @@ interface AthleteAvatarProps {
 export function AthleteAvatar({ photoUrl, shirtNumber, name }: AthleteAvatarProps) {
   if (photoUrl) {
     return (
-      <div className="ath-avatar">
+      <div className="ath-avatar" style={{ overflow: 'hidden', padding: 0 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photoUrl}
           alt={name}
-          style={{
-            position:   'absolute',
-            inset:      0,
-            width:      '100%',
-            height:     '100%',
-            objectFit:  'cover',
-            objectPosition: 'center top',
-            display:    'block',
-          }}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
       </div>
     )

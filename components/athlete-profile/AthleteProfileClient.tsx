@@ -69,29 +69,42 @@ function AthleteHeader({ profile }: { profile: AthleteProfileData }) {
   }
 
   return (
-    <div className="flex items-start justify-between gap-4">
-      {/* Avatar + name */}
-      <div className="flex items-center gap-3">
-        {/* Photo avatar with upload trigger */}
-        <div className="relative group shrink-0">
-          <div
-            className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center text-lg font-bold font-mono"
-            style={{ background: 'var(--aura-bg3)', color: 'var(--aura-green)', border: '2px solid var(--aura-border)' }}
-          >
-            {uploading ? (
+    /* min-h-[128px] gives the row a fixed floor so the photo panel has real height to fill */
+    <div className="flex items-stretch justify-between gap-5 min-h-[128px]">
+
+      {/* Left: tall photo rectangle + name/info */}
+      <div className="flex items-stretch gap-4 min-w-0">
+
+        {/* ── Photo rectangle — fills full row height ───────────────── */}
+        <div
+          className="relative group shrink-0 w-24 rounded-xl overflow-hidden"
+          style={{ border: '2px solid var(--aura-border)', background: 'var(--aura-bg3)' }}
+        >
+          {uploading ? (
+            <div className="absolute inset-0 flex items-center justify-center">
               <Loader2 size={18} className="animate-spin" style={{ color: 'var(--aura-text3)' }} />
-            ) : photoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={photoUrl} alt={profile.name} className="w-full h-full object-cover" />
-            ) : (
-              profile.shirt_number ?? '—'
-            )}
-          </div>
-          {/* Hover overlay */}
+            </div>
+          ) : photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={photoUrl}
+              alt={profile.name}
+              className="absolute inset-0 w-full h-full object-cover object-top"
+            />
+          ) : (
+            <div
+              className="absolute inset-0 flex items-center justify-center text-2xl font-bold font-mono"
+              style={{ color: 'var(--aura-green)' }}
+            >
+              {profile.shirt_number ?? '—'}
+            </div>
+          )}
+
+          {/* Hover overlay — upload trigger */}
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="absolute inset-0 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
             style={{ background: 'rgba(0,0,0,0.45)' }}
             title="Alterar foto"
           >
@@ -106,9 +119,10 @@ function AthleteHeader({ profile }: { profile: AthleteProfileData }) {
           />
         </div>
 
-        <div>
+        {/* Name + meta — vertically centred beside the photo */}
+        <div className="flex flex-col justify-center min-w-0">
           <h1
-            className="text-xl font-bold tracking-tight"
+            className="text-xl font-bold tracking-tight truncate"
             style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}
           >
             {profile.name}
@@ -122,7 +136,7 @@ function AthleteHeader({ profile }: { profile: AthleteProfileData }) {
       </div>
 
       {/* Quick stats */}
-      <div className="hidden sm:flex items-center gap-4">
+      <div className="hidden sm:flex items-center gap-4 shrink-0">
         {[
           { label: 'Score',  value: profile.score ?? '—', highlight: true  },
           { label: 'Lesões', value: profile.injuryEvents.filter((i) => i.is_active).length },

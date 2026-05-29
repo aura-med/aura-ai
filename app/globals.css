@@ -248,7 +248,7 @@ html.light {
 
 .ath-card    { display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;cursor:pointer;transition:all .15s;border:1px solid var(--aura-border);background:var(--bg2);margin-bottom:6px; }
 .ath-card:hover { background:var(--bg3);border-color:var(--aura-border2); }
-.ath-avatar  { position:relative;width:34px;height:34px;border-radius:8px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:500;color:var(--text2);flex-shrink:0;overflow:hidden; }
+.ath-avatar  { position:relative;width:48px;height:48px;border-radius:9px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text2);flex-shrink:0;overflow:hidden; }
 .ath-name    { font-weight:600;font-size:13px; }
 .ath-meta    { font-size:11px;color:var(--text2);margin-top:1px; }
 .ath-score   { font-family:var(--display);font-size:22px;font-weight:900;text-align:right; }

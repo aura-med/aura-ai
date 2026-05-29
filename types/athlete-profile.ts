@@ -19,6 +19,7 @@ export interface MedicalHistory {
   family_history: Record<string, unknown>
   surgical_history: SurgicalRecord[]
   medications: MedicationRecord[]
+  orthotics: OrthoticRecord[]
   notes: string | null
   created_at: string
   updated_at: string
@@ -38,6 +39,31 @@ export interface MedicationRecord {
   start_date?: string
   end_date?: string
   prescriber?: string
+}
+
+export interface OrthoticRecord {
+  name: string
+  body_part: string
+  prescribed_date?: string
+  prescriber?: string
+  notes?: string
+}
+
+// ── Rehab Sessions ────────────────────────────────────────────────────────────
+
+export type RehabSessionType = 'physio' | 'gym' | 'pool' | 'field' | 'other'
+
+export interface RehabSession {
+  id: string
+  athlete_id: string
+  session_date: string
+  session_type: RehabSessionType
+  duration_minutes: number | null
+  description: string | null
+  clinician_name: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
 }
 
 // ── Medical Documents ─────────────────────────────────────────────────────────

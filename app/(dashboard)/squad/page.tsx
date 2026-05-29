@@ -3,6 +3,7 @@ import { calcScore, riskColor, riskLabel } from '@/lib/scoring'
 import { Sparkline } from '@/components/ui/aura'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import { getAthleteList, type AthleteListDTO } from '@/lib/dal/athletes'
+import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 
 export default async function SquadPage({
   searchParams,
@@ -62,7 +63,7 @@ export default async function SquadPage({
               {posAthletes.map((a) => (
                 <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
                   <div className="ath-card">
-                    <div className="ath-avatar">{a.shirt_number}</div>
+                    <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} />
                     <div className="ath-info">
                       <div className="ath-name">{a.name}</div>
                       <div className="ath-meta">{a.position}</div>
@@ -99,7 +100,7 @@ export default async function SquadPage({
             {rehab.map((a) => (
               <Link key={a.id} href={withSquadParam('/rehab', squadId)} style={{ textDecoration: 'none' }}>
                 <div className="ath-card">
-                  <div className="ath-avatar">{a.shirt_number}</div>
+                  <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} />
                   <div className="ath-info">
                     <div className="ath-name">{a.name}</div>
                     <div className="ath-meta">{a.position}</div>

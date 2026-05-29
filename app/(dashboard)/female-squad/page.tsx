@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { calcScore, riskColor, getFemaleAdjustedScore } from '@/lib/scoring'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
+import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 
 const PHASE_GUIDE = [
   { phase: 'menstrual',  color: '#ff4d6d', days: 'D1–5',  note: 'Dor e fadiga possíveis. Reduzir impacto se necessário.' },
@@ -29,7 +30,7 @@ export default async function FemalePage({
   const { data: athletes } = await query
 
   type FemaleAthlete = {
-    id: string; name: string; shirt_number: number | null; position: string | null
+    id: string; name: string; shirt_number: number | null; photo_url: string | null; position: string | null
     club: string | null; status: string; menstrual_day: number | null; cycle_length: number | null
     wellness_checkins: Array<{ checkin_date: string; fatigue: number | null; sleep_hours: number | null; tqr: number | null; stress: number | null }>
     injury_events: Array<{ id: string }>
@@ -103,7 +104,7 @@ export default async function FemalePage({
               }}>
                 {/* Top row */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <div className="ath-avatar">{a.shirt_number}</div>
+                  <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} />
                   <div className="ath-info">
                     <div className="ath-name">{a.name}</div>
                     <div className="ath-meta">{a.position} · {a.club}</div>

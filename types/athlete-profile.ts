@@ -247,6 +247,7 @@ export interface AthleteProfileData {
   id: string
   name: string
   shirt_number: number | null
+  photo_url: string | null
   position: string | null
   date_of_birth: string | null
   club: string | null

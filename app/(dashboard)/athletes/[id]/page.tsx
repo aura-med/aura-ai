@@ -47,7 +47,7 @@ async function AthleteDetailContent({
   const { data: athlete, error } = await supabase
     .from('athletes')
     .select(`
-      id, name, shirt_number, position, date_of_birth, club, status,
+      id, name, shirt_number, photo_url, position, date_of_birth, club, status,
       injury_events (id, injury_date, return_date, diagnosis, location, severity, is_recurrence),
       score_history (score_date, total_score, acwr_partial, hrv_partial, fatigue_partial, sleep_partial, tqr_partial, history_partial, stress_partial, decel_partial, confidence, days_since_match),
       wellness_checkins (checkin_date, fatigue, sleep_quality, sleep_hours, hrv_ms, tqr)
@@ -184,6 +184,7 @@ async function AthleteDetailContent({
     id:               athlete.id,
     name:             athlete.name,
     shirt_number:     athlete.shirt_number ?? null,
+    photo_url:        (athlete as { photo_url?: string | null }).photo_url ?? null,
     position:         athlete.position ?? null,
     date_of_birth:    athlete.date_of_birth ?? null,
     club:             athlete.club ?? null,

@@ -12,6 +12,8 @@ import type {
 } from '@/types/athlete-profile'
 import { ConsultationModal }    from './ConsultationModal'
 import { MedicalHistoryModal }  from './MedicalHistoryModal'
+import { EmdModal }             from './EmdModal'
+import { Scat6Modal }           from './Scat6Modal'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -62,7 +64,7 @@ function Section({
 
 // ── EMD Card ─────────────────────────────────────────────────────────────────
 
-function EmdCard({ emd }: { emd: EmdSubmission | null }) {
+function EmdCard({ emd, onEdit, onCreate }: { emd: EmdSubmission | null; onEdit: (e: EmdSubmission) => void; onCreate: () => void }) {
   const decision = emdDecisionLabel(emd?.decision ?? null)
   return (
     <div className="rounded-xl border p-4 space-y-3" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
@@ -80,9 +82,30 @@ function EmdCard({ emd }: { emd: EmdSubmission | null }) {
             </p>
           )}
         </div>
-        <span className="text-xs font-bold px-2.5 py-1 rounded-full shrink-0" style={{ background: decision.bg, color: decision.color }}>
-          {decision.label}
-        </span>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: decision.bg, color: decision.color }}>
+            {decision.label}
+          </span>
+          {emd ? (
+            <button
+              type="button"
+              onClick={() => onEdit(emd)}
+              className="p-1 rounded hover:bg-white/10"
+              title="Editar EMD"
+            >
+              <Edit2 size={11} style={{ color: 'var(--aura-text3)' }} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onCreate}
+              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--aura-green-bg)]"
+              style={{ color: 'var(--aura-green)' }}
+            >
+              <Plus size={10} /> Novo EMD
+            </button>
+          )}
+        </div>
       </div>
       {emd?.restrictions && (
         <div className="rounded-lg p-3" style={{ background: 'var(--aura-warn-bg)', borderLeft: '3px solid var(--aura-warn)' }}>
@@ -101,13 +124,18 @@ function EmdCard({ emd }: { emd: EmdSubmission | null }) {
 
 // ── SCAT-6 Banner ─────────────────────────────────────────────────────────────
 
-function Scat6Banner({ scat6 }: { scat6: Scat6Assessment | null }) {
+function Scat6Banner({ scat6, onRegisterBaseline, onEdit }: { scat6: Scat6Assessment | null; onRegisterBaseline: () => void; onEdit: (a: Scat6Assessment) => void }) {
   if (!scat6) {
     return (
       <div className="rounded-xl border border-dashed p-4 text-center" style={{ borderColor: 'var(--aura-border2)' }}>
         <Brain size={18} className="mx-auto mb-1.5" style={{ color: 'var(--aura-text3)' }} />
         <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>Sem avaliação SCAT-6 em vigor</p>
-        <button type="button" className="mt-2 text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-[var(--aura-green-bg)]" style={{ color: 'var(--aura-green)' }}>
+        <button
+          type="button"
+          onClick={onRegisterBaseline}
+          className="mt-2 text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-[var(--aura-green-bg)]"
+          style={{ color: 'var(--aura-green)' }}
+        >
           + Registar Baseline
         </button>
       </div>
@@ -129,9 +157,19 @@ function Scat6Banner({ scat6 }: { scat6: Scat6Assessment | null }) {
             SCAT-6 · {scat6.is_baseline ? 'Baseline' : formatDate(scat6.incident_date)}
           </p>
         </div>
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: diagLabel.bg, color: diagLabel.c }}>
-          {diagLabel.t}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: diagLabel.bg, color: diagLabel.c }}>
+            {diagLabel.t}
+          </span>
+          <button
+            type="button"
+            onClick={() => onEdit(scat6)}
+            className="p-1 rounded hover:bg-white/10"
+            title="Editar SCAT-6"
+          >
+            <Edit2 size={11} style={{ color: 'var(--aura-text3)' }} />
+          </button>
+        </div>
       </div>
       <div className="grid grid-cols-3 gap-3 text-center">
         {[
@@ -269,6 +307,14 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
   const [showSoapModal,   setShowSoapModal]   = useState(false)
   const [showHistModal,   setShowHistModal]   = useState(false)
   const [editConsultation, setEditConsultation] = useState<MedicalConsultation | null>(null)
+  // EMD
+  const [latestEmd,       setLatestEmd]       = useState<EmdSubmission | null>(profile.latestEmd)
+  const [showEmdModal,    setShowEmdModal]    = useState(false)
+  const [editEmd,         setEditEmd]         = useState<EmdSubmission | null>(null)
+  // SCAT-6
+  const [scat6,           setScat6]           = useState<Scat6Assessment | null>(profile.baselineScat6 ?? profile.activeConcussion)
+  const [showScat6Modal,  setShowScat6Modal]  = useState(false)
+  const [editScat6,       setEditScat6]       = useState<Scat6Assessment | null>(null)
 
   // ── Fetch consultations ────────────────────────────────────────────────────
   const fetchConsultations = useCallback(async () => {
@@ -308,6 +354,20 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
     router.refresh()
   }
 
+  function handleEmdSaved(emd: EmdSubmission) {
+    setLatestEmd(emd)
+    setShowEmdModal(false)
+    setEditEmd(null)
+    router.refresh()
+  }
+
+  function handleScat6Saved(a: Scat6Assessment) {
+    setScat6(a)
+    setShowScat6Modal(false)
+    setEditScat6(null)
+    router.refresh()
+  }
+
   const medications = medHistory?.medications ?? []
   const activeMeds  = medications.filter((m) => !m.end_date || new Date(m.end_date) > new Date())
   const surgeries   = medHistory?.surgical_history ?? []
@@ -317,8 +377,16 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
       <div className="space-y-4">
         {/* Row 1: EMD + SCAT-6 */}
         <div className="grid gap-4 lg:grid-cols-2">
-          <EmdCard emd={profile.latestEmd} />
-          <Scat6Banner scat6={profile.baselineScat6 ?? profile.activeConcussion} />
+          <EmdCard
+            emd={latestEmd}
+            onEdit={(e) => { setEditEmd(e); setShowEmdModal(true) }}
+            onCreate={() => { setEditEmd(null); setShowEmdModal(true) }}
+          />
+          <Scat6Banner
+            scat6={scat6}
+            onRegisterBaseline={() => { setEditScat6(null); setShowScat6Modal(true) }}
+            onEdit={(a) => { setEditScat6(a); setShowScat6Modal(true) }}
+          />
         </div>
 
         {/* Bio */}
@@ -424,6 +492,22 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
           existing={medHistory}
           onClose={() => setShowHistModal(false)}
           onSaved={handleHistSaved}
+        />
+      )}
+      {showEmdModal && (
+        <EmdModal
+          athleteId={profile.id}
+          existing={editEmd}
+          onClose={() => { setShowEmdModal(false); setEditEmd(null) }}
+          onSaved={handleEmdSaved}
+        />
+      )}
+      {showScat6Modal && (
+        <Scat6Modal
+          athleteId={profile.id}
+          existing={editScat6}
+          onClose={() => { setShowScat6Modal(false); setEditScat6(null) }}
+          onSaved={handleScat6Saved}
         />
       )}
     </>

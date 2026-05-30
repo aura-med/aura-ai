@@ -138,7 +138,7 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
         >
           <SelectTrigger
             size="sm"
-            className="ml-1 min-w-32 max-w-52 border-[var(--aura-border2)] bg-[var(--aura-bg3)] text-xs text-[var(--aura-text)]"
+            className="ml-1 hidden sm:flex min-w-32 max-w-52 border-[var(--aura-border2)] bg-[var(--aura-bg3)] text-xs text-[var(--aura-text)]"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             <span className="min-w-0 flex-1 truncate text-left">
@@ -163,7 +163,7 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
           <SelectTrigger
             size="sm"
             aria-label="Choose language"
-            className="min-w-16 border-[var(--aura-border2)] bg-[var(--aura-bg3)] text-xs text-[var(--aura-text)]"
+            className="hidden sm:flex min-w-16 border-[var(--aura-border2)] bg-[var(--aura-bg3)] text-xs text-[var(--aura-text)]"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             <Globe2 size={14} aria-hidden="true" />

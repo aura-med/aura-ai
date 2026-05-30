@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
+import { useUiStore } from '@/stores/uiStore'
 import {
   LayoutDashboard, Users, UserCircle, Activity, Calendar,
   Heart, Gauge, Zap, BookOpen, Settings,
@@ -44,10 +45,26 @@ const SECTION_KEYS = ['overview', 'clinical', 'performance', 'intelligence', 'sp
 export function Sidebar() {
   const pathname = usePathname()
   const t = useTranslations('sidebar')
+  const { mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
+
+  function close() { setMobileSidebarOpen(false) }
 
   return (
+    <>
+      {/* Mobile backdrop */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 md:hidden"
+          onClick={close}
+          aria-hidden="true"
+        />
+      )}
     <aside
-      className="fixed left-0 top-14 bottom-0 w-60 flex flex-col border-r overflow-y-auto z-30"
+      className={cn(
+        'fixed left-0 top-14 bottom-0 w-60 flex flex-col border-r overflow-y-auto z-40',
+        'transition-transform duration-200 md:translate-x-0',
+        mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full',
+      )}
       style={{ background: 'var(--aura-bg)', borderColor: 'var(--aura-border)' }}
     >
       <nav className="flex-1 px-3 py-4 space-y-6">
@@ -71,6 +88,7 @@ export function Sidebar() {
                     <li key={item.href}>
                       <Link
                         href={item.href}
+                        onClick={close}
                         className={cn(
                           'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors group',
                           isActive
@@ -122,5 +140,6 @@ export function Sidebar() {
         {t('version')}
       </div>
     </aside>
+    </>
   )
 }

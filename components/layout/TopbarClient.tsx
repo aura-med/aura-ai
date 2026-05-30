@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { Globe2, Sun, Moon } from 'lucide-react'
+import { Globe2, Sun, Moon, Menu } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { NotificationCenter } from '@/components/layout/NotificationCenter'
@@ -26,7 +26,7 @@ const LOCALES: { value: LocaleValue; label: string; flag: string }[] = [
 
 export function TopbarClient({ dto }: { dto: TopbarDTO }) {
   const t = useTranslations('topbar')
-  const { theme, toggleTheme, locale, setLocale, selectedSquadId, setSquad, setOrg } = useUiStore()
+  const { theme, toggleTheme, locale, setLocale, selectedSquadId, setSquad, setOrg, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -81,6 +81,14 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
       }}
     >
       <div className="flex min-w-0 items-center gap-3">
+        <button
+          onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+          className="flex size-9 items-center justify-center rounded-md transition-colors md:hidden"
+          style={{ color: 'var(--aura-text2)' }}
+          aria-label="Toggle menu"
+        >
+          <Menu size={18} />
+        </button>
         <Link
           href={dashboardHref}
           aria-label="Dashboard"

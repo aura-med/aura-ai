@@ -63,7 +63,7 @@ export default async function FemalePage({
       {/* Cycle phase guide */}
       <div className="card" style={{ marginBottom: 16, borderColor: 'rgba(180,141,252,0.3)' }}>
         <div className="ctitle" style={{ color: 'var(--purple)' }}>🔬 Impacto do ciclo menstrual no risco de lesão</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 10 }}>
+        <div className="stat-grid-4" style={{ marginBottom: 10 }}>
           {PHASE_GUIDE.map(p => (
             <div key={p.phase} style={{ background: 'var(--bg3)', borderRadius: 8, padding: 12, borderLeft: `3px solid ${p.color}` }}>
               <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text3)', marginBottom: 4 }}>{p.days}</div>

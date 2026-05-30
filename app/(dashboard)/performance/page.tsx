@@ -82,7 +82,7 @@ export default async function PerformancePage({
             </div>
             {rows.sort((a, b) => ((b.vmax_today_pct ?? 0) as number) - ((a.vmax_today_pct ?? 0) as number)).map((r) => (
               <div key={r.athlete.id} className="bar-row" style={{ marginBottom: 9 }}>
-                <div className="bar-name" style={{ width: 160 }}>
+                <div className="bar-name">
                   <Link href={withSquadParam(`/athletes/${r.athlete.id}`, squadId)} style={{ textDecoration: 'none', color: 'inherit' }}>
                     {r.athlete.name}{' '}
                     <span style={{ color: 'var(--text3)', fontSize: 10 }}>({r.athlete.position})</span>

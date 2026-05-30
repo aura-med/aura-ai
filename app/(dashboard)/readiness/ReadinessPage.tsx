@@ -74,6 +74,7 @@ export default async function ReadinessPage({
 
       <div className="card">
         <div className="ctitle">Estado do plantel — hoje</div>
+        <div style={{ overflowX: 'auto' }}>
         <table className="data-table">
           <thead>
             <tr>
@@ -122,6 +123,7 @@ export default async function ReadinessPage({
             })}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )

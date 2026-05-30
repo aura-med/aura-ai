@@ -83,7 +83,7 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
       <div className="flex min-w-0 items-center gap-3">
         <button
           onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-          className="flex size-9 items-center justify-center rounded-md transition-colors md:hidden"
+          className="flex size-11 items-center justify-center rounded-md transition-colors md:hidden"
           style={{ color: 'var(--aura-text2)' }}
           aria-label="Toggle menu"
         >
@@ -180,7 +180,7 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
 
         <button
           onClick={toggleTheme}
-          className="flex size-9 items-center justify-center rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--aura-green)]"
+          className="flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--aura-green)]"
           style={{ color: 'var(--aura-text2)' }}
           aria-label="Toggle theme"
         >

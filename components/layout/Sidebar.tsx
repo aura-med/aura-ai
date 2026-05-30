@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import { useUiStore } from '@/stores/uiStore'
@@ -44,10 +44,16 @@ const SECTION_KEYS = ['overview', 'clinical', 'performance', 'intelligence', 'sp
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const t = useTranslations('sidebar')
-  const { mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
+  const { mobileSidebarOpen, setMobileSidebarOpen, locale, setLocale } = useUiStore()
 
   function close() { setMobileSidebarOpen(false) }
+
+  function handleLocale(loc: 'pt' | 'en' | 'es') {
+    setLocale(loc)
+    router.refresh()
+  }
 
   return (
     <>
@@ -131,6 +137,32 @@ export function Sidebar() {
           )
         })}
       </nav>
+
+      {/* Mobile-only footer: locale switcher */}
+      <div
+        className="md:hidden border-t px-3 py-3"
+        style={{ borderColor: 'var(--aura-border)' }}
+      >
+        <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}>
+          Idioma
+        </p>
+        <div className="flex gap-1">
+          {(['pt', 'en', 'es'] as const).map((loc) => (
+            <button
+              key={loc}
+              onClick={() => handleLocale(loc)}
+              className="flex-1 rounded-md py-2 text-xs font-mono font-semibold uppercase transition-colors"
+              style={{
+                background: locale === loc ? 'rgba(0,229,160,0.10)' : 'var(--aura-bg3)',
+                color: locale === loc ? 'var(--aura-green)' : 'var(--aura-text2)',
+                border: `1px solid ${locale === loc ? 'rgba(0,229,160,0.3)' : 'var(--aura-border)'}`,
+              }}
+            >
+              {loc.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Version tag */}
       <div

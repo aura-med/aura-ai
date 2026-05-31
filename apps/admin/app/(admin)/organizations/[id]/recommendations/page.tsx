@@ -3,6 +3,7 @@
 // NOT gated by Support Mode — this is platform config, not sensitive athlete data.
 
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { ArrowLeft, BookOpen, ChevronRight, FlaskConical, Info, Lock, Shield } from 'lucide-react'
 import { Card, PageHeader, StatusBadge } from '@/components/ui'
 import { getOrgRecommendationsData } from '@/lib/admin-data'
@@ -185,14 +186,16 @@ export default async function OrgRecommendationsPage({
       </div>
 
       {/* Interactive config panels — client component */}
-      <RecommendationConfigClient
-        orgId={id}
-        thresholds={thresholds as { medium: number; high: number; critical: number }}
-        weights={weights as Record<string, number>}
-        weightsSum={weightsSum}
-        contextType={config?.context_type ?? 'club'}
-        language={config?.language ?? 'pt'}
-      />
+      <Suspense fallback={null}>
+        <RecommendationConfigClient
+          orgId={id}
+          thresholds={thresholds as { medium: number; high: number; critical: number }}
+          weights={weights as Record<string, number>}
+          weightsSum={weightsSum}
+          contextType={config?.context_type ?? 'club'}
+          language={config?.language ?? 'pt'}
+        />
+      </Suspense>
 
       {/* Rules Library */}
       <Card className="overflow-x-auto p-0">
@@ -309,9 +312,14 @@ export default async function OrgRecommendationsPage({
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-[9px]" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
-                                editable
-                              </span>
+                              <Link
+                                href={`?override=${variable}__${riskLevel}__${stakeholder}`}
+                                scroll={false}
+                                className="text-[9px] transition-colors hover:text-[var(--aura-green)]"
+                                style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)', textDecoration: 'none' }}
+                              >
+                                ↓ override
+                              </Link>
                             )}
                           </td>
                           {ruleIdx === 0 && (

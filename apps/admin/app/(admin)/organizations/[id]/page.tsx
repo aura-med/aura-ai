@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LockKeyhole } from 'lucide-react'
+import { FlaskConical, LockKeyhole } from 'lucide-react'
 import { Card, PageHeader, StatusBadge } from '@/components/ui'
 import { getSensitiveOrgDetail } from '@/lib/admin-data'
 import { formatDate } from '@/lib/utils'
@@ -40,10 +40,20 @@ export default async function OrganizationDetailPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={data.organization?.name ?? 'Organization detail'}
-        description="Scoped support inspection view. This sensitive read has been written to the platform audit log."
-      />
+      <div className="flex items-start justify-between gap-4">
+        <PageHeader
+          title={data.organization?.name ?? 'Organization detail'}
+          description="Scoped support inspection view. This sensitive read has been written to the platform audit log."
+        />
+        <Link
+          href={`/organizations/${id}/recommendations`}
+          className="flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors hover:opacity-90"
+          style={{ background: 'var(--aura-green)', color: 'var(--aura-bg)' }}
+        >
+          <FlaskConical size={13} />
+          Recommendation Model
+        </Link>
+      </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
         <Card className="overflow-x-auto p-0">

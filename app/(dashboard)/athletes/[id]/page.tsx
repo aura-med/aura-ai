@@ -16,7 +16,8 @@ import { riskColor, scoreToRisk } from '@/lib/utils'
 import { BASE_WEIGHTS_V1 } from '@/lib/scoring/engine'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import { getLatestRecommendations, acknowledgeRecommendations } from '@/lib/actions/recommendations'
-import type { ScorePartials, ReadinessIndicator, UserRole } from '@/types'
+import { recalculateAthleteScore } from '@/app/api/athletes/[id]/score/route'
+import type { ScorePartials, ScoreResult, RecommendationSet, RiskLevel, Confidence, ReadinessIndicator, UserRole } from '@/types'
 
 export default function AthleteDetailPage(props: {
   params: Promise<{ id: string }>
@@ -79,9 +80,39 @@ async function AthleteDetailContent({
 
   // Latest score
   const latestScore = athlete.score_history?.[0]
-  const score       = latestScore ? Math.round(latestScore.total_score * 100) : null
-  const riskLevel   = score !== null ? scoreToRisk(score) : null
-  const confidence  = (latestScore?.confidence ?? 'low') as 'high' | 'medium' | 'low'
+  let score: number | null         = latestScore ? Math.round(latestScore.total_score * 100) : null
+  let riskLevel: RiskLevel | null  = score !== null ? scoreToRisk(score) : null
+  let confidence: Confidence       = (latestScore?.confidence ?? 'low') as Confidence
+  let activeRecData                = recData
+  let freshPartials: ScorePartials | null = null
+  let freshDominantVariable: string | null = null
+
+  // Auto-calculate and persist score + recommendations when no score_history exists
+  if (!latestScore) {
+    const scoreResponse = await recalculateAthleteScore(id, supabase)
+    if (scoreResponse.status === 200 && 'result' in scoreResponse.body) {
+      const { result, recommendations, recommendationLogId } = scoreResponse.body as {
+        result: ScoreResult
+        recommendations: RecommendationSet
+        recommendationLogId: string | null
+      }
+      score                 = result.score
+      riskLevel             = result.riskLevel
+      confidence            = result.confidence
+      freshPartials         = result.partials
+      freshDominantVariable = result.dominantVariable as string
+      if (recommendations && recommendationLogId) {
+        activeRecData = {
+          logId:        recommendationLogId,
+          generatedAt:  new Date().toISOString(),
+          clinical:     recommendations.clinical ?? [],
+          athlete:      recommendations.athlete  ?? [],
+          coach:        recommendations.coach    ?? [],
+          acknowledged: { clinical: false, coach: false },
+        }
+      }
+    }
+  }
 
   // 7-day sparkline (oldest → newest)
   const sparkData: (number | null)[] = (athlete.score_history ?? [])
@@ -89,8 +120,8 @@ async function AthleteDetailContent({
     .reverse()
     .map((s) => Math.round(s.total_score * 100))
 
-  // Partials from latest score
-  const partials: ScorePartials = latestScore
+  // Partials from latest score (or from fresh auto-calculation)
+  const partials: ScorePartials = freshPartials ?? (latestScore
     ? {
         history: latestScore.history_partial,
         acwr:    latestScore.acwr_partial,
@@ -105,20 +136,22 @@ async function AthleteDetailContent({
     : {
         history: null, acwr: null, hrv: null, fatigue: null,
         sleep: null, tqr: null, stress: null, decel: null, md: null,
-      }
+      })
 
   const missing = (Object.keys(partials) as (keyof ScorePartials)[]).filter(
     (k) => partials[k] === null
   )
 
-  // Dominant variable (highest contributing partial × weight)
-  let dominantVariable: string | null = null
-  let maxContrib = 0
-  for (const [k, v] of Object.entries(partials)) {
-    if (v !== null) {
-      const w      = BASE_WEIGHTS_V1[k as keyof typeof BASE_WEIGHTS_V1] ?? 0
-      const contrib = (v as number) * w
-      if (contrib > maxContrib) { maxContrib = contrib; dominantVariable = k }
+  // Dominant variable — use engine result directly when available
+  let dominantVariable: string | null = freshDominantVariable
+  if (!dominantVariable) {
+    let maxContrib = 0
+    for (const [k, v] of Object.entries(partials)) {
+      if (v !== null) {
+        const w       = BASE_WEIGHTS_V1[k as keyof typeof BASE_WEIGHTS_V1] ?? 0
+        const contrib = (v as number) * w
+        if (contrib > maxContrib) { maxContrib = contrib; dominantVariable = k }
+      }
     }
   }
 
@@ -309,16 +342,16 @@ async function AthleteDetailContent({
           </div>
 
           {/* Recommendations — new panel */}
-          {recData && riskLevel ? (
+          {activeRecData && riskLevel ? (
             <RecommendationsPanel
-              recommendations={{ clinical: recData.clinical, coach: recData.coach, athlete: recData.athlete }}
-              logId={recData.logId}
-              generatedAt={recData.generatedAt}
+              recommendations={{ clinical: activeRecData.clinical, coach: activeRecData.coach, athlete: activeRecData.athlete }}
+              logId={activeRecData.logId}
+              generatedAt={activeRecData.generatedAt}
               dominantVariable={dominantVariable}
               riskLevel={riskLevel}
               confidence={confidence}
               viewerRole={viewerRole}
-              acknowledged={recData.acknowledged}
+              acknowledged={activeRecData.acknowledged}
               onAcknowledge={acknowledgeRecommendations}
             />
           ) : riskLevel ? (

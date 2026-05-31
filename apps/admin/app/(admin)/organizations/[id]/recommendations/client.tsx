@@ -3,7 +3,8 @@
 // apps/admin/app/(admin)/organizations/[id]/recommendations/client.tsx
 // Interactive sections: thresholds editor, weights editor, override form
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect, useRef, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { AlertTriangle, Check, ChevronDown, ChevronUp, Plus, RotateCcw, Save } from 'lucide-react'
 import { upsertOrgRecommendationConfig, upsertOrgRecommendationOverride, deactivateOrgOverride, resetOrgRecommendationConfig } from '@/lib/recommendation-actions'
 import { ALL_VARIABLES, ALL_RISK_LEVELS, ALL_STAKEHOLDERS, VARIABLE_META } from '@root/lib/recommendations'
@@ -11,8 +12,18 @@ import type { RiskLevel } from '@root/types'
 
 // ─── Shared sub-components ─────────────────────────────────────────────────
 
-function SectionToggle({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
-  const [open, setOpen] = useState(defaultOpen)
+function SectionToggle({ title, children, defaultOpen = false, forceOpen = false }: {
+  title: string
+  children: React.ReactNode
+  defaultOpen?: boolean
+  forceOpen?: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen || forceOpen)
+
+  useEffect(() => {
+    if (forceOpen) setOpen(true)
+  }, [forceOpen])
+
   return (
     <div className="rounded-lg border" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg)' }}>
       <button
@@ -232,11 +243,13 @@ function WeightsEditor({ orgId, weights, weightsSum }: { orgId: string; weights:
 
 // ─── Override Form ────────────────────────────────────────────────────────────
 
-function OverrideForm({ orgId }: { orgId: string }) {
+type OverridePrefill = { variable: string; risk_level: RiskLevel; stakeholder: 'clinical' | 'coach' | 'athlete' } | null
+
+function OverrideForm({ orgId, initialValues }: { orgId: string; initialValues?: OverridePrefill }) {
   const [form, setForm] = useState({
-    variable:      ALL_VARIABLES[0],
-    risk_level:    'high' as RiskLevel,
-    stakeholder:   'clinical' as 'clinical' | 'coach' | 'athlete',
+    variable:      initialValues?.variable    ?? ALL_VARIABLES[0],
+    risk_level:    initialValues?.risk_level  ?? 'high' as RiskLevel,
+    stakeholder:   initialValues?.stakeholder ?? 'clinical' as 'clinical' | 'coach' | 'athlete',
     override_type: 'text_only' as 'text_only' | 'add_rule' | 'deactivate',
     custom_text:   '',
     custom_icon:   '',
@@ -245,7 +258,19 @@ function OverrideForm({ orgId }: { orgId: string }) {
   })
   const [isPending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState<{ success?: boolean; error?: string }>({})
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(!!initialValues)
+
+  useEffect(() => {
+    if (initialValues) {
+      setForm(prev => ({
+        ...prev,
+        variable:    initialValues.variable,
+        risk_level:  initialValues.risk_level,
+        stakeholder: initialValues.stakeholder,
+      }))
+      setOpen(true)
+    }
+  }, [initialValues])
 
   function handleSubmit() {
     startTransition(async () => {
@@ -410,6 +435,27 @@ export function RecommendationConfigClient({
   contextType: 'club' | 'federation'
   language:    'pt' | 'en' | 'es'
 }) {
+  const searchParams = useSearchParams()
+  const overrideSectionRef = useRef<HTMLDivElement>(null)
+
+  const parsedOverride = useMemo<OverridePrefill>(() => {
+    const param = searchParams.get('override')
+    if (!param) return null
+    const [variable, risk_level, stakeholder] = param.split('__')
+    if (!variable || !risk_level || !stakeholder) return null
+    return {
+      variable,
+      risk_level:  risk_level  as RiskLevel,
+      stakeholder: stakeholder as 'clinical' | 'coach' | 'athlete',
+    }
+  }, [searchParams])
+
+  useEffect(() => {
+    if (parsedOverride && overrideSectionRef.current) {
+      overrideSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [parsedOverride])
+
   const [isPending, startTransition] = useTransition()
   const [ctxFeedback, setCtxFeedback] = useState<{ success?: boolean; error?: string }>({})
 
@@ -481,9 +527,11 @@ export function RecommendationConfigClient({
       </SectionToggle>
 
       {/* Override form */}
-      <SectionToggle title="Add Rule Override">
-        <OverrideForm orgId={orgId} />
-      </SectionToggle>
+      <div ref={overrideSectionRef}>
+        <SectionToggle title="Add Rule Override" forceOpen={!!parsedOverride}>
+          <OverrideForm orgId={orgId} initialValues={parsedOverride} />
+        </SectionToggle>
+      </div>
     </div>
   )
 }

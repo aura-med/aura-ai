@@ -15,22 +15,31 @@ export async function getReadinessPageDTO(squadId: string | null): Promise<Readi
   const supabase = await createClient()
   let query = supabase
     .from('athletes')
-    .select('id, name, position, club, wellness_checkins(checkin_date, fatigue, sleep_hours, tqr, stress, hrv_ms), performance_data(session_date, vmax_today_pct), injury_events(id), athlete_passport(passport_data)')
+    .select(`
+      id, name, position, club,
+      wellness_checkins(checkin_date, fatigue, doms, sleep_hours, sleep_quality, tqr, stress, hrv_ms),
+      gps_sessions(session_date, session_type),
+      injury_events(id),
+      athlete_passport(passport_data)
+    `)
     .eq('active', true)
     .eq('status', 'available')
     .order('shirt_number')
+    .order('checkin_date', { referencedTable: 'wellness_checkins', ascending: false })
+    .order('session_date', { referencedTable: 'gps_sessions', ascending: false })
 
   if (squadId) query = query.eq('squad_id', squadId)
 
   const { data } = await query
   const rows = asRecordArray(data).map(readinessRowDTO).filter((row) => row.id)
+
   return {
     squadId,
     rows,
     summary: {
       green: rows.filter((row) => row.readiness.overall.key === 'green').length,
       amber: rows.filter((row) => row.readiness.overall.key === 'amber').length,
-      red: rows.filter((row) => row.readiness.overall.key === 'red').length,
+      red:   rows.filter((row) => row.readiness.overall.key === 'red').length,
       total: rows.length,
     },
   }

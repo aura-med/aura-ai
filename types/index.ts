@@ -278,6 +278,67 @@ export interface ReadinessResult {
   overall: 'green' | 'amber' | 'red' | 'grey'
 }
 
+// ── Readiness scoring model (v1) ───────────────────────────────────────────
+
+/** Traffic-light output of the readiness model */
+export type ReadinessLevel = 'green' | 'amber' | 'red'
+
+/** Raw inputs fed into the readiness engine (all nullable — engine redistributes weights) */
+export interface ReadinessInputs {
+  /** Fractional HRV deviation from individual baseline: (today − baseline) / baseline */
+  hrv_delta_pct: number | null
+  /** Sleep duration (hours) */
+  sleep_hours: number | null
+  /** Sleep quality (1–5 scale, higher = better) */
+  sleep_quality: number | null
+  /** Hooper fatigue sub-scale (1–7) */
+  fatigue: number | null
+  /** Hooper DOMS sub-scale (1–7) */
+  doms: number | null
+  /** Hooper stress sub-scale (1–7) */
+  stress: number | null
+  /** TQR recovery score (6–20, higher = better) */
+  tqr: number | null
+  /** Days since last competitive match (MD+n) */
+  md_plus: number | null
+}
+
+/** Normalised partials (0 = no impairment, 1 = maximum impairment) */
+export interface ReadinessPartials {
+  hrv:     number | null
+  sleep:   number | null
+  fatigue: number | null
+  doms:    number | null
+  stress:  number | null
+  tqr:     number | null
+  md:      number | null
+}
+
+/** Evidence-based weights that sum to 1.0 */
+export interface ReadinessWeights {
+  hrv:     number
+  sleep:   number
+  fatigue: number
+  doms:    number
+  stress:  number
+  tqr:     number
+  md:      number
+}
+
+/** Full output of calculateReadiness() */
+export interface ReadinessScore {
+  /** Composite score 0–100 (higher = less ready / more impaired) */
+  score: number
+  level: ReadinessLevel
+  confidence: Confidence
+  confidenceReason: string
+  dominantVariable: keyof ReadinessPartials
+  partials: ReadinessPartials
+  effectiveWeights: ReadinessWeights
+  missing: (keyof ReadinessPartials)[]
+  nAvailable: number
+}
+
 export interface CalendarSnapshot {
   pre: number
   post: number

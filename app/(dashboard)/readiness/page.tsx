@@ -71,12 +71,20 @@ export default async function ReadinessPage({
                     </div>
                   </td>
                   <td style={{ textAlign: 'center' }}>
-                    <span
-                      style={{ fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 600, color: STATUS_COLORS[row.readiness.overall.key] }}
+                    <div
+                      style={{ fontFamily: 'var(--mono)', fontSize: 20, fontWeight: 700, color: STATUS_COLORS[row.readiness.overall.key], lineHeight: 1 }}
                       aria-label={row.readiness.overall.ariaLabel}
                     >
+                      {row.readinessScore.score}
+                    </div>
+                    <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: STATUS_COLORS[row.readiness.overall.key], marginTop: 2 }}>
                       {row.readiness.overall.label}
-                    </span>
+                    </div>
+                    {row.readinessScore.confidence !== 'high' && (
+                      <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 1 }}>
+                        {row.readinessScore.confidence === 'low' ? '⚠ dados insuf.' : '~ indicativo'}
+                      </div>
+                    )}
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: 12, alignItems: 'stretch', flexWrap: 'wrap' }}>

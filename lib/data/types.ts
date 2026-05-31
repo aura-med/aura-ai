@@ -1,4 +1,4 @@
-import type { AthleteScore, CalendarEvent, RtpCriterion } from '@/types'
+import type { AthleteScore, CalendarEvent, ReadinessScore, RtpCriterion } from '@/types'
 
 export type ClinicalStatusKey = 'green' | 'amber' | 'red' | 'grey'
 export type ClinicalPriority = 'normal' | 'watch' | 'urgent' | 'unknown'
@@ -153,6 +153,7 @@ export interface ReadinessRowDTO {
   club: string | null
   score: AthleteScore
   scoreStatus: ClinicalStatusDTO
+  readinessScore: ReadinessScore
   readiness: {
     overall: ClinicalStatusDTO
     indicators: ReadinessIndicatorDTO[]

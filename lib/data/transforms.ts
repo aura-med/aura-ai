@@ -1,7 +1,8 @@
-import { calcScore, getReadiness } from '@/lib/scoring'
+import { calcScore } from '@/lib/scoring'
+import { calculateReadiness } from '@/lib/readiness/engine'
 import { asNumber, asRecord, asRecordArray, asString, firstRecord, latestByDate, sortByDateDesc, type DbRecord } from '@/lib/data/records'
 import { clinicalStatus, readinessStatus, riskStatus } from '@/lib/data/status'
-import type { CalendarEvent, RtpCriterion } from '@/types'
+import type { CalendarEvent, ReadinessInputs, RtpCriterion } from '@/types'
 import type {
   CalendarAthleteDTO,
   CalendarPageDTO,
@@ -182,17 +183,96 @@ export function readinessIndicatorDTO(indicator: { label: string; value: string;
   }
 }
 
+/** Compute HRV baseline from athlete passport or rolling 7-day mean from wellness checkins */
+function computeHrvBaseline(passportData: DbRecord, wellnessCheckins: unknown): number | null {
+  const passportBaseline = asNumber(passportData.hrv_baseline_ms)
+  if (passportBaseline !== null) return passportBaseline
+
+  // Rolling 7-day mean from checkins (sorted newest-first by caller)
+  const checkins = sortByDateDesc(asRecordArray(wellnessCheckins), 'checkin_date')
+  const recent = checkins
+    .slice(0, 7)
+    .map((c) => asNumber(c.hrv_ms))
+    .filter((v): v is number => v !== null)
+
+  if (recent.length === 0) return null
+  return recent.reduce((sum, v) => sum + v, 0) / recent.length
+}
+
+/** Days since the most recent match in gps_sessions (null if no match found) */
+function daysSinceLastMatch(gpsSessions: unknown): number | null {
+  const sessions = sortByDateDesc(asRecordArray(gpsSessions), 'session_date')
+  const lastMatch = sessions.find((s) => asString(s.session_type) === 'match')
+  if (!lastMatch) return null
+
+  const matchDate = Date.parse(asString(lastMatch.session_date) ?? '')
+  if (Number.isNaN(matchDate)) return null
+
+  const today = Date.now()
+  return Math.floor((today - matchDate) / (1000 * 60 * 60 * 24))
+}
+
+/** Partial score to traffic-light label */
+function partialToStatus(partial: number | null): string {
+  if (partial === null) return 'grey'
+  if (partial < 0.3)   return 'green'
+  if (partial < 0.6)   return 'amber'
+  return 'red'
+}
+
 export function readinessRowDTO(row: DbRecord): ReadinessRowDTO {
   const latestWellness = latestByDate(row.wellness_checkins, 'checkin_date')
-  const latestPerf = latestByDate(row.performance_data, 'session_date')
   const passport = firstRecord(row.athlete_passport)
   const passportData = asRecord(passport.passport_data)
   const score = calcScore(scoreInputsForAthlete(row))
-  const readiness = getReadiness({
-    wellness: latestWellness,
-    perf: latestPerf,
-    hrv_baseline_ms: asNumber(passportData.hrv_baseline_ms),
-  })
+
+  // ── Build HRV delta ──────────────────────────────────────────────────
+  const todayHrv  = asNumber(latestWellness.hrv_ms)
+  const baseline  = computeHrvBaseline(passportData, row.wellness_checkins)
+  const hrvDelta  = todayHrv !== null && baseline !== null && baseline > 0
+    ? (todayHrv - baseline) / baseline
+    : null
+
+  // ── Build ReadinessInputs ────────────────────────────────────────────
+  const readinessInputs: ReadinessInputs = {
+    hrv_delta_pct: hrvDelta,
+    sleep_hours:   asNumber(latestWellness.sleep_hours),
+    sleep_quality: asNumber(latestWellness.sleep_quality),
+    fatigue:       asNumber(latestWellness.fatigue),
+    doms:          asNumber(latestWellness.doms),
+    stress:        asNumber(latestWellness.stress),
+    tqr:           asNumber(latestWellness.tqr),
+    md_plus:       daysSinceLastMatch(row.gps_sessions),
+  }
+
+  const readinessScore = calculateReadiness(readinessInputs)
+
+  // ── Build indicators from partials ──────────────────────────────────
+  const p = readinessScore.partials
+  const indicators: ReturnType<typeof readinessIndicatorDTO>[] = [
+    {
+      label: 'HRV',
+      value: todayHrv !== null ? `${Math.round(todayHrv)}ms` : '--',
+      detail: hrvDelta !== null ? `${hrvDelta > 0 ? '+' : ''}${Math.round(hrvDelta * 100)}% vs baseline` : undefined,
+      status: readinessStatus(partialToStatus(p.hrv), 'HRV'),
+    },
+    {
+      label: 'Sono',
+      value: readinessInputs.sleep_hours !== null ? `${readinessInputs.sleep_hours}h` : '--',
+      detail: readinessInputs.sleep_quality !== null ? `Qualidade ${readinessInputs.sleep_quality}/5` : undefined,
+      status: readinessStatus(partialToStatus(p.sleep), 'Sono'),
+    },
+    {
+      label: 'Fadiga',
+      value: readinessInputs.fatigue !== null ? `${readinessInputs.fatigue}/7` : '--',
+      status: readinessStatus(partialToStatus(p.fatigue), 'Fadiga Hooper'),
+    },
+    {
+      label: 'TQR',
+      value: readinessInputs.tqr !== null ? `${readinessInputs.tqr}/20` : '--',
+      status: readinessStatus(partialToStatus(p.tqr), 'TQR'),
+    },
+  ]
 
   return {
     id: asString(row.id) ?? '',
@@ -201,9 +281,10 @@ export function readinessRowDTO(row: DbRecord): ReadinessRowDTO {
     club: asString(row.club),
     score,
     scoreStatus: riskStatus(score.score),
+    readinessScore,
     readiness: {
-      overall: readinessStatus(readiness.overall, 'Prontidão global'),
-      indicators: readiness.indicators.map(readinessIndicatorDTO),
+      overall: readinessStatus(readinessScore.level, 'Prontidão global'),
+      indicators,
     },
   }
 }

@@ -86,7 +86,7 @@ export function NotificationCenter({
       <button
         ref={triggerRef}
         onClick={() => setOpen(!open)}
-        className="relative flex size-9 items-center justify-center rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--aura-green)]"
+        className="relative flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--aura-green)]"
         style={{ color: open ? 'var(--aura-text)' : 'var(--aura-text2)' }}
         aria-label={`${t('title')}${unreadCount ? `, ${unreadCount} por ler` : ''}`}
         aria-expanded={open}
@@ -107,7 +107,7 @@ export function NotificationCenter({
         <section
           role="dialog"
           aria-label={t('title')}
-          className="absolute right-0 top-full mt-2 w-80 overflow-hidden rounded-lg border shadow-2xl z-50"
+          className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-0.5rem)] overflow-hidden rounded-lg border shadow-2xl z-50"
           style={{
             background: 'var(--aura-bg2)',
             borderColor: 'var(--aura-border)',
@@ -136,7 +136,7 @@ export function NotificationCenter({
                 <button
                   onClick={handleMarkAllRead}
                   disabled={isPending}
-                  className="flex size-9 items-center justify-center rounded-md transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--aura-green)]"
+                  className="flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-md transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--aura-green)]"
                   style={{ color: 'var(--aura-text3)' }}
                   aria-label={t('markAllRead')}
                   title={t('markAllRead')}

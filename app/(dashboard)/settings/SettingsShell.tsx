@@ -34,9 +34,46 @@ export function SettingsShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-56px)] gap-0">
+    <div className="flex flex-col md:flex-row min-h-[calc(100vh-56px)]">
+
+      {/* Mobile: horizontal scrollable nav */}
+      <nav
+        className="flex md:hidden overflow-x-auto border-b gap-1 px-3 py-2 shrink-0"
+        style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg)' }}
+      >
+        {SETTINGS_NAV.map(({ href, icon: Icon, key }) => {
+          const active = pathname === href || pathname.startsWith(`${href}/`)
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap shrink-0 transition-colors',
+                active ? 'font-medium' : 'hover:bg-white/5'
+              )}
+              style={{
+                color: active ? 'var(--aura-green)' : 'var(--aura-text2)',
+                background: active ? 'rgba(0,229,160,0.10)' : undefined,
+              }}
+            >
+              <Icon size={13} />
+              <span>{t(`nav.${key}`)}</span>
+            </Link>
+          )
+        })}
+        <button
+          onClick={handleSignOut}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap shrink-0 transition-colors hover:bg-white/5"
+          style={{ color: 'var(--aura-text2)' }}
+        >
+          <LogOut size={13} />
+          {t('nav.signOut')}
+        </button>
+      </nav>
+
+      {/* Desktop: vertical sidebar */}
       <aside
-        className="w-56 shrink-0 border-r flex flex-col"
+        className="hidden md:flex w-56 shrink-0 border-r flex-col"
         style={{ background: 'var(--aura-bg)', borderColor: 'var(--aura-border)' }}
       >
         <div className="px-4 py-4 border-b" style={{ borderColor: 'var(--aura-border)' }}>
@@ -82,7 +119,7 @@ export function SettingsShell({ children }: { children: React.ReactNode }) {
         </button>
       </aside>
 
-      <section className="min-w-0 flex-1 p-6">
+      <section className="min-w-0 flex-1 p-4 md:p-6">
         {children}
       </section>
     </div>

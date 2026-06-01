@@ -79,7 +79,7 @@ export function PassportClient({ dto }: { dto: PassportPageDTO }) {
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 14 }}>
+            <div className="stat-grid-3" style={{ marginBottom: 14 }}>
               {[
                 { label: 'VMAX REF.', value: athlete.performance.vmax ? `${athlete.performance.vmax} km/h` : '-', color: 'var(--blue)' },
                 { label: 'HRV BASELINE', value: athlete.passport.hrvBaselineMs ? `${athlete.passport.hrvBaselineMs} ms` : '-', color: 'var(--purple)' },

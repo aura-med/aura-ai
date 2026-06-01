@@ -3,7 +3,8 @@
 // NOT gated by Support Mode — this is platform config, not sensitive athlete data.
 
 import Link from 'next/link'
-import { ArrowLeft, BookOpen, ChevronRight, FlaskConical, Info, Lock, Shield } from 'lucide-react'
+import { BookOpen, FlaskConical, Info, Lock, Shield } from 'lucide-react'
+import { OrgTabNav } from '@/components/OrgTabNav'
 import { Card, PageHeader, StatusBadge } from '@/components/ui'
 import { getOrgRecommendationsData } from '@/lib/admin-data'
 import { ALL_VARIABLES, ALL_RISK_LEVELS, ALL_STAKEHOLDERS, RULES, FALLBACK, VARIABLE_META } from '@root/lib/recommendations'
@@ -118,18 +119,7 @@ export default async function OrgRecommendationsPage({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--aura-text3)' }}>
-        <Link href="/organizations" className="hover:text-[var(--aura-text)] transition-colors">
-          Organizations
-        </Link>
-        <ChevronRight size={12} />
-        <Link href={`/organizations/${id}`} className="hover:text-[var(--aura-text)] transition-colors">
-          {data.organization.name}
-        </Link>
-        <ChevronRight size={12} />
-        <span style={{ color: 'var(--aura-text)' }}>Recommendation Model</span>
-      </div>
+      <OrgTabNav orgId={id} active="recommendations" />
 
       <PageHeader
         title={`Recommendation Model — ${data.organization.name}`}

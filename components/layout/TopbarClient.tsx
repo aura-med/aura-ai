@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { Globe2, Sun, Moon } from 'lucide-react'
+import { Globe2, Sun, Moon, Menu } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { NotificationCenter } from '@/components/layout/NotificationCenter'
@@ -26,7 +26,7 @@ const LOCALES: { value: LocaleValue; label: string; flag: string }[] = [
 
 export function TopbarClient({ dto }: { dto: TopbarDTO }) {
   const t = useTranslations('topbar')
-  const { theme, toggleTheme, locale, setLocale, selectedSquadId, setSquad, setOrg } = useUiStore()
+  const { theme, toggleTheme, locale, setLocale, selectedSquadId, setSquad, setOrg, setSquads, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -35,6 +35,10 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
   useEffect(() => {
     setOrg(dto.org?.id ?? null)
   }, [dto.org?.id, setOrg])
+
+  useEffect(() => {
+    setSquads(squads)
+  }, [squads, setSquads])
 
   const selectedFromUrl = getSquadIdParam(searchParams)
   const validSquadIds = useMemo(() => new Set(squads.map((s) => s.id)), [squads])
@@ -81,6 +85,14 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
       }}
     >
       <div className="flex min-w-0 items-center gap-3">
+        <button
+          onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+          className="flex size-11 items-center justify-center rounded-md transition-colors md:hidden"
+          style={{ color: 'var(--aura-text2)' }}
+          aria-label="Toggle menu"
+        >
+          <Menu size={18} />
+        </button>
         <Link
           href={dashboardHref}
           aria-label="Dashboard"
@@ -131,7 +143,7 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
           <SelectTrigger
             size="sm"
             aria-label="Choose squad"
-            className="ml-1 min-w-32 max-w-52 border-[var(--aura-border2)] bg-[var(--aura-bg3)] text-xs text-[var(--aura-text)]"
+            className="ml-1 hidden sm:flex min-w-32 max-w-52 border-[var(--aura-border2)] bg-[var(--aura-bg3)] text-xs text-[var(--aura-text)]"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             <span className="min-w-0 flex-1 truncate text-left">
@@ -156,7 +168,7 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
           <SelectTrigger
             size="sm"
             aria-label="Choose language"
-            className="min-w-16 border-[var(--aura-border2)] bg-[var(--aura-bg3)] text-xs text-[var(--aura-text)]"
+            className="hidden sm:flex min-w-16 border-[var(--aura-border2)] bg-[var(--aura-bg3)] text-xs text-[var(--aura-text)]"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             <Globe2 size={14} aria-hidden="true" />
@@ -173,7 +185,7 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
 
         <button
           onClick={toggleTheme}
-          className="flex size-9 items-center justify-center rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--aura-green)]"
+          className="flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--aura-green)]"
           style={{ color: 'var(--aura-text2)' }}
           aria-label="Toggle theme"
         >

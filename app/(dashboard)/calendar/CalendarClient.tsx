@@ -94,7 +94,7 @@ export function CalendarClient({ dto }: { dto: CalendarPageDTO }) {
         <div className="g2" style={{ marginBottom: 16 }}>
           <div className="card">
             <div className="ctitle">Perfil de recuperacao - {athlete.label}</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+            <div className="stat-grid-4">
               {[
                 { label: 'VEL. RECUP.', val: `${(athlete.profile.recovery_speed ?? 1).toFixed(2)}x`, col: (athlete.profile.recovery_speed ?? 1) >= 1.1 ? 'var(--green2)' : (athlete.profile.recovery_speed ?? 1) >= 0.9 ? 'var(--warn)' : 'var(--danger)' },
                 { label: 'SENS. CONG.', val: `${(athlete.profile.congestion_sensitivity ?? 1).toFixed(2)}x`, col: (athlete.profile.congestion_sensitivity ?? 1) <= 0.9 ? 'var(--green2)' : (athlete.profile.congestion_sensitivity ?? 1) <= 1.1 ? 'var(--warn)' : 'var(--danger)' },
@@ -173,7 +173,7 @@ export function CalendarClient({ dto }: { dto: CalendarPageDTO }) {
                     key={dir}
                     onClick={() => changeEvent(idx, dir)}
                     aria-label={`${dir === 'prev' ? 'Reduzir' : 'Aumentar'} carga do dia ${idx + 1}`}
-                    style={{ width: 32, height: 32, background: 'var(--bg4)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text2)', fontSize: 12, cursor: 'pointer' }}
+                    style={{ width: 40, height: 40, background: 'var(--bg4)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text2)', fontSize: 12, cursor: 'pointer' }}
                   >
                     {dir === 'prev' ? '<' : '>'}
                   </button>

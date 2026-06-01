@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { LockKeyhole } from 'lucide-react'
 import { Card, PageHeader, StatusBadge } from '@/components/ui'
+import { OrgTabNav } from '@/components/OrgTabNav'
 import { getSensitiveOrgDetail } from '@/lib/admin-data'
 import { formatDate } from '@/lib/utils'
 
@@ -19,6 +20,7 @@ export default async function OrganizationDetailPage({
           title="Support Mode required"
           description="This page can show sensitive organization-specific data. Start Support Mode for this organization from the overview page first."
         />
+        <OrgTabNav orgId={id} active="detail" />
         <Card>
           <div className="flex items-start gap-3">
             <LockKeyhole size={20} style={{ color: 'var(--aura-warn)' }} />
@@ -44,6 +46,7 @@ export default async function OrganizationDetailPage({
         title={data.organization?.name ?? 'Organization detail'}
         description="Scoped support inspection view. This sensitive read has been written to the platform audit log."
       />
+      <OrgTabNav orgId={id} active="detail" />
 
       <div className="grid gap-4 xl:grid-cols-2">
         <Card className="overflow-x-auto p-0">

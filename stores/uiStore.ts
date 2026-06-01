@@ -9,6 +9,10 @@ interface UiState {
   setRole: (role: UserRole) => void
   sidebarCollapsed: boolean
   toggleSidebar: () => void
+  mobileSidebarOpen: boolean
+  setMobileSidebarOpen: (open: boolean) => void
+  squads: { id: string; name: string }[]
+  setSquads: (squads: { id: string; name: string }[]) => void
   theme: 'dark' | 'light'
   toggleTheme: () => void
   locale: 'pt' | 'en' | 'es'
@@ -26,6 +30,10 @@ export const useUiStore = create<UiState>()(
       setRole: (role) => set({ role }),
       sidebarCollapsed: false,
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+      mobileSidebarOpen: false,
+      setMobileSidebarOpen: (open) => set({ mobileSidebarOpen: open }),
+      squads: [],
+      setSquads: (squads) => set({ squads }),
       theme: 'dark',
       toggleTheme: () => set((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
       locale: 'pt',
@@ -38,6 +46,16 @@ export const useUiStore = create<UiState>()(
       setSquad: (squadId) => set({ selectedSquadId: squadId }),
       setOrg: (orgId) => set({ selectedOrgId: orgId }),
     }),
-    { name: 'aura-ui' }
+    {
+      name: 'aura-ui',
+      partialize: (s) => ({
+        role: s.role,
+        sidebarCollapsed: s.sidebarCollapsed,
+        theme: s.theme,
+        locale: s.locale,
+        selectedSquadId: s.selectedSquadId,
+        selectedOrgId: s.selectedOrgId,
+      }),
+    }
   )
 )

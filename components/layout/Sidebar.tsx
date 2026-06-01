@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
+import { useUiStore } from '@/stores/uiStore'
 import {
   LayoutDashboard, Users, UserCircle, Activity, Calendar,
   Heart, Gauge, Zap, BookOpen, Settings,
@@ -44,11 +45,41 @@ const SECTION_KEYS = ['overview', 'clinical', 'performance', 'intelligence', 'sp
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const t = useTranslations('sidebar')
+  const { mobileSidebarOpen, setMobileSidebarOpen, locale, setLocale, squads, selectedSquadId, setSquad } = useUiStore()
+
+  function close() { setMobileSidebarOpen(false) }
+
+  function handleLocale(loc: 'pt' | 'en' | 'es') {
+    setLocale(loc)
+    router.refresh()
+  }
+
+  function handleSquad(squadId: string) {
+    setSquad(squadId)
+    const params = new URLSearchParams(window.location.search)
+    params.set('squadId', squadId)
+    router.replace(`${window.location.pathname}?${params.toString()}`, { scroll: false })
+    close()
+  }
 
   return (
+    <>
+      {/* Mobile backdrop */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 md:hidden"
+          onClick={close}
+          aria-hidden="true"
+        />
+      )}
     <aside
-      className="fixed left-0 top-14 bottom-0 z-30 hidden w-60 flex-col overflow-y-auto border-r lg:flex"
+      className={cn(
+        'fixed left-0 top-14 bottom-0 w-60 flex flex-col border-r overflow-y-auto z-40',
+        'transition-transform duration-200 md:translate-x-0',
+        mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full',
+      )}
       style={{ background: 'var(--aura-bg)', borderColor: 'var(--aura-border)' }}
     >
       <nav className="flex-1 px-3 py-4 space-y-6">
@@ -72,6 +103,7 @@ export function Sidebar() {
                     <li key={item.href}>
                       <Link
                         href={item.href}
+                        onClick={close}
                         className={cn(
                           'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors group',
                           isActive
@@ -115,6 +147,55 @@ export function Sidebar() {
         })}
       </nav>
 
+      {/* Mobile-only footer: squad + locale switchers */}
+      <div
+        className="md:hidden border-t px-3 py-3"
+        style={{ borderColor: 'var(--aura-border)' }}
+      >
+        {squads.length > 1 && (
+          <div className="mb-3">
+            <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}>
+              Equipa
+            </p>
+            <select
+              value={selectedSquadId ?? ''}
+              onChange={(e) => handleSquad(e.target.value)}
+              className="w-full rounded-md px-3 py-2 text-xs font-medium outline-none"
+              style={{
+                background: 'var(--aura-bg3)',
+                border: '1px solid var(--aura-border)',
+                color: 'var(--aura-text)',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              {squads.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}>
+          Idioma
+        </p>
+        <div className="flex gap-1">
+          {(['pt', 'en', 'es'] as const).map((loc) => (
+            <button
+              key={loc}
+              onClick={() => handleLocale(loc)}
+              className="flex-1 rounded-md py-2 text-xs font-mono font-semibold uppercase transition-colors"
+              style={{
+                background: locale === loc ? 'rgba(0,229,160,0.10)' : 'var(--aura-bg3)',
+                color: locale === loc ? 'var(--aura-green)' : 'var(--aura-text2)',
+                border: `1px solid ${locale === loc ? 'rgba(0,229,160,0.3)' : 'var(--aura-border)'}`,
+              }}
+            >
+              {loc.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Version tag */}
       <div
         className="px-6 py-3 text-[10px]"
@@ -123,5 +204,6 @@ export function Sidebar() {
         {t('version')}
       </div>
     </aside>
+    </>
   )
 }

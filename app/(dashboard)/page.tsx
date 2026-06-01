@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { calcScore, riskColor, riskLabel } from '@/lib/scoring'
 import { Sparkline } from '@/components/ui/aura'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
+import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 
 async function getData(squadId: string | null) {
   const supabase = await createClient()
@@ -132,7 +133,7 @@ export default async function Dashboard({
               {rehab.map(a => (
                 <Link key={a.id} href={withSquadParam('/rehab', squadId)} style={{ textDecoration: 'none' }}>
                   <div className="ath-card">
-                    <div className="ath-avatar">{a.shirt_number}</div>
+                    <AthleteAvatar photoUrl={(a as { photo_url?: string | null }).photo_url} shirtNumber={a.shirt_number} name={a.name} />
                     <div className="ath-info">
                       <div className="ath-name">{a.name}</div>
                       <div className="ath-meta">{a.position} · Reabilitação activa</div>
@@ -153,7 +154,7 @@ export default async function Dashboard({
           {available.map(a => (
             <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
               <div className="ath-card">
-                <div className="ath-avatar">{a.shirt_number}</div>
+                <AthleteAvatar photoUrl={(a as { photo_url?: string | null }).photo_url} shirtNumber={a.shirt_number} name={a.name} />
                 <div className="ath-info">
                   <div className="ath-name">{a.name}</div>
                   <div className="ath-meta">{a.position} · {a.club}</div>

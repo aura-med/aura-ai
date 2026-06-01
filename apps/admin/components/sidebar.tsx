@@ -6,10 +6,12 @@ import {
   Activity,
   BarChart3,
   Building2,
+  FileText,
   LayoutDashboard,
   LockKeyhole,
   Settings,
   ShieldCheck,
+  Stethoscope,
   Users,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -18,13 +20,15 @@ const NAV_ITEMS = [
   { href: '/', label: 'Overview', icon: LayoutDashboard, section: 'Control' },
   { href: '/organizations', label: 'Organizations', icon: Building2, section: 'Control' },
   { href: '/users', label: 'Users & Access', icon: Users, section: 'Control' },
+  { href: '/injuries', label: 'Injury Management', icon: Stethoscope, section: 'Clinical Ops' },
+  { href: '/protocols', label: 'Rehab Protocols', icon: FileText, section: 'Clinical Ops' },
   { href: '/analytics', label: 'Analytics', icon: BarChart3, section: 'Intelligence' },
   { href: '/operations', label: 'Operations', icon: Activity, section: 'Intelligence' },
   { href: '/security', label: 'Security', icon: ShieldCheck, section: 'System' },
   { href: '/settings', label: 'Settings', icon: Settings, section: 'System' },
 ]
 
-const SECTIONS = ['Control', 'Intelligence', 'System']
+const SECTIONS = ['Control', 'Clinical Ops', 'Intelligence', 'System']
 
 export function Sidebar() {
   const pathname = usePathname()

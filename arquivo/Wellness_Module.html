@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PhysioElite — Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #0a0d12;
+  --bg2:     #111520;
+  --bg3:     #181e2e;
+  --bg4:     #1e2638;
+  --border:  rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.14);
+  --accent:  #00e5a0;
+  --accent2: #0066ff;
+  --warn:    #f6ad55;
+  --danger:  #ff4d6d;
+  --text:    #e8eaf2;
+  --text2:   #8892a4;
+  --text3:   #4a5568;
+  --mono:    'DM Mono', monospace;
+  --sans:    'Inter', sans-serif;
+  --display: 'Syne', sans-serif;
+  --r:       10px;
+  --r2:      16px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; min-height: 100vh; }
+
+/* ── LAYOUT ── */
+.app { display: flex; height: 100vh; overflow: hidden; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px; min-width: 220px;
+  background: var(--bg2); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; padding: 24px 0;
+}
+.logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.logo-title { font-family: var(--display); font-size: 18px; font-weight: 800; }
+.logo-sub { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+.nav-section { padding: 0 12px; margin-bottom: 8px; }
+.nav-label { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); padding: 0 8px; margin-bottom: 4px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 8px; cursor: pointer;
+  color: var(--text2); font-size: 13.5px; transition: all 0.15s; position: relative;
+}
+.nav-item:hover { background: var(--bg3); color: var(--text); }
+.nav-item.active { background: var(--bg3); color: var(--text); }
+.nav-item.active::before {
+  content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 60%; background: var(--accent); border-radius: 0 3px 3px 0;
+}
+.nav-icon { width: 16px; height: 16px; opacity: 0.6; flex-shrink: 0; }
+.nav-item.active .nav-icon { opacity: 1; }
+.sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 10px; color: var(--text3); }
+.dot-live { display: inline-block; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; margin-right: 6px; }
+
+/* MAIN */
+.main { flex: 1; overflow-y: auto; }
+.topbar {
+  height: 56px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 28px; gap: 16px;
+  background: var(--bg); position: sticky; top: 0; z-index: 10;
+}
+.topbar-title { font-family: var(--display); font-size: 15px; font-weight: 700; flex: 1; }
+.topbar-badge {
+  font-family: var(--mono); font-size: 10px; padding: 3px 10px;
+  border-radius: 20px; border: 1px solid var(--border2); color: var(--text2); letter-spacing: 1px;
+}
+.content { padding: 28px; }
+
+/* ── SCREEN SWITCH ── */
+.screen { display: none; }
+.screen.active { display: block; animation: fadeUp 0.2s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+/* ── CARD ── */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r2); padding: 22px; }
+.card-title { font-family: var(--display); font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+.section-label { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); margin-bottom: 12px; }
+
+/* ── WELLNESS FORM ── */
+.form-header {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r2);
+  padding: 20px 24px; margin-bottom: 20px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.form-player { font-family: var(--display); font-size: 18px; font-weight: 800; }
+.form-date { font-family: var(--mono); font-size: 11px; color: var(--accent); }
+.form-badge {
+  font-family: var(--mono); font-size: 10px; padding: 5px 14px;
+  border-radius: 20px; letter-spacing: 1px;
+}
+.badge-morning { background: rgba(0,229,160,0.1); color: var(--accent); border: 1px solid rgba(0,229,160,0.2); }
+.badge-session { background: rgba(0,102,255,0.1); color: #4d9aff; border: 1px solid rgba(0,102,255,0.2); }
+
+.form-tabs { display: flex; gap: 4px; margin-bottom: 20px; }
+.ftab {
+  padding: 8px 20px; border-radius: 8px; cursor: pointer;
+  font-size: 13px; color: var(--text2); border: 1px solid transparent; transition: all 0.15s;
+}
+.ftab:hover { background: var(--bg2); }
+.ftab.active { background: var(--bg3); color: var(--text); border-color: var(--border2); }
+.ftab-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; }
+.ftab-dot.done { background: var(--accent); }
+.ftab-dot.pending { background: var(--text3); }
+
+/* ── SLIDER ITEMS ── */
+.wellness-form { display: flex; flex-direction: column; gap: 20px; }
+.wfield { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r); padding: 18px 20px; }
+.wfield-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+.wfield-label { font-size: 14px; font-weight: 500; color: var(--text); }
+.wfield-ref { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+.wfield-desc { font-size: 12px; color: var(--text2); margin-bottom: 14px; line-height: 1.5; }
+.wfield-value {
+  font-family: var(--display); font-size: 32px; font-weight: 800;
+  text-align: center; margin-bottom: 10px; transition: color 0.2s;
+}
+.wfield-sublabel { text-align: center; font-size: 11px; color: var(--text2); font-family: var(--mono); margin-bottom: 14px; min-height: 16px; }
+
+/* Custom range slider */
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 6px; border-radius: 3px;
+  background: var(--bg4); outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent); cursor: pointer;
+  border: 3px solid var(--bg2); transition: transform 0.1s;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+input[type=range]::-moz-range-thumb {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent); cursor: pointer; border: 3px solid var(--bg2);
+}
+
+/* Tick marks */
+.tick-row { display: flex; justify-content: space-between; margin-top: 6px; }
+.tick { font-family: var(--mono); font-size: 9px; color: var(--text3); }
+.tick.active { color: var(--accent); }
+
+/* Urine color picker */
+.urine-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-top: 8px; }
+.urine-opt {
+  aspect-ratio: 1; border-radius: 6px; cursor: pointer;
+  border: 2px solid transparent; transition: all 0.15s;
+  position: relative;
+}
+.urine-opt.selected { border-color: var(--text); transform: scale(1.1); }
+.urine-opt span { position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%); font-size: 9px; font-family: var(--mono); color: var(--text3); white-space: nowrap; }
+
+/* Cryo toggle */
+.cryo-row { display: flex; gap: 10px; margin-top: 8px; }
+.cryo-btn {
+  flex: 1; padding: 10px; border-radius: 8px; text-align: center;
+  font-family: var(--mono); font-size: 11px; cursor: pointer;
+  border: 1px solid var(--border2); color: var(--text2); transition: all 0.15s;
+}
+.cryo-btn:hover { background: var(--bg4); }
+.cryo-btn.selected { background: rgba(0,229,160,0.1); border-color: var(--accent); color: var(--accent); }
+
+/* Weight input */
+.weight-input-wrap { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.weight-input {
+  background: var(--bg4); border: 1px solid var(--border2); border-radius: 8px;
+  color: var(--text); padding: 10px 16px; font-size: 20px; font-weight: 500;
+  font-family: var(--display); width: 140px; text-align: center; outline: none;
+  transition: border 0.15s;
+}
+.weight-input:focus { border-color: var(--accent); }
+.weight-unit { font-family: var(--mono); font-size: 14px; color: var(--text2); }
+.weight-delta { font-family: var(--mono); font-size: 12px; padding: 4px 12px; border-radius: 20px; }
+.delta-ok { background: rgba(0,229,160,0.1); color: var(--accent); }
+.delta-warn { background: rgba(246,173,85,0.1); color: var(--warn); }
+.delta-bad { background: rgba(255,77,109,0.1); color: var(--danger); }
+
+/* HRV input */
+.hrv-wrap { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+.hrv-input {
+  background: var(--bg4); border: 1px solid var(--border2); border-radius: 8px;
+  color: var(--text); padding: 10px 16px; font-size: 20px; font-weight: 500;
+  font-family: var(--display); width: 120px; text-align: center; outline: none;
+  transition: border 0.15s;
+}
+.hrv-input:focus { border-color: var(--accent); }
+.hrv-status { font-size: 12px; color: var(--text2); }
+
+/* Submit button */
+.submit-btn {
+  width: 100%; padding: 16px; background: var(--accent); color: #000;
+  border: none; border-radius: 10px; font-family: var(--display);
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  margin-top: 8px; transition: opacity 0.15s, transform 0.1s;
+}
+.submit-btn:hover { opacity: 0.88; }
+.submit-btn:active { transform: scale(0.98); }
+.submit-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* Success state */
+.success-box {
+  background: rgba(0,229,160,0.07); border: 1px solid rgba(0,229,160,0.2);
+  border-radius: var(--r2); padding: 32px; text-align: center;
+  display: none;
+}
+.success-icon { font-size: 40px; margin-bottom: 12px; }
+.success-title { font-family: var(--display); font-size: 20px; font-weight: 800; color: var(--accent); margin-bottom: 8px; }
+.success-sub { font-size: 13px; color: var(--text2); }
+
+/* ── DASHBOARD WELLNESS ── */
+.dash-grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+.kpi { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r2); padding: 18px 20px; }
+.kpi-label { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+.kpi-value { font-family: var(--display); font-size: 30px; font-weight: 800; }
+.kpi-sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
+.c-green { color: var(--accent); }
+.c-warn { color: var(--warn); }
+.c-red { color: var(--danger); }
+
+.alert-band {
+  background: rgba(255,77,109,0.07); border: 1px solid rgba(255,77,109,0.2);
+  border-radius: var(--r); padding: 12px 16px; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 12px;
+}
+.alert-icon { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); flex-shrink: 0; }
+.alert-text { font-size: 13px; color: var(--text2); }
+.alert-text strong { color: var(--danger); }
+
+.dash-two { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+
+/* Player wellness table */
+table { width: 100%; border-collapse: collapse; }
+th { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); padding: 0 12px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+td { padding: 11px 12px; font-size: 13px; color: var(--text2); border-bottom: 1px solid var(--border); }
+tr:last-child td { border: none; }
+td:first-child { color: var(--text); font-weight: 500; }
+
+/* Score pill */
+.score { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 11px; padding: 3px 10px; border-radius: 20px; }
+.score-ok { background: rgba(0,229,160,0.1); color: var(--accent); }
+.score-warn { background: rgba(246,173,85,0.1); color: var(--warn); }
+.score-bad { background: rgba(255,77,109,0.1); color: var(--danger); }
+
+/* Mini sparkline */
+.spark { display: flex; align-items: flex-end; gap: 2px; height: 28px; }
+.spark-bar { width: 6px; border-radius: 2px; background: var(--accent); opacity: 0.5; transition: opacity 0.2s; }
+.spark-bar:last-child { opacity: 1; }
+.spark-bar.low { background: var(--danger); }
+.spark-bar.mid { background: var(--warn); }
+
+/* Trend box */
+.trend-grid { display: flex; flex-direction: column; gap: 12px; }
+.trend-item { display: flex; align-items: center; gap: 12px; }
+.trend-label { font-size: 12px; color: var(--text2); width: 130px; flex-shrink: 0; }
+.trend-track { flex: 1; height: 5px; background: var(--bg4); border-radius: 3px; }
+.trend-fill { height: 5px; border-radius: 3px; }
+.trend-val { font-family: var(--mono); font-size: 11px; color: var(--text2); width: 32px; text-align: right; }
+
+/* ── NOTIFICATION PANEL ── */
+.notif-list { display: flex; flex-direction: column; gap: 12px; }
+.notif-item {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 14px 16px;
+  display: grid; grid-template-columns: auto 1fr auto;
+  gap: 12px; align-items: start;
+}
+.notif-item.sent { opacity: 0.5; }
+.notif-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.notif-dot.green { background: var(--accent); }
+.notif-dot.amber { background: var(--warn); }
+.notif-dot.red { background: var(--danger); }
+.notif-player { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.notif-msg { font-size: 12px; color: var(--text2); }
+.notif-time { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+.notif-action {
+  font-family: var(--mono); font-size: 10px; padding: 4px 12px;
+  border-radius: 20px; cursor: pointer; border: 1px solid var(--border2);
+  color: var(--text2); transition: all 0.15s; white-space: nowrap;
+}
+.notif-action:hover { background: var(--bg4); color: var(--text); }
+
+/* ── RESPONSIVE MOBILE VIEW ── */
+.mobile-view {
+  max-width: 420px; margin: 0 auto;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r2); overflow: hidden;
+}
+.mobile-header {
+  background: var(--bg3); padding: 16px 20px;
+  display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.mobile-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--bg4); border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--display); font-size: 13px; font-weight: 800; color: var(--accent);
+}
+.mobile-name { font-weight: 500; font-size: 14px; }
+.mobile-time { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+.mobile-push {
+  background: var(--bg); margin: 12px 16px; padding: 12px 14px;
+  border-radius: 10px; border: 1px solid var(--border2);
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.push-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.push-app { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 1px; }
+.push-msg { font-size: 12px; color: var(--text); margin-top: 1px; }
+.push-time { font-family: var(--mono); font-size: 9px; color: var(--text3); }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="logo">
+    <div class="logo-title">PhysioElite</div>
+    <div class="logo-sub">Wellness · Monitoring</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Staff</div>
+    <div class="nav-item active" onclick="showScreen('dashboard',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="1.5"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="1.5"/></svg>
+      Dashboard Wellness
+    </div>
+    <div class="nav-item" onclick="showScreen('notifications',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke-width="1.5"/><path d="M13.73 21a2 2 0 0 1-3.46 0" stroke-width="1.5"/></svg>
+      Alertas & Notificações
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Atleta (demo)</div>
+    <div class="nav-item" onclick="showScreen('morning',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" stroke-width="1.5"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Check-in Manhã
+    </div>
+    <div class="nav-item" onclick="showScreen('session',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      RPE Pós-Sessão
+    </div>
+    <div class="nav-item" onclick="showScreen('mobile',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" stroke-width="1.5"/><line x1="12" y1="18" x2="12" y2="18" stroke-width="2" stroke-linecap="round"/></svg>
+      Vista Mobile
+    </div>
+  </div>
+  <div class="sidebar-footer"><span class="dot-live"></span>Tempo real</div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Dashboard Wellness</div>
+    <div class="topbar-badge" id="topbar-date"></div>
+  </div>
+  <div class="content">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="screen active" id="screen-dashboard">
+      <div class="dash-grid4">
+        <div class="kpi">
+          <div class="kpi-label">Preenchimento Hoje</div>
+          <div class="kpi-value c-green">18/22</div>
+          <div class="kpi-sub">4 em falta · manhã</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Alertas Activos</div>
+          <div class="kpi-value c-red">3</div>
+          <div class="kpi-sub">Intervenção recomendada</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Fadiga Méd. Plantel</div>
+          <div class="kpi-value c-warn">5.8</div>
+          <div class="kpi-sub">Hooper ↑ vs. ontem</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Qualidade Sono Méd.</div>
+          <div class="kpi-value c-green">6.4</div>
+          <div class="kpi-sub">Adequado (>6.0)</div>
+        </div>
+      </div>
+
+      <div class="alert-band">
+        <div class="alert-icon"></div>
+        <div class="alert-text"><strong>P. Oliveira</strong> — Fadiga 8/10 + Sono 4/10 + HRV −22% baseline. Score de risco elevado. Considerar redução de carga.</div>
+      </div>
+      <div class="alert-band" style="border-color:rgba(246,173,85,0.3); background:rgba(246,173,85,0.05); margin-top:-8px">
+        <div class="alert-icon" style="background:var(--warn)"></div>
+        <div class="alert-text"><strong>L. Rodrigues</strong> — Dor muscular 7/10 + Peso −2.1% baseline. Atenção à hidratação e recuperação muscular.</div>
+      </div>
+
+      <div class="dash-two">
+        <div class="card">
+          <div class="card-title">Wellness Plantel — Hoje</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Atleta</th>
+                <th>Fadiga</th>
+                <th>Sono</th>
+                <th>Dor Musc.</th>
+                <th>HRV</th>
+                <th>Stress</th>
+                <th>Score</th>
+                <th>7 dias</th>
+              </tr>
+            </thead>
+            <tbody id="wellness-table"></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-title">Tendências Grupais</div>
+          <div class="trend-grid" id="trend-grid"></div>
+          <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border)">
+            <div class="section-label">Crioterapia Hoje</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap" id="cryo-today"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MORNING CHECK-IN ═══ -->
+    <div class="screen" id="screen-morning">
+      <div class="form-header">
+        <div>
+          <div class="form-player">D. Mendes</div>
+          <div class="form-date" id="morning-date"></div>
+        </div>
+        <div class="form-badge badge-morning">MANHÃ · 07:30</div>
+      </div>
+
+      <div id="morning-form">
+        <div class="wellness-form">
+
+          <!-- FADIGA -->
+          <div class="wfield">
+            <div class="wfield-header">
+              <div class="wfield-label">Percepção de Fadiga</div>
+              <div class="wfield-ref">Hooper Index · item 1</div>
+            </div>
+            <div class="wfield-desc">Como avalias o teu nível de fadiga neste momento?</div>
+            <div class="wfield-value" id="val-fatigue" style="color:var(--accent)">5</div>
+            <div class="wfield-sublabel" id="lbl-fatigue">Moderada</div>
+            <input type="range" min="1" max="10" value="5" id="sl-fatigue" oninput="updateSlider('fatigue',this.value)">
+            <div class="tick-row">
+              <span class="tick">1 Muito Baixa</span>
+              <span class="tick">5</span>
+              <span class="tick">10 Muito Alta</span>
+            </div>
+          </div>
+
+          <!-- SONO QUALIDADE -->
+          <div class="wfield">
+            <div class="wfield-header">
+              <div class="wfield-label">Qualidade do Sono</div>
+              <div class="wfield-ref">Hooper Index · item 2</div>
+            </div>
+            <div class="wfield-desc">Como classificas a qualidade do teu sono esta noite?</div>
+            <div class="wfield-value" id="val-sleep" style="color:var(--accent)">7</div>
+            <div class="wfield-sublabel" id="lbl-sleep">Boa</div>
+            <input type="range" min="1" max="10" value="7" id="sl-sleep" oninput="updateSlider('sleep',this.value)">
+            <div class="tick-row">
+              <span class="tick">1 Muito Mau</span>
+              <span class="tick">5</span>
+              <span class="tick">10 Excelente</span>
+            </div>
+          </div>
+
+          <!-- HORAS SONO -->
+          <div class="wfield">
+            <div class="wfield-header">
+              <div class="wfield-label">Horas de Sono</div>
+              <div class="wfield-ref">Referência: 7–9h (elite)</div>
+            </div>
+            <div class="wfield-desc">Quantas horas dormiste esta noite?</div>
+            <div class="wfield-value" id="val-hours" style="color:var(--accent)">7.0<span style="font-size:16px;color:var(--text2)">h</span></div>
+            <div class="wfield-sublabel" id="lbl-hours">Adequado</div>
+            <input type="range" min="3" max="11" step="0.5" value="7" id="sl-hours" oninput="updateSlider('hours',this.value)">
+            <div class="tick-row">
+              <span class="tick">3h</span><span class="tick">5h</span><span class="tick">7h</span><span class="tick">9h</span><span class="tick">11h</span>
+            </div>
+          </div>
+
+          <!-- DOR MUSCULAR -->
+          <div class="wfield">
+            <div class="wfield-header">
+              <div class="wfield-label">Dor Muscular (DOMS)</div>
+              <div class="wfield-ref">Hooper Index · item 3</div>
+            </div>
+            <div class="wfield-desc">Sentes dor ou tensão muscular ao acordar?</div>
+            <div class="wfield-value" id="val-doms" style="color:var(--accent)">3</div>
+            <div class="wfield-sublabel" id="lbl-doms">Ligeira</div>
+            <input type="range" min="0" max="10" value="3" id="sl-doms" oninput="updateSlider('doms',this.value)">
+            <div class="tick-row">
+              <span class="tick">0 Sem dor</span>
+              <span class="tick">5</span>
+              <span class="tick">10 Dor máxima</span>
+            </div>
+          </div>
+
+          <!-- STRESS -->
+          <div class="wfield">
+            <div class="wfield-header">
+              <div class="wfield-label">Stress Percebido</div>
+              <div class="wfield-ref">Andersen & Williams · SRRS</div>
+            </div>
+            <div class="wfield-desc">Como avalias o teu nível de stress (incluindo factores extra-desportivos)?</div>
+            <div class="wfield-value" id="val-stress" style="color:var(--accent)">3</div>
+            <div class="wfield-sublabel" id="lbl-stress">Baixo</div>
+            <input type="range" min="0" max="10" value="3" id="sl-stress" oninput="updateSlider('stress',this.value)">
+            <div class="tick-row">
+              <span class="tick">0 Sem stress</span>
+              <span class="tick">5</span>
+              <span class="tick">10 Muito elevado</span>
+            </div>
+          </div>
+
+          <!-- TQR -->
+          <div class="wfield">
+            <div class="wfield-header">
+              <div class="wfield-label">Recuperação Total (TQR)</div>
+              <div class="wfield-ref">Kenttä & Hassmén, 1998</div>
+            </div>
+            <div class="wfield-desc">Como avalias a tua recuperação total desde o último treino?</div>
+            <div class="wfield-value" id="val-tqr" style="color:var(--accent)">13</div>
+            <div class="wfield-sublabel" id="lbl-tqr">Recuperação suficiente</div>
+            <input type="range" min="6" max="20" value="13" id="sl-tqr" oninput="updateSlider('tqr',this.value)">
+            <div class="tick-row">
+              <span class="tick">6 Muito Mau</span>
+              <span class="tick">13</span>
+              <span class="tick">20 Excelente</span>
+            </div>
+          </div>
+
+          <!-- HRV -->
+          <div class="wfield">
+            <div class="wfield-header">
+              <div class="wfield-label">HRV Matinal</div>
+              <div class="wfield-ref">Polar H10 / HRV4Training</div>
+            </div>
+            <div class="wfield-desc">Insere o valor de HRV medido esta manhã (ms). Baseline individual: 68ms.</div>
+            <div class="hrv-wrap">
+              <input type="number" class="hrv-input" id="hrv-val" placeholder="68" min="20" max="120" value="62">
+              <div style="font-family:var(--mono); font-size:13px; color:var(--text2)">ms</div>
+              <div class="hrv-status" id="hrv-status"></div>
+            </div>
+          </div>
+
+          <!-- PESO -->
+          <div class="wfield">
+            <div class="wfield-header">
+              <div class="wfield-label">Peso Corporal</div>
+              <div class="wfield-ref">Baseline: 71.2 kg</div>
+            </div>
+            <div class="wfield-desc">Pesa-te em jejum, após urinar. Baseline individual: 71.2 kg.</div>
+            <div class="weight-input-wrap">
+              <input type="number" class="weight-input" id="weight-val" placeholder="71.2" step="0.1" value="70.8" oninput="updateWeight()">
+              <span class="weight-unit">kg</span>
+              <span class="weight-delta" id="weight-delta"></span>
+            </div>
+          </div>
+
+          <!-- HIDRATAÇÃO -->
+          <div class="wfield">
+            <div class="wfield-header">
+              <div class="wfield-label">Hidratação (Cor da Urina)</div>
+              <div class="wfield-ref">Armstrong 8-point scale</div>
+            </div>
+            <div class="wfield-desc">Selecciona a cor mais próxima da tua urina esta manhã.</div>
+            <div class="urine-grid" id="urine-grid"></div>
+            <div style="margin-top:24px; font-family:var(--mono); font-size:11px; color:var(--text2)" id="urine-label">—</div>
+          </div>
+
+          <!-- CRIOTERAPIA -->
+          <div class="wfield">
+            <div class="wfield-header">
+              <div class="wfield-label">Crioterapia (Banho de Gelo)</div>
+              <div class="wfield-ref">MD / MD+1</div>
+            </div>
+            <div class="wfield-desc">Fizeste banho de gelo após o jogo ou treino de ontem?</div>
+            <div class="cryo-row">
+              <div class="cryo-btn selected" id="cryo-yes" onclick="setCryo(true)">Sim, fiz crioterapia</div>
+              <div class="cryo-btn" id="cryo-no" onclick="setCryo(false)">Não fiz</div>
+            </div>
+          </div>
+
+          <!-- NOTAS -->
+          <div class="wfield">
+            <div class="wfield-header">
+              <div class="wfield-label">Notas / Queixas</div>
+              <div class="wfield-ref">Opcional</div>
+            </div>
+            <div class="wfield-desc">Algum sintoma, dor localizada ou observação relevante?</div>
+            <textarea id="notes-morning" style="width:100%; background:var(--bg4); border:1px solid var(--border2); border-radius:8px; color:var(--text); padding:10px 14px; font-family:var(--sans); font-size:13px; resize:vertical; min-height:70px; outline:none; margin-top:8px" placeholder="Ex: Ligeira tensão na coxa esquerda…"></textarea>
+          </div>
+
+          <button class="submit-btn" onclick="submitMorning()">Submeter Check-in Manhã</button>
+        </div>
+      </div>
+
+      <div class="success-box" id="morning-success">
+        <div class="success-icon">✓</div>
+        <div class="success-title">Check-in registado</div>
+        <div class="success-sub">Dados enviados ao staff às <span id="submit-time"></span>.<br>O fisioterapeuta foi notificado.</div>
+      </div>
+    </div>
+
+    <!-- ═══ RPE PÓS-SESSÃO ═══ -->
+    <div class="screen" id="screen-session">
+      <div class="form-header">
+        <div>
+          <div class="form-player">D. Mendes</div>
+          <div class="form-date">Pós-Treino · Tarde</div>
+        </div>
+        <div class="form-badge badge-session">PÓS-SESSÃO</div>
+      </div>
+
+      <div class="wellness-form" style="max-width:680px">
+
+        <div class="wfield">
+          <div class="wfield-header">
+            <div class="wfield-label">RPE — Esforço Percebido</div>
+            <div class="wfield-ref">Borg CR-10 · Foster Method</div>
+          </div>
+          <div class="wfield-desc">Como classificas o esforço desta sessão de treino? (Escala de Borg CR-10)</div>
+          <div class="wfield-value" id="val-rpe" style="color:var(--accent2)">6</div>
+          <div class="wfield-sublabel" id="lbl-rpe">Difícil</div>
+          <input type="range" min="0" max="10" value="6" id="sl-rpe" oninput="updateSlider('rpe',this.value)">
+          <div class="tick-row">
+            <span class="tick">0 Nenhum</span>
+            <span class="tick">5 Moderado</span>
+            <span class="tick">10 Máximo</span>
+          </div>
+        </div>
+
+        <div class="wfield">
+          <div class="wfield-header">
+            <div class="wfield-label">Duração da Sessão</div>
+            <div class="wfield-ref">Para cálculo Session-RPE = RPE × min</div>
+          </div>
+          <div class="wfield-desc">Duração total da sessão em minutos (inclui aquecimento).</div>
+          <div class="wfield-value" id="val-duration" style="color:var(--accent2)">75<span style="font-size:16px;color:var(--text2)">min</span></div>
+          <div class="wfield-sublabel" id="lbl-duration" style="color:var(--accent2)">Session-RPE: <span id="session-load">450</span> UA</div>
+          <input type="range" min="20" max="120" value="75" id="sl-duration" oninput="updateSlider('duration',this.value)">
+          <div class="tick-row">
+            <span class="tick">20min</span>
+            <span class="tick">60min</span>
+            <span class="tick">120min</span>
+          </div>
+        </div>
+
+        <div class="wfield">
+          <div class="wfield-header">
+            <div class="wfield-label">Tipo de Sessão</div>
+            <div class="wfield-ref">Contexto de carga</div>
+          </div>
+          <div class="cryo-row" style="flex-wrap:wrap">
+            <div class="cryo-btn selected" onclick="selectSession(this)">Treino Táctico</div>
+            <div class="cryo-btn" onclick="selectSession(this)">Treino Físico</div>
+            <div class="cryo-btn" onclick="selectSession(this)">Jogo</div>
+            <div class="cryo-btn" onclick="selectSession(this)">Ginásio</div>
+            <div class="cryo-btn" onclick="selectSession(this)">Recuperação</div>
+          </div>
+        </div>
+
+        <div class="wfield" style="background:rgba(0,102,255,0.06); border-color:rgba(0,102,255,0.2)">
+          <div class="wfield-label" style="color:#4d9aff; margin-bottom:12px">Resumo da Carga</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; text-align:center">
+            <div>
+              <div style="font-family:var(--mono); font-size:10px; color:var(--text3); margin-bottom:6px">RPE</div>
+              <div style="font-family:var(--display); font-size:24px; font-weight:800; color:#4d9aff" id="sum-rpe">6</div>
+            </div>
+            <div>
+              <div style="font-family:var(--mono); font-size:10px; color:var(--text3); margin-bottom:6px">DURAÇÃO</div>
+              <div style="font-family:var(--display); font-size:24px; font-weight:800; color:#4d9aff" id="sum-dur">75 min</div>
+            </div>
+            <div>
+              <div style="font-family:var(--mono); font-size:10px; color:var(--text3); margin-bottom:6px">SESSION-RPE</div>
+              <div style="font-family:var(--display); font-size:24px; font-weight:800; color:#4d9aff" id="sum-load">450 UA</div>
+            </div>
+          </div>
+        </div>
+
+        <button class="submit-btn" style="background:#0066ff; color:#fff" onclick="submitSession()">Submeter RPE Pós-Sessão</button>
+      </div>
+    </div>
+
+    <!-- ═══ NOTIFICATIONS ═══ -->
+    <div class="screen" id="screen-notifications">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px">
+        <div>
+          <div class="card-title" style="margin-bottom:14px">Alertas Clínicos — Hoje</div>
+          <div class="notif-list" id="alert-list"></div>
+        </div>
+        <div>
+          <div class="card-title" style="margin-bottom:14px">Notificações Push Enviadas</div>
+          <div class="notif-list" id="push-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MOBILE VIEW ═══ -->
+    <div class="screen" id="screen-mobile">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; align-items:start">
+        <div>
+          <p style="font-size:13px; color:var(--text2); margin-bottom:16px; line-height:1.6">
+            Os atletas recebem notificações push às <strong style="color:var(--text)">07:30</strong> (check-in manhã) e <strong style="color:var(--text)">imediatamente após o treino</strong> (RPE). O formulário é optimizado para mobile e preenchido em menos de 2 minutos.
+          </p>
+          <div class="mobile-view">
+            <div class="mobile-header">
+              <div class="mobile-avatar">DM</div>
+              <div>
+                <div class="mobile-name">D. Mendes</div>
+                <div class="mobile-time">PhysioElite · 07:30</div>
+              </div>
+            </div>
+            <div class="mobile-push">
+              <div class="push-icon">📋</div>
+              <div style="flex:1">
+                <div class="push-app">PHYSIOELITE</div>
+                <div class="push-msg">Bom dia, Diogo! ☀️ O teu check-in de bem-estar está pronto. Demora menos de 2 minutos.</div>
+                <div class="push-time">agora mesmo</div>
+              </div>
+            </div>
+            <div style="padding:16px">
+              <div style="font-family:var(--mono); font-size:10px; color:var(--text3); letter-spacing:1px; margin-bottom:12px">CHECK-IN MANHÃ · 27 MAR</div>
+              <div style="display:flex; flex-direction:column; gap:14px">
+                <div>
+                  <div style="display:flex; justify-content:space-between; margin-bottom:6px">
+                    <span style="font-size:13px; font-weight:500">Fadiga</span>
+                    <span style="font-family:var(--mono); font-size:12px; color:var(--accent)">5/10</span>
+                  </div>
+                  <input type="range" min="1" max="10" value="5" style="width:100%">
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; margin-bottom:6px">
+                    <span style="font-size:13px; font-weight:500">Qualidade do Sono</span>
+                    <span style="font-family:var(--mono); font-size:12px; color:var(--accent)">7/10</span>
+                  </div>
+                  <input type="range" min="1" max="10" value="7" style="width:100%">
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; margin-bottom:6px">
+                    <span style="font-size:13px; font-weight:500">Dor Muscular</span>
+                    <span style="font-family:var(--mono); font-size:12px; color:var(--accent)">3/10</span>
+                  </div>
+                  <input type="range" min="0" max="10" value="3" style="width:100%">
+                </div>
+              </div>
+              <div style="background:var(--bg3); border-radius:8px; padding:10px; margin-top:16px; font-size:12px; color:var(--text2); text-align:center">
+                4 de 8 itens · <span style="color:var(--accent)">continuar →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p style="font-size:13px; color:var(--text2); margin-bottom:16px; line-height:1.6">
+            O staff recebe em tempo real um alerta quando qualquer variável sai do <strong style="color:var(--text)">baseline individual</strong> do atleta. Os limites são calculados automaticamente com base nos últimos 28 dias de dados.
+          </p>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title">Lógica de Alertas Automáticos</div>
+            <table style="font-size:12px">
+              <thead><tr><th>Variável</th><th>Limiar Alerta</th><th>Nível</th></tr></thead>
+              <tbody>
+                <tr><td>Fadiga</td><td>≥8/10 ou ↑≥2 pts vs. baseline</td><td><span class="score score-bad">⚠ Alto</span></td></tr>
+                <tr><td>Sono</td><td>≤4/10 ou &lt;6h</td><td><span class="score score-bad">⚠ Alto</span></td></tr>
+                <tr><td>DOMS</td><td>≥7/10</td><td><span class="score score-warn">~ Médio</span></td></tr>
+                <tr><td>Stress</td><td>≥7/10</td><td><span class="score score-warn">~ Médio</span></td></tr>
+                <tr><td>TQR</td><td>≤9 (muito mau/mau)</td><td><span class="score score-bad">⚠ Alto</span></td></tr>
+                <tr><td>HRV</td><td>↓≥10% vs. média 7d</td><td><span class="score score-bad">⚠ Alto</span></td></tr>
+                <tr><td>Peso</td><td>↓≥2% do baseline</td><td><span class="score score-warn">~ Médio</span></td></tr>
+                <tr><td>RPE sessão</td><td>≥9 ou Session-RPE ≥800UA</td><td><span class="score score-warn">~ Médio</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="card-title">Correlação com Risco de Lesão</div>
+            <div style="font-size:12.5px; color:var(--text2); line-height:1.7">
+              Quando <strong style="color:var(--text)">3 ou mais variáveis</strong> atingem limiar de alerta em simultâneo, o modelo preditivo é re-calculado automaticamente e o atleta é escalado no dashboard de risco.
+              <br><br>
+              Esta abordagem é consistente com o modelo de <strong style="color:var(--text)">Meeuwisse (1994)</strong> de factores intrínsecos e extrínsecos de lesão, e com as recomendações do <strong style="color:var(--text)">UEFA ECIS</strong> para monitorização integrada.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────────
+const today = new Date();
+const dateStr = today.toLocaleDateString('pt-PT',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+document.getElementById('topbar-date').textContent = today.toLocaleDateString('pt-PT');
+document.getElementById('morning-date').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+
+const players = [
+  { name:'P. Oliveira', pos:'MC', fatigue:8, sleep:4, doms:6, stress:7, tqr:9,  hrv:53, hrv_base:68, weight_delta:-0.8, cryo:false, score:'bad'  },
+  { name:'L. Rodrigues',pos:'DD', fatigue:6, sleep:6, doms:7, stress:5, tqr:12, hrv:61, hrv_base:66, weight_delta:-2.1, cryo:true,  score:'warn' },
+  { name:'D. Mendes',   pos:'ED', fatigue:5, sleep:7, doms:3, stress:3, tqr:15, hrv:62, hrv_base:68, weight_delta:-0.4, cryo:true,  score:'ok'   },
+  { name:'M. Sousa',    pos:'DE', fatigue:2, sleep:9, doms:1, stress:2, tqr:18, hrv:74, hrv_base:70, weight_delta:+0.2, cryo:false, score:'ok'   },
+  { name:'T. Ferreira', pos:'GR', fatigue:4, sleep:7, doms:4, stress:4, tqr:14, hrv:68, hrv_base:65, weight_delta:-0.1, cryo:false, score:'ok'   },
+  { name:'B. Alves',    pos:'MC', fatigue:6, sleep:6, doms:5, stress:6, tqr:11, hrv:60, hrv_base:64, weight_delta:-1.2, cryo:true,  score:'warn' },
+  { name:'J. Costa',    pos:'DC', fatigue:5, sleep:8, doms:3, stress:3, tqr:16, hrv:71, hrv_base:69, weight_delta:+0.3, cryo:false, score:'ok'   },
+];
+
+// ── SLIDER CONFIG ─────────────────────────────────────────────────────────
+const sliderCfg = {
+  fatigue:  { labels:['','Mínima','Muito baixa','Baixa','Ligeira','Moderada','Moderada-alta','Alta','Muito alta','Muito alta','Máxima'], color: v => v>=8?'var(--danger)':v>=6?'var(--warn)':'var(--accent)' },
+  sleep:    { labels:['','Muito mau','Mau','Razoável','Razoável','Aceitável','Bom','Bom','Muito bom','Excelente','Excelente'], color: v => v<=3?'var(--danger)':v<=5?'var(--warn)':'var(--accent)' },
+  hours:    { color: v => v<6?'var(--danger)':v<7?'var(--warn)':'var(--accent)', label: v => v<6?'Insuficiente':v<7?'Abaixo do ideal':v<=9?'Adequado':'Acima da média' },
+  doms:     { labels:['Sem dor','Mínima','Ligeira','Ligeira','Moderada','Moderada','Moderada-alta','Alta','Muito alta','Muito alta','Máxima'], color: v => v>=7?'var(--danger)':v>=5?'var(--warn)':'var(--accent)' },
+  stress:   { labels:['Sem stress','Mínimo','Baixo','Baixo','Moderado','Moderado','Elevado','Elevado','Muito elevado','Muito elevado','Extremo'], color: v => v>=7?'var(--danger)':v>=5?'var(--warn)':'var(--accent)' },
+  tqr:      { color: v => v<=9?'var(--danger)':v<=12?'var(--warn)':'var(--accent)', label: v => v<=6?'Muito mau':v<=9?'Mau':v<=12?'Razoável':v<=15?'Suficiente':v<=17?'Bom':'Excelente' },
+  rpe:      { labels:['Nenhum','Muito fácil','Fácil','Moderado','Um pouco difícil','Difícil','Difícil','Muito difícil','Muito difícil','Extremamente difícil','Máximo'], color: v => v>=9?'var(--danger)':v>=7?'var(--warn)':'var(--accent2)' },
+  duration: { color: ()=>'var(--accent2)', label: ()=>'' },
+};
+
+function updateSlider(key, val) {
+  val = parseFloat(val);
+  const cfg = sliderCfg[key];
+  const color = cfg.color(val);
+  const el = document.getElementById('val-'+key);
+  const lbl = document.getElementById('lbl-'+key);
+  if(!el) return;
+  if(key==='hours') { el.innerHTML = val+'<span style="font-size:16px;color:var(--text2)">h</span>'; if(lbl) lbl.textContent = cfg.label(val); }
+  else if(key==='tqr') { el.textContent = val; if(lbl) lbl.textContent = cfg.label(val); }
+  else if(key==='duration') {
+    el.innerHTML = val+'<span style="font-size:16px;color:var(--text2)">min</span>';
+    const rpe = parseInt(document.getElementById('sl-rpe').value);
+    const load = Math.round(rpe * val);
+    document.getElementById('session-load').textContent = load;
+    document.getElementById('lbl-duration').innerHTML = 'Session-RPE: <span id="session-load">'+load+'</span> UA';
+    document.getElementById('sum-dur').textContent = val+' min';
+    document.getElementById('sum-load').textContent = load+' UA';
+  }
+  else if(key==='rpe') {
+    el.textContent = val;
+    if(lbl && cfg.labels) lbl.textContent = cfg.labels[val]||'';
+    const dur = parseInt(document.getElementById('sl-duration').value);
+    const load = Math.round(val * dur);
+    if(document.getElementById('sum-rpe')) document.getElementById('sum-rpe').textContent = val;
+    if(document.getElementById('sum-load')) document.getElementById('sum-load').textContent = load+' UA';
+    const slbl = document.getElementById('session-load');
+    if(slbl) slbl.textContent = load;
+  }
+  else { el.textContent = val; if(lbl && cfg.labels) lbl.textContent = cfg.labels[Math.floor(val)]||''; }
+  el.style.color = color;
+  // Update slider track fill
+  const slider = document.getElementById('sl-'+key);
+  if(slider) {
+    const min = parseFloat(slider.min), max = parseFloat(slider.max);
+    const pct = ((val-min)/(max-min))*100;
+    slider.style.background = `linear-gradient(to right, ${color} ${pct}%, var(--bg4) ${pct}%)`;
+  }
+}
+
+// ── WEIGHT ────────────────────────────────────────────────────────────────
+function updateWeight() {
+  const val = parseFloat(document.getElementById('weight-val').value) || 71.2;
+  const base = 71.2;
+  const diff = val - base;
+  const pct = ((diff/base)*100).toFixed(1);
+  const el = document.getElementById('weight-delta');
+  if(!el) return;
+  if(Math.abs(diff) < 0.3) { el.className='weight-delta delta-ok'; el.textContent='Estável'; }
+  else if(pct < -2) { el.className='weight-delta delta-bad'; el.textContent=pct+'% ⚠'; }
+  else if(pct < -1) { el.className='weight-delta delta-warn'; el.textContent=pct+'%'; }
+  else { el.className='weight-delta delta-ok'; el.textContent=(diff>0?'+':'')+pct+'%'; }
+}
+
+// ── HRV ───────────────────────────────────────────────────────────────────
+function updateHRV() {
+  const val = parseInt(document.getElementById('hrv-val')?.value)||62;
+  const base = 68;
+  const pct = Math.round(((val-base)/base)*100);
+  const el = document.getElementById('hrv-status');
+  if(!el) return;
+  if(pct <= -10) el.innerHTML = `<span style="color:var(--danger)">${pct}% vs. baseline ⚠</span>`;
+  else if(pct <= -5) el.innerHTML = `<span style="color:var(--warn)">${pct}% vs. baseline</span>`;
+  else el.innerHTML = `<span style="color:var(--accent)">${pct>=0?'+':''}${pct}% vs. baseline</span>`;
+}
+
+// ── CRYO ─────────────────────────────────────────────────────────────────
+function setCryo(val) {
+  document.getElementById('cryo-yes').className = 'cryo-btn'+(val?' selected':'');
+  document.getElementById('cryo-no').className  = 'cryo-btn'+(!val?' selected':'');
+}
+
+// ── URINE ────────────────────────────────────────────────────────────────
+const urineColors = ['#FFF9C4','#FFF176','#FFE57F','#FFD740','#FFA000','#E65100','#BF360C','#4E342E'];
+const urineLabels = ['1 — Bem hidratado','2 — Hidratado','3 — Hidratado','4 — Limite','5 — Desidratado ligeiro','6 — Desidratado','7 — Desidratado severo','8 — Clínico'];
+let selectedUrine = 2;
+function buildUrineGrid() {
+  const g = document.getElementById('urine-grid');
+  if(!g) return;
+  g.innerHTML = urineColors.map((c,i) => `
+    <div class="urine-opt${i===selectedUrine?' selected':''}" style="background:${c}" onclick="selectUrine(${i})" title="${urineLabels[i]}">
+      <span>${i+1}</span>
+    </div>`).join('');
+  document.getElementById('urine-label').textContent = urineLabels[selectedUrine];
+}
+function selectUrine(i) {
+  selectedUrine = i;
+  buildUrineGrid();
+  const el = document.getElementById('urine-label');
+  if(el) el.textContent = urineLabels[i];
+  if(el) el.style.color = i>=4?'var(--warn)':i>=6?'var(--danger)':'var(--accent)';
+}
+
+// ── SESSION TYPE ──────────────────────────────────────────────────────────
+function selectSession(el) {
+  document.querySelectorAll('#screen-session .cryo-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ── WELLNESS TABLE ────────────────────────────────────────────────────────
+function buildWellnessTable() {
+  const tb = document.getElementById('wellness-table');
+  if(!tb) return;
+  tb.innerHTML = players.map(p => {
+    const scoreClass = p.score==='ok'?'score-ok':p.score==='warn'?'score-warn':'score-bad';
+    const scoreLbl   = p.score==='ok'?'OK':p.score==='warn'?'Atenção':'Alerta';
+    const hrvPct = Math.round(((p.hrv-p.hrv_base)/p.hrv_base)*100);
+    const hrvColor = hrvPct<=-10?'var(--danger)':hrvPct<=-5?'var(--warn)':'var(--accent)';
+    const wdColor = p.weight_delta<-2?'var(--danger)':p.weight_delta<-1?'var(--warn)':'var(--text2)';
+    // mini sparkline
+    const bars = [6,5,4,6,7,p.fatigue].map(v=>{
+      const h = Math.round((v/10)*28);
+      const cls = v>=7?'low':v>=5?'mid':'';
+      return `<div class="spark-bar ${cls}" style="height:${h}px"></div>`;
+    }).join('');
+    return `<tr>
+      <td>${p.name} <span style="font-family:var(--mono);font-size:9px;color:var(--text3)">${p.pos}</span></td>
+      <td style="color:${p.fatigue>=8?'var(--danger)':p.fatigue>=6?'var(--warn)':'var(--text2)'}">${p.fatigue}/10</td>
+      <td style="color:${p.sleep<=4?'var(--danger)':p.sleep<=5?'var(--warn)':'var(--text2)'}">${p.sleep}/10</td>
+      <td style="color:${p.doms>=7?'var(--danger)':p.doms>=5?'var(--warn)':'var(--text2)'}">${p.doms}/10</td>
+      <td style="color:${hrvColor}">${hrvPct>=0?'+':''}${hrvPct}%</td>
+      <td style="color:${p.stress>=7?'var(--danger)':p.stress>=5?'var(--warn)':'var(--text2)'}">${p.stress}/10</td>
+      <td><span class="score ${scoreClass}">${scoreLbl}</span></td>
+      <td><div class="spark">${bars}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function buildTrends() {
+  const g = document.getElementById('trend-grid');
+  if(!g) return;
+  const metrics = [
+    { label:'Fadiga média', val:5.8, max:10, color:'var(--warn)' },
+    { label:'Sono médio', val:6.7, max:10, color:'var(--accent)' },
+    { label:'DOMS médio', val:4.1, max:10, color:'var(--accent)' },
+    { label:'Stress médio', val:4.3, max:10, color:'var(--accent)' },
+    { label:'TQR médio', val:13.5, max:20, color:'var(--accent)' },
+    { label:'HRV plantel', val:64.7, max:100, color:'var(--accent)' },
+  ];
+  g.innerHTML = metrics.map(m => {
+    const pct = Math.round((m.val/m.max)*100);
+    return `<div class="trend-item">
+      <div class="trend-label">${m.label}</div>
+      <div class="trend-track"><div class="trend-fill" style="width:${pct}%;background:${m.color}"></div></div>
+      <div class="trend-val">${m.val}</div>
+    </div>`;
+  }).join('');
+
+  const cryo = document.getElementById('cryo-today');
+  if(cryo) {
+    const cryoPlayers = players.filter(p=>p.cryo);
+    cryo.innerHTML = cryoPlayers.map(p=>`
+      <span style="background:rgba(0,102,255,0.1);border:1px solid rgba(0,102,255,0.2);color:#4d9aff;font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:20px">${p.name}</span>
+    `).join('');
+  }
+}
+
+function buildAlerts() {
+  const al = document.getElementById('alert-list');
+  if(!al) return;
+  al.innerHTML = [
+    { dot:'red', player:'P. Oliveira', msg:'Fadiga 8/10 · Sono 4/10 · HRV −22% · 3 alertas simultâneos — risco de lesão elevado', time:'07:45' },
+    { dot:'amber', player:'L. Rodrigues', msg:'DOMS 7/10 · Peso −2.1% baseline · Desidratação possível', time:'07:52' },
+    { dot:'amber', player:'B. Alves', msg:'TQR 11 (Mau) · Stress 6/10 · Monitorizar carga de treino', time:'08:01' },
+  ].map(a=>`
+    <div class="notif-item">
+      <div class="notif-dot ${a.dot}"></div>
+      <div>
+        <div class="notif-player">${a.player}</div>
+        <div class="notif-msg">${a.msg}</div>
+      </div>
+      <div>
+        <div class="notif-time">${a.time}</div>
+        <div class="notif-action" style="margin-top:6px">Ver perfil</div>
+      </div>
+    </div>`).join('');
+
+  const pl = document.getElementById('push-list');
+  if(!pl) return;
+  pl.innerHTML = [
+    { dot:'green', player:'22 atletas', msg:'Check-in manhã enviado via push notification', time:'07:30', sent:false },
+    { dot:'green', player:'18 atletas', msg:'Formulário submetido (82% compliance)', time:'07:58', sent:true },
+    { dot:'amber', player:'4 atletas', msg:'Lembrete reenviado — sem resposta ao check-in', time:'08:15', sent:false },
+    { dot:'green', player:'Plantel completo', msg:'Notificação RPE pós-treino — tarde', time:'17:30', sent:false },
+  ].map(a=>`
+    <div class="notif-item ${a.sent?'sent':''}">
+      <div class="notif-dot ${a.dot}"></div>
+      <div>
+        <div class="notif-player">${a.player}</div>
+        <div class="notif-msg">${a.msg}</div>
+      </div>
+      <div class="notif-time">${a.time}</div>
+    </div>`).join('');
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────
+function submitMorning() {
+  document.getElementById('morning-form').style.display = 'none';
+  const s = document.getElementById('morning-success');
+  s.style.display = 'block';
+  const now = new Date();
+  document.getElementById('submit-time').textContent = now.toTimeString().slice(0,5);
+}
+function submitSession() {
+  alert('RPE pós-sessão registado. Dados enviados ao staff.');
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────
+function showScreen(id, el) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  const titles = { dashboard:'Dashboard Wellness', morning:'Check-in Manhã', session:'RPE Pós-Sessão', notifications:'Alertas & Notificações', mobile:'Vista Mobile — Athlete App' };
+  document.getElementById('topbar-title').textContent = titles[id]||id;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+buildUrineGrid();
+buildWellnessTable();
+buildTrends();
+buildAlerts();
+updateWeight();
+updateHRV();
+document.getElementById('hrv-val')?.addEventListener('input', updateHRV);
+
+// Init all sliders
+['fatigue','sleep','doms','stress','rpe'].forEach(k => updateSlider(k, document.getElementById('sl-'+k)?.value));
+updateSlider('tqr', document.getElementById('sl-tqr')?.value);
+updateSlider('hours', document.getElementById('sl-hours')?.value);
+updateSlider('duration', document.getElementById('sl-duration')?.value);
+</script>
+</body>
+</html>

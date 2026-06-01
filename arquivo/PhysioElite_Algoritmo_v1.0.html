@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhysioElite — Algoritmo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0d12;--bg2:#111520;--bg3:#181e2e;--bg4:#1e2638;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);--accent:#00e5a0;--blue:#4d9aff;--warn:#f6ad55;--danger:#ff4d6d;--text:#e8eaf2;--text2:#8892a4;--text3:#4a5568;--mono:'DM Mono',monospace;--sans:'Inter',sans-serif;--display:'Syne',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;padding:32px;}
+
+/* stepper */
+.steps{display:flex;align-items:center;gap:0;margin-bottom:28px;overflow-x:auto;padding-bottom:2px;}
+.sbtn{display:flex;align-items:center;gap:7px;padding:8px 14px;cursor:pointer;background:none;border:none;color:var(--text3);font-family:var(--sans);font-size:13px;position:relative;transition:all .2s;white-space:nowrap;}
+.sbtn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:transparent;transition:background .2s;}
+.sbtn.on{color:var(--text);}
+.sbtn.on::after{background:var(--accent);}
+.sbtn.done .snum{background:var(--accent);color:#000;border-color:var(--accent);}
+.snum{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--text3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;transition:all .2s;}
+.sbtn.on .snum{border-color:var(--accent);background:var(--accent);color:#000;}
+.sarr{color:var(--text3);font-size:16px;padding:0 2px;flex-shrink:0;}
+
+/* panels */
+.panel{display:none;animation:fi .2s ease;}
+.panel.on{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+/* nav */
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:24px;}
+.nbtn{padding:9px 22px;border-radius:8px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);font-family:var(--sans);font-size:13px;cursor:pointer;transition:all .15s;}
+.nbtn:hover{background:var(--bg3);color:var(--text);}
+.nbtn.p{background:var(--accent);color:#000;border-color:transparent;font-weight:500;}
+.nbtn.p:hover{opacity:.85;}
+.nbtn:disabled{opacity:.3;cursor:not-allowed;}
+.prog{font-size:12px;color:var(--text3);font-family:var(--mono);}
+
+/* cards */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;}
+.card:last-child{margin-bottom:0;}
+.ctitle{font-family:var(--display);font-size:14px;font-weight:700;margin-bottom:12px;}
+.slabel{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+
+/* alerts */
+.al{border-radius:8px;padding:10px 13px;margin-bottom:10px;display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.55;}
+.al:last-child{margin-bottom:0;}
+.al-b{background:rgba(77,154,255,0.08);border:1px solid rgba(77,154,255,0.2);}
+.al-g{background:rgba(0,229,160,0.07);border:1px solid rgba(0,229,160,0.2);}
+.al-w{background:rgba(246,173,85,0.07);border:1px solid rgba(246,173,85,0.2);}
+.al-r{background:rgba(255,77,109,0.07);border:1px solid rgba(255,77,109,0.2);}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.db{background:var(--blue);}.dg{background:var(--accent);}.dw{background:var(--warn);}.dr{background:var(--danger);}
+.al strong{color:var(--text);}
+.cg{color:var(--accent);}.cw{color:var(--warn);}.cr{color:var(--danger);}.cb{color:var(--blue);}
+
+/* dim boxes */
+.dim{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px;text-align:center;}
+.dim-ico{font-size:22px;margin-bottom:6px;}
+.dim-name{font-family:var(--display);font-size:12px;font-weight:700;margin-bottom:5px;}
+.dim-vars{font-size:11px;color:var(--text2);line-height:1.6;}
+
+/* formula */
+.formula{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;font-family:var(--mono);font-size:12.5px;line-height:1.9;margin:10px 0;}
+
+/* threshold rows */
+.trow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12.5px;}
+.trow:last-child{border:none;}
+.tc1{width:130px;flex-shrink:0;font-weight:500;}
+.tc2{flex:1;font-family:var(--mono);font-size:10px;color:var(--text3);}
+.tc3{width:80px;flex-shrink:0;text-align:right;font-family:var(--mono);font-size:11px;}
+.tc4{width:105px;flex-shrink:0;text-align:right;font-size:11px;color:var(--text3);}
+
+/* score bars */
+.brow{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+.bn{font-size:12px;color:var(--text2);width:140px;flex-shrink:0;}
+.bt{flex:1;height:6px;background:var(--bg4);border-radius:3px;}
+.bf{height:6px;border-radius:3px;}
+.bv{font-family:var(--mono);font-size:11px;width:40px;text-align:right;}
+
+/* weight chips */
+.wgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px;}
+.wchip{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;}
+.wnum{font-family:var(--display);font-size:18px;font-weight:800;display:block;margin-bottom:2px;}
+.wlbl{font-size:10px;color:var(--text3);font-family:var(--mono);}
+
+/* conf badges */
+.cbadge{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:20px;font-size:11px;font-family:var(--mono);}
+.cok{background:rgba(0,229,160,0.1);color:var(--accent);border:1px solid rgba(0,229,160,0.2);}
+.cme{background:rgba(246,173,85,0.1);color:var(--warn);border:1px solid rgba(246,173,85,0.2);}
+.clo{background:rgba(255,77,109,0.1);color:var(--danger);border:1px solid rgba(255,77,109,0.2);}
+
+/* score big */
+.score-big{font-family:var(--display);font-size:58px;font-weight:800;color:var(--danger);line-height:1;}
+</style>
+</head>
+<body>
+
+<div style="font-family:var(--display);font-size:22px;font-weight:800;margin-bottom:6px">PhysioElite — Modelo Preditivo</div>
+<div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px">Esquema do Algoritmo · 6 Passos</div>
+
+<!-- STEPPER -->
+<div class="steps">
+  <button class="sbtn on" id="sb0" onclick="go(0)"><div class="snum" id="sn0">1</div>Entradas</button>
+  <span class="sarr">›</span>
+  <button class="sbtn" id="sb1" onclick="go(1)"><div class="snum" id="sn1">2</div>Normalização</button>
+  <span class="sarr">›</span>
+  <button class="sbtn" id="sb2" onclick="go(2)"><div class="snum" id="sn2">3</div>Score parcial</button>
+  <span class="sarr">›</span>
+  <button class="sbtn" id="sb3" onclick="go(3)"><div class="snum" id="sn3">4</div>Soma ponderada</button>
+  <span class="sarr">›</span>
+  <button class="sbtn" id="sb4" onclick="go(4)"><div class="snum" id="sn4">5</div>Confiança</button>
+  <span class="sarr">›</span>
+  <button class="sbtn" id="sb5" onclick="go(5)"><div class="snum" id="sn5">6</div>Output</button>
+</div>
+
+<!-- P0: Entradas -->
+<div class="panel on" id="p0">
+  <div class="al al-b"><div class="dot db"></div><div><strong>Passo 1 — Recolha de dados das 5 dimensões.</strong> O modelo parte de variáveis reais do atleta, recolhidas automaticamente (GPS, Athlete App) ou inseridas pelo clínico (historial). Ainda não há nenhum cálculo neste passo.</div></div>
+  <div class="g5" style="margin-bottom:12px">
+    <div class="dim"><div class="dim-ico">📡</div><div class="dim-name">Carga externa</div><div class="dim-vars">ACWR<br>HI Distance<br>Acelerações<br>Vel. máxima</div></div>
+    <div class="dim"><div class="dim-ico">💬</div><div class="dim-name">Carga interna</div><div class="dim-vars">Hooper Index<br>TQR<br>Session-RPE<br>DOMS</div></div>
+    <div class="dim"><div class="dim-ico">🧬</div><div class="dim-name">Recuperação</div><div class="dim-vars">HRV Δ baseline<br>Sono h + qual.<br>Peso Δ<br>Crioterapia</div></div>
+    <div class="dim"><div class="dim-ico">🧠</div><div class="dim-name">Psicológico</div><div class="dim-vars">Stress percebido<br>(Andersen &amp;<br>Williams 1988)</div></div>
+    <div class="dim"><div class="dim-ico">📋</div><div class="dim-name">Historial clínico</div><div class="dim-vars">Lesões anteriores<br>Localização<br>Dias indisp.<br>Recidivas</div></div>
+  </div>
+  <div class="al al-g"><div class="dot dg"></div><div>Cada variável entra com o seu <strong>valor bruto</strong> — por exemplo ACWR = 1.47, HRV = 53ms, Fadiga = 8/10. Unidades heterogéneas que o passo 2 vai converter numa escala comum.</div></div>
+</div>
+
+<!-- P1: Normalização -->
+<div class="panel" id="p1">
+  <div class="al al-b"><div class="dot db"></div><div><strong>Passo 2 — Normalização contra limiares publicados na literatura.</strong> Transforma unidades heterogéneas (ms, km/h, escala 1–10) em valores entre 0 e 1. Zero = dentro do normal. Um = no limite máximo de risco documentado. Este passo ancora o modelo à ciência publicada.</div></div>
+  <div class="card">
+    <div class="ctitle">Limiares por variável — referência bibliográfica explícita</div>
+    <div class="trow"><div class="tc1">ACWR</div><div class="tc2">seguro 0.8–1.3 · risco &gt;1.3 · crítico &gt;1.5</div><div class="tc3 cr">1.47 → 0.90</div><div class="tc4">Gabbett 2016</div></div>
+    <div class="trow"><div class="tc1">HRV Δ baseline</div><div class="tc2">normal &gt;-5% · alerta -5 a -10% · crítico &lt;-10%</div><div class="tc3 cr">-22% → 0.82</div><div class="tc4">Plews 2013</div></div>
+    <div class="trow"><div class="tc1">Fadiga (Hooper)</div><div class="tc2">baixa 1–4 · moderada 5–7 · alta ≥8</div><div class="tc3 cr">8/10 → 0.80</div><div class="tc4">Hooper 1995</div></div>
+    <div class="trow"><div class="tc1">TQR</div><div class="tc2">excelente 18–20 · bom 14–17 · mau ≤13 · muito mau ≤9</div><div class="tc3 cr">9/20 → 0.85</div><div class="tc4">Kenttä 1998</div></div>
+    <div class="trow"><div class="tc1">Sono</div><div class="tc2">adequado ≥7h · insuf. 6–7h · crítico &lt;6h</div><div class="tc3 cr">5.8h → 0.75</div><div class="tc4">Mäkinen 2017</div></div>
+    <div class="trow"><div class="tc1">Stress percebido</div><div class="tc2">baixo 0–4 · moderado 5–6 · elevado ≥7</div><div class="tc3 cw">7/10 → 0.70</div><div class="tc4">Andersen 1988</div></div>
+    <div class="trow"><div class="tc1">Historial lesão</div><div class="tc2">0 episódios · 1 episódio · ≥2 mesmo segmento</div><div class="tc3 cw">×2 → 0.55</div><div class="tc4">Hagglund 2013</div></div>
+  </div>
+  <div class="formula">Normalização linear por intervalo:<br>score_parcial = (valor − limiar_seguro) / (limiar_máximo − limiar_seguro)<br>→ resultado ∈ [0, 1] · clamped nos extremos</div>
+</div>
+
+<!-- P2: Score parcial -->
+<div class="panel" id="p2">
+  <div class="al al-b"><div class="dot db"></div><div><strong>Passo 3 — Score parcial por variável (0 a 1).</strong> Cada variável tem agora um valor comparável. Zero = sem risco. Um = risco máximo documentado. Este é o passo que torna o modelo interpretável — o clínico pode ver qual factor está mais alto.</div></div>
+  <div class="g2">
+    <div class="card">
+      <div class="ctitle">Scores parciais — P. Oliveira</div>
+      <div class="brow"><div class="bn">ACWR (carga GPS)</div><div class="bt"><div class="bf" style="width:90%;background:var(--danger)"></div></div><div class="bv cr">0.90</div></div>
+      <div class="brow"><div class="bn">TQR (recuperação)</div><div class="bt"><div class="bf" style="width:85%;background:var(--danger)"></div></div><div class="bv cr">0.85</div></div>
+      <div class="brow"><div class="bn">HRV Δ (biológico)</div><div class="bt"><div class="bf" style="width:82%;background:var(--danger)"></div></div><div class="bv cr">0.82</div></div>
+      <div class="brow"><div class="bn">Fadiga 8/10</div><div class="bt"><div class="bf" style="width:80%;background:var(--danger)"></div></div><div class="bv cr">0.80</div></div>
+      <div class="brow"><div class="bn">Sono 5.8h</div><div class="bt"><div class="bf" style="width:75%;background:var(--danger)"></div></div><div class="bv cr">0.75</div></div>
+      <div class="brow"><div class="bn">Stress 7/10</div><div class="bt"><div class="bf" style="width:70%;background:var(--warn)"></div></div><div class="bv cw">0.70</div></div>
+      <div class="brow"><div class="bn">Historial ×2</div><div class="bt"><div class="bf" style="width:55%;background:var(--warn)"></div></div><div class="bv cw">0.55</div></div>
+      <div class="brow" style="margin:0"><div class="bn">Sem crioterapia</div><div class="bt"><div class="bf" style="width:50%;background:var(--warn)"></div></div><div class="bv cw">0.50</div></div>
+    </div>
+    <div class="card">
+      <div class="ctitle">Porquê este passo é a chave da interpretabilidade</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px">Com um modelo de ML neural, o fisioterapeuta recebe <strong style="color:var(--text)">82%</strong> e não sabe mais nada.<br><br>Com scores parciais visíveis, o fisioterapeuta vê que:<br><br>• O <strong style="color:var(--text)">ACWR (0.90)</strong> é o factor dominante<br>• O <strong style="color:var(--text)">historial (0.55)</strong> contribui menos<br>• A intervenção prioritária é <strong style="color:var(--text)">reduzir carga hoje</strong>, não trabalhar o historial</div>
+      <div class="al al-g" style="margin-bottom:0"><div class="dot dg"></div><div>Isto é interpretabilidade clínica real — saber qual factor actuar primeiro, hoje, neste atleta.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- P3: Soma ponderada -->
+<div class="panel" id="p3">
+  <div class="al al-b"><div class="dot db"></div><div><strong>Passo 4 — Soma ponderada.</strong> Cada score parcial é multiplicado pelo seu peso. Os pesos somam 1.0 e são definidos com base na literatura (Fase 1). Na Fase 2, após ~30 eventos de lesão registados na FPF, são recalibrados por regressão logística com dados reais.</div></div>
+  <div class="g2">
+    <div>
+      <div class="slabel">Pesos actuais — Fase 1 (definidos por perito)</div>
+      <div class="wgrid">
+        <div class="wchip"><span class="wnum cg">0.25</span><span class="wlbl">ACWR</span></div>
+        <div class="wchip"><span class="wnum cg">0.20</span><span class="wlbl">HRV</span></div>
+        <div class="wchip"><span class="wnum cb">0.15</span><span class="wlbl">Fadiga</span></div>
+        <div class="wchip"><span class="wnum cb">0.15</span><span class="wlbl">Sono + TQR</span></div>
+        <div class="wchip"><span class="wnum cw">0.10</span><span class="wlbl">Historial</span></div>
+        <div class="wchip"><span class="wnum cw">0.10</span><span class="wlbl">Stress</span></div>
+        <div class="wchip"><span class="wnum" style="color:var(--text2)">0.05</span><span class="wlbl">Crioterapia</span></div>
+        <div class="wchip" style="border-color:var(--accent)"><span class="wnum cg">1.00</span><span class="wlbl">Σ total</span></div>
+      </div>
+      <div class="al al-w"><div class="dot dw"></div><div>Na <strong>Fase 2</strong>, após dados reais da FPF, o ACWR pode passar a pesar 0.32 e o historial 0.18. O mecanismo não muda — só os valores dos pesos.</div></div>
+    </div>
+    <div>
+      <div class="slabel">Fórmula aplicada — P. Oliveira</div>
+      <div class="formula">Score = Σ (score_parcial_i × peso_i)<br><br>= 0.90 × 0.25 = 0.225<br>+ 0.82 × 0.20 = 0.164<br>+ 0.80 × 0.15 = 0.120<br>+ 0.85 × 0.08 = 0.068  ← TQR<br>+ 0.75 × 0.07 = 0.053  ← Sono<br>+ 0.55 × 0.10 = 0.055<br>+ 0.70 × 0.10 = 0.070<br>+ 0.50 × 0.05 = 0.025<br>──────────────────────<br>= 0.780 → normalizado → <strong style="color:var(--danger)">82%</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- P4: Confiança -->
+<div class="panel" id="p4">
+  <div class="al al-b"><div class="dot db"></div><div><strong>Passo 5 — Camada de confiança.</strong> Antes de apresentar o score, o modelo avalia a qualidade dos dados que o geraram. Um score calculado com dados incompletos é sempre apresentado com aviso explícito — nunca silenciosamente. Esta camada resolve o problema específico do contexto de selecção nacional.</div></div>
+  <div class="g3" style="margin-bottom:12px">
+    <div class="card" style="border-color:rgba(0,229,160,0.3)">
+      <div class="slabel" style="margin-bottom:6px">Alta confiança</div>
+      <div class="cbadge cok" style="margin-bottom:10px">≥5 variáveis medidas</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;">ACWR com ≥21 dias<br>HRV com ≥14 medições<br>Todas as variáveis preenchidas<br><br><strong class="cg">→ Score accionável directamente</strong></div>
+    </div>
+    <div class="card" style="border-color:rgba(246,173,85,0.3)">
+      <div class="slabel" style="margin-bottom:6px">Confiança média</div>
+      <div class="cbadge cme" style="margin-bottom:10px">3–4 variáveis medidas</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;">ACWR com 14–21 dias<br>HRV com 7–14 medições<br>Dados clube parciais<br><br><strong class="cw">→ Score orientativo + screening obrigatório</strong></div>
+    </div>
+    <div class="card" style="border-color:rgba(255,77,109,0.3)">
+      <div class="slabel" style="margin-bottom:6px">Confiança baixa</div>
+      <div class="cbadge clo" style="margin-bottom:10px">&lt;3 variáveis medidas</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;">Dia 1–3 de estágio<br>ACWR suspenso<br>HRV sem baseline<br><br><strong class="cr">→ Protocolo de chegada primeiro</strong></div>
+    </div>
+  </div>
+  <div class="al al-g"><div class="dot dg"></div><div>Esta camada é uma inovação de produto, não de algoritmo. <strong>Nenhum modelo académico ou comercial existente comunica explicitamente ao clínico a qualidade dos dados que geraram o score.</strong> É o que distingue um instrumento clínico responsável de uma caixa preta com um número.</div></div>
+</div>
+
+<!-- P5: Output -->
+<div class="panel" id="p5">
+  <div class="al al-b"><div class="dot db"></div><div><strong>Passo 6 — Output final para o clínico.</strong> O score chega com três camadas simultâneas: o número, a decomposição por variável, e o índice de confiança. Os cinco passos anteriores correm em segundo plano — o clínico vê apenas o resultado, mas pode sempre inspeccioná-lo.</div></div>
+  <div class="g2">
+    <div class="card">
+      <div class="slabel">Score final · P. Oliveira · hoje</div>
+      <div style="display:flex;align-items:baseline;gap:14px;margin:10px 0 8px">
+        <div class="score-big">82%</div>
+        <div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:5px">risco de lesão · 14 dias</div>
+          <div class="cbadge cok"><div style="width:6px;height:6px;border-radius:50%;background:var(--accent)"></div>Alta confiança · 28 dias dados</div>
+        </div>
+      </div>
+      <div style="height:1px;background:var(--border);margin:12px 0"></div>
+      <div class="slabel" style="margin-bottom:8px">Decomposição visível por factor</div>
+      <div class="brow"><div class="bn">ACWR</div><div class="bt"><div class="bf" style="width:90%;background:var(--danger)"></div></div><div class="bv cr">90%</div></div>
+      <div class="brow"><div class="bn">TQR</div><div class="bt"><div class="bf" style="width:85%;background:var(--danger)"></div></div><div class="bv cr">85%</div></div>
+      <div class="brow"><div class="bn">HRV</div><div class="bt"><div class="bf" style="width:82%;background:var(--danger)"></div></div><div class="bv cr">82%</div></div>
+      <div class="brow"><div class="bn">Fadiga</div><div class="bt"><div class="bf" style="width:80%;background:var(--danger)"></div></div><div class="bv cr">80%</div></div>
+      <div class="brow" style="margin:0"><div class="bn">Historial</div><div class="bt"><div class="bf" style="width:55%;background:var(--warn)"></div></div><div class="bv cw">55%</div></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="ctitle">O que o clínico vê vs. não vê</div>
+        <div class="al al-g"><div class="dot dg"></div><div><strong>Vê:</strong> score, decomposição por variável, confiança, recomendação de acção</div></div>
+        <div class="al al-r"><div class="dot dr"></div><div><strong>Não vê:</strong> a matemática interna, os limiares, os pesos — abstraídos no output</div></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Diferença face ao ML convencional</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.75;">Um modelo neural devolve <strong style="color:var(--text)">82%</strong> sem mais informação.<br><br>A PhysioElite devolve <strong style="color:var(--text)">82%</strong> e acrescenta:<br><em style="color:var(--text2)">"O factor dominante é o ACWR — carga desta semana excede 47% a carga crónica. Se reduzires o volume hoje, o score desce para ~65% amanhã."</em><br><br><strong style="color:var(--accent)">Isso é o que torna o score accionável.</strong></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav-row">
+  <button class="nbtn" id="btnPrev" onclick="prev()" disabled>← Anterior</button>
+  <div class="prog" id="prog">Passo 1 de 6 — Entradas</div>
+  <button class="nbtn p" id="btnNext" onclick="next()">Próximo →</button>
+</div>
+
+<script>
+let cur=0;
+const N=6;
+const labels=['Entradas','Normalização','Score parcial','Soma ponderada','Confiança','Output'];
+function go(i){
+  document.querySelectorAll('.panel').forEach((p,j)=>p.classList.toggle('on',j===i));
+  document.querySelectorAll('.sbtn').forEach((b,j)=>{
+    b.classList.toggle('on',j===i);
+    b.classList.toggle('done',j<i);
+  });
+  cur=i;
+  document.getElementById('btnPrev').disabled=i===0;
+  const next=document.getElementById('btnNext');
+  next.disabled=i===N-1;
+  next.textContent=i===N-1?'Concluído ✓':'Próximo →';
+  document.getElementById('prog').textContent=`Passo ${i+1} de ${N} — ${labels[i]}`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function next(){if(cur<N-1)go(cur+1);}
+function prev(){if(cur>0)go(cur-1);}
+</script>
+</body>
+</html>

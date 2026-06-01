@@ -19,6 +19,7 @@
       "performance": "Rendimiento",
       "intelligence": "Inteligencia",
       "special": "Especial",
+      "admin": "Admin",
       "system": "Sistema"
     },
     "nav": {
@@ -29,6 +30,7 @@
       "input": "Datos Wellness",
       "readiness": "Disposición",
       "rehab": "Rehabilitación",
+      "clinical_portal": "Portal Clínico",
       "load": "Carga & GPS",
       "performance": "Máximos & Perfil",
       "calendar": "Inteligencia Calendario",

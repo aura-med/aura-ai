@@ -3,7 +3,10 @@ import { createBrowserClient } from '@supabase/ssr'
 function makeClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder-key'
+    // Support both the legacy anon key name and the newer publishable key name
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+      'placeholder-key'
   )
 }
 

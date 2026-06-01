@@ -352,3 +352,135 @@ export interface RecommendationSet {
   coach: Recommendation[]
   athlete: Recommendation[]
 }
+
+// ─── OSIICS Codes (dim_osiics_codes) ──────────────────────────────────────────
+
+export interface OsiicsCode {
+  // Confirmed columns (dim_osiics_codes) — no id, no created_at
+  code: string                          // CHAR(4) primary key
+  body_region: string
+  injury_type: string
+  diagnosis: string
+  severity_label: string | null
+  expected_recovery_min: number | null  // days
+  expected_recovery_max: number | null  // days
+}
+
+// ─── Rehab Protocols (rehab_protocols) ────────────────────────────────────────
+
+// Confirmed columns (rehab_protocols): id, name, key, phases, total_days, evidence
+// NOTE: status, osiics_codes, created_at, updated_at do NOT exist in the current schema.
+// Add those columns in Supabase if you need lifecycle management or OSIICS linking.
+export type ProtocolStatus = 'draft' | 'active' | 'archived' | 'suspended'
+
+export interface RehabProtocolPhase {
+  name: string
+  progression_criteria: string
+  load_restrictions: string
+}
+
+export interface RehabProtocolDB {
+  id: string
+  name: string            // actual column — NOT "title"
+  key: string             // short slug / identifier
+  phases: RehabProtocolPhase[]
+  total_days: number | null
+  evidence: string | null
+  // Optional extended columns — add to DB before using:
+  status?: ProtocolStatus
+  osiics_codes?: string[]
+  updated_at?: string
+  created_at?: string
+}
+
+// ─── Medical Portal ────────────────────────────────────────────────────────────
+
+export type AvailabilityStatus = 'unfit' | 'modified' | 'monitoring' | 'delayed' | 'recovered'
+
+export interface ClinicalNote {
+  text: string
+  created_at: string
+  author?: string
+}
+
+/** clinical_data JSONB structure stored in rehab_sessions */
+export interface ClinicalData {
+  notes?: ClinicalNote[]
+  phase_progress?: Record<string, boolean[]>  // phaseId → array of checked criteria
+  osiics_code?: string
+  [key: string]: unknown
+}
+
+/** rehab_sessions row with all joins for the medical dashboard */
+export interface ActiveRehabSession {
+  // rehab_sessions columns
+  id: string
+  athlete_id: string
+  protocol_id: string | null
+  injury_event_id: string | null
+  start_date: string
+  current_day: number
+  rtp_criteria: RtpCriterion[]
+  clinical_data: ClinicalData
+  availability_status: AvailabilityStatus | null
+  created_at: string
+  updated_at: string
+  // Joins
+  athletes: {
+    id: string
+    name: string
+    shirt_number: number
+    position: string
+    status: AthleteStatus
+  } | null
+  rehab_protocols: {
+    id: string
+    key: string
+    name: string
+    total_days: number | null
+    phases: RehabPhase[]
+    color: string | null
+    evidence: string | null
+  } | null
+  injury_events: {
+    id: string
+    diagnosis: string | null
+    location: string | null
+    injury_date: string
+    severity: InjuryEvent['severity'] | null
+    osiics_code: string | null
+    mechanism: string | null
+  } | null
+}
+
+/** Federated learning — weight delta computed locally from clinician observations */
+export interface WeightDelta {
+  variable: string
+  delta: number
+  n_observations: number
+  last_computed: string
+}
+
+/** predict-risk edge function payload */
+export interface RiskPredictRequest {
+  metrics: {
+    history?: number | null
+    acwr?: number | null
+    hrv?: number | null
+    fatigue?: number | null
+    sleep?: number | null
+    tqr?: number | null
+    stress?: number | null
+    decel?: number | null
+    md?: number | null
+  }
+}
+
+export interface RiskPredictResponse {
+  score: number
+  riskLevel: RiskLevel
+  confidence: Confidence
+  insight: string
+  dominantVariable: string
+}
+

@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aura — Motor de Recomendações</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0d12;--bg2:#111520;--bg3:#181e2e;--bg4:#1e2638;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);
+  --green:#00e5a0;--green2:rgba(0,229,160,0.12);--green3:rgba(0,229,160,0.06);
+  --blue:#4d9aff;--blue2:rgba(77,154,255,0.12);
+  --warn:#f6ad55;--warn2:rgba(246,173,85,0.12);
+  --danger:#ff4d6d;--danger2:rgba(255,77,109,0.12);
+  --purple:#b48dfc;--purple2:rgba(180,141,252,0.12);
+  --text:#e8eaf2;--text2:#8892a4;--text3:#4a5568;
+  --mono:'DM Mono',monospace;--sans:'Inter',sans-serif;--display:'Syne',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;padding:28px 32px;min-height:100vh;}
+
+/* HEADER */
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--border2);}
+.hdr-left h1{font-family:var(--display);font-size:24px;font-weight:800;color:var(--green);margin-bottom:4px;}
+.hdr-left p{font-size:12px;color:var(--text3);font-family:var(--mono);}
+.hdr-right{font-family:var(--mono);font-size:10px;color:var(--text3);text-align:right;line-height:1.8;}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:280px 1fr;gap:20px;min-height:calc(100vh - 140px);}
+
+/* LEFT PANEL — variable selector */
+.left{display:flex;flex-direction:column;gap:8px;}
+.section-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;margin-top:8px;}
+.section-label:first-child{margin-top:0;}
+
+.var-btn{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;width:100%;}
+.var-btn:hover{border-color:var(--border2);background:var(--bg3);}
+.var-btn.on{border-color:var(--green);background:var(--green3);}
+.var-btn.on .vb-icon{background:var(--green);color:#000;}
+.var-icon{width:28px;height:28px;border-radius:6px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:all .15s;}
+.var-info{flex:1;text-align:left;}
+.var-name{font-size:12px;font-weight:500;color:var(--text);}
+.var-weight{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.score-bar-mini{height:3px;background:var(--bg4);border-radius:2px;margin-top:4px;}
+.score-fill-mini{height:3px;border-radius:2px;}
+
+/* SCORE SELECTOR */
+.score-selector{display:flex;gap:6px;margin-bottom:16px;}
+.score-btn{flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--text3);text-align:center;transition:all .15s;}
+.score-btn:hover{background:var(--bg3);}
+.score-btn.on.low{border-color:rgba(0,229,160,0.4);background:var(--green3);color:var(--green);}
+.score-btn.on.med{border-color:rgba(246,173,85,0.4);background:var(--warn2);color:var(--warn);}
+.score-btn.on.high{border-color:rgba(255,77,109,0.4);background:var(--danger2);color:var(--danger);}
+.score-btn.on.critical{border-color:rgba(180,141,252,0.4);background:var(--purple2);color:var(--purple);}
+
+/* RIGHT PANEL */
+.right{display:flex;flex-direction:column;gap:16px;}
+
+/* SCORE HEADER */
+.score-header{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;display:flex;align-items:center;gap:20px;}
+.score-num{font-family:var(--display);font-size:56px;font-weight:800;line-height:1;}
+.score-meta{flex:1;}
+.score-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.score-var{font-size:14px;color:var(--text2);line-height:1.5;}
+.score-var strong{color:var(--text);}
+.conf-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:10px;font-family:var(--mono);margin-top:8px;}
+.cb-ok{background:var(--green2);color:var(--green);border:1px solid rgba(0,229,160,0.2);}
+.cb-med{background:var(--warn2);color:var(--warn);border:1px solid rgba(246,173,85,0.2);}
+
+/* ACTION GRID */
+.action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+
+/* STAKEHOLDER CARD */
+.scard{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px;}
+.scard-header{display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.scard-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.si-clinical{background:rgba(77,154,255,0.15);}
+.si-coach{background:rgba(246,173,85,0.12);}
+.si-athlete{background:rgba(0,229,160,0.1);}
+.scard-title{font-family:var(--display);font-size:14px;font-weight:700;color:var(--text);}
+.scard-role{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);}
+
+/* ACTION ITEMS */
+.action-item{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:8px;border-left:3px solid;font-size:12.5px;line-height:1.6;}
+.ai-red{background:var(--danger2);border-color:var(--danger);}
+.ai-warn{background:var(--warn2);border-color:var(--warn);}
+.ai-green{background:var(--green3);border-color:var(--green);}
+.ai-blue{background:var(--blue2);border-color:var(--blue);}
+.action-item .ai-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+.action-item .ai-text{color:var(--text2);}
+.action-item .ai-text strong{color:var(--text);}
+.ai-timing{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:3px;letter-spacing:1px;}
+
+/* LOGIC BOX */
+.logic-box{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;font-family:var(--mono);font-size:11.5px;line-height:1.9;color:var(--text2);margin-top:0;}
+.logic-box .lh{color:var(--text3);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+
+/* EMPTY STATE */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:60px;color:var(--text3);text-align:center;background:var(--bg2);border:1px solid var(--border);border-radius:12px;}
+.empty-icon{font-size:48px;margin-bottom:16px;opacity:.3;}
+.empty p{font-size:14px;max-width:320px;line-height:1.6;}
+
+/* URGENCY BADGE */
+.urgency{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;}
+.u-now{background:rgba(255,77,109,0.15);color:var(--danger);border:1px solid rgba(255,77,109,0.25);}
+.u-today{background:rgba(246,173,85,0.12);color:var(--warn);border:1px solid rgba(246,173,85,0.2);}
+.u-match{background:rgba(180,141,252,0.12);color:var(--purple);border:1px solid rgba(180,141,252,0.2);}
+.u-next{background:rgba(77,154,255,0.1);color:var(--blue);border:1px solid rgba(77,154,255,0.15);}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-left">
+    <h1>Aura — Motor de Recomendações</h1>
+    <p>Score → Variável dominante → Acções concretas por stakeholder</p>
+  </div>
+  <div class="hdr-right">
+    <span id="athlete-name">Paulo Oliveira · MC · 24a</span><br>
+    Selecciona nível de risco e variável dominante
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- LEFT: SELECTORS -->
+  <div class="left">
+    <div class="section-label">Nível de risco</div>
+    <div class="score-selector">
+      <button class="score-btn low" onclick="setScore('low')" id="s-low">&lt;40%<br>Baixo</button>
+      <button class="score-btn med on" onclick="setScore('med')" id="s-med">40–65%<br>Moderado</button>
+      <button class="score-btn high" onclick="setScore('high')" id="s-high">65–85%<br>Alto</button>
+      <button class="score-btn critical" onclick="setScore('critical')" id="s-critical">&gt;85%<br>Crítico</button>
+    </div>
+
+    <div class="section-label">Variável dominante</div>
+
+    <button class="var-btn on" onclick="setVar('history')" id="v-history">
+      <div class="var-icon vb-icon">📋</div>
+      <div class="var-info">
+        <div class="var-name">Historial lesões</div>
+        <div class="var-weight">peso 0.20</div>
+        <div class="score-bar-mini"><div class="score-fill-mini" style="width:100%;background:var(--danger)"></div></div>
+      </div>
+    </button>
+
+    <button class="var-btn" onclick="setVar('acwr')" id="v-acwr">
+      <div class="var-icon">📡</div>
+      <div class="var-info">
+        <div class="var-name">ACWR carga GPS</div>
+        <div class="var-weight">peso 0.20</div>
+        <div class="score-bar-mini"><div class="score-fill-mini" style="width:90%;background:var(--danger)"></div></div>
+      </div>
+    </button>
+
+    <button class="var-btn" onclick="setVar('hrv')" id="v-hrv">
+      <div class="var-icon">🧬</div>
+      <div class="var-info">
+        <div class="var-name">HRV Δ baseline</div>
+        <div class="var-weight">peso 0.18</div>
+        <div class="score-bar-mini"><div class="score-fill-mini" style="width:82%;background:var(--danger)"></div></div>
+      </div>
+    </button>
+
+    <button class="var-btn" onclick="setVar('sleep')" id="v-sleep">
+      <div class="var-icon">😴</div>
+      <div class="var-info">
+        <div class="var-name">Sono</div>
+        <div class="var-weight">peso 0.12</div>
+        <div class="score-bar-mini"><div class="score-fill-mini" style="width:75%;background:var(--danger)"></div></div>
+      </div>
+    </button>
+
+    <button class="var-btn" onclick="setVar('fatigue')" id="v-fatigue">
+      <div class="var-icon">💬</div>
+      <div class="var-info">
+        <div class="var-name">Fadiga (Hooper)</div>
+        <div class="var-weight">peso 0.13</div>
+        <div class="score-bar-mini"><div class="score-fill-mini" style="width:80%;background:var(--danger)"></div></div>
+      </div>
+    </button>
+
+    <button class="var-btn" onclick="setVar('tqr')" id="v-tqr">
+      <div class="var-icon">🔄</div>
+      <div class="var-info">
+        <div class="var-name">TQR</div>
+        <div class="var-weight">peso 0.07</div>
+        <div class="score-bar-mini"><div class="score-fill-mini" style="width:85%;background:var(--danger)"></div></div>
+      </div>
+    </button>
+
+    <button class="var-btn" onclick="setVar('decel')" id="v-decel">
+      <div class="var-icon">⚡</div>
+      <div class="var-info">
+        <div class="var-name">Desacelerações</div>
+        <div class="var-weight">peso 0.04</div>
+        <div class="score-bar-mini"><div class="score-fill-mini" style="width:72%;background:var(--purple)"></div></div>
+      </div>
+    </button>
+
+    <button class="var-btn" onclick="setVar('md')" id="v-md">
+      <div class="var-icon">📅</div>
+      <div class="var-info">
+        <div class="var-name">MD+n</div>
+        <div class="var-weight">peso 0.02</div>
+        <div class="score-bar-mini"><div class="score-fill-mini" style="width:100%;background:var(--purple)"></div></div>
+      </div>
+    </button>
+  </div>
+
+  <!-- RIGHT: RECOMMENDATIONS -->
+  <div class="right" id="right-panel">
+    <div class="empty">
+      <div class="empty-icon">⚡</div>
+      <p>Selecciona o nível de risco e a variável dominante para ver as recomendações concretas por stakeholder.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentScore = 'med';
+let currentVar = 'history';
+
+const scoreConfig = {
+  low:     { label: '<40%', color: 'var(--green)',  num: '32%', cls: 'low',     conf: 'cb-ok',  confLabel: 'Risco baixo — monitorização de rotina' },
+  med:     { label: '40–65%', color: 'var(--warn)', num: '58%', cls: 'med',     conf: 'cb-med', confLabel: 'Risco moderado — atenção aumentada' },
+  high:    { label: '65–85%', color: 'var(--danger)', num: '74%', cls: 'high',  conf: 'cb-med', confLabel: 'Risco alto — intervenção recomendada' },
+  critical:{ label: '>85%', color: 'var(--purple)', num: '88%', cls: 'critical',conf: 'cb-med', confLabel: 'Risco crítico — acção imediata' }
+};
+
+const varConfig = {
+  history: { name: 'Historial de lesões', icon: '📋', color: 'var(--danger)' },
+  acwr:    { name: 'ACWR carga GPS',       icon: '📡', color: 'var(--danger)' },
+  hrv:     { name: 'HRV Δ baseline',       icon: '🧬', color: 'var(--danger)' },
+  sleep:   { name: 'Sono insuficiente',    icon: '😴', color: 'var(--warn)'   },
+  fatigue: { name: 'Fadiga (Hooper)',       icon: '💬', color: 'var(--warn)'   },
+  tqr:     { name: 'TQR — recuperação',    icon: '🔄', color: 'var(--warn)'   },
+  decel:   { name: 'Desacelerações GPS',   icon: '⚡', color: 'var(--purple)' },
+  md:      { name: 'MD+n (pós-jogo)',      icon: '📅', color: 'var(--purple)' }
+};
+
+// ── RECOMMENDATION DATABASE ──────────────────────────────────────────────────
+const recs = {
+
+  // ═══ HISTORIAL ═══
+  history: {
+    low: {
+      clinical: [
+        { type:'ai-green', icon:'✓', text:'<strong>Monitorização de rotina.</strong> Historial documentado mas sem convergência com outros factores de risco.', timing:'ROTINA' },
+        { type:'ai-blue',  icon:'📋', text:'<strong>Revisar protocolo de prevenção</strong> do segmento afectado nas sessões de treino.', timing:'SEMANAL' }
+      ],
+      coach: [
+        { type:'ai-green', icon:'✓', text:'<strong>Atleta disponível.</strong> Sem restrições. Continuar programa normal.', timing:'HOJE' }
+      ],
+      athlete: [
+        { type:'ai-blue',  icon:'💪', text:'<strong>Mantém o aquecimento específico</strong> do segmento com historial antes de cada sessão.', timing:'DIÁRIO' }
+      ],
+      logic: 'score_parcial(historial) > 0 — lesão prévia registada\nOutras variáveis dentro dos limiares normais\n→ VIGILÂNCIA, sem intervenção activa'
+    },
+    med: {
+      clinical: [
+        { type:'ai-warn',  icon:'⚠', text:'<strong>Atenção aumentada.</strong> Historial relevante combinado com outros factores. Screening funcional recomendado antes do treino de alta intensidade.', timing:'HOJE' },
+        { type:'ai-blue',  icon:'🦴', text:'<strong>Palpação do segmento afectado</strong> no início do treino. Documentar qualquer sensibilidade.', timing:'HOJE' },
+        { type:'ai-green', icon:'📋', text:'<strong>Rever protocolo preventivo.</strong> NHE 2×/semana se isquiotibial, trabalho excêntrico se quadriceps.', timing:'ESTA SEMANA' }
+      ],
+      coach: [
+        { type:'ai-warn',  icon:'⚠', text:'<strong>Monitorizar em treino.</strong> Evitar exercícios de sprint máximo sem aquecimento específico prévio.', timing:'HOJE' },
+        { type:'ai-blue',  icon:'🔄', text:'<strong>Substituição preventiva planeada</strong> se atleta mostrar sinais de fadiga após 60 min.', timing:'JOGO' }
+      ],
+      athlete: [
+        { type:'ai-warn',  icon:'🔥', text:'<strong>Aquecimento isquiotibial alargado.</strong> Mínimo 15 min de trabalho excêntrico progressivo antes de qualquer sprint.', timing:'HOJE' },
+        { type:'ai-blue',  icon:'❄️', text:'<strong>Crioterapia após treino</strong> no segmento com historial. 10-12 min, 11-15°C.', timing:'APÓS TREINO' }
+      ],
+      logic: 'score_parcial(historial) ≥ 0.5\nScore geral 40-65%\n→ ATENÇÃO: screening funcional recomendado'
+    },
+    high: {
+      clinical: [
+        { type:'ai-red',   icon:'🚨', text:'<strong>Screening funcional obrigatório</strong> antes do treino. Askling H-test + palpação proximal + Single-leg RDL bilateral.', timing:'AGORA' },
+        { type:'ai-red',   icon:'🏃', text:'<strong>Sprint progressivo 40-60-80%</strong> com GPS. Qualquer assimetria de stride ou compensação = paragem.', timing:'PRÉ-TREINO' },
+        { type:'ai-warn',  icon:'📝', text:'<strong>Documentar estado.</strong> Registo clínico escrito desta avaliação — independentemente da decisão final.', timing:'HOJE' }
+      ],
+      coach: [
+        { type:'ai-red',   icon:'⚠', text:'<strong>Atleta com risco alto.</strong> Contexto: carga desta semana + historial no mesmo segmento = convergência de risco. Substituição aos 60-70 min como plano de contingência.', timing:'JOGO' },
+        { type:'ai-warn',  icon:'🔻', text:'<strong>Reduzir volume treino hoje 25-30%.</strong> Sem sprints máximos. Trabalho táctico a intensidade moderada.', timing:'HOJE' }
+      ],
+      athlete: [
+        { type:'ai-red',   icon:'🔥', text:'<strong>Aquecimento Askling warm-up.</strong> Protocolo completo de 15 min antes de qualquer actividade de alta intensidade. Não negociável.', timing:'HOJE' },
+        { type:'ai-warn',  icon:'😴', text:'<strong>Protocolo de sono esta noite.</strong> Meta 8h. Quarto escuro, sem ecrãs 90 min antes. O HRV de amanhã reflecte o sono desta noite.', timing:'ESTA NOITE' },
+        { type:'ai-blue',  icon:'❄️', text:'<strong>Crioterapia hoje à tarde</strong> — urgente. Não foi feita após o último jogo.', timing:'TARDE' }
+      ],
+      logic: 'score_parcial(historial) = 1.0 (≥2 lesões mesmo segmento)\nScore geral 65-85%\n→ SCREENING obrigatório, volume reduzido, plano contingência jogo'
+    },
+    critical: {
+      clinical: [
+        { type:'ai-red',   icon:'🚨', text:'<strong>Não treinar sessão de alta intensidade.</strong> Screening completo primeiro: Askling H-test, palpação, SL-RDL, sprint progressivo.', timing:'AGORA' },
+        { type:'ai-red',   icon:'🔴', text:'<strong>Se Askling positivo ou dor à palpação:</strong> indisponível para treino e jogo. Protocolo de lesão activa.', timing:'AGORA' },
+        { type:'ai-warn',  icon:'👨‍⚕️', text:'<strong>Reunião multidisciplinar.</strong> Médico + fisio + preparador. Decisão partilhada documentada.', timing:'HOJE' },
+        { type:'ai-blue',  icon:'📊', text:'<strong>Reavaliar HRV amanhã 07:30.</strong> Se HRV < 58ms após sono adequado, rever decisão de titular.', timing:'AMANHÃ' }
+      ],
+      coach: [
+        { type:'ai-red',   icon:'🚨', text:'<strong>Alto risco de lesão grave.</strong> Historial ×2 mesmo segmento + sobrecarga semanal. Recomendação: não titular sem clearance clínico.', timing:'JOGO' },
+        { type:'ai-red',   icon:'🔄', text:'<strong>Substituto preparado.</strong> Decisão de titularidade dependente do resultado do screening clínico esta manhã.', timing:'HOJE' }
+      ],
+      athlete: [
+        { type:'ai-red',   icon:'🛑', text:'<strong>Reportar ao fisio antes de qualquer actividade.</strong> Os dados mostram convergência máxima de factores de risco hoje.', timing:'AGORA' },
+        { type:'ai-warn',  icon:'😴', text:'<strong>Sono é prioridade absoluta esta noite.</strong> 8-9h. Qualquer perturbação de sono deve ser reportada amanhã.', timing:'ESTA NOITE' }
+      ],
+      logic: 'score_parcial(historial) = 1.0\nScore geral > 85%\n→ CRÍTICO: screening obrigatório, não titular sem clearance'
+    }
+  },
+
+  // ═══ ACWR ═══
+  acwr: {
+    low: {
+      clinical: [
+        { type:'ai-green', icon:'✓', text:'<strong>ACWR dentro da zona segura (0.8–1.3).</strong> Carga crónica bem estabelecida. Sem restrições.', timing:'ROTINA' }
+      ],
+      coach: [
+        { type:'ai-green', icon:'📈', text:'<strong>Carga de treino adequada.</strong> Progressão possível se programada gradualmente (&lt;10%/semana).', timing:'ESTA SEMANA' }
+      ],
+      athlete: [
+        { type:'ai-blue',  icon:'💪', text:'<strong>Boa adaptação à carga.</strong> Continua o programa. Reporta qualquer sensação de fadiga incomum.', timing:'DIÁRIO' }
+      ],
+      logic: 'ACWR_EWMA ∈ [0.8, 1.3]\n→ Zona segura — sem intervenção'
+    },
+    med: {
+      clinical: [
+        { type:'ai-warn',  icon:'📊', text:'<strong>ACWR em zona de alerta (1.3–1.5).</strong> Monitorizar evolução. Evitar cargas adicionais não planeadas.', timing:'HOJE' },
+        { type:'ai-blue',  icon:'🔍', text:'<strong>Verificar tipo de sessões previstas.</strong> Sprints máximos ou mudanças de direcção elevadas devem ser limitadas.', timing:'HOJE' }
+      ],
+      coach: [
+        { type:'ai-warn',  icon:'⬇', text:'<strong>Não aumentar intensidade hoje.</strong> Carga aguda já elevada face à crónica. Treino táctico preferível a físico.', timing:'HOJE' },
+        { type:'ai-blue',  icon:'⏱', text:'<strong>Reduzir duração do treino em 15-20%.</strong> Volume total da semana já acima do threshold de segurança.', timing:'HOJE' }
+      ],
+      athlete: [
+        { type:'ai-warn',  icon:'🔥', text:'<strong>Aquecimento completo obrigatório.</strong> Não saltar fases. O teu músculo está a recuperar de uma semana intensa.', timing:'HOJE' },
+        { type:'ai-blue',  icon:'💧', text:'<strong>Hidratação e nutrição prioritárias.</strong> Glicogénio comprometido aumenta risco de lesão por fadiga.', timing:'HOJE' }
+      ],
+      logic: 'ACWR_EWMA ∈ [1.3, 1.5]\n→ Zona alerta — reduzir intensidade, sem novo pico'
+    },
+    high: {
+      clinical: [
+        { type:'ai-red',   icon:'📉', text:'<strong>ACWR > 1.5 — zona de risco elevado.</strong> Reduzir volume de treino 25-30% hoje. Sem sprints máximos nem mudanças de direcção intensas.', timing:'HOJE' },
+        { type:'ai-warn',  icon:'🔍', text:'<strong>Screening funcional preventivo.</strong> Se historial de lesão muscular, palpação do segmento antes do treino.', timing:'HOJE' },
+        { type:'ai-blue',  icon:'📊', text:'<strong>Monitorização GPS em tempo real</strong> durante o treino. Alerta se HI distance > 10% do plano.', timing:'TREINO' }
+      ],
+      coach: [
+        { type:'ai-red',   icon:'⬇', text:'<strong>Reduzir volume de treino.</strong> ACWR elevado = músculo sobrecarregado. Treino regenerativo ou táctico sem intensidade física.', timing:'HOJE' },
+        { type:'ai-warn',  icon:'🔄', text:'<strong>Gestão de carga no jogo.</strong> Se atleta joga, monitorizar GPS. Substituição preventiva aos 65-70 min se HI distance acima do baseline.', timing:'JOGO' }
+      ],
+      athlete: [
+        { type:'ai-red',   icon:'😴', text:'<strong>Sono é a intervenção mais importante esta noite.</strong> O ACWR elevado significa que o músculo precisa de recuperação real. Meta 8-9h.', timing:'ESTA NOITE' },
+        { type:'ai-warn',  icon:'❄️', text:'<strong>Crioterapia após treino.</strong> 10-12 min, 11-15°C, foco nos grupos musculares mais solicitados.', timing:'APÓS TREINO' },
+        { type:'ai-blue',  icon:'🥗', text:'<strong>Janela de recuperação nutricional.</strong> Proteína + hidratos nas 2h após o treino. Priorizar reposição de glicogénio.', timing:'APÓS TREINO' }
+      ],
+      logic: 'ACWR_EWMA > 1.5\n→ Risco elevado: redução obrigatória de carga'
+    },
+    critical: {
+      clinical: [
+        { type:'ai-red',   icon:'🚨', text:'<strong>ACWR > 2.0 — sobrecarga crítica.</strong> Treino de alta intensidade contraindicado. Apenas recuperação activa ou repouso.', timing:'HOJE' },
+        { type:'ai-red',   icon:'🦵', text:'<strong>Avaliação clínica imediata</strong> se qualquer queixa muscular. ACWR neste nível com dor = lesão até prova em contrário.', timing:'AGORA' },
+        { type:'ai-warn',  icon:'📅', text:'<strong>Rever microciclo das próximas 2 semanas.</strong> O ACWR não baixa num dia — precisa de periodização deliberada.', timing:'ESTA SEMANA' }
+      ],
+      coach: [
+        { type:'ai-red',   icon:'🛑', text:'<strong>Indisponível para treino intenso.</strong> Recuperação activa apenas — trabalho técnico baixa intensidade ou piscina.', timing:'HOJE' },
+        { type:'ai-red',   icon:'⚠', text:'<strong>Decisão de jogar requer clearance médico.</strong> Risco de lesão grave é real a este nível de sobrecarga.', timing:'JOGO' }
+      ],
+      athlete: [
+        { type:'ai-red',   icon:'🛑', text:'<strong>Corpo em sobrecarga máxima.</strong> Hoje é dia de recuperação — não de treino. Respeita o processo.', timing:'HOJE' },
+        { type:'ai-warn',  icon:'😴', text:'<strong>Sono e nutrição são os únicos "treinos" válidos hoje.</strong> 9h de sono, 3 refeições completas, hidratação.', timing:'HOJE' }
+      ],
+      logic: 'ACWR_EWMA > 2.0\n→ Crítico: treino intenso contraindicado'
+    }
+  },
+
+  // ═══ HRV ═══
+  hrv: {
+    low: {
+      clinical: [{ type:'ai-green',icon:'✓',text:'<strong>HRV dentro do baseline individual.</strong> SNA em equilíbrio. Sem intervenção necessária.',timing:'ROTINA'}],
+      coach: [{ type:'ai-green',icon:'✓',text:'<strong>Atleta recuperado.</strong> HRV indica boa adaptação ao treino anterior.',timing:'HOJE'}],
+      athlete: [{ type:'ai-blue',icon:'💪',text:'<strong>Boa recuperação autónoma.</strong> Continua os hábitos de sono e recuperação.',timing:'DIÁRIO'}],
+      logic: 'HRV_delta > -5% do baseline\n→ Zona normal'
+    },
+    med: {
+      clinical: [
+        { type:'ai-warn',icon:'📉',text:'<strong>HRV 5-10% abaixo do baseline.</strong> Sinal de stress autonómico. Monitorizar evolução nos próximos 2 dias.',timing:'HOJE'},
+        { type:'ai-blue',icon:'💤',text:'<strong>Avaliar qualidade do sono</strong> das últimas 48h. HRV deprimido frequentemente precedido por sono insuficiente.',timing:'HOJE'}
+      ],
+      coach: [{ type:'ai-warn',icon:'⬇',text:'<strong>Reduzir intensidade 10-15%.</strong> Sistema nervoso autónomo em recuperação. Evitar sessões de alta densidade.',timing:'HOJE'}],
+      athlete: [{ type:'ai-warn',icon:'😴',text:'<strong>Priorizar sono esta noite.</strong> O HRV reflecte como o teu sistema nervoso está a recuperar. Meta: 8h, quarto fresco e escuro.',timing:'ESTA NOITE'}],
+      logic: 'HRV_delta ∈ [-10%, -5%]\n→ Alerta: monitorizar, reduzir carga ligeiramente'
+    },
+    high: {
+      clinical: [
+        { type:'ai-red',  icon:'🧬',text:'<strong>HRV >10% abaixo do baseline.</strong> Disregulação autonómica significativa. Carga de treino deve ser reduzida.',timing:'HOJE'},
+        { type:'ai-warn', icon:'🔍',text:'<strong>Excluir factores confundidores:</strong> viagem, álcool, doença incipiente, stress externo. Registar na ficha clínica.',timing:'HOJE'},
+        { type:'ai-blue', icon:'📊',text:'<strong>Reavaliar HRV amanhã</strong> em condições padronizadas (mesma hora, deitado, em jejum). Dois dias consecutivos baixos = acção.',timing:'AMANHÃ'}
+      ],
+      coach: [
+        { type:'ai-red',  icon:'⬇',text:'<strong>Treino leve ou recuperativo.</strong> HRV deprimido significa que o músculo e o SNA não completaram recuperação.',timing:'HOJE'},
+        { type:'ai-blue', icon:'📅',text:'<strong>Adiar sessão de alta intensidade</strong> para MD-2 ou MD-3 quando HRV regressar ao baseline.',timing:'ESTA SEMANA'}
+      ],
+      athlete: [
+        { type:'ai-red',  icon:'😴',text:'<strong>Sono prioritário — 8-9h.</strong> HRV baixo é um sinal directo de que o teu sistema nervoso precisa de recuperação real.',timing:'ESTA NOITE'},
+        { type:'ai-warn', icon:'☕',text:'<strong>Limitar cafeína após as 14h.</strong> Interfere com o sono profundo e com a recuperação do SNA.',timing:'HOJE'},
+        { type:'ai-blue', icon:'🧘',text:'<strong>Técnicas de relaxamento.</strong> 10 min de respiração controlada antes de dormir pode melhorar o HRV de amanhã.',timing:'ESTA NOITE'}
+      ],
+      logic: 'HRV_delta < -10% do baseline\n→ Intervenção: redução de carga + protocolo de sono'
+    },
+    critical: {
+      clinical: [
+        { type:'ai-red',  icon:'🚨',text:'<strong>HRV >20% abaixo do baseline.</strong> Overreaching não-funcional provável. Protocolo de avaliação completa.',timing:'HOJE'},
+        { type:'ai-red',  icon:'🩺',text:'<strong>Avaliação médica recomendada.</strong> Excluir doença, infecção, ou overtraining. Marcadores inflamatórios se indicado.',timing:'HOJE'},
+        { type:'ai-warn', icon:'📅',text:'<strong>Redução de carga de 3-5 dias</strong> com monitorização diária de HRV. Retorno gradual apenas quando HRV regressar ao baseline.',timing:'ESTA SEMANA'}
+      ],
+      coach: [
+        { type:'ai-red',  icon:'🛑',text:'<strong>Repouso ou recuperação activa apenas.</strong> HRV neste nível indica sistema nervoso em estado de alarme.',timing:'HOJE'},
+        { type:'ai-red',  icon:'⚠',text:'<strong>Não titular sem clearance clínico.</strong> Risco de lesão por fadiga neuromuscular é real.',timing:'JOGO'}
+      ],
+      athlete: [
+        { type:'ai-red',  icon:'🛑',text:'<strong>Corpo a pedir recuperação.</strong> Não é fraqueza — é inteligência biológica. Respeita o sinal.',timing:'HOJE'},
+        { type:'ai-warn', icon:'😴',text:'<strong>9h de sono, sem negociação.</strong> Temperatura do quarto 18-19°C, escuridão total, sem telemóvel.',timing:'ESTA NOITE'}
+      ],
+      logic: 'HRV_delta < -20% do baseline\n→ Crítico: overreaching, avaliação médica'
+    }
+  },
+
+  // ═══ SLEEP ═══
+  sleep: {
+    low: {
+      clinical: [{ type:'ai-green',icon:'✓',text:'<strong>Sono adequado (>7h).</strong> Sem impacto previsto na recuperação.',timing:'ROTINA'}],
+      coach: [{ type:'ai-green',icon:'✓',text:'<strong>Atleta bem descansado.</strong> Performance esperada dentro do normal.',timing:'HOJE'}],
+      athlete: [{ type:'ai-green',icon:'✓',text:'<strong>Excelente sono.</strong> Mantém a rotina.',timing:'DIÁRIO'}],
+      logic: 'sono ≥ 7h\n→ Zona normal'
+    },
+    med: {
+      clinical: [
+        { type:'ai-warn',icon:'😴',text:'<strong>Sono 6-7h — abaixo do óptimo.</strong> Monitorizar fadiga ao longo do dia. Evitar sessões de alta complexidade técnica.',timing:'HOJE'},
+        { type:'ai-blue',icon:'💡',text:'<strong>Identificar causa:</strong> viagem, ansiedade pré-jogo, ambiente. Intervir na causa, não apenas no sintoma.',timing:'HOJE'}
+      ],
+      coach: [{ type:'ai-warn',icon:'🧠',text:'<strong>Capacidade cognitiva ligeiramente reduzida.</strong> Avisar que complexidade táctica pode estar comprometida.',timing:'HOJE'}],
+      athlete: [{ type:'ai-warn',icon:'😴',text:'<strong>Tenta dormir uma sesta de 20-30 min</strong> este tarde se possível. Compensa parcialmente o défice.',timing:'TARDE'}],
+      logic: 'sono ∈ [6h, 7h]\n→ Alerta: monitorizar fadiga'
+    },
+    high: {
+      clinical: [
+        { type:'ai-red',  icon:'😴',text:'<strong>Sono <6h — risco aumentado.</strong> OR=1.34 para lesão em atletas com sono insuficiente (meta-análise 2025). Reduzir intensidade do treino.',timing:'HOJE'},
+        { type:'ai-warn', icon:'🧠',text:'<strong>Vigilância neuromuscular aumentada.</strong> Tempo de reacção e coordenação comprometidos — risco de lesão por contacto e de decisão errada.',timing:'TREINO'}
+      ],
+      coach: [
+        { type:'ai-red',  icon:'⬇',text:'<strong>Reduzir componente de alta velocidade.</strong> Atleta com sono insuficiente tem maior risco de lesão em sprint e mudança de direcção.',timing:'HOJE'},
+        { type:'ai-warn', icon:'⏱',text:'<strong>Considerar descanso antes do jogo.</strong> Se jogo em 24h, priorizar sesta e ambiente de descanso.',timing:'JOGO'}
+      ],
+      athlete: [
+        { type:'ai-red',  icon:'😴',text:'<strong>Esta noite: 8-9h obrigatórios.</strong> Quarto 18°C, escuridão total, sem ecrãs 90 min antes. Não é opcional.',timing:'ESTA NOITE'},
+        { type:'ai-warn', icon:'☕',text:'<strong>Sem cafeína após o almoço.</strong> O défice de sono é compensado com sono — não com estimulantes.',timing:'HOJE'},
+        { type:'ai-blue', icon:'🛁',text:'<strong>Banho quente 1h antes de dormir.</strong> A queda de temperatura corporal após o banho facilita o início do sono.',timing:'ESTA NOITE'}
+      ],
+      logic: 'sono < 6h\n→ Risco elevado: reduzir HI, protocolo de sono'
+    },
+    critical: {
+      clinical: [
+        { type:'ai-red',  icon:'🚨',text:'<strong>Sono <5h + outros factores.</strong> Síntese proteica comprometida, função imune reduzida, risco de lesão por fadiga real.',timing:'HOJE'},
+        { type:'ai-red',  icon:'🛑',text:'<strong>Treino de alta intensidade contraindicado.</strong> Recuperação activa apenas até normalização do padrão de sono.',timing:'HOJE'}
+      ],
+      coach: [{ type:'ai-red',icon:'🛑',text:'<strong>Não submeter a esforço máximo.</strong> Risco de lesão aguda por défice de coordenação e tempo de reacção.',timing:'HOJE'}],
+      athlete: [{ type:'ai-red',icon:'😴',text:'<strong>Sesta obrigatória hoje.</strong> 90 min durante a tarde + 9h esta noite. Comunicar ao staff se não conseguires adormecer.',timing:'HOJE'}],
+      logic: 'sono < 5h + score > 85%\n→ Crítico: repouso, protocolo de sono emergencial'
+    }
+  },
+
+  // ═══ FATIGUE ═══
+  fatigue: {
+    low: {
+      clinical: [{ type:'ai-green',icon:'✓',text:'<strong>Fadiga dentro dos limites normais.</strong> Sem alteração de protocolo.',timing:'ROTINA'}],
+      coach: [{ type:'ai-green',icon:'✓',text:'<strong>Atleta disponível e descansado.</strong>',timing:'HOJE'}],
+      athlete: [{ type:'ai-green',icon:'💪',text:'<strong>Boa recuperação.</strong> Mantém o programa.',timing:'DIÁRIO'}],
+      logic: 'Hooper_fadiga ≤ 4\n→ Normal'
+    },
+    med: {
+      clinical: [
+        { type:'ai-warn',icon:'💬',text:'<strong>Fadiga moderada (Hooper 5-6).</strong> Verificar correlação com carga dos últimos 3 dias. Monitorizar evolução.',timing:'HOJE'},
+        { type:'ai-blue',icon:'🔍',text:'<strong>Distinguir fadiga muscular de fadiga sistémica.</strong> DOMS localizado vs. sensação de cansaço geral têm implicações diferentes.',timing:'HOJE'}
+      ],
+      coach: [{ type:'ai-warn',icon:'⬇',text:'<strong>Reduzir densidade do treino.</strong> Mais descanso entre séries, menos sprints repetidos.',timing:'HOJE'}],
+      athlete: [{ type:'ai-warn',icon:'💊',text:'<strong>Alimentação de recuperação prioritária.</strong> 1.6g proteína/kg hoje. Hidratos nas 2h após treino.',timing:'HOJE'}],
+      logic: 'Hooper_fadiga ∈ [5, 6]\n→ Alerta: verificar causa'
+    },
+    high: {
+      clinical: [
+        { type:'ai-red',  icon:'🚨',text:'<strong>Fadiga alta (Hooper ≥7).</strong> Reduzir volume treino 25%. Sem actividades de alta aceleração.',timing:'HOJE'},
+        { type:'ai-warn', icon:'🔍',text:'<strong>Avaliar origem:</strong> suplementação, nutrição, padrão de sono, carga acumulada. Intervenção na causa.',timing:'HOJE'}
+      ],
+      coach: [{ type:'ai-red',icon:'⬇',text:'<strong>Treino regenerativo ou técnico de baixa intensidade.</strong> Fadiga alta = risco de decisão errada e de lesão por desatenção.',timing:'HOJE'}],
+      athlete: [
+        { type:'ai-red',  icon:'🍽️',text:'<strong>3 refeições completas hoje.</strong> Fadiga muscular é frequentemente agravada por défice calórico e de micronutrientes.',timing:'HOJE'},
+        { type:'ai-warn', icon:'😴',text:'<strong>Sesta de 20-30 min</strong> se possível antes do treino da tarde.',timing:'TARDE'}
+      ],
+      logic: 'Hooper_fadiga ≥ 7\n→ Risco: reduzir volume, investigar causa'
+    },
+    critical: {
+      clinical: [
+        { type:'ai-red',  icon:'🚨',text:'<strong>Fadiga máxima + outros factores críticos.</strong> Avaliar síndrome de overreaching. Considerar análise hormonal (cortisol, testosterona).',timing:'HOJE'},
+        { type:'ai-red',  icon:'🛑',text:'<strong>Suspender treino de alta intensidade.</strong> Repouso ou hidroterapia.',timing:'HOJE'}
+      ],
+      coach: [{ type:'ai-red',icon:'🛑',text:'<strong>Atleta em overreaching.</strong> Sem treino intenso até nova avaliação clínica.',timing:'HOJE'}],
+      athlete: [{ type:'ai-red',icon:'🛑',text:'<strong>O teu corpo está no limite.</strong> Hoje é recuperação. Não é negociável.',timing:'HOJE'}],
+      logic: 'Hooper_fadiga = 7 + score > 85%\n→ Crítico: overreaching'
+    }
+  },
+
+  // ═══ TQR ═══
+  tqr: {
+    low: {
+      clinical: [{ type:'ai-green',icon:'✓',text:'<strong>Recuperação percebida excelente (TQR ≥14).</strong> Atleta bem recuperado. Sem restrições.',timing:'ROTINA'}],
+      coach: [{ type:'ai-green',icon:'✓',text:'<strong>Recuperação completa.</strong> Sessão planeada pode avançar.',timing:'HOJE'}],
+      athlete: [{ type:'ai-green',icon:'💪',text:'<strong>Boa recuperação.</strong> Pronto para treinar.',timing:'HOJE'}],
+      logic: 'TQR ≥ 14\n→ Normal'
+    },
+    med: {
+      clinical: [
+        { type:'ai-warn',icon:'🔄',text:'<strong>TQR 10-13 — recuperação incompleta percebida.</strong> Cruzar com HRV e wellness. Se convergência, reduzir carga.',timing:'HOJE'},
+        { type:'ai-blue',icon:'💬',text:'<strong>Conversa breve com o atleta.</strong> TQR baixo pode reflectir factores psicológicos (ansiedade pré-jogo) além do físico.',timing:'HOJE'}
+      ],
+      coach: [{ type:'ai-warn',icon:'⬇',text:'<strong>Treino moderado.</strong> O atleta não se sente totalmente recuperado — respeitar essa percepção.',timing:'HOJE'}],
+      athlete: [{ type:'ai-warn',icon:'🔄',text:'<strong>Sessão de mobilidade e activação</strong> antes do treino. O corpo precisa de mais tempo de activação hoje.',timing:'PRÉ-TREINO'}],
+      logic: 'TQR ∈ [10, 13]\n→ Alerta: verificar convergência com outras variáveis'
+    },
+    high: {
+      clinical: [
+        { type:'ai-red',  icon:'🔄',text:'<strong>TQR ≤9 — recuperação muito insuficiente.</strong> Em conjunto com outras variáveis elevadas, risco real de lesão por fadiga.',timing:'HOJE'},
+        { type:'ai-warn', icon:'🏊',text:'<strong>Considerar recuperação activa em piscina</strong> em vez de treino de campo. Mantém activação sem carga excêntrica.',timing:'HOJE'}
+      ],
+      coach: [{ type:'ai-red',icon:'⬇',text:'<strong>Não submeter a esforço máximo.</strong> TQR reflecte percepção real do atleta sobre o seu estado.',timing:'HOJE'}],
+      athlete: [{ type:'ai-red',icon:'💬',text:'<strong>Comunica ao fisio e ao preparador</strong> exatamente o que sentes. Esta informação é clínica — não fraqueza.',timing:'AGORA'}],
+      logic: 'TQR ≤ 9\n→ Risco: recuperação insuficiente'
+    },
+    critical: {
+      clinical: [{ type:'ai-red',icon:'🚨',text:'<strong>TQR mínimo + score crítico.</strong> Risco de overreaching não-funcional. Avaliação clínica completa.',timing:'HOJE'}],
+      coach: [{ type:'ai-red',icon:'🛑',text:'<strong>Repouso.</strong> Atleta não está em condições de treinar.',timing:'HOJE'}],
+      athlete: [{ type:'ai-red',icon:'🛑',text:'<strong>Repouso activo.</strong> Caminhada leve, piscina, sem carga.',timing:'HOJE'}],
+      logic: 'TQR ≤ 6 + score > 85%\n→ Crítico'
+    }
+  },
+
+  // ═══ DECEL ═══
+  decel: {
+    low: {
+      clinical: [{ type:'ai-green',icon:'✓',text:'<strong>Carga de desacelerações dentro do normal.</strong> Stress excêntrico controlado.',timing:'ROTINA'}],
+      coach: [{ type:'ai-green',icon:'✓',text:'<strong>Sem restrições de carga.</strong>',timing:'HOJE'}],
+      athlete: [{ type:'ai-green',icon:'💪',text:'<strong>Boa gestão de carga.</strong>',timing:'DIÁRIO'}],
+      logic: 'ACWR_decel ≤ 1.3\n→ Normal'
+    },
+    med: {
+      clinical: [
+        { type:'ai-warn',icon:'⚡',text:'<strong>ACWR desacelerações em zona de alerta.</strong> Stress excêntrico elevado nos quadriceps e isquiotibiais. Monitorizar.',timing:'HOJE'},
+        { type:'ai-blue',icon:'🦵',text:'<strong>Trabalho excêntrico preventivo.</strong> NHE 2x nesta semana se isquiotibial for o segmento de historial.',timing:'ESTA SEMANA'}
+      ],
+      coach: [{ type:'ai-warn',icon:'⬇',text:'<strong>Reduzir exercícios com muitas paragens e arranques.</strong> Rondos e exercícios posicionais são preferíveis a corridas intermitentes.',timing:'HOJE'}],
+      athlete: [{ type:'ai-warn',icon:'🔥',text:'<strong>Aquecimento excêntrico progressivo.</strong> Nórdico assistido ou SL-RDL antes do treino.',timing:'PRÉ-TREINO'}],
+      logic: 'ACWR_decel ∈ [1.3, 1.5]\n→ Alerta: carga excêntrica elevada'
+    },
+    high: {
+      clinical: [
+        { type:'ai-red',  icon:'⚡',text:'<strong>Carga de desacelerações muito elevada.</strong> Risco de microlesão excêntrica. Verificar queixas musculares no segmento dominante.',timing:'HOJE'},
+        { type:'ai-warn', icon:'🦴',text:'<strong>Palpação dos isquiotibiais e quadriceps</strong> antes do treino. Qualquer sensibilidade = redução imediata.',timing:'HOJE'}
+      ],
+      coach: [{ type:'ai-red',icon:'⬇',text:'<strong>Eliminar exercícios de alta densidade de desaceleração:</strong> sprints com paragem brusca, mudanças de direcção 180°.',timing:'HOJE'}],
+      athlete: [
+        { type:'ai-red',  icon:'❄️',text:'<strong>Crioterapia após treino nos grupos musculares posteriores.</strong> 10-12 min.',timing:'APÓS TREINO'},
+        { type:'ai-warn', icon:'🔥',text:'<strong>Alongamento excêntrico controlado</strong> antes de dormir.',timing:'ESTA NOITE'}
+      ],
+      logic: 'ACWR_decel > 1.5\n→ Risco: carga excêntrica crítica'
+    },
+    critical: {
+      clinical: [{ type:'ai-red',icon:'🚨',text:'<strong>Carga excêntrica crítica.</strong> Screening muscular completo antes de qualquer actividade de campo.',timing:'AGORA'}],
+      coach: [{ type:'ai-red',icon:'🛑',text:'<strong>Sem sprints nem mudanças de direcção.</strong> Trabalho técnico de toque estático.',timing:'HOJE'}],
+      athlete: [{ type:'ai-red',icon:'🛑',text:'<strong>Reporta ao fisio.</strong> Qualquer sensação de tensão posterior é um sinal que não podes ignorar.',timing:'AGORA'}],
+      logic: 'ACWR_decel > 2.0 + score > 85%\n→ Crítico'
+    }
+  },
+
+  // ═══ MD+n ═══
+  md: {
+    low: {
+      clinical: [{ type:'ai-green',icon:'✓',text:'<strong>MD+4 ou mais.</strong> Recuperação neuromuscular pós-jogo completa.',timing:'ROTINA'}],
+      coach: [{ type:'ai-green',icon:'✓',text:'<strong>Atleta totalmente disponível.</strong> Sessão de alta intensidade possível.',timing:'HOJE'}],
+      athlete: [{ type:'ai-green',icon:'💪',text:'<strong>Recuperado do jogo.</strong>',timing:'HOJE'}],
+      logic: 'dias_desde_jogo ≥ 4\n→ Normal'
+    },
+    med: {
+      clinical: [
+        { type:'ai-warn',icon:'📅',text:'<strong>MD+2 ou MD+3.</strong> Recuperação neuromuscular em curso. Glicogénio provavelmente não reposto. Evitar segunda sessão de alta intensidade.',timing:'HOJE'},
+        { type:'ai-blue',icon:'🏃',text:'<strong>Limitar sprints máximos.</strong> Velocidade máxima pode estar comprometida até MD+72h.',timing:'HOJE'}
+      ],
+      coach: [{ type:'ai-warn',icon:'⬇',text:'<strong>Sessão regenerativa ou técnica.</strong> Fisicamente o atleta ainda está a recuperar do jogo anterior.',timing:'HOJE'}],
+      athlete: [
+        { type:'ai-warn',icon:'🥗',text:'<strong>Nutrição de recuperação prioritária.</strong> Hidratos de carbono complexos nas 3 refeições principais hoje.',timing:'HOJE'},
+        { type:'ai-blue',icon:'🏊',text:'<strong>Recuperação em piscina</strong> se disponível — mantém activação sem carga.',timing:'HOJE'}
+      ],
+      logic: 'MD+2 ou MD+3\n→ Recuperação em curso'
+    },
+    high: {
+      clinical: [
+        { type:'ai-red',  icon:'📅',text:'<strong>MD+1 — 24h após jogo.</strong> Recuperação neuromuscular incompleta documentada. Limitar carga física a mínimo.',timing:'HOJE'},
+        { type:'ai-warn', icon:'🧬',text:'<strong>HRV e wellness de MD+1 devem ser interpretados com cautela</strong> — valores podem reflectir o jogo, não o estado basal.',timing:'HOJE'},
+        { type:'ai-blue', icon:'❄️',text:'<strong>Crioterapia prioritária</strong> se não foi feita ontem. 10-12 min, 11-15°C.',timing:'HOJE'}
+      ],
+      coach: [
+        { type:'ai-red',  icon:'🛑',text:'<strong>Treino regenerativo apenas.</strong> MD+1 é recuperação, não treino. Rondos de toque, passe curto, sem físico.',timing:'HOJE'},
+        { type:'ai-blue', icon:'🏊',text:'<strong>Piscina ou bicicleta estática</strong> preferível a campo para atletas com historial de lesão.',timing:'HOJE'}
+      ],
+      athlete: [
+        { type:'ai-red',  icon:'🥗',text:'<strong>Reposição de glicogénio urgente.</strong> O músculo está vazio. 3 refeições ricas em hidratos complexos.',timing:'HOJE'},
+        { type:'ai-warn', icon:'😴',text:'<strong>Sesta de 90 min</strong> se possível hoje à tarde.',timing:'TARDE'},
+        { type:'ai-blue', icon:'❄️',text:'<strong>Banho de gelo ou crioterapia</strong> se ainda não fez. Ainda tem efeito em MD+1.',timing:'HOJE'}
+      ],
+      logic: 'MD+1\n→ Risco: recuperação obrigatória'
+    },
+    critical: {
+      clinical: [{ type:'ai-red',icon:'🚨',text:'<strong>MD+1 + score crítico.</strong> Múltiplos factores convergentes. Risco máximo de lesão em treino de alta intensidade.',timing:'AGORA'}],
+      coach: [{ type:'ai-red',icon:'🛑',text:'<strong>Repouso ou recuperação activa exclusiva.</strong> Nenhuma componente de alta intensidade.',timing:'HOJE'}],
+      athlete: [{ type:'ai-red',icon:'🛑',text:'<strong>24h após jogo + corpo já sobrecarregado.</strong> Recuperação é o treino de hoje.',timing:'HOJE'}],
+      logic: 'MD+1 + score > 85%\n→ Crítico: repouso obrigatório'
+    }
+  }
+};
+
+// ── RENDER ───────────────────────────────────────────────────────────────────
+function render() {
+  const sc = scoreConfig[currentScore];
+  const vc = varConfig[currentVar];
+  const rec = recs[currentVar]?.[currentScore];
+  if (!rec) return;
+
+  const numColor = sc.color;
+
+  const html = `
+    <div class="score-header">
+      <div class="score-num" style="color:${numColor}">${sc.num}</div>
+      <div class="score-meta">
+        <div class="score-label" style="color:${numColor}">Risco ${currentScore === 'low' ? 'baixo' : currentScore === 'med' ? 'moderado' : currentScore === 'high' ? 'alto' : 'crítico'}</div>
+        <div class="score-var">Variável dominante: <strong>${vc.name}</strong> ${vc.icon}</div>
+        <div><span class="conf-badge cb-ok" style="margin-top:8px">Alta confiança · 28 dias dados</span></div>
+      </div>
+    </div>
+
+    <div class="action-grid">
+      <!-- EQUIPA CLÍNICA -->
+      <div class="scard">
+        <div class="scard-header">
+          <div class="scard-icon si-clinical">🩺</div>
+          <div>
+            <div class="scard-title">Equipa clínica</div>
+            <div class="scard-role">Médico · Fisioterapeuta</div>
+          </div>
+        </div>
+        ${rec.clinical.map(a => `
+          <div class="action-item ${a.type}">
+            <div class="ai-icon">${a.icon}</div>
+            <div>
+              <div class="ai-text">${a.text}</div>
+              <div class="ai-timing">${a.timing}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- EQUIPA TÉCNICA -->
+      <div class="scard">
+        <div class="scard-header">
+          <div class="scard-icon si-coach">🎽</div>
+          <div>
+            <div class="scard-title">Equipa técnica</div>
+            <div class="scard-role">Treinador · Prep. físico</div>
+          </div>
+        </div>
+        ${rec.coach.map(a => `
+          <div class="action-item ${a.type}">
+            <div class="ai-icon">${a.icon}</div>
+            <div>
+              <div class="ai-text">${a.text}</div>
+              <div class="ai-timing">${a.timing}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- ATLETA -->
+      <div class="scard">
+        <div class="scard-header">
+          <div class="scard-icon si-athlete">⚽</div>
+          <div>
+            <div class="scard-title">Atleta</div>
+            <div class="scard-role">Mensagem personalizada</div>
+          </div>
+        </div>
+        ${rec.athlete.map(a => `
+          <div class="action-item ${a.type}">
+            <div class="ai-icon">${a.icon}</div>
+            <div>
+              <div class="ai-text">${a.text}</div>
+              <div class="ai-timing">${a.timing}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="logic-box">
+      <div class="lh">Lógica de activação desta recomendação</div>
+      ${rec.logic.replace(/\n/g,'<br>')}
+    </div>
+  `;
+
+  document.getElementById('right-panel').innerHTML = html;
+}
+
+function setScore(s) {
+  currentScore = s;
+  document.querySelectorAll('.score-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('s-'+s).classList.add('on');
+  render();
+}
+
+function setVar(v) {
+  currentVar = v;
+  document.querySelectorAll('.var-btn').forEach(b => b.classList.remove('on'));
+  const btn = document.getElementById('v-'+v);
+  btn.classList.add('on');
+  btn.querySelector('.var-icon').classList.add('vb-icon');
+  render();
+}
+
+// init
+render();
+</script>
+</body>
+</html>

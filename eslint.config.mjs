@@ -9,12 +9,15 @@ const eslintConfig = defineConfig([
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",
+    "**/.next/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
     // Git worktrees and Claude worktrees
     ".worktrees/**",
-    ".claude/worktrees/**",
+    ".claude/**",
+    ".playwright-mcp/**",
+    "apps/**/.next/**",
     "apps/admin/**",
   ]),
 ]);

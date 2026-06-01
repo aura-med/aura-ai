@@ -3,6 +3,13 @@
 # dependencies
 /node_modules
 apps/admin/node_modules
+apps/admin/node_modules/
+
+# local tool configs
+.codex/
+
+# local docs / planning artifacts
+docs/
 /.pnp
 .pnp.*
 .yarn/*
@@ -15,6 +22,8 @@ apps/admin/node_modules
 /coverage
 /test-results
 .playwright-mcp
+/playwright-report
+/.playwright-mcp
 
 # next.js
 /.next/

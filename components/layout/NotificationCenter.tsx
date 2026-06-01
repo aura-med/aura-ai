@@ -1,111 +1,120 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { Bell, X, CheckCheck } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
-import {
-  getNotifications,
-  markAllAsRead,
-  getNotificationIcon,
-  getNotificationColor,
-} from '@/lib/notifications'
-import type { Notification } from '@/lib/notifications'
-import { createClient } from '@/lib/supabase/client'
+import { markAllNotificationsRead } from '@/lib/data/actions'
+import type { NotificationDTO } from '@/lib/data/types'
 
-function formatTime(dateStr: string, now: number): string {
-  try {
-    const date = new Date(dateStr)
-    const diff = now - date.getTime()
-    const minutes = Math.floor(diff / 60000)
-    if (minutes < 1) return 'agora'
-    if (minutes < 60) return `${minutes}m`
-    const hours = Math.floor(minutes / 60)
-    if (hours < 24) return `${hours}h`
-    const days = Math.floor(hours / 24)
-    return `${days}d`
-  } catch {
-    return ''
-  }
+const NOTIFICATION_ICONS: Record<string, string> = {
+  score_critical: '!',
+  score_high: '!',
+  injury_new: '+',
+  rehab_update: '~',
+  checkin_missing: '?',
+  rtp_ready: 'OK',
+  readiness_drop: '-',
 }
 
-export function NotificationCenter({ orgId }: { orgId?: string }) {
+function formatTime(dateStr: string, now: number): string {
+  const date = new Date(dateStr)
+  const diff = now - date.getTime()
+  const minutes = Math.floor(diff / 60000)
+  if (minutes < 1) return 'agora'
+  if (minutes < 60) return `${minutes}m`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h`
+  return `${Math.floor(hours / 24)}d`
+}
+
+export function NotificationCenter({
+  orgId,
+  userId,
+  initialNotifications,
+}: {
+  orgId?: string
+  userId: string | null
+  initialNotifications: NotificationDTO[]
+}) {
   const t = useTranslations('notifications')
   const [open, setOpen] = useState(false)
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [loading, setLoading] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
   const [now] = useState(() => Date.now())
+  const [notifications, setNotifications] = useState(initialNotifications)
+  const [isPending, startTransition] = useTransition()
   const panelRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
-  const unreadCount = notifications.filter(
-    (n) => userId ? !n.read_by?.includes(userId) : !n.read_by?.length
-  ).length
+  const unreadCount = notifications.filter((n) => userId && !n.readBy.includes(userId)).length
 
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null))
-  }, [])
-
-  useEffect(() => {
-    if (!orgId) return
-    ;(async () => {
-      setLoading(true)
-      try {
-        const data = await getNotifications(orgId)
-        setNotifications(data)
-      } catch {
-        // ignore
-      } finally {
-        setLoading(false)
-      }
-    })()
-  }, [orgId, open])
-
-  // Close on outside click
   useEffect(() => {
     if (!open) return
+    function handleKeydown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setOpen(false)
+        triggerRef.current?.focus()
+      }
+    }
     function handleClick(e: MouseEvent) {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node) && e.target !== triggerRef.current) {
         setOpen(false)
       }
     }
+    document.addEventListener('keydown', handleKeydown)
     document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    return () => {
+      document.removeEventListener('keydown', handleKeydown)
+      document.removeEventListener('mousedown', handleClick)
+    }
   }, [open])
+
+  function handleMarkAllRead() {
+    if (!orgId || !userId) return
+    startTransition(async () => {
+      await markAllNotificationsRead(orgId)
+      setNotifications((prev) =>
+        prev.map((notification) => ({
+          ...notification,
+          readBy: [...new Set([...notification.readBy, userId])],
+        }))
+      )
+    })
+  }
 
   return (
     <div className="relative" ref={panelRef}>
-      {/* Bell button */}
       <button
+        ref={triggerRef}
         onClick={() => setOpen(!open)}
-        className="relative p-2 rounded-md transition-colors"
+        className="relative flex size-9 items-center justify-center rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--aura-green)]"
         style={{ color: open ? 'var(--aura-text)' : 'var(--aura-text2)' }}
-        aria-label={t('title')}
+        aria-label={`${t('title')}${unreadCount ? `, ${unreadCount} por ler` : ''}`}
+        aria-expanded={open}
+        aria-haspopup="dialog"
       >
-        <Bell size={16} />
+        <Bell size={16} aria-hidden="true" />
         {unreadCount > 0 && (
           <span
-            className="absolute top-1 right-1 min-w-[8px] h-2 rounded-full text-[9px] flex items-center justify-center font-bold"
+            className="absolute right-0.5 top-0.5 min-w-4 rounded-full px-1 text-[10px] font-bold leading-4"
             style={{ background: 'var(--aura-danger)', color: 'white' }}
           >
-            {unreadCount > 9 ? '9+' : unreadCount > 1 ? String(unreadCount) : ''}
+            {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
 
-      {/* Dropdown panel */}
       {open && (
-        <div
-          className="absolute right-0 top-full mt-2 w-80 rounded-xl border shadow-2xl z-50 overflow-hidden"
+        <section
+          role="dialog"
+          aria-label={t('title')}
+          className="absolute right-0 top-full mt-2 w-80 overflow-hidden rounded-lg border shadow-2xl z-50"
           style={{
             background: 'var(--aura-bg2)',
             borderColor: 'var(--aura-border)',
           }}
         >
-          {/* Header */}
           <div
-            className="flex items-center justify-between px-4 py-3 border-b"
+            className="flex items-center justify-between border-b px-4 py-3"
             style={{ borderColor: 'var(--aura-border)' }}
           >
             <span
@@ -115,69 +124,72 @@ export function NotificationCenter({ orgId }: { orgId?: string }) {
               {t('title')}
               {unreadCount > 0 && (
                 <span
-                  className="ml-2 text-xs px-1.5 py-0.5 rounded-full font-mono"
+                  className="ml-2 rounded-full px-2 py-0.5 text-xs font-mono"
                   style={{ background: 'var(--aura-danger)', color: 'white' }}
                 >
                   {unreadCount}
                 </span>
               )}
             </span>
-            <div className="flex items-center gap-2">
-              {unreadCount > 0 && userId && (
+            <div className="flex items-center gap-1">
+              {unreadCount > 0 && (
                 <button
-                  onClick={() => {
-                    if (!userId) return
-                    markAllAsRead(orgId ?? '', userId).then(() =>
-                      setNotifications((prev) =>
-                        prev.map((n) => ({
-                          ...n,
-                          read_by: n.read_by?.includes(userId)
-                            ? n.read_by
-                            : [...(n.read_by ?? []), userId],
-                        }))
-                      )
-                    )
-                  }}
-                  className="text-xs flex items-center gap-1 transition-colors"
+                  onClick={handleMarkAllRead}
+                  disabled={isPending}
+                  className="flex size-9 items-center justify-center rounded-md transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--aura-green)]"
                   style={{ color: 'var(--aura-text3)' }}
+                  aria-label={t('markAllRead')}
                   title={t('markAllRead')}
                 >
-                  <CheckCheck size={13} />
+                  <CheckCheck size={15} aria-hidden="true" />
                 </button>
               )}
-              <button onClick={() => setOpen(false)} style={{ color: 'var(--aura-text3)' }}>
-                <X size={14} />
+              <button
+                onClick={() => {
+                  setOpen(false)
+                  triggerRef.current?.focus()
+                }}
+                className="flex size-9 items-center justify-center rounded-md transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--aura-green)]"
+                style={{ color: 'var(--aura-text3)' }}
+                aria-label="Fechar notificacoes"
+              >
+                <X size={15} aria-hidden="true" />
               </button>
             </div>
           </div>
 
-          {/* List */}
-          <div className="max-h-96 overflow-y-auto">
-            {loading ? (
-              <div className="py-8 text-center text-xs" style={{ color: 'var(--aura-text3)' }}>
-                {t('loading')}
-              </div>
-            ) : notifications.length === 0 ? (
+          <div className="max-h-96 overflow-y-auto" role="list">
+            {notifications.length === 0 ? (
               <div className="py-10 text-center" style={{ color: 'var(--aura-text3)' }}>
-                <Bell size={24} className="mx-auto mb-2 opacity-30" />
+                <Bell size={24} className="mx-auto mb-2 opacity-30" aria-hidden="true" />
                 <p className="text-xs">{t('empty')}</p>
               </div>
             ) : (
               notifications.map((n) => {
-                const isRead = userId ? !!n.read_by?.includes(userId) : (n.read_by?.length ?? 0) > 0
+                const isRead = Boolean(userId && n.readBy.includes(userId))
                 return (
-                  <div
+                  <article
                     key={n.id}
+                    role="listitem"
                     className={cn(
-                      'flex gap-3 px-4 py-3 border-b transition-colors cursor-pointer hover:bg-white/5',
+                      'flex gap-3 border-b px-4 py-3 transition-colors',
                       !isRead && 'bg-white/[0.02]'
                     )}
                     style={{ borderColor: 'var(--aura-border)' }}
+                    aria-label={`${n.title}. ${n.status.ariaLabel}`}
                   >
-                    <div className="mt-0.5 w-5 shrink-0 text-center text-base">
-                      {getNotificationIcon(n.type)}
+                    <div
+                      className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md border text-[10px] font-bold"
+                      style={{
+                        color: n.status.key === 'red' ? 'var(--aura-danger)' : n.status.key === 'amber' ? 'var(--aura-warn)' : 'var(--aura-green)',
+                        borderColor: 'var(--aura-border2)',
+                        fontFamily: 'var(--font-mono)',
+                      }}
+                      aria-hidden="true"
+                    >
+                      {NOTIFICATION_ICONS[n.type] ?? 'i'}
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <p
                           className={cn('text-xs leading-snug', !isRead && 'font-semibold')}
@@ -186,49 +198,54 @@ export function NotificationCenter({ orgId }: { orgId?: string }) {
                           {n.title}
                         </p>
                         <span
-                          className="text-[10px] shrink-0 font-mono"
+                          className="shrink-0 text-[10px] font-mono"
                           style={{ color: 'var(--aura-text3)' }}
                         >
-                          {formatTime(n.created_at, now)}
+                          {formatTime(n.createdAt, now)}
                         </span>
                       </div>
                       {n.body && (
                         <p
-                          className="text-[11px] mt-0.5 leading-snug"
-                          style={{ color: 'var(--aura-text3)' }}
+                          className="mt-1 text-[11px] leading-snug"
+                          style={{ color: 'var(--aura-text2)' }}
                         >
                           {n.body}
                         </p>
                       )}
-                      <div
-                        className="mt-1.5 h-0.5 w-8 rounded-full"
-                        style={{ background: getNotificationColor(n.type), opacity: 0.7 }}
-                      />
+                      <span
+                        className="mt-2 inline-flex rounded-full px-2 py-0.5 text-[10px] font-mono"
+                        style={{
+                          color: n.status.key === 'red' ? 'var(--aura-danger)' : n.status.key === 'amber' ? 'var(--aura-warn)' : 'var(--aura-green)',
+                          background: 'var(--aura-bg3)',
+                        }}
+                      >
+                        {n.status.label}
+                      </span>
                     </div>
                     {!isRead && (
-                      <div
-                        className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"
+                      <span
+                        className="mt-2 size-2 shrink-0 rounded-full"
                         style={{ background: 'var(--aura-blue)' }}
+                        aria-label="Por ler"
                       />
                     )}
-                  </div>
+                  </article>
                 )
               })
             )}
           </div>
 
-          {/* Footer */}
           {notifications.length > 0 && (
-            <div className="px-4 py-2.5 border-t" style={{ borderColor: 'var(--aura-border)' }}>
+            <div className="border-t px-4 py-2.5" style={{ borderColor: 'var(--aura-border)' }}>
               <p
-                className="text-[10px] text-center font-mono"
+                className="text-center text-[10px] font-mono"
                 style={{ color: 'var(--aura-text3)' }}
               >
                 {t('last50')}
               </p>
             </div>
           )}
-        </div>
+        </section>
       )}
     </div>
   )

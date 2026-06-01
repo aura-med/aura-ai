@@ -1,5 +1,4 @@
-'use client'
-
+import { Suspense } from 'react'
 import { useTranslations } from 'next-intl'
 import { Puzzle } from 'lucide-react'
 
@@ -27,6 +26,14 @@ const CATEGORY_COLORS: Record<string, { bg: string; color: string }> = {
 }
 
 export default function IntegrationsPage() {
+  return (
+    <Suspense fallback={<div className="text-sm text-[var(--aura-text3)]">A carregar integracoes...</div>}>
+      <IntegrationsContent />
+    </Suspense>
+  )
+}
+
+function IntegrationsContent() {
   const t = useTranslations('settings.integrations')
   const tc = useTranslations('settings.common')
 

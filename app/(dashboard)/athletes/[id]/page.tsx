@@ -7,11 +7,11 @@ import { DashboardSkeleton } from '@/components/ui/DashboardSkeleton'
 import { BASE_WEIGHTS_V1 } from '@/lib/scoring/engine'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import { AthleteProfileClient } from '@/components/athlete-profile/AthleteProfileClient'
-import type { ScorePartials } from '@/types'
+import { getLatestRecommendations } from '@/lib/actions/recommendations'
+import type { UserRole } from '@/types'
 import type { AthleteProfileData, TabId, InjuryEventSummary } from '@/types/athlete-profile'
 
-// Valid tab IDs
-const VALID_TABS: TabId[] = ['overview', 'medical', 'injuries', 'treatments', 'documents']
+const VALID_TABS: TabId[] = ['overview', 'medical', 'injuries', 'treatments', 'documents', 'recommendations']
 
 function parseTab(raw: string | string[] | undefined): TabId {
   const s = Array.isArray(raw) ? raw[0] : raw
@@ -39,7 +39,7 @@ async function AthleteDetailContent({
   searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
   const resolvedSearch = searchParams ? await searchParams : {}
-  const squadId  = getSquadIdParam(resolvedSearch)
+  const squadId   = getSquadIdParam(resolvedSearch)
   const activeTab = parseTab(resolvedSearch.tab)
   const supabase  = await createClient()
 
@@ -112,6 +112,14 @@ async function AthleteDetailContent({
       .eq('athlete_id', id),
   ])
 
+  // ── Viewer role + latest recommendations ──────────────────────────────────
+  const { data: { user } } = await supabase.auth.getUser()
+  const [profileResult, recommendations] = await Promise.all([
+    supabase.from('profiles').select('role').eq('id', user?.id ?? '').maybeSingle(),
+    getLatestRecommendations(id),
+  ])
+  const viewerRole = (profileResult.data?.role ?? 'athlete') as UserRole
+
   // ── Score computations ────────────────────────────────────────────────────
   const latestScore = athlete.score_history?.[0]
   const score = latestScore ? Math.round(latestScore.total_score * 100) : null
@@ -170,25 +178,25 @@ async function AthleteDetailContent({
 
   // ── Injury events → InjuryEventSummary ───────────────────────────────────
   const injuryEvents: InjuryEventSummary[] = (athlete.injury_events ?? []).map((inj) => ({
-    id:           inj.id,
-    injury_date:  inj.injury_date,
-    return_date:  inj.return_date ?? null,
-    diagnosis:    inj.diagnosis ?? 'Lesão não especificada',
-    location:     inj.location ?? null,
-    severity:     inj.severity ?? null,
-    is_active:    !inj.return_date,
+    id:          inj.id,
+    injury_date: inj.injury_date,
+    return_date: inj.return_date ?? null,
+    diagnosis:   inj.diagnosis ?? 'Lesão não especificada',
+    location:    inj.location ?? null,
+    severity:    inj.severity ?? null,
+    is_active:   !inj.return_date,
   }))
 
   // ── Assemble profile ──────────────────────────────────────────────────────
   const profile: AthleteProfileData = {
-    id:               athlete.id,
-    name:             athlete.name,
-    shirt_number:     athlete.shirt_number ?? null,
-    photo_url:        (athlete as { photo_url?: string | null }).photo_url ?? null,
-    position:         athlete.position ?? null,
-    date_of_birth:    athlete.date_of_birth ?? null,
-    club:             athlete.club ?? null,
-    status:           athlete.status ?? 'available',
+    id:                athlete.id,
+    name:              athlete.name,
+    shirt_number:      athlete.shirt_number ?? null,
+    photo_url:         (athlete as { photo_url?: string | null }).photo_url ?? null,
+    position:          athlete.position ?? null,
+    date_of_birth:     athlete.date_of_birth ?? null,
+    club:              athlete.club ?? null,
+    status:            athlete.status ?? 'available',
     score,
     riskLevel,
     confidence,
@@ -197,13 +205,15 @@ async function AthleteDetailContent({
     dominantVariable,
     age,
     bmi,
-    medicalHistory:   medicalHistory ?? null,
-    latestEmd:        latestEmd ?? null,
-    baselineScat6:    baselineScat6 ?? null,
-    activeConcussion: activeConcussion ?? null,
+    medicalHistory:    medicalHistory ?? null,
+    latestEmd:         latestEmd ?? null,
+    baselineScat6:     baselineScat6 ?? null,
+    activeConcussion:  activeConcussion ?? null,
     injuryEvents,
-    documentCount:    documentCount ?? 0,
+    documentCount:     documentCount ?? 0,
     consultationCount: consultationCount ?? 0,
+    recommendations,
+    viewerRole,
   }
 
   return (

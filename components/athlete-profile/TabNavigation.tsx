@@ -4,7 +4,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import {
-  LayoutGrid, Stethoscope, Activity, Syringe, FolderOpen, ChevronDown,
+  LayoutGrid, Stethoscope, Activity, Syringe, FolderOpen, ChevronDown, Brain,
 } from 'lucide-react'
 import type { TabId } from '@/types/athlete-profile'
 
@@ -16,11 +16,12 @@ interface Tab {
 }
 
 const TABS: Tab[] = [
-  { id: 'overview',    label: 'Overview',     icon: LayoutGrid   },
-  { id: 'medical',     label: 'Médico',       icon: Stethoscope  },
-  { id: 'injuries',    label: 'Lesões',       icon: Activity     },
-  { id: 'treatments',  label: 'Tratamentos',  icon: Syringe      },
-  { id: 'documents',   label: 'Documentos',   icon: FolderOpen   },
+  { id: 'overview',         label: 'Overview',        icon: LayoutGrid  },
+  { id: 'medical',          label: 'Médico',          icon: Stethoscope },
+  { id: 'injuries',         label: 'Lesões',          icon: Activity    },
+  { id: 'treatments',       label: 'Tratamentos',     icon: Syringe     },
+  { id: 'documents',        label: 'Documentos',      icon: FolderOpen  },
+  { id: 'recommendations',  label: 'Recomendações',   icon: Brain       },
 ]
 
 interface TabNavigationProps {

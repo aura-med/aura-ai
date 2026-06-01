@@ -4,12 +4,13 @@ import { useState, useRef } from 'react'
 import { Suspense } from 'react'
 import { Camera, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { TabNavigation } from './TabNavigation'
-import { OverviewTab }   from './OverviewTab'
-import { MedicalTab }    from './MedicalTab'
-import { InjuriesTab }   from './InjuriesTab'
-import { TreatmentsTab } from './TreatmentsTab'
-import { DocumentsTab }  from './DocumentsTab'
+import { TabNavigation }      from './TabNavigation'
+import { OverviewTab }        from './OverviewTab'
+import { MedicalTab }         from './MedicalTab'
+import { InjuriesTab }        from './InjuriesTab'
+import { TreatmentsTab }      from './TreatmentsTab'
+import { DocumentsTab }       from './DocumentsTab'
+import { RecommendationsTab } from './RecommendationsTab'
 import type { AthleteProfileData, TabId } from '@/types/athlete-profile'
 
 const PHOTO_BUCKET = 'athlete-photos'
@@ -163,12 +164,13 @@ function AthleteHeader({ profile }: { profile: AthleteProfileData }) {
 
 function TabContent({ tab, profile }: { tab: TabId; profile: AthleteProfileData }) {
   switch (tab) {
-    case 'overview':   return <OverviewTab   profile={profile} />
-    case 'medical':    return <MedicalTab    profile={profile} />
-    case 'injuries':   return <InjuriesTab   profile={profile} />
-    case 'treatments': return <TreatmentsTab profile={profile} />
-    case 'documents':  return <DocumentsTab  profile={profile} />
-    default:           return <OverviewTab   profile={profile} />
+    case 'overview':         return <OverviewTab        profile={profile} />
+    case 'medical':          return <MedicalTab         profile={profile} />
+    case 'injuries':         return <InjuriesTab        profile={profile} />
+    case 'treatments':       return <TreatmentsTab      profile={profile} />
+    case 'documents':        return <DocumentsTab       profile={profile} />
+    case 'recommendations':  return <RecommendationsTab profile={profile} />
+    default:                 return <OverviewTab        profile={profile} />
   }
 }
 

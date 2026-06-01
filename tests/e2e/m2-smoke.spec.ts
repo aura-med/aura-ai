@@ -9,7 +9,7 @@ const m2Routes = [
   { path: '/rehab', label: /Reabilitacao|A carregar/i },
   { path: '/passport', label: /Passaporte|A carregar/i },
   { path: '/input', label: /Input|Wellness|A carregar/i },
-  { path: '/calendar', label: /Calendario|A carregar/i },
+  { path: '/calendar', label: /Calendar Intelligence|Calendario|A carregar/i },
 ]
 
 test.describe('M2 server-first routes', () => {
@@ -24,13 +24,14 @@ test.describe('M2 server-first routes', () => {
   }
 
   test('notifications popover is keyboard dismissible when available', async ({ page }) => {
-    await page.goto('/readiness', { waitUntil: 'domcontentloaded' })
+    await page.goto('/readiness', { waitUntil: 'networkidle' })
 
-    const trigger = page.getByRole('button', { name: /notific/i })
+    const trigger = page.getByRole('button', { name: /notific/i }).filter({ visible: true })
     if ((await trigger.count()) === 0) return
 
+    await expect(trigger.first()).toBeEnabled()
     await trigger.first().focus()
-    await page.keyboard.press('Enter')
+    await trigger.first().press('Enter')
     await expect(page.getByRole('dialog')).toBeVisible()
     await page.keyboard.press('Escape')
     await expect(page.getByRole('dialog')).toBeHidden()

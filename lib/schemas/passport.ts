@@ -1,8 +1,9 @@
 import { z } from 'zod'
+import { postgresUuidSchema } from './ids'
 
 export const PassportShareSchema = z.object({
-  athleteId: z.string().uuid(),
-  passportId: z.string().uuid(),
+  athleteId: postgresUuidSchema,
+  passportId: postgresUuidSchema,
   isShareable: z.boolean(),
 })
 

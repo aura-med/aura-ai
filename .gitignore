@@ -2,7 +2,6 @@
 
 # dependencies
 /node_modules
-apps/admin/node_modules
 apps/admin/node_modules/
 
 # local tool configs
@@ -24,6 +23,7 @@ docs/
 .playwright-mcp
 /playwright-report
 /.playwright-mcp
+tests/.auth/
 
 # next.js
 /.next/

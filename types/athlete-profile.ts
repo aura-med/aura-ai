@@ -2,7 +2,15 @@
 // Athlete Profile — TypeScript types (migration 006)
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type TabId = 'overview' | 'medical' | 'injuries' | 'treatments' | 'documents'
+import type { RecommendationSet, UserRole } from '@/types'
+
+export type TabId = 'overview' | 'medical' | 'injuries' | 'treatments' | 'documents' | 'recommendations'
+
+export type LatestRecommendations = RecommendationSet & {
+  logId: string
+  generatedAt: string
+  acknowledged: { clinical: boolean; coach: boolean }
+}
 
 export type AthleteAvailability = 'available' | 'modified' | 'unavailable' | 'rehab'
 
@@ -298,4 +306,7 @@ export interface AthleteProfileData {
   // Documents count (not full list — fetched lazily)
   documentCount: number
   consultationCount: number
+  // Recommendations
+  recommendations: LatestRecommendations | null
+  viewerRole: UserRole
 }

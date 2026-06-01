@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useTransition } from 'react'
 import { toggleRtpCriterion, updateRehabClinicalValue } from '@/lib/data/actions'
 import type { RehabPageDTO, RehabSessionDTO } from '@/lib/data/types'
@@ -229,7 +230,9 @@ export function RehabClient({ dto }: { dto: RehabPageDTO }) {
           <div key={session.id} className="card" style={{ marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
               <div>
-                <div style={{ fontWeight: 700, fontSize: 16 }}>{session.athleteName}</div>
+                <Link href={`/rehab/${session.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <div style={{ fontWeight: 700, fontSize: 16 }}>{session.athleteName}</div>
+                </Link>
                 <div style={{ fontSize: 12, color: 'var(--text2)', fontFamily: 'var(--mono)' }}>
                   {session.protocol?.name} · Dia {session.currentDay}/{session.protocol?.totalDays ?? '-'}
                 </div>

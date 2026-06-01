@@ -6,8 +6,9 @@ import { createClient } from '@/lib/supabase/server'
 import { getViewerContext } from '@/lib/data/auth'
 import { dataTags } from '@/lib/data/tags'
 import { dateOnly, asRecordArray, asString } from '@/lib/data/records'
+import { postgresUuidSchema } from '@/lib/schemas/ids'
 
-const uuidSchema = z.string().uuid()
+const uuidSchema = postgresUuidSchema
 
 const wellnessSchema = z.object({
   athleteId: uuidSchema,

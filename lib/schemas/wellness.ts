@@ -1,7 +1,8 @@
 import { z } from 'zod'
+import { postgresUuidSchema } from './ids'
 
 export const WellnessCheckinSchema = z.object({
-  athlete_id: z.string().uuid(),
+  athlete_id: postgresUuidSchema,
   checkin_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
   fatigue: z.number().int().min(1).max(10).nullable().optional(),
   sleep_quality: z.number().int().min(1).max(10).nullable().optional(),

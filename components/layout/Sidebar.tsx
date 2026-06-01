@@ -47,13 +47,21 @@ export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const t = useTranslations('sidebar')
-  const { mobileSidebarOpen, setMobileSidebarOpen, locale, setLocale } = useUiStore()
+  const { mobileSidebarOpen, setMobileSidebarOpen, locale, setLocale, squads, selectedSquadId, setSquad } = useUiStore()
 
   function close() { setMobileSidebarOpen(false) }
 
   function handleLocale(loc: 'pt' | 'en' | 'es') {
     setLocale(loc)
     router.refresh()
+  }
+
+  function handleSquad(squadId: string) {
+    setSquad(squadId)
+    const params = new URLSearchParams(window.location.search)
+    params.set('squadId', squadId)
+    router.replace(`${window.location.pathname}?${params.toString()}`, { scroll: false })
+    close()
   }
 
   return (
@@ -139,11 +147,34 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Mobile-only footer: locale switcher */}
+      {/* Mobile-only footer: squad + locale switchers */}
       <div
         className="md:hidden border-t px-3 py-3"
         style={{ borderColor: 'var(--aura-border)' }}
       >
+        {squads.length > 1 && (
+          <div className="mb-3">
+            <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}>
+              Equipa
+            </p>
+            <select
+              value={selectedSquadId ?? ''}
+              onChange={(e) => handleSquad(e.target.value)}
+              className="w-full rounded-md px-3 py-2 text-xs font-medium outline-none"
+              style={{
+                background: 'var(--aura-bg3)',
+                border: '1px solid var(--aura-border)',
+                color: 'var(--aura-text)',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              {squads.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}>
           Idioma
         </p>

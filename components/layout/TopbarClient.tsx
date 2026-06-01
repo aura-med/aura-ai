@@ -26,7 +26,7 @@ const LOCALES: { value: LocaleValue; label: string; flag: string }[] = [
 
 export function TopbarClient({ dto }: { dto: TopbarDTO }) {
   const t = useTranslations('topbar')
-  const { theme, toggleTheme, locale, setLocale, selectedSquadId, setSquad, setOrg, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
+  const { theme, toggleTheme, locale, setLocale, selectedSquadId, setSquad, setOrg, setSquads, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -35,6 +35,10 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
   useEffect(() => {
     setOrg(dto.org?.id ?? null)
   }, [dto.org?.id, setOrg])
+
+  useEffect(() => {
+    setSquads(squads)
+  }, [squads, setSquads])
 
   const selectedFromUrl = getSquadIdParam(searchParams)
   const validSquadIds = useMemo(() => new Set(squads.map((s) => s.id)), [squads])

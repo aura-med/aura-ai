@@ -11,6 +11,8 @@ interface UiState {
   toggleSidebar: () => void
   mobileSidebarOpen: boolean
   setMobileSidebarOpen: (open: boolean) => void
+  squads: { id: string; name: string }[]
+  setSquads: (squads: { id: string; name: string }[]) => void
   theme: 'dark' | 'light'
   toggleTheme: () => void
   locale: 'pt' | 'en' | 'es'
@@ -30,6 +32,8 @@ export const useUiStore = create<UiState>()(
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       mobileSidebarOpen: false,
       setMobileSidebarOpen: (open) => set({ mobileSidebarOpen: open }),
+      squads: [],
+      setSquads: (squads) => set({ squads }),
       theme: 'dark',
       toggleTheme: () => set((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
       locale: 'pt',

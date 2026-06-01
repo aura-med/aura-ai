@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+apps/admin/node_modules
 apps/admin/node_modules/
 
 # local tool configs
@@ -20,6 +21,7 @@ docs/
 # testing
 /coverage
 /test-results
+.playwright-mcp
 /playwright-report
 /.playwright-mcp
 
@@ -54,3 +56,6 @@ next-env.d.ts
 # workspace vs code
 aura.code-workspace
 .worktrees/
+
+# local planning docs
+docs/

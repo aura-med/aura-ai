@@ -6,19 +6,17 @@ import { Sidebar } from '@/components/sidebar'
 import { UserMenu } from '@/components/user-menu'
 import { SubmitButton } from '@/components/ui'
 import { endSupportSession } from '@/lib/actions'
-import { formatDateTime } from '@/lib/utils'
 
 interface AdminShellClientProps {
   email?: string
   fullName?: string | null
   level: string
-  locale: string
   supportSession: null | {
     id: string
     org_name: string
     ticket_id: string
     reason: string
-    expires_at: string
+    expires_formatted: string
   }
   children: React.ReactNode
 }
@@ -27,7 +25,7 @@ function formatDate(date: Date): string {
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-export function AdminShellClient({ email, fullName, level, locale, supportSession, children }: AdminShellClientProps) {
+export function AdminShellClient({ email, fullName, level, supportSession, children }: AdminShellClientProps) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
   return (
@@ -79,7 +77,6 @@ export function AdminShellClient({ email, fullName, level, locale, supportSessio
             email={email}
             fullName={fullName}
             level={level}
-            currentLocale={locale}
           />
         </div>
       </header>
@@ -99,7 +96,7 @@ export function AdminShellClient({ email, fullName, level, locale, supportSessio
                   Support Mode active for {supportSession.org_name}
                 </div>
                 <div className="text-xs" style={{ color: 'var(--aura-text2)' }}>
-                  Ticket {supportSession.ticket_id} · expires {formatDateTime(supportSession.expires_at)}.
+                  Ticket {supportSession.ticket_id} · expires {supportSession.expires_formatted}.
                   Sensitive reads are audited.
                 </div>
               </div>

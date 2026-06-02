@@ -1,4 +1,3 @@
-import { cookies } from 'next/headers'
 import { AdminShell } from '@/components/admin-shell'
 import { getActiveSupportSession } from '@/lib/admin-data'
 import { requirePlatformAdmin } from '@/lib/admin-auth'
@@ -9,15 +8,11 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
   const context = await requirePlatformAdmin()
   const activeSupportSession = await getActiveSupportSession(context.user.id)
 
-  const cookieStore = await cookies()
-  const locale = cookieStore.get('NEXT_LOCALE')?.value ?? 'en'
-
   return (
     <AdminShell
       email={context.user.email}
       fullName={context.user.fullName}
       level={context.admin.level}
-      locale={locale}
       supportSession={activeSupportSession}
     >
       {children}

@@ -3,56 +3,54 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ChevronDown, LogOut, Moon, Settings, Sun, UserCircle } from 'lucide-react'
-import { signOut } from '@/lib/actions'
+import { useRouter } from 'next/navigation'
+import { useUiStore } from '@/stores/uiStore'
+import { createClient } from '@/lib/supabase/client'
 
-const LEVEL_COLORS: Record<string, string> = {
-  owner:   'var(--aura-green)',
-  admin:   'var(--aura-blue)',
-  support: 'var(--aura-warn)',
-  analyst: 'var(--aura-text3)',
+interface UserMenuDropdownProps {
+  user: { email: string; fullName: string | null } | null
+  role?: string | null
 }
 
-interface UserMenuProps {
-  email?: string
-  fullName?: string | null
-  level: string
-}
+const LOCALES = [
+  { value: 'pt' as const, label: 'PT', name: 'Português' },
+  { value: 'en' as const, label: 'EN', name: 'English' },
+  { value: 'es' as const, label: 'ES', name: 'Español' },
+]
 
-export function UserMenu({ email, fullName, level }: UserMenuProps) {
+export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
   const [open, setOpen] = useState(false)
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const ref = useRef<HTMLDivElement>(null)
+  const router = useRouter()
+  const { locale, setLocale, theme, toggleTheme } = useUiStore()
 
-  useEffect(() => {
-    const stored = localStorage.getItem('aura-theme')
-    setTheme(stored === 'light' ? 'light' : 'dark')
-  }, [])
+  const displayName = user?.fullName ?? user?.email ?? 'Utilizador'
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') setOpen(false)
     }
-    function onClick(e: MouseEvent) {
+    function onOutsideClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
     document.addEventListener('keydown', onKey)
-    document.addEventListener('mousedown', onClick)
+    document.addEventListener('mousedown', onOutsideClick)
     return () => {
       document.removeEventListener('keydown', onKey)
-      document.removeEventListener('mousedown', onClick)
+      document.removeEventListener('mousedown', onOutsideClick)
     }
   }, [])
 
-  function toggleTheme() {
-    const next = theme === 'dark' ? 'light' : 'dark'
-    document.documentElement.classList.remove('dark', 'light')
-    document.documentElement.classList.add(next)
-    localStorage.setItem('aura-theme', next)
-    setTheme(next)
+  function handleLocale(value: 'pt' | 'en' | 'es') {
+    setLocale(value)
+    router.refresh()
   }
 
-  const displayName = fullName ?? email ?? 'Aura admin'
-  const levelColor = LEVEL_COLORS[level] ?? 'var(--aura-text3)'
+  async function handleSignOut() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
 
   return (
     <div className="relative" ref={ref}>
@@ -81,21 +79,23 @@ export function UserMenu({ email, fullName, level }: UserMenuProps) {
             <div className="text-sm font-medium" style={{ color: 'var(--aura-text)' }}>
               {displayName}
             </div>
-            {fullName && (
+            {user?.fullName && user.email && (
               <div className="text-xs" style={{ color: 'var(--aura-text3)' }}>
-                {email}
+                {user.email}
               </div>
             )}
-            <span
-              className="mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
-              style={{
-                background: `color-mix(in srgb, ${levelColor} 12%, transparent)`,
-                color: levelColor,
-                fontFamily: 'var(--font-dm-mono)',
-              }}
-            >
-              {level}
-            </span>
+            {role && (
+              <span
+                className="mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
+                style={{
+                  background: 'rgba(0,229,160,0.10)',
+                  color: 'var(--aura-green)',
+                  fontFamily: 'var(--font-dm-mono)',
+                }}
+              >
+                {role}
+              </span>
+            )}
           </div>
 
           {/* Preferences section */}
@@ -106,7 +106,31 @@ export function UserMenu({ email, fullName, level }: UserMenuProps) {
             >
               Preferências
             </p>
-            {/* Theme */}
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs" style={{ color: 'var(--aura-text2)' }}>
+                Idioma
+              </span>
+              <div className="flex gap-1" role="group" aria-label="Choose language">
+                {LOCALES.map((l) => (
+                  <button
+                    key={l.value}
+                    onClick={() => handleLocale(l.value)}
+                    type="button"
+                    aria-label={l.name}
+                    aria-pressed={locale === l.value}
+                    className="rounded px-2 py-0.5 text-[10px] font-semibold uppercase transition-colors"
+                    style={{
+                      background: locale === l.value ? 'rgba(0,229,160,0.10)' : 'var(--aura-bg3)',
+                      color: locale === l.value ? 'var(--aura-green)' : 'var(--aura-text2)',
+                      border: `1px solid ${locale === l.value ? 'rgba(0,229,160,0.3)' : 'var(--aura-border)'}`,
+                      fontFamily: 'var(--font-dm-mono)',
+                    }}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="flex items-center justify-between">
               <span className="text-xs" style={{ color: 'var(--aura-text2)' }}>
                 Tema
@@ -140,16 +164,15 @@ export function UserMenu({ email, fullName, level }: UserMenuProps) {
               <Settings size={14} />
               Definições
             </Link>
-            <form action={signOut}>
-              <button
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-white/5"
-                style={{ color: 'var(--aura-text2)' }}
-                type="submit"
-              >
-                <LogOut size={14} />
-                Terminar sessão
-              </button>
-            </form>
+            <button
+              onClick={handleSignOut}
+              type="button"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-white/5"
+              style={{ color: 'var(--aura-text2)' }}
+            >
+              <LogOut size={14} />
+              Terminar sessão
+            </button>
           </div>
         </div>
       )}

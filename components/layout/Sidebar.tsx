@@ -47,14 +47,9 @@ export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const t = useTranslations('sidebar')
-  const { mobileSidebarOpen, setMobileSidebarOpen, locale, setLocale, squads, selectedSquadId, setSquad } = useUiStore()
+  const { mobileSidebarOpen, setMobileSidebarOpen, squads, selectedSquadId, setSquad, selectedOrg } = useUiStore()
 
   function close() { setMobileSidebarOpen(false) }
-
-  function handleLocale(loc: 'pt' | 'en' | 'es') {
-    setLocale(loc)
-    router.refresh()
-  }
 
   function handleSquad(squadId: string) {
     setSquad(squadId)
@@ -82,6 +77,46 @@ export function Sidebar() {
       )}
       style={{ background: 'var(--aura-bg)', borderColor: 'var(--aura-border)' }}
     >
+      {/* Mobile-only org + squad header */}
+      <div
+        className="md:hidden border-b px-4 py-3"
+        style={{ borderColor: 'var(--aura-border)' }}
+      >
+        {selectedOrg && (
+          <div className="mb-2">
+            <div
+              className="text-sm font-bold leading-tight"
+              style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}
+            >
+              {selectedOrg.name}
+            </div>
+            <div
+              className="text-[10px] uppercase tracking-wide"
+              style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}
+            >
+              {selectedOrg.type}
+            </div>
+          </div>
+        )}
+        {squads.length > 1 && (
+          <select
+            value={selectedSquadId ?? ''}
+            onChange={(e) => handleSquad(e.target.value)}
+            className="w-full rounded-md px-3 py-2 text-xs font-medium outline-none"
+            style={{
+              background: 'var(--aura-bg3)',
+              border: '1px solid var(--aura-border)',
+              color: 'var(--aura-text)',
+              fontFamily: 'var(--font-dm-mono)',
+            }}
+          >
+            {squads.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        )}
+      </div>
+
       <nav className="flex-1 px-3 py-4 space-y-6">
         {SECTION_KEYS.map((sectionKey) => {
           const items = NAV_ITEMS.filter((i) => i.sectionKey === sectionKey)
@@ -146,55 +181,6 @@ export function Sidebar() {
           )
         })}
       </nav>
-
-      {/* Mobile-only footer: squad + locale switchers */}
-      <div
-        className="md:hidden border-t px-3 py-3"
-        style={{ borderColor: 'var(--aura-border)' }}
-      >
-        {squads.length > 1 && (
-          <div className="mb-3">
-            <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}>
-              Equipa
-            </p>
-            <select
-              value={selectedSquadId ?? ''}
-              onChange={(e) => handleSquad(e.target.value)}
-              className="w-full rounded-md px-3 py-2 text-xs font-medium outline-none"
-              style={{
-                background: 'var(--aura-bg3)',
-                border: '1px solid var(--aura-border)',
-                color: 'var(--aura-text)',
-                fontFamily: 'var(--font-mono)',
-              }}
-            >
-              {squads.map((s) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}>
-          Idioma
-        </p>
-        <div className="flex gap-1">
-          {(['pt', 'en', 'es'] as const).map((loc) => (
-            <button
-              key={loc}
-              onClick={() => handleLocale(loc)}
-              className="flex-1 rounded-md py-2 text-xs font-mono font-semibold uppercase transition-colors"
-              style={{
-                background: locale === loc ? 'rgba(0,229,160,0.10)' : 'var(--aura-bg3)',
-                color: locale === loc ? 'var(--aura-green)' : 'var(--aura-text2)',
-                border: `1px solid ${locale === loc ? 'rgba(0,229,160,0.3)' : 'var(--aura-border)'}`,
-              }}
-            >
-              {loc.toUpperCase()}
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* Version tag */}
       <div

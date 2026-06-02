@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { Globe2, Sun, Moon, Menu } from 'lucide-react'
+import { Menu } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { NotificationCenter } from '@/components/layout/NotificationCenter'
+import { MainUserMenu } from '@/components/layout/MainUserMenu'
 import {
   Select,
   SelectContent,
@@ -16,17 +17,9 @@ import { useUiStore } from '@/stores/uiStore'
 import { getSquadIdParam } from '@/lib/squad-url'
 import type { TopbarDTO } from '@/lib/data/types'
 
-type LocaleValue = 'pt' | 'en' | 'es'
-
-const LOCALES: { value: LocaleValue; label: string; flag: string }[] = [
-  { value: 'pt', label: 'PT', flag: 'PT' },
-  { value: 'en', label: 'EN', flag: 'EN' },
-  { value: 'es', label: 'ES', flag: 'ES' },
-]
-
 export function TopbarClient({ dto }: { dto: TopbarDTO }) {
   const t = useTranslations('topbar')
-  const { theme, toggleTheme, locale, setLocale, selectedSquadId, setSquad, setOrg, setSquads, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
+  const { selectedSquadId, setSquad, setOrg, setSquads, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -70,19 +63,10 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
     router.replace(`${pathname}?${next.toString()}`, { scroll: false })
   }
 
-  function handleLocaleChange(value: string | null) {
-    if (value !== 'pt' && value !== 'en' && value !== 'es') return
-    setLocale(value)
-    router.refresh()
-  }
-
   return (
     <header
-      className="fixed top-0 left-0 right-0 h-14 flex items-center justify-between px-5 z-40 border-b"
-      style={{
-        background: 'var(--aura-bg)',
-        borderColor: 'var(--aura-border)',
-      }}
+      className="fixed top-0 left-0 right-0 h-14 flex items-center justify-between px-4 sm:px-5 z-40 border-b"
+      style={{ background: 'var(--aura-bg)', borderColor: 'var(--aura-border)' }}
     >
       <div className="flex min-w-0 items-center gap-3">
         <button
@@ -108,10 +92,7 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
         </Link>
         <span
           className="hidden text-[10px] font-mono px-1.5 py-0.5 rounded border sm:inline-flex"
-          style={{
-            color: 'var(--aura-text3)',
-            borderColor: 'var(--aura-border)',
-          }}
+          style={{ color: 'var(--aura-text3)', borderColor: 'var(--aura-border)' }}
         >
           {t('fpfPilot')}
         </span>
@@ -160,44 +141,14 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
         </Select>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-4">
-        <Select
-          value={locale}
-          onValueChange={(value) => handleLocaleChange(value)}
-        >
-          <SelectTrigger
-            size="sm"
-            aria-label="Choose language"
-            className="hidden sm:flex min-w-16 border-[var(--aura-border2)] bg-[var(--aura-bg3)] text-xs text-[var(--aura-text)]"
-            style={{ fontFamily: 'var(--font-mono)' }}
-          >
-            <Globe2 size={14} aria-hidden="true" />
-            <span>{locale.toUpperCase()}</span>
-          </SelectTrigger>
-          <SelectContent align="end" alignItemWithTrigger={false} className="min-w-28">
-            {LOCALES.map((l) => (
-              <SelectItem key={l.value} value={l.value}>
-                <span>{l.label}</span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <button
-          onClick={toggleTheme}
-          className="flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--aura-green)]"
-          style={{ color: 'var(--aura-text2)' }}
-          aria-label="Toggle theme"
-        >
-          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-        </button>
-
+      <div className="flex items-center gap-1 sm:gap-2">
         <NotificationCenter
           key={dto.org?.id ?? 'anon'}
           orgId={dto.org?.id}
           userId={dto.userId}
           initialNotifications={dto.notifications}
         />
+        <MainUserMenu />
       </div>
     </header>
   )

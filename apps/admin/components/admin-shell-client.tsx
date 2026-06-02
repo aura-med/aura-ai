@@ -39,10 +39,11 @@ export function AdminShellClient({ email, fullName, level, locale, supportSessio
         {/* Left — hamburger (mobile) + logo */}
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setMobileSidebarOpen(true)}
+            onClick={() => setMobileSidebarOpen((v) => !v)}
             className="flex size-11 items-center justify-center rounded-md transition-colors hover:bg-white/5 md:hidden"
             style={{ color: 'var(--aura-text2)' }}
-            aria-label="Open menu"
+            aria-label="Toggle menu"
+            aria-expanded={mobileSidebarOpen}
             type="button"
           >
             <Menu size={18} />

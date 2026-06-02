@@ -14,9 +14,9 @@ const LEVEL_COLORS: Record<string, string> = {
 }
 
 const LOCALES = [
-  { code: 'en', label: 'EN' },
-  { code: 'pt', label: 'PT' },
-  { code: 'es', label: 'ES' },
+  { code: 'en', label: 'EN', name: 'English' },
+  { code: 'pt', label: 'PT', name: 'Português' },
+  { code: 'es', label: 'ES', name: 'Español' },
 ]
 
 interface UserMenuProps {
@@ -126,12 +126,14 @@ export function UserMenu({ email, fullName, level, currentLocale }: UserMenuProp
               <span className="text-xs" style={{ color: 'var(--aura-text2)' }}>
                 Language
               </span>
-              <div className="flex gap-1">
-                {LOCALES.map(({ code, label }) => (
+              <div className="flex gap-1" role="group" aria-label="Choose language">
+                {LOCALES.map(({ code, label, name }) => (
                   <button
                     key={code}
                     onClick={() => setLocale(code)}
                     type="button"
+                    aria-label={name}
+                    aria-pressed={currentLocale === code}
                     className="rounded px-2 py-0.5 text-[10px] font-semibold uppercase transition-colors"
                     style={{
                       background: currentLocale === code ? 'var(--aura-green-bg)' : 'var(--aura-bg3)',

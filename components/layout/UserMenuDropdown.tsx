@@ -13,9 +13,9 @@ interface UserMenuDropdownProps {
 }
 
 const LOCALES = [
-  { value: 'pt' as const, label: 'PT' },
-  { value: 'en' as const, label: 'EN' },
-  { value: 'es' as const, label: 'ES' },
+  { value: 'pt' as const, label: 'PT', name: 'Português' },
+  { value: 'en' as const, label: 'EN', name: 'English' },
+  { value: 'es' as const, label: 'ES', name: 'Español' },
 ]
 
 export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
@@ -110,12 +110,14 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
               <span className="text-xs" style={{ color: 'var(--aura-text2)' }}>
                 Idioma
               </span>
-              <div className="flex gap-1">
+              <div className="flex gap-1" role="group" aria-label="Choose language">
                 {LOCALES.map((l) => (
                   <button
                     key={l.value}
                     onClick={() => handleLocale(l.value)}
                     type="button"
+                    aria-label={l.name}
+                    aria-pressed={locale === l.value}
                     className="rounded px-2 py-0.5 text-[10px] font-semibold uppercase transition-colors"
                     style={{
                       background: locale === l.value ? 'rgba(0,229,160,0.10)' : 'var(--aura-bg3)',

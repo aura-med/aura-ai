@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { AuthControls } from '@/components/auth/AuthControls'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -34,10 +35,10 @@ export default function LoginPage() {
       style={{ background: 'var(--aura-bg)' }}
     >
       <div
-        className="w-full max-w-sm rounded-2xl border p-8"
+        className="relative w-full max-w-sm rounded-2xl border p-8"
         style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
       >
-        {/* Logo */}
+        <AuthControls />
         <div className="text-center mb-8">
           <h1
             className="text-3xl font-bold"
@@ -76,9 +77,14 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label htmlFor="login-password" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--aura-text2)' }}>
-              Palavra-passe
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label htmlFor="login-password" className="block text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>
+                Palavra-passe
+              </label>
+              <a href="/forgot-password" className="text-xs" style={{ color: 'var(--aura-text3)' }}>
+                Esqueceu a palavra-passe?
+              </a>
+            </div>
             <input
               id="login-password"
               type="password"

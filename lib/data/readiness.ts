@@ -27,6 +27,11 @@ export async function getReadinessPageDTO(squadId: string | null): Promise<Readi
     .order('shirt_number')
     .order('checkin_date', { referencedTable: 'wellness_checkins', ascending: false })
     .order('session_date', { referencedTable: 'gps_sessions', ascending: false })
+    .eq('gps_sessions.session_type', 'match')
+    .limit(7, { referencedTable: 'wellness_checkins' })
+    .limit(1, { referencedTable: 'gps_sessions' })
+    .limit(2, { referencedTable: 'injury_events' })
+    .limit(1, { referencedTable: 'athlete_passport' })
 
   if (squadId) query = query.eq('squad_id', squadId)
 

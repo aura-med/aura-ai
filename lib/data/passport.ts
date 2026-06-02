@@ -19,6 +19,12 @@ export async function getPassportPageDTO(
     .select('id, name, shirt_number, position, club, injury_events(id, injury_date, diagnosis, days_absent, return_date), performance_data(session_date, vmax), athlete_passport(passport_data, is_shareable), fatigue_profiles(recovery_speed, congestion_sensitivity)')
     .eq('active', true)
     .order('shirt_number')
+    .order('injury_date', { referencedTable: 'injury_events', ascending: false })
+    .order('session_date', { referencedTable: 'performance_data', ascending: false })
+    .limit(50, { referencedTable: 'injury_events' })
+    .limit(1, { referencedTable: 'performance_data' })
+    .limit(1, { referencedTable: 'athlete_passport' })
+    .limit(1, { referencedTable: 'fatigue_profiles' })
 
   if (squadId) query = query.eq('squad_id', squadId)
 

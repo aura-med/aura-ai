@@ -208,7 +208,8 @@ export async function getUsersPageData(params: UsersPageParams = {}) {
   const context = await requirePlatformAdmin()
   const service = createAdminClient()
   const activeSupportSession = await getActiveSupportSession(context.user.id)
-  const page = Math.max(1, params.page ?? 1)
+  const requestedPage = Number(params.page)
+  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
 
   const [profilesResult, orgsResult, authUsersResult] = await Promise.all([
     service.from('profiles').select('id, org_id, role, full_name, created_at').order('full_name'),
@@ -274,27 +275,42 @@ export async function getSecurityPageData(params: SecurityPageParams = {}) {
   const context = await requirePlatformAdmin()
   const service = createAdminClient()
   const activeSupportSession = await getActiveSupportSession(context.user.id)
-  const page = Math.max(1, params.page ?? 1)
+  const requestedPage = Number(params.page)
+  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
+  const from = (page - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
+
+  let auditQuery = service
+    .from('platform_audit_logs')
+    .select('id, actor_user_id, event_type, target_type, target_id, support_session_id, org_id, created_at', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(from, to)
+
+  if (params.type) auditQuery = auditQuery.ilike('event_type', `%${params.type}%`)
 
   const [auditResult, sessionsResult, adminsResult, orgsResult, authUsersResult] = await Promise.all([
-    service.from('platform_audit_logs').select('*').order('created_at', { ascending: false }).limit(500),
-    service.from('support_sessions').select('*').order('started_at', { ascending: false }).limit(50),
+    auditQuery,
+    service
+      .from('support_sessions')
+      .select('id, actor_user_id, org_id, ticket_id, reason, status, started_at, expires_at, ended_at')
+      .order('started_at', { ascending: false })
+      .limit(50),
     service.from('platform_admins').select('user_id, level, active, created_at, last_seen_at').order('created_at', { ascending: false }),
     service.from('organizations').select('id, name'),
     service.auth.admin.listUsers({ page: 1, perPage: 1000 }),
   ])
 
+  if (auditResult.error) throw new Error(`Failed to load audit logs: ${auditResult.error.message}`)
+
   const orgById    = new Map((orgsResult.data ?? []).map((o) => [o.id, o.name]))
   const authById   = new Map((authUsersResult.data?.users ?? []).map((u) => [u.id, u]))
 
-  let logs = (auditResult.data ?? []).map((log) => ({
+  const logs = (auditResult.data ?? []).map((log) => ({
     ...log,
     org_name: log.org_id ? orgById.get(log.org_id) : null,
   }))
-  if (params.type) logs = logs.filter((l) => l.event_type.includes(params.type as string))
 
-  const totalLogs = logs.length
-  const paginatedLogs = logs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const totalLogs = auditResult.count ?? logs.length
 
   const admins = (adminsResult.data ?? []).map((a) => {
     const auth = authById.get(a.user_id)
@@ -314,7 +330,7 @@ export async function getSecurityPageData(params: SecurityPageParams = {}) {
   return {
     context,
     activeSupportSession,
-    auditLogs:  paginatedLogs,
+    auditLogs:  logs,
     totalLogs,
     auditPage:  page,
     supportSessions: ((sessionsResult.data ?? []) as SupportSessionRow[]).map((s) => ({

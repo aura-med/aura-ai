@@ -17,6 +17,7 @@ export async function getInputPageDTO(squadId: string | null): Promise<InputPage
     .eq('active', true)
     .eq('status', 'available')
     .order('shirt_number')
+    .limit(2, { referencedTable: 'injury_events' })
 
   if (squadId) query = query.eq('squad_id', squadId)
 

@@ -11,7 +11,7 @@ export async function GET(
 
   const { data, error } = await supabase
     .from('medical_consultations')
-    .select('*')
+    .select('id, athlete_id, consultation_date, consultation_time, clinician_id, clinician_name, subjective, objective, assessment, plan, created_at, updated_at')
     .eq('athlete_id', id)
     .order('consultation_date', { ascending: false })
     .limit(50)
@@ -41,7 +41,7 @@ export async function POST(
       assessment:        body.assessment ?? null,
       plan:              body.plan ?? null,
     })
-    .select()
+    .select('id, athlete_id, consultation_date, consultation_time, clinician_id, clinician_name, subjective, objective, assessment, plan, created_at, updated_at')
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

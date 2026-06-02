@@ -10,16 +10,23 @@ export async function getCalendarPageDTO(squadId: string | null): Promise<Calend
   if (!canUseSquad(viewer, squadId)) return calendarPageDTO(null, [], [])
 
   const supabase = await createClient()
+  const today = new Date().toISOString().slice(0, 10)
   let athleteQuery = supabase
     .from('athletes')
     .select('id, name, shirt_number, position, wellness_checkins(checkin_date, fatigue, sleep_hours, tqr), injury_events(id), fatigue_profiles(recovery_speed, congestion_sensitivity, typical_md1_drop, typical_md2_drop)')
     .eq('active', true)
     .eq('status', 'available')
     .order('shirt_number')
+    .order('checkin_date', { referencedTable: 'wellness_checkins', ascending: false })
+    .limit(1, { referencedTable: 'wellness_checkins' })
+    .limit(2, { referencedTable: 'injury_events' })
+    .limit(1, { referencedTable: 'fatigue_profiles' })
   let eventQuery = supabase
     .from('calendar_events')
     .select('id, squad_id, event_date, event_type, intensity, label, created_at')
+    .gte('event_date', today)
     .order('event_date')
+    .limit(60)
 
   if (squadId) {
     athleteQuery = athleteQuery.eq('squad_id', squadId)

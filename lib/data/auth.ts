@@ -11,7 +11,7 @@ export const getViewerContext = cache(async (): Promise<ViewerContextDTO> => {
   const user = userData.user
 
   if (!user) {
-    return { userId: null, org: null, role: null, squads: [] }
+    return { userId: null, user: null, org: null, role: null, squads: [] }
   }
 
   const { data: profileData } = await supabase
@@ -23,9 +23,11 @@ export const getViewerContext = cache(async (): Promise<ViewerContextDTO> => {
   const profile = asRecord(profileData)
   const orgId = asString(profile.org_id)
   const role = asString(profile.role)
+  const fullName = asString(profile.full_name)
+  const userInfo = { email: user.email ?? '', fullName }
 
   if (!orgId) {
-    return { userId: user.id, org: null, role, squads: [] }
+    return { userId: user.id, user: userInfo, org: null, role, squads: [] }
   }
 
   const [{ data: orgData }, { data: squadsData }] = await Promise.all([
@@ -44,6 +46,7 @@ export const getViewerContext = cache(async (): Promise<ViewerContextDTO> => {
   const org = asRecord(orgData)
   return {
     userId: user.id,
+    user: userInfo,
     org: {
       id: asString(org.id) ?? orgId,
       name: asString(org.name) ?? 'Organizacao',

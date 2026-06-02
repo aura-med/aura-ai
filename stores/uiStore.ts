@@ -4,6 +4,8 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { UserRole } from '@/types'
 
+type OrgInfo = { id: string; name: string; type: string }
+
 interface UiState {
   role: UserRole
   setRole: (role: UserRole) => void
@@ -18,9 +20,9 @@ interface UiState {
   locale: 'pt' | 'en' | 'es'
   setLocale: (locale: 'pt' | 'en' | 'es') => void
   selectedSquadId: string | null
-  selectedOrgId: string | null
+  selectedOrg: OrgInfo | null
   setSquad: (squadId: string | null) => void
-  setOrg: (orgId: string | null) => void
+  setOrg: (org: OrgInfo | null) => void
 }
 
 export const useUiStore = create<UiState>()(
@@ -42,9 +44,9 @@ export const useUiStore = create<UiState>()(
         set({ locale })
       },
       selectedSquadId: null,
-      selectedOrgId: null,
+      selectedOrg: null,
       setSquad: (squadId) => set({ selectedSquadId: squadId }),
-      setOrg: (orgId) => set({ selectedOrgId: orgId }),
+      setOrg: (org) => set({ selectedOrg: org }),
     }),
     {
       name: 'aura-ui',
@@ -54,7 +56,7 @@ export const useUiStore = create<UiState>()(
         theme: s.theme,
         locale: s.locale,
         selectedSquadId: s.selectedSquadId,
-        selectedOrgId: s.selectedOrgId,
+        selectedOrg: s.selectedOrg,
       }),
     }
   )

@@ -1,9 +1,6 @@
 'use client'
 
 import { AlertTriangle } from 'lucide-react'
-import {
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-} from 'recharts'
 import type { AthleteProfileData, InjuryEventSummary, BodyRegion, BodyZoneInfo } from '@/types/athlete-profile'
 import { BodyMap } from './BodyMap'
 
@@ -50,6 +47,59 @@ const VAR_LABELS: Record<string, string> = {
   stress:  'Stress',
   decel:   'Dec. Alta Int.',
   md:      'MD+n',
+}
+
+type InjuryTimelinePoint = {
+  label: string
+  injuries: number
+  severity: number
+}
+
+function InjuryTimelineChart({ data }: { data: InjuryTimelinePoint[] }) {
+  const width = 360
+  const height = 96
+  const chartTop = 8
+  const chartHeight = 58
+  const maxInjuries = Math.max(1, ...data.map((point) => point.injuries))
+  const step = data.length > 1 ? width / (data.length - 1) : width
+  const points = data.map((point, index) => {
+    const x = index * step
+    const y = chartTop + chartHeight - (point.injuries / maxInjuries) * chartHeight
+    return { ...point, x, y }
+  })
+  const areaPath = points.length
+    ? [
+        `M ${points[0].x} ${chartTop + chartHeight}`,
+        ...points.map((point) => `L ${point.x} ${point.y}`),
+        `L ${points[points.length - 1].x} ${chartTop + chartHeight}`,
+        'Z',
+      ].join(' ')
+    : ''
+  const linePath = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ')
+
+  return (
+    <div className="h-[100px]">
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Evolucao mensal de lesoes" className="h-full w-full overflow-visible">
+        {[0, 1, 2].map((line) => {
+          const y = chartTop + (chartHeight / 2) * line
+          return <line key={line} x1="0" x2={width} y1={y} y2={y} stroke="var(--aura-border)" strokeDasharray="3 3" />
+        })}
+        <path d={areaPath} fill="var(--aura-danger-bg)" />
+        <path d={linePath} fill="none" stroke="var(--aura-danger)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+        {points.map((point) => (
+          <g key={`${point.label}-${point.x}`}>
+            <circle cx={point.x} cy={point.y} r={point.injuries > 0 ? 3 : 2} fill="var(--aura-danger)" />
+            <text x={point.x} y="88" textAnchor="middle" fontSize="9" fill="var(--aura-text3)">
+              {point.label}
+            </text>
+            {point.injuries > 0 && (
+              <title>{`${point.label}: ${point.injuries} lesao(oes)`}</title>
+            )}
+          </g>
+        ))}
+      </svg>
+    </div>
+  )
 }
 
 // ── Status Card ───────────────────────────────────────────────────────────────
@@ -156,42 +206,7 @@ function InjuryTimeline({ injuries }: { injuries: InjuryEventSummary[] }) {
           Sem lesões registadas esta época
         </p>
       ) : (
-        <ResponsiveContainer width="100%" height={100}>
-          <AreaChart data={months} margin={{ top: 4, right: 0, left: -30, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--aura-border)" vertical={false} />
-            <XAxis
-              dataKey="label"
-              tick={{ fontSize: 9, fill: 'var(--aura-text3)' }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis
-              tick={{ fontSize: 9, fill: 'var(--aura-text3)' }}
-              axisLine={false}
-              tickLine={false}
-              allowDecimals={false}
-            />
-            <Tooltip
-              contentStyle={{
-                background: 'var(--aura-bg2)',
-                border: '1px solid var(--aura-border)',
-                borderRadius: 8,
-                fontSize: 11,
-                color: 'var(--aura-text)',
-              }}
-              formatter={(v) => [`${v} lesão(ões)`, '' as const]}
-            />
-            <Area
-              type="monotone"
-              dataKey="injuries"
-              stroke="var(--aura-danger)"
-              fill="var(--aura-danger-bg)"
-              strokeWidth={2}
-              dot={{ fill: 'var(--aura-danger)', r: 3 }}
-              activeDot={{ r: 5 }}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+        <InjuryTimelineChart data={months} />
       )}
     </div>
   )

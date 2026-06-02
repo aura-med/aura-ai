@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { FileText, Image, FlaskConical, Heart, Smile, FolderOpen, Upload, ExternalLink, Loader2, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { AthleteProfileData, MedicalDocument, DocumentCategory } from '@/types/athlete-profile'
-import { DocumentUploadModal } from './DocumentUploadModal'
+
+const DocumentUploadModal = dynamic(() => import('./DocumentUploadModal').then((mod) => mod.DocumentUploadModal))
 
 // ── Category config ───────────────────────────────────────────────────────────
 

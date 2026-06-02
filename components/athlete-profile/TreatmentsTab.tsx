@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { Activity, Pill, Wrench, Plus, Clock, Edit2, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import type {
@@ -10,9 +11,10 @@ import type {
   OrthoticRecord,
   RehabSession,
 } from '@/types/athlete-profile'
-import { MedicationModal }    from './MedicationModal'
-import { RehabSessionModal }  from './RehabSessionModal'
-import { OrthoticModal }      from './OrthoticModal'
+
+const MedicationModal = dynamic(() => import('./MedicationModal').then((mod) => mod.MedicationModal))
+const RehabSessionModal = dynamic(() => import('./RehabSessionModal').then((mod) => mod.RehabSessionModal))
+const OrthoticModal = dynamic(() => import('./OrthoticModal').then((mod) => mod.OrthoticModal))
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

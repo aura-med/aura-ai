@@ -17,14 +17,27 @@ export async function getTopbarDTO(): Promise<TopbarDTO> {
   const supabase = await createClient()
   const themePreference = await getThemePreference(supabase, viewer.userId)
 
-  if (!viewer.org?.id) return { ...viewer, notifications: [], themePreference }
+  if (!viewer.org?.id) return { ...viewer, notifications: [], unreadNotificationCount: 0, themePreference }
 
-  const { data } = await supabase
+  const notificationsQuery = supabase
     .from('notifications')
     .select('id, type, title, body, read_by, created_at')
     .eq('org_id', viewer.org.id)
     .order('created_at', { ascending: false })
-    .limit(50)
+    .limit(10)
+
+  const unreadQuery = viewer.userId
+    ? supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('org_id', viewer.org.id)
+        .not('read_by', 'cs', `{${viewer.userId}}`)
+    : null
+
+  const [{ data }, unreadResult] = await Promise.all([
+    notificationsQuery,
+    unreadQuery ?? Promise.resolve({ count: 0 }),
+  ])
 
   const notifications: NotificationDTO[] = asRecordArray(data).map((row) => {
     const type = asString(row.type) ?? 'score_high'
@@ -39,7 +52,7 @@ export async function getTopbarDTO(): Promise<TopbarDTO> {
     }
   }).filter((notification) => notification.id)
 
-  return { ...viewer, notifications, themePreference }
+  return { ...viewer, notifications, unreadNotificationCount: unreadResult.count ?? 0, themePreference }
 }
 
 async function getThemePreference(

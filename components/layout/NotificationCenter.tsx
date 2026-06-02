@@ -32,20 +32,21 @@ export function NotificationCenter({
   orgId,
   userId,
   initialNotifications,
+  initialUnreadCount,
 }: {
   orgId?: string
   userId: string | null
   initialNotifications: NotificationDTO[]
+  initialUnreadCount: number
 }) {
   const t = useTranslations('notifications')
   const [open, setOpen] = useState(false)
   const [now] = useState(() => Date.now())
   const [notifications, setNotifications] = useState(initialNotifications)
+  const [unreadCount, setUnreadCount] = useState(initialUnreadCount)
   const [isPending, startTransition] = useTransition()
   const panelRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
-
-  const unreadCount = notifications.filter((n) => userId && !n.readBy.includes(userId)).length
 
   useEffect(() => {
     if (!open) return
@@ -78,6 +79,7 @@ export function NotificationCenter({
           readBy: [...new Set([...notification.readBy, userId])],
         }))
       )
+      setUnreadCount(0)
     })
   }
 
@@ -241,7 +243,7 @@ export function NotificationCenter({
                 className="text-center text-[10px] font-mono"
                 style={{ color: 'var(--aura-text3)' }}
               >
-                {t('last50')}
+                {t('last10')}
               </p>
             </div>
           )}

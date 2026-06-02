@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useMemo, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { Menu } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { NotificationCenter } from '@/components/layout/NotificationCenter'
+import { useTranslations } from 'next-intl'
 import {
   Select,
   SelectContent,
@@ -20,6 +21,23 @@ import type { TopbarDTO } from '@/lib/data/types'
 function formatDate(): string {
   return new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
 }
+
+const NotificationCenter = dynamic(
+  () => import('@/components/layout/NotificationCenter').then((mod) => mod.NotificationCenter),
+  {
+    loading: () => (
+      <div className="size-9 min-h-[44px] min-w-[44px]" aria-hidden="true" />
+    ),
+  }
+)
+
+type LocaleValue = 'pt' | 'en' | 'es'
+
+const LOCALES: { value: LocaleValue; label: string; flag: string }[] = [
+  { value: 'pt', label: 'PT', flag: 'PT' },
+  { value: 'en', label: 'EN', flag: 'EN' },
+  { value: 'es', label: 'ES', flag: 'ES' },
+]
 
 export function TopbarClient({ dto }: { dto: TopbarDTO }) {
   const { selectedSquadId, setSquad, setOrg, setSquads, setTheme, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
@@ -161,6 +179,7 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
           orgId={dto.org?.id}
           userId={dto.userId}
           initialNotifications={dto.notifications}
+          initialUnreadCount={dto.unreadNotificationCount}
         />
         <ThemeToggle />
         <UserMenuDropdown user={dto.user} role={dto.role} />

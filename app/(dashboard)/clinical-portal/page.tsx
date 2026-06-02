@@ -1,17 +1,21 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 import {
   Activity, Plus, RefreshCw, AlertCircle, Stethoscope,
   Users, Brain, TrendingDown, TrendingUp,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { InjuryAccordionRow } from '@/components/admin/InjuryAccordionRow'
-import { RecordInjuryModal } from '@/components/admin/RecordInjuryModal'
 import { ToastContainer } from '@/components/admin/Toast'
 import { useToast } from '@/components/admin/useToast'
 import { useFederatedSync } from '@/lib/federated/useFederatedSync'
 import type { ActiveRehabSession, Athlete } from '@/types'
+
+const RecordInjuryModal = dynamic(() =>
+  import('@/components/admin/RecordInjuryModal').then((mod) => mod.RecordInjuryModal)
+)
 
 // ── Summary card ──────────────────────────────────────────────────────────────
 
@@ -457,15 +461,17 @@ export default function MedicalPage() {
       )}
 
       {/* ── Modals & toasts ───────────────────────────────────────────────── */}
-      <RecordInjuryModal
-        open={showModal}
-        onClose={() => setShowModal(false)}
-        athletes={athletes}
-        onSuccess={(newSession) => {
-          setSessions((prev) => [newSession, ...prev])
-          toast('success', 'Lesão registada com sucesso.')
-        }}
-      />
+      {showModal && (
+        <RecordInjuryModal
+          open={showModal}
+          onClose={() => setShowModal(false)}
+          athletes={athletes}
+          onSuccess={(newSession) => {
+            setSessions((prev) => [newSession, ...prev])
+            toast('success', 'Lesão registada com sucesso.')
+          }}
+        />
+      )}
       <ToastContainer toasts={toasts} dismiss={dismiss} />
     </div>
   )

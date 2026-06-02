@@ -36,6 +36,7 @@ export interface NotificationDTO {
 
 export interface TopbarDTO extends ViewerContextDTO {
   notifications: NotificationDTO[]
+  unreadNotificationCount: number
   themePreference: 'dark' | 'light' | null
 }
 

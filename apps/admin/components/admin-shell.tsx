@@ -1,7 +1,8 @@
-import { ShieldCheck, Timer } from 'lucide-react'
+'use client'
+
+import { useState } from 'react'
+import { Menu, ShieldCheck, Timer } from 'lucide-react'
 import { Sidebar } from '@/components/sidebar'
-import { ThemeToggle } from '@/components/theme-toggle'
-import { LanguageDropdown } from '@/components/language-dropdown'
 import { UserMenu } from '@/components/user-menu'
 import { SubmitButton } from '@/components/ui'
 import { endSupportSession } from '@/lib/actions'
@@ -27,22 +28,34 @@ function formatDate(date: Date): string {
 }
 
 export function AdminShell({ email, fullName, level, locale, supportSession, children }: AdminShellProps) {
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+
   return (
     <>
       <header
-        className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center justify-between border-b px-5"
-        style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+        className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center justify-between border-b px-4 sm:px-5"
+        style={{ background: 'var(--aura-bg)', borderColor: 'var(--aura-border)' }}
       >
-        {/* Left — logo */}
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <button
+            className="flex size-11 items-center justify-center rounded-md transition-colors md:hidden"
+            onClick={() => setMobileSidebarOpen((open) => !open)}
+            style={{ color: 'var(--aura-text2)' }}
+            type="button"
+            aria-label="Toggle menu"
+            aria-expanded={mobileSidebarOpen}
+          >
+            <Menu size={18} />
+          </button>
+
           <div
-            className="flex h-8 w-8 items-center justify-center rounded-lg"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
             style={{ background: 'var(--aura-green-bg)', color: 'var(--aura-green)' }}
           >
             <ShieldCheck size={16} />
           </div>
-          <div>
-            <div className="text-lg font-bold leading-none" style={{ fontFamily: 'var(--font-syne)' }}>
+          <div className="min-w-0">
+            <div className="truncate text-lg font-bold leading-none" style={{ fontFamily: 'var(--font-syne)' }}>
               Aura Admin
             </div>
             <div className="text-[10px]" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
@@ -51,9 +64,7 @@ export function AdminShell({ email, fullName, level, locale, supportSession, chi
           </div>
         </div>
 
-        {/* Right — tools */}
         <div className="flex items-center gap-2">
-          {/* Date */}
           <span
             className="hidden text-xs lg:block"
             style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}
@@ -61,15 +72,13 @@ export function AdminShell({ email, fullName, level, locale, supportSession, chi
             {formatDate(new Date())}
           </span>
 
-          <ThemeToggle />
-          <LanguageDropdown currentLocale={locale} />
-          <UserMenu email={email} fullName={fullName} level={level} />
+          <UserMenu email={email} fullName={fullName} level={level} currentLocale={locale} />
         </div>
       </header>
 
-      <Sidebar />
+      <Sidebar mobileOpen={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)} />
 
-      <main className="ml-60 mt-14 min-h-[calc(100vh-3.5rem)] p-6">
+      <main className="mt-14 min-h-[calc(100vh-3.5rem)] p-4 sm:p-6 md:ml-60">
         {supportSession ? (
           <div
             className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3"

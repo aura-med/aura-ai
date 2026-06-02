@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { AuthControls } from '@/components/auth/AuthControls'
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations('auth')
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -52,7 +54,7 @@ export default function ForgotPasswordPage() {
             Aura
           </h1>
           <p className="text-xs mt-1" style={{ color: 'var(--aura-text3)' }}>
-            Health & Performance Intelligence · FPF
+            {t('brandSubtitle')}
           </p>
         </div>
 
@@ -62,21 +64,21 @@ export default function ForgotPasswordPage() {
               className="text-xs px-3 py-2 rounded-lg"
               style={{ background: 'var(--aura-green-bg)', color: 'var(--aura-green)' }}
             >
-              Verifique o seu email. Enviámos um link para repor a sua palavra-passe.
+              {t('forgot.success')}
             </p>
             <a
               href="/login"
               className="block text-center text-xs"
               style={{ color: 'var(--aura-text3)' }}
             >
-              Voltar ao início de sessão
+              {t('forgot.backToLogin')}
             </a>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="fp-email" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--aura-text2)' }}>
-                Email
+                {t('emailLabel')}
               </label>
               <input
                 id="fp-email"
@@ -113,7 +115,7 @@ export default function ForgotPasswordPage() {
                 fontFamily: 'var(--font-syne)',
               }}
             >
-              {loading ? 'A enviar...' : 'Enviar link de recuperação'}
+              {loading ? t('forgot.submitting') : t('forgot.submit')}
             </button>
 
             <a
@@ -121,7 +123,7 @@ export default function ForgotPasswordPage() {
               className="block text-center text-xs mt-2"
               style={{ color: 'var(--aura-text3)' }}
             >
-              Voltar ao início de sessão
+              {t('forgot.backToLogin')}
             </a>
           </form>
         )}

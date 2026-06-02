@@ -2,32 +2,46 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { AuthControls } from '@/components/auth/AuthControls'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
+  const t = useTranslations('auth')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [ready, setReady] = useState(false)
+  const [checking, setChecking] = useState(true)
 
   useEffect(() => {
     const supabase = createClient()
+    let active = true
 
-    // Check if there's already an active recovery session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setReady(true)
-    })
-
-    // Listen for the PASSWORD_RECOVERY event (fires when Supabase detects the
-    // recovery token in the URL hash and establishes a temporary session)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') setReady(true)
+      if (active && event === 'PASSWORD_RECOVERY') {
+        setReady(true)
+        setChecking(false)
+      }
     })
 
-    return () => subscription.unsubscribe()
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (!active) return
+        if (session) setReady(true)
+        setChecking(false)
+      })
+      .catch(() => {
+        if (active) setChecking(false)
+      })
+
+    return () => {
+      active = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   async function handleUpdatePassword(e: React.FormEvent) {
@@ -35,7 +49,7 @@ export default function ResetPasswordPage() {
     setError(null)
 
     if (password !== confirmPassword) {
-      setError('As palavras-passe não coincidem.')
+      setError(t('reset.mismatch'))
       return
     }
 
@@ -74,31 +88,38 @@ export default function ResetPasswordPage() {
             Aura
           </h1>
           <p className="text-xs mt-1" style={{ color: 'var(--aura-text3)' }}>
-            Health & Performance Intelligence · FPF
+            {t('brandSubtitle')}
           </p>
         </div>
 
-        {!ready ? (
+        {checking ? (
+          <p
+            className="text-xs px-3 py-2 rounded-lg"
+            style={{ background: 'var(--aura-bg3)', color: 'var(--aura-text3)' }}
+          >
+            {t('reset.checking')}
+          </p>
+        ) : !ready ? (
           <div className="space-y-4">
             <p
               className="text-xs px-3 py-2 rounded-lg"
               style={{ background: 'var(--aura-danger-bg)', color: 'var(--aura-danger)' }}
             >
-              Link inválido ou expirado. Por favor, solicite um novo link de recuperação.
+              {t('reset.invalid')}
             </p>
             <a
               href="/forgot-password"
               className="block text-center text-xs"
               style={{ color: 'var(--aura-text3)' }}
             >
-              Solicitar novo link
+              {t('reset.requestNewLink')}
             </a>
           </div>
         ) : (
           <form onSubmit={handleUpdatePassword} className="space-y-4">
             <div>
               <label htmlFor="rp-password" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--aura-text2)' }}>
-                Nova palavra-passe
+                {t('reset.passwordLabel')}
               </label>
               <input
                 id="rp-password"
@@ -117,7 +138,7 @@ export default function ResetPasswordPage() {
             </div>
             <div>
               <label htmlFor="rp-confirm" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--aura-text2)' }}>
-                Confirmar palavra-passe
+                {t('reset.confirmPasswordLabel')}
               </label>
               <input
                 id="rp-confirm"
@@ -154,7 +175,7 @@ export default function ResetPasswordPage() {
                 fontFamily: 'var(--font-syne)',
               }}
             >
-              {loading ? 'A atualizar...' : 'Atualizar palavra-passe'}
+              {loading ? t('reset.submitting') : t('reset.submit')}
             </button>
           </form>
         )}

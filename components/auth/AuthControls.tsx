@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Sun, Moon } from 'lucide-react'
 import { useUiStore } from '@/stores/uiStore'
 
@@ -9,6 +10,7 @@ type Locale = (typeof LOCALES)[number]
 
 export function AuthControls() {
   const router = useRouter()
+  const t = useTranslations('auth')
   const theme = useUiStore((s) => s.theme)
   const toggleTheme = useUiStore((s) => s.toggleTheme)
   const locale = useUiStore((s) => s.locale)
@@ -42,7 +44,7 @@ export function AuthControls() {
         onClick={toggleTheme}
         className="p-1 rounded transition-colors"
         style={{ color: 'var(--aura-text3)', border: '1px solid var(--aura-border2)' }}
-        aria-label="Toggle theme"
+        aria-label={t('controls.toggleTheme')}
       >
         {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
       </button>

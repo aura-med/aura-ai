@@ -12,6 +12,36 @@
     "squad": "Squad",
     "org": "Organização"
   },
+  "auth": {
+    "brandSubtitle": "Health & Performance Intelligence · FPF",
+    "emailLabel": "Email",
+    "login": {
+      "passwordLabel": "Palavra-passe",
+      "forgotPassword": "Esqueceu a palavra-passe?",
+      "submit": "Entrar",
+      "submitting": "A entrar...",
+      "restrictedAccess": "Acesso restrito a staff clínico e técnico FPF"
+    },
+    "forgot": {
+      "success": "Verifique o seu email. Enviámos um link para repor a sua palavra-passe.",
+      "submit": "Enviar link de recuperação",
+      "submitting": "A enviar...",
+      "backToLogin": "Voltar ao início de sessão"
+    },
+    "reset": {
+      "checking": "A verificar o link de recuperação...",
+      "invalid": "Link inválido ou expirado. Por favor, solicite um novo link de recuperação.",
+      "requestNewLink": "Solicitar novo link",
+      "passwordLabel": "Nova palavra-passe",
+      "confirmPasswordLabel": "Confirmar palavra-passe",
+      "mismatch": "As palavras-passe não coincidem.",
+      "submit": "Atualizar palavra-passe",
+      "submitting": "A atualizar..."
+    },
+    "controls": {
+      "toggleTheme": "Alternar tema"
+    }
+  },
   "sidebar": {
     "sections": {
       "overview": "Visão Geral",

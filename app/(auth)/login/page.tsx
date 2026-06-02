@@ -2,10 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
+import { AuthControls } from '@/components/auth/AuthControls'
 
 export default function LoginPage() {
   const router = useRouter()
+  const t = useTranslations('auth')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -34,10 +37,10 @@ export default function LoginPage() {
       style={{ background: 'var(--aura-bg)' }}
     >
       <div
-        className="w-full max-w-sm rounded-2xl border p-8"
+        className="relative w-full max-w-sm rounded-2xl border p-8"
         style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
       >
-        {/* Logo */}
+        <AuthControls />
         <div className="text-center mb-8">
           <h1
             className="text-3xl font-bold"
@@ -51,14 +54,14 @@ export default function LoginPage() {
             Aura
           </h1>
           <p className="text-xs mt-1" style={{ color: 'var(--aura-text3)' }}>
-            Health & Performance Intelligence · FPF
+            {t('brandSubtitle')}
           </p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label htmlFor="login-email" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--aura-text2)' }}>
-              Email
+              {t('emailLabel')}
             </label>
             <input
               id="login-email"
@@ -76,9 +79,14 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label htmlFor="login-password" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--aura-text2)' }}>
-              Palavra-passe
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label htmlFor="login-password" className="block text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>
+                {t('login.passwordLabel')}
+              </label>
+              <a href="/forgot-password" className="text-xs" style={{ color: 'var(--aura-text3)' }}>
+                {t('login.forgotPassword')}
+              </a>
+            </div>
             <input
               id="login-password"
               type="password"
@@ -113,12 +121,12 @@ export default function LoginPage() {
               fontFamily: 'var(--font-syne)',
             }}
           >
-            {loading ? 'A entrar...' : 'Entrar'}
+            {loading ? t('login.submitting') : t('login.submit')}
           </button>
         </form>
 
         <p className="text-[11px] text-center mt-6" style={{ color: 'var(--aura-text3)' }}>
-          Acesso restrito a staff clínico e técnico FPF
+          {t('login.restrictedAccess')}
         </p>
       </div>
     </div>

@@ -16,6 +16,7 @@ interface UiState {
   squads: { id: string; name: string }[]
   setSquads: (squads: { id: string; name: string }[]) => void
   theme: 'dark' | 'light'
+  setTheme: (theme: 'dark' | 'light') => void
   toggleTheme: () => void
   locale: 'pt' | 'en' | 'es'
   setLocale: (locale: 'pt' | 'en' | 'es') => void
@@ -37,6 +38,7 @@ export const useUiStore = create<UiState>()(
       squads: [],
       setSquads: (squads) => set({ squads }),
       theme: 'dark',
+      setTheme: (theme) => set({ theme }),
       toggleTheme: () => set((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
       locale: 'pt',
       setLocale: (locale) => {

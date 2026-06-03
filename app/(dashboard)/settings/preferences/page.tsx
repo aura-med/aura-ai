@@ -22,7 +22,7 @@ const LOCALE_OPTIONS = [
 export default function PreferencesPage() {
   const t = useTranslations('settings.preferences')
   const tc = useTranslations('settings.common')
-  const { theme, toggleTheme, locale, setLocale } = useUiStore()
+  const { theme, setTheme, locale, setLocale } = useUiStore()
   const [prefs, setPrefs] = useState<Preferences>({ locale: 'pt', theme: 'dark', default_squad_id: null })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -68,7 +68,7 @@ export default function PreferencesPage() {
       if (!result.success) throw new Error(result.error)
 
       // Apply changes to UI store
-      if (prefs.theme !== theme) toggleTheme()
+      if (prefs.theme !== theme) setTheme(prefs.theme)
       if (prefs.locale !== locale) setLocale(prefs.locale)
 
       setSaved(true)

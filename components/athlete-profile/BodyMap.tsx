@@ -109,7 +109,7 @@ function Zone({
   )
 }
 
-interface SvgProps extends ZoneCtx {}
+type SvgProps = ZoneCtx
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Frontal (anterior) view

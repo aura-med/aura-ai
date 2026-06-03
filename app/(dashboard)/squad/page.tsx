@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { calcScore, riskColor, riskLabel } from '@/lib/scoring'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import { getAthleteList, type AthleteListDTO } from '@/lib/dal/athletes'

@@ -50,6 +50,7 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
   useEffect(() => {
     if (!open) return
     if (protocol) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setName(protocol.name ?? '')
       setKey(protocol.key ?? '')
       setTotalDays(protocol.total_days != null ? String(protocol.total_days) : '')

@@ -169,6 +169,8 @@ async function AthleteDetailContent({
 
   // ── Age + BMI ─────────────────────────────────────────────────────────────
   const age = athlete.date_of_birth
+    // Server-rendered profile age is intentionally evaluated at request time.
+    // eslint-disable-next-line react-hooks/purity
     ? Math.floor((Date.now() - new Date(athlete.date_of_birth).getTime()) / (1000 * 60 * 60 * 24 * 365.25))
     : null
 

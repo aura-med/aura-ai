@@ -393,27 +393,27 @@ export function RecordInjuryModal({
   // ── Load OSIICS codes on step 2 ───────────────────────────────────────────
   useEffect(() => {
     if (step !== 'injury' || osiicsCodes.length > 0) return
-    setLoadingCodes(true)
-    const supabase = createClient()
-    supabase
-      .from('dim_osiics_codes')
-      .select(
-        'code, body_region, injury_type, diagnosis, severity_label, expected_recovery_min, expected_recovery_max',
-      )
-      .order('code')
-      .then(({ data }) => {
-        setOsiicsCodes(data ?? [])
-        setLoadingCodes(false)
-      })
+    void (async () => {
+      setLoadingCodes(true)
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('dim_osiics_codes')
+        .select(
+          'code, body_region, injury_type, diagnosis, severity_label, expected_recovery_min, expected_recovery_max',
+        )
+        .order('code')
+      setOsiicsCodes(data ?? [])
+      setLoadingCodes(false)
+    })()
   }, [step, osiicsCodes.length])
 
   // ── Feature 2: recurrence check ───────────────────────────────────────────
   useEffect(() => {
-    if (!athleteId || (!bodyRegion && !selectedCode)) {
-      setRecurrenceWarning(false)
-      return
-    }
     const run = async () => {
+      if (!athleteId || (!bodyRegion && !selectedCode)) {
+        setRecurrenceWarning(false)
+        return
+      }
       const supabase = createClient()
       const cutoff = new Date()
       cutoff.setFullYear(cutoff.getFullYear() - 1)
@@ -453,15 +453,18 @@ export function RecordInjuryModal({
 
   // ── When protocol changes, populate sandbox ───────────────────────────────
   useEffect(() => {
-    const proto = protocols.find((p) => p.id === selectedProtocol)
-    if (!proto?.phases?.length) {
-      setCustomPhases([])
-      setSandboxOpen(false)
-      return
+    const apply = () => {
+      const proto = protocols.find((p) => p.id === selectedProtocol)
+      if (!proto?.phases?.length) {
+        setCustomPhases([])
+        setSandboxOpen(false)
+        return
+      }
+      const phases = (proto.phases as RehabPhase[]).map(toEditablePhase)
+      setCustomPhases(phases)
+      setSandboxOpen(true)
     }
-    const phases = (proto.phases as RehabPhase[]).map(toEditablePhase)
-    setCustomPhases(phases)
-    setSandboxOpen(true)
+    apply()
   }, [selectedProtocol, protocols])
 
   // ── Derived: OSIICS cascade filters ──────────────────────────────────────

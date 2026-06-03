@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { FileText, Stethoscope, Brain, Plus, ChevronDown, ChevronRight, Shield, Edit2, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import type {
@@ -317,17 +317,20 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
   const [editScat6,       setEditScat6]       = useState<Scat6Assessment | null>(null)
 
   // ── Fetch consultations ────────────────────────────────────────────────────
-  const fetchConsultations = useCallback(async () => {
-    setLoadingC(true)
-    try {
-      const res = await fetch(`/api/athletes/${profile.id}/consultations`)
-      if (res.ok) setConsultations(await res.json())
-    } finally {
-      setLoadingC(false)
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      setLoadingC(true)
+      try {
+        const res = await fetch(`/api/athletes/${profile.id}/consultations`)
+        if (!cancelled && res.ok) setConsultations(await res.json())
+      } finally {
+        if (!cancelled) setLoadingC(false)
+      }
     }
+    load()
+    return () => { cancelled = true }
   }, [profile.id])
-
-  useEffect(() => { fetchConsultations() }, [fetchConsultations])
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   function handleSoapSaved(c: MedicalConsultation) {

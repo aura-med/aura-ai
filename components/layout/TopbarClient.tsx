@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { Menu } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useTranslations } from 'next-intl'
 import {
   Select,
   SelectContent,
@@ -30,14 +29,6 @@ const NotificationCenter = dynamic(
     ),
   }
 )
-
-type LocaleValue = 'pt' | 'en' | 'es'
-
-const LOCALES: { value: LocaleValue; label: string; flag: string }[] = [
-  { value: 'pt', label: 'PT', flag: 'PT' },
-  { value: 'en', label: 'EN', flag: 'EN' },
-  { value: 'es', label: 'ES', flag: 'ES' },
-]
 
 export function TopbarClient({ dto }: { dto: TopbarDTO }) {
   const { selectedSquadId, setSquad, setOrg, setSquads, setTheme, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()

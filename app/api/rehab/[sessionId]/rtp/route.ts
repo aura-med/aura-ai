@@ -4,28 +4,46 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { asString, firstRecord } from '@/lib/data/records'
 import { createClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/service'
+import { verifyApiViewerFromRequest } from '@/lib/api/auth'
+import { errorFromUnknown, readJsonBody } from '@/lib/api/errors'
+import { RtpCriteriaSchema } from '@/lib/schemas/rehab'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const { sessionId } = await params
-  const supabase = await createClient()
+  const apiViewer = request.headers.get('authorization')
+    ? await verifyApiViewerFromRequest(request).catch((error) => error)
+    : null
+  if (apiViewer instanceof Error) return errorFromUnknown(apiViewer)
+  const apiClient = apiViewer ? createServiceRoleClient() : null
+  if (apiViewer && !apiClient) {
+    return NextResponse.json({ error: 'Supabase service role is not configured' }, { status: 500 })
+  }
+  const supabase = apiClient ?? await createClient()
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
+  const { data: { user }, error: authError } = apiViewer
+    ? { data: { user: { id: apiViewer.userId } }, error: null }
+    : await supabase.auth.getUser()
+  if (authError || !user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const body = await request.json()
+  const body = await readJsonBody(request).catch((error) => error)
+  if (body instanceof Error) return errorFromUnknown(body)
   const { rtp_criteria } = body as { rtp_criteria: Array<{ label: string; done: boolean }> }
 
-  if (!Array.isArray(rtp_criteria)) {
+  const validation = RtpCriteriaSchema.safeParse(rtp_criteria)
+  if (!validation.success) {
     return NextResponse.json({ error: 'Invalid rtp_criteria' }, { status: 400 })
   }
 
   const [{ data: profile }, { data: session, error: sessionError }] = await Promise.all([
-    supabase.from('profiles').select('org_id').eq('id', user.id).single(),
+    apiViewer
+      ? Promise.resolve({ data: { org_id: apiViewer.orgId } })
+      : supabase.from('profiles').select('org_id').eq('id', user.id).single(),
     supabase
       .from('rehab_sessions')
       .select('id, athletes(org_id)')
@@ -48,7 +66,7 @@ export async function POST(
 
   const { error: updateError } = await supabase
     .from('rehab_sessions')
-    .update({ rtp_criteria, updated_at: new Date().toISOString() })
+    .update({ rtp_criteria: validation.data, updated_at: new Date().toISOString() })
     .eq('id', sessionId)
 
   if (updateError) {

@@ -17,8 +17,10 @@ test('notification center exposes dialog and escape close behavior', () => {
 
 test('topbar select triggers expose accessible names', () => {
   const source = readFileSync('components/layout/TopbarClient.tsx', 'utf8')
+  const userMenu = readFileSync('components/layout/UserMenuDropdown.tsx', 'utf8')
   assert.match(source, /aria-label="Choose squad"/)
-  assert.match(source, /aria-label="Choose language"/)
+  assert.match(userMenu, /aria-label="Choose language"/)
+  assert.match(source, /<ThemeToggle \/>/)
 })
 
 test('readiness rows render text labels in addition to colors', () => {

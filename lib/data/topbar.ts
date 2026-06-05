@@ -14,9 +14,11 @@ function notificationStatus(type: string) {
 
 export async function getTopbarDTO(): Promise<TopbarDTO> {
   const viewer = await getViewerContext()
-  if (!viewer.org?.id) return { ...viewer, notifications: [] }
-
   const supabase = await createClient()
+  const themePreference = await getThemePreference(supabase, viewer.userId)
+
+  if (!viewer.org?.id) return { ...viewer, notifications: [], themePreference }
+
   const { data } = await supabase
     .from('notifications')
     .select('id, type, title, body, read_by, created_at')
@@ -37,5 +39,21 @@ export async function getTopbarDTO(): Promise<TopbarDTO> {
     }
   }).filter((notification) => notification.id)
 
-  return { ...viewer, notifications }
+  return { ...viewer, notifications, themePreference }
+}
+
+async function getThemePreference(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string | null,
+): Promise<'dark' | 'light' | null> {
+  if (!userId) return null
+
+  const { data } = await supabase
+    .from('user_preferences')
+    .select('theme')
+    .eq('user_id', userId)
+    .limit(1)
+
+  const theme = asString(asRecordArray(data)[0]?.theme)
+  return theme === 'dark' || theme === 'light' ? theme : null
 }

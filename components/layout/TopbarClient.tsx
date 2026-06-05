@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { Menu } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
@@ -11,6 +11,7 @@ import {
   SelectItem,
   SelectTrigger,
 } from '@/components/ui/select'
+import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { UserMenuDropdown } from '@/components/layout/UserMenuDropdown'
 import { useUiStore } from '@/stores/uiStore'
 import { getSquadIdParam } from '@/lib/squad-url'
@@ -21,7 +22,8 @@ function formatDate(): string {
 }
 
 export function TopbarClient({ dto }: { dto: TopbarDTO }) {
-  const { selectedSquadId, setSquad, setOrg, setSquads, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
+  const { selectedSquadId, setSquad, setOrg, setSquads, setTheme, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
+  const appliedThemePreference = useRef<'dark' | 'light' | null>(null)
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -34,6 +36,13 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
   useEffect(() => {
     setSquads(squads)
   }, [squads, setSquads])
+
+  useEffect(() => {
+    if (dto.themePreference && dto.themePreference !== appliedThemePreference.current) {
+      appliedThemePreference.current = dto.themePreference
+      setTheme(dto.themePreference)
+    }
+  }, [dto.themePreference, setTheme])
 
   const selectedFromUrl = getSquadIdParam(searchParams)
   const validSquadIds = useMemo(() => new Set(squads.map((s) => s.id)), [squads])
@@ -153,6 +162,7 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
           userId={dto.userId}
           initialNotifications={dto.notifications}
         />
+        <ThemeToggle />
         <UserMenuDropdown user={dto.user} role={dto.role} />
       </div>
     </header>

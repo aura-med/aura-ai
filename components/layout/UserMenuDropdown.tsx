@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { ChevronDown, LogOut, Moon, Settings, Sun, UserCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { saveThemePreference } from '@/lib/actions/preferences'
 import { useUiStore } from '@/stores/uiStore'
 import { createClient } from '@/lib/supabase/client'
 
@@ -20,9 +21,10 @@ const LOCALES = [
 
 export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
   const [open, setOpen] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const ref = useRef<HTMLDivElement>(null)
   const router = useRouter()
-  const { locale, setLocale, theme, toggleTheme } = useUiStore()
+  const { locale, setLocale, theme, setTheme } = useUiStore()
 
   const displayName = user?.fullName ?? user?.email ?? 'Utilizador'
 
@@ -44,6 +46,18 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
   function handleLocale(value: 'pt' | 'en' | 'es') {
     setLocale(value)
     router.refresh()
+  }
+
+  function handleThemeToggle() {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(nextTheme)
+
+    startTransition(async () => {
+      const result = await saveThemePreference(nextTheme)
+      if (!result.success) {
+        console.warn(`Theme preference was not saved: ${result.error}`)
+      }
+    })
   }
 
   async function handleSignOut() {
@@ -136,7 +150,10 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
                 Tema
               </span>
               <button
-                onClick={toggleTheme}
+                aria-label="Toggle theme"
+                aria-pressed={theme === 'light'}
+                disabled={isPending}
+                onClick={handleThemeToggle}
                 type="button"
                 className="flex items-center gap-1.5 rounded px-2 py-0.5 text-xs transition-colors hover:bg-white/5"
                 style={{ color: 'var(--aura-text2)' }}

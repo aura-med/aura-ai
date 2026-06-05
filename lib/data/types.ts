@@ -36,6 +36,7 @@ export interface NotificationDTO {
 
 export interface TopbarDTO extends ViewerContextDTO {
   notifications: NotificationDTO[]
+  themePreference: 'dark' | 'light' | null
 }
 
 export interface InputAthleteDTO extends SelectOptionDTO {

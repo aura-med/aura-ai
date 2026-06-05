@@ -10,7 +10,7 @@ export async function GET(_req: Request, { params }: Ctx) {
 
   const { data, error } = await supabase
     .from('rehab_sessions')
-    .select('*')
+    .select('id, athlete_id, session_date, session_type, duration_minutes, description, clinician_name, notes, created_at, updated_at')
     .eq('athlete_id', id)
     .order('session_date', { ascending: false })
     .limit(200)
@@ -36,7 +36,7 @@ export async function POST(req: Request, { params }: Ctx) {
       clinician_name:   body.clinician_name ?? null,
       notes:            body.notes ?? null,
     })
-    .select()
+    .select('id, athlete_id, session_date, session_type, duration_minutes, description, clinician_name, notes, created_at, updated_at')
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -65,7 +65,7 @@ export async function PATCH(req: Request, { params }: Ctx) {
     })
     .eq('id', sessionId)
     .eq('athlete_id', id)
-    .select()
+    .select('id, athlete_id, session_date, session_type, duration_minutes, description, clinician_name, notes, created_at, updated_at')
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

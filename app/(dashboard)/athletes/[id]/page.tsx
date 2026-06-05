@@ -42,23 +42,41 @@ async function AthleteDetailContent({
   const squadId   = getSquadIdParam(resolvedSearch)
   const activeTab = parseTab(resolvedSearch.tab)
   const supabase  = await createClient()
+  const injuryEventColumns = 'id, injury_date, return_date, diagnosis, location, severity, is_recurrence'
 
   // ── Core athlete data ──────────────────────────────────────────────────────
   const { data: athlete, error } = await supabase
     .from('athletes')
     .select(`
       id, name, shirt_number, photo_url, position, date_of_birth, club, status,
-      injury_events (id, injury_date, return_date, diagnosis, location, severity, is_recurrence),
-      score_history (score_date, total_score, acwr_partial, hrv_partial, fatigue_partial, sleep_partial, tqr_partial, history_partial, stress_partial, decel_partial, confidence, days_since_match),
-      wellness_checkins (checkin_date, fatigue, sleep_quality, sleep_hours, hrv_ms, tqr)
+      score_history (score_date, total_score, acwr_partial, hrv_partial, fatigue_partial, sleep_partial, tqr_partial, history_partial, stress_partial, decel_partial, confidence, days_since_match)
     `)
     .eq('id', id)
-    .order('injury_date',  { referencedTable: 'injury_events',    ascending: false })
     .order('score_date',   { referencedTable: 'score_history',    ascending: false })
-    .order('checkin_date', { referencedTable: 'wellness_checkins', ascending: false })
+    .limit(30, { referencedTable: 'score_history' })
     .single()
 
   if (error || !athlete) notFound()
+
+  const [activeInjuriesResult, resolvedInjuriesResult] = await Promise.all([
+    supabase
+      .from('injury_events')
+      .select(injuryEventColumns)
+      .eq('athlete_id', id)
+      .is('return_date', null)
+      .order('injury_date', { ascending: false }),
+    supabase
+      .from('injury_events')
+      .select(injuryEventColumns)
+      .eq('athlete_id', id)
+      .not('return_date', 'is', null)
+      .order('injury_date', { ascending: false })
+      .limit(50),
+  ])
+
+  if (activeInjuriesResult.error || resolvedInjuriesResult.error) {
+    throw new Error('Failed to load athlete injury events')
+  }
 
   // ── Medical history ────────────────────────────────────────────────────────
   const { data: medicalHistory } = await supabase
@@ -179,7 +197,12 @@ async function AthleteDetailContent({
     : null
 
   // ── Injury events → InjuryEventSummary ───────────────────────────────────
-  const injuryEvents: InjuryEventSummary[] = (athlete.injury_events ?? []).map((inj) => ({
+  const injuryEvents: InjuryEventSummary[] = [
+    ...(activeInjuriesResult.data ?? []),
+    ...(resolvedInjuriesResult.data ?? []),
+  ]
+    .sort((a, b) => new Date(b.injury_date).getTime() - new Date(a.injury_date).getTime())
+    .map((inj) => ({
     id:          inj.id,
     injury_date: inj.injury_date,
     return_date: inj.return_date ?? null,
@@ -187,7 +210,7 @@ async function AthleteDetailContent({
     location:    inj.location ?? null,
     severity:    inj.severity ?? null,
     is_active:   !inj.return_date,
-  }))
+    }))
 
   // ── Assemble profile ──────────────────────────────────────────────────────
   const profile: AthleteProfileData = {

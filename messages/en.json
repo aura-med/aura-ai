@@ -259,7 +259,7 @@
     "markAllRead": "Mark all as read",
     "empty": "No notifications",
     "loading": "Loading...",
-    "last50": "Last 50 notifications",
+    "last10": "Last 10 notifications",
     "types": {
       "score_critical": "Critical Score",
       "score_high": "High Score",

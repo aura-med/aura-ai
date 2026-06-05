@@ -24,7 +24,7 @@ export async function getNotifications(orgId: string): Promise<Notification[]> {
     .select('*')
     .eq('org_id', orgId)
     .order('created_at', { ascending: false })
-    .limit(50)
+    .limit(10)
   if (error) throw error
   return (data ?? []) as Notification[]
 }

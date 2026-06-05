@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { FileText, Stethoscope, Brain, Plus, ChevronDown, ChevronRight, Shield, Edit2, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import type {
@@ -10,10 +11,11 @@ import type {
   Scat6Assessment,
   MedicalHistory,
 } from '@/types/athlete-profile'
-import { ConsultationModal }    from './ConsultationModal'
-import { MedicalHistoryModal }  from './MedicalHistoryModal'
-import { EmdModal }             from './EmdModal'
-import { Scat6Modal }           from './Scat6Modal'
+
+const ConsultationModal = dynamic(() => import('./ConsultationModal').then((mod) => mod.ConsultationModal))
+const MedicalHistoryModal = dynamic(() => import('./MedicalHistoryModal').then((mod) => mod.MedicalHistoryModal))
+const EmdModal = dynamic(() => import('./EmdModal').then((mod) => mod.EmdModal))
+const Scat6Modal = dynamic(() => import('./Scat6Modal').then((mod) => mod.Scat6Modal))
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

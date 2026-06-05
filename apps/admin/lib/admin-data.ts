@@ -3,6 +3,7 @@ import { daysSince, pct } from '@/lib/utils'
 import { recordAudit, requirePlatformAdmin } from '@/lib/admin-auth'
 
 export const PAGE_SIZE = 25
+const ADMIN_LIST_PAGE_SIZE = 1000
 
 type JsonMap = Record<string, unknown>
 
@@ -25,14 +26,6 @@ interface ProfileRow {
   created_at: string
 }
 
-interface AthleteAggregateRow {
-  id: string
-  org_id: string | null
-  active: boolean | null
-  consent_date: string | null
-  created_at: string
-}
-
 interface SupportSessionRow {
   id: string
   actor_user_id: string
@@ -45,8 +38,198 @@ interface SupportSessionRow {
   ended_at: string | null
 }
 
+interface AdminOrgRow extends OrganizationRow {
+  users_count: number
+  athletes_count: number
+  missing_consent_count: number
+  last_data_at: string | null
+  stale_days: number | null
+}
+
+interface AdminOrgFreshnessRow extends OrganizationRow {
+  missing_consent_count: number
+  last_data_at: string | null
+  stale_days: number | null
+}
+
+interface OrganizationSummary {
+  total: number
+  active: number
+  suspended: number
+  missingConsent: number
+}
+
 async function expireSupportSessions() {
   await createAdminClient().rpc('expire_support_sessions')
+}
+
+function normalizedPage(rawPage: number | undefined) {
+  const requestedPage = Number(rawPage)
+  return Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
+}
+
+function countFromResult(result: { count: number | null; error: { message: string } | null }, label: string) {
+  if (result.error) throw new Error(`Failed to load ${label}: ${result.error.message}`)
+  return result.count ?? 0
+}
+
+function assertNoError(result: { error?: { message: string } | null }, label: string) {
+  if (result.error) throw new Error(`Failed to load ${label}: ${result.error.message}`)
+}
+
+async function listAllOrganizations(service: ReturnType<typeof createAdminClient>) {
+  const orgs: OrganizationRow[] = []
+  let from = 0
+
+  while (true) {
+    const result = await service
+      .from('organizations')
+      .select('id, name, type, status, plan, modules, created_at, updated_at')
+      .order('name')
+      .order('id')
+      .range(from, from + ADMIN_LIST_PAGE_SIZE - 1)
+
+    if (result.error) throw new Error(`Failed to load organizations: ${result.error.message}`)
+
+    const page = (result.data ?? []) as OrganizationRow[]
+    orgs.push(...page)
+    if (page.length < ADMIN_LIST_PAGE_SIZE) break
+    from += ADMIN_LIST_PAGE_SIZE
+  }
+
+  return orgs
+}
+
+async function fetchPagedRows<T>(
+  label: string,
+  loadPage: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
+) {
+  const rows: T[] = []
+  let from = 0
+
+  while (true) {
+    const result = await loadPage(from, from + ADMIN_LIST_PAGE_SIZE - 1)
+    if (result.error) throw new Error(`Failed to load ${label}: ${result.error.message}`)
+
+    const page = result.data ?? []
+    rows.push(...page)
+    if (page.length < ADMIN_LIST_PAGE_SIZE) break
+    from += ADMIN_LIST_PAGE_SIZE
+  }
+
+  return rows
+}
+
+function joinedAthleteOrgId(row: { athletes?: { org_id?: string | null } | { org_id?: string | null }[] | null }) {
+  const athlete = Array.isArray(row.athletes) ? row.athletes[0] : row.athletes
+  return athlete?.org_id ?? null
+}
+
+async function getOrgOperationalRows(
+  service: ReturnType<typeof createAdminClient>,
+  orgs: OrganizationRow[],
+): Promise<AdminOrgRow[]> {
+  if (!orgs.length) return []
+
+  const orgIds = orgs.map((org) => org.id)
+  const [profiles, athletes, wellness] = await Promise.all([
+    fetchPagedRows<{ id: string; org_id: string | null }>('organization profile rows', (from, to) =>
+      service.from('profiles').select('id, org_id').in('org_id', orgIds).order('id').range(from, to)
+    ),
+    fetchPagedRows<{ id: string; org_id: string | null; active: boolean | null; consent_date: string | null }>('organization athlete rows', (from, to) =>
+      service.from('athletes').select('id, org_id, active, consent_date').in('org_id', orgIds).order('id').range(from, to)
+    ),
+    fetchPagedRows<{ id: string; created_at: string; athletes?: { org_id?: string | null } | { org_id?: string | null }[] | null }>('latest organization wellness rows', (from, to) =>
+      service
+        .from('wellness_checkins')
+        .select('id, created_at, athletes!inner(org_id)')
+        .in('athletes.org_id', orgIds)
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, to)
+    ),
+  ])
+
+  const usersByOrg = new Map<string, number>()
+  const athletesByOrg = new Map<string, number>()
+  const missingConsentByOrg = new Map<string, number>()
+  const latestWellnessByOrg = new Map<string, string>()
+
+  for (const profile of profiles) {
+    if (profile.org_id) usersByOrg.set(profile.org_id, (usersByOrg.get(profile.org_id) ?? 0) + 1)
+  }
+
+  for (const athlete of athletes) {
+    if (!athlete.org_id) continue
+    athletesByOrg.set(athlete.org_id, (athletesByOrg.get(athlete.org_id) ?? 0) + 1)
+    if (athlete.active && !athlete.consent_date) {
+      missingConsentByOrg.set(athlete.org_id, (missingConsentByOrg.get(athlete.org_id) ?? 0) + 1)
+    }
+  }
+
+  for (const row of wellness) {
+    const orgId = joinedAthleteOrgId(row)
+    if (orgId && !latestWellnessByOrg.has(orgId)) latestWellnessByOrg.set(orgId, row.created_at)
+  }
+
+  return orgs.map((org) => {
+    const latestWellness = latestWellnessByOrg.get(org.id) ?? null
+    return {
+      ...org,
+      users_count: usersByOrg.get(org.id) ?? 0,
+      athletes_count: athletesByOrg.get(org.id) ?? 0,
+      missing_consent_count: missingConsentByOrg.get(org.id) ?? 0,
+      last_data_at: latestWellness,
+      stale_days: daysSince(latestWellness),
+    }
+  })
+}
+
+async function getOrgFreshnessRows(
+  service: ReturnType<typeof createAdminClient>,
+  orgs: OrganizationRow[],
+): Promise<AdminOrgFreshnessRow[]> {
+  if (!orgs.length) return []
+
+  const orgIds = orgs.map((org) => org.id)
+  const [athletes, wellness] = await Promise.all([
+    fetchPagedRows<{ id: string; org_id: string | null; active: boolean | null; consent_date: string | null }>('organization consent rows', (from, to) =>
+      service.from('athletes').select('id, org_id, active, consent_date').in('org_id', orgIds).order('id').range(from, to)
+    ),
+    fetchPagedRows<{ id: string; created_at: string; athletes?: { org_id?: string | null } | { org_id?: string | null }[] | null }>('latest organization wellness rows', (from, to) =>
+      service
+        .from('wellness_checkins')
+        .select('id, created_at, athletes!inner(org_id)')
+        .in('athletes.org_id', orgIds)
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, to)
+    ),
+  ])
+
+  const missingConsentByOrg = new Map<string, number>()
+  const latestWellnessByOrg = new Map<string, string>()
+
+  for (const athlete of athletes) {
+    if (athlete.org_id && athlete.active && !athlete.consent_date) {
+      missingConsentByOrg.set(athlete.org_id, (missingConsentByOrg.get(athlete.org_id) ?? 0) + 1)
+    }
+  }
+
+  for (const row of wellness) {
+    const orgId = joinedAthleteOrgId(row)
+    if (orgId && !latestWellnessByOrg.has(orgId)) latestWellnessByOrg.set(orgId, row.created_at)
+  }
+
+  return orgs.map((org) => {
+    const latestWellness = latestWellnessByOrg.get(org.id) ?? null
+    return {
+      ...org,
+      missing_consent_count: missingConsentByOrg.get(org.id) ?? 0,
+      last_data_at: latestWellness,
+      stale_days: daysSince(latestWellness),
+    }
+  })
 }
 
 export async function getActiveSupportSession(userId: string) {
@@ -82,76 +265,66 @@ export async function getPlatformAdminHome() {
   const activeSupportSession = await getActiveSupportSession(context.user.id)
 
   const [
-    orgsResult,
-    profilesResult,
-    athletesResult,
-    wellnessResult,
-    scoreResult,
-    notificationsResult,
+    orgs,
+    orgCountResult,
+    activeOrgCountResult,
+    profilesCountResult,
+    athletesCountResult,
+    missingConsentResult,
+    highRiskScoreResult,
+    recentNotificationsResult,
+    notificationReadSampleResult,
     adminsResult,
     auditResult,
     authUsersResult,
   ] = await Promise.all([
-    service.from('organizations').select('id, name, type, status, plan, modules, created_at, updated_at').order('name'),
-    service.from('profiles').select('id, org_id, role, full_name, created_at'),
-    service.from('athletes').select('id, org_id, active, consent_date, created_at'),
-    service.from('wellness_checkins').select('id, athlete_id, checkin_date, created_at').order('created_at', { ascending: false }).limit(2500),
-    service.from('score_history').select('id, athlete_id, score_date, total_score, confidence, created_at').order('created_at', { ascending: false }).limit(2500),
-    service.from('notifications').select('id, org_id, type, read_by, created_at').order('created_at', { ascending: false }).limit(1000),
+    listAllOrganizations(service),
+    service.from('organizations').select('id', { count: 'exact', head: true }),
+    service.from('organizations').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+    service.from('profiles').select('id', { count: 'exact', head: true }),
+    service.from('athletes').select('id', { count: 'exact', head: true }),
+    service.from('athletes').select('id', { count: 'exact', head: true }).eq('active', true).is('consent_date', null),
+    service.from('score_history').select('id', { count: 'exact', head: true }).gte('total_score', 0.65),
+    service.from('notifications').select('id, org_id, type, created_at').order('created_at', { ascending: false }).limit(8),
+    service.from('notifications').select('read_by').order('created_at', { ascending: false }).limit(1000),
     service.from('platform_admins').select('user_id, level, active, created_at, last_seen_at'),
     service.from('platform_audit_logs').select('id, actor_user_id, event_type, target_type, org_id, created_at').order('created_at', { ascending: false }).limit(10),
     service.auth.admin.listUsers({ page: 1, perPage: 1000 }),
   ])
 
-  const orgs = (orgsResult.data ?? []) as OrganizationRow[]
-  const profiles = (profilesResult.data ?? []) as ProfileRow[]
-  const athletes = (athletesResult.data ?? []) as AthleteAggregateRow[]
-  const wellness = wellnessResult.data ?? []
-  const scores = scoreResult.data ?? []
-  const notifications = notificationsResult.data ?? []
+  assertNoError(recentNotificationsResult, 'recent notifications')
+  assertNoError(notificationReadSampleResult, 'notification read sample')
+  assertNoError(adminsResult, 'platform admins')
+  assertNoError(auditResult, 'audit logs')
+  assertNoError(authUsersResult, 'auth users')
+
+  const recentNotifications = recentNotificationsResult.data ?? []
+  const notificationReadSample = notificationReadSampleResult.data ?? []
   const authUsers = authUsersResult.data?.users ?? []
   const pendingInvites = authUsers.filter((user) => user.invited_at && !user.last_sign_in_at).length
   const activeUsers = authUsers.filter((user) => daysSince(user.last_sign_in_at) !== null && (daysSince(user.last_sign_in_at) ?? 99) <= 7).length
 
-  const athleteOrgById = new Map(athletes.map((athlete) => [athlete.id, athlete.org_id]))
-  const latestWellnessByOrg = new Map<string, string>()
-  wellness.forEach((row) => {
-    const orgId = athleteOrgById.get(row.athlete_id)
-    if (orgId && !latestWellnessByOrg.has(orgId)) latestWellnessByOrg.set(orgId, row.created_at)
-  })
-
-  const orgRows = orgs.map((org) => {
-    const orgProfiles = profiles.filter((profile) => profile.org_id === org.id)
-    const orgAthletes = athletes.filter((athlete) => athlete.org_id === org.id)
-    const missingConsent = orgAthletes.filter((athlete) => athlete.active && !athlete.consent_date).length
-    const latestWellness = latestWellnessByOrg.get(org.id) ?? null
-    return {
-      ...org,
-      users_count: orgProfiles.length,
-      athletes_count: orgAthletes.length,
-      missing_consent_count: missingConsent,
-      last_data_at: latestWellness,
-      stale_days: daysSince(latestWellness),
-    }
-  })
+  const orgRows = await getOrgFreshnessRows(service, orgs)
 
   const staleOrgs = orgRows.filter((org) => org.stale_days === null || org.stale_days > 3).length
-  const missingConsent = athletes.filter((athlete) => athlete.active && !athlete.consent_date).length
   const notificationReadRate = pct(
-    notifications.filter((notification) => Array.isArray(notification.read_by) && notification.read_by.length > 0).length,
-    notifications.length
+    notificationReadSample.filter((notification) => Array.isArray(notification.read_by) && notification.read_by.length > 0).length,
+    notificationReadSample.length
   )
-  const highRiskScores = scores.filter((score) => Number(score.total_score) >= 0.65).length
+  const users = countFromResult(profilesCountResult, 'profile count')
+  const athletes = countFromResult(athletesCountResult, 'athlete count')
+  const missingConsent = countFromResult(missingConsentResult, 'missing consent count')
+  const highRiskScores = countFromResult(highRiskScoreResult, 'high-risk score count')
 
   return {
     context,
     activeSupportSession,
     metrics: {
-      organizations: orgs.length,
-      activeOrganizations: orgs.filter((org) => org.status === 'active').length,
-      users: profiles.length,
+      organizations: countFromResult(orgCountResult, 'organization count'),
+      activeOrganizations: countFromResult(activeOrgCountResult, 'active organization count'),
+      users,
       activeUsers,
-      athletes: athletes.length,
+      athletes,
       missingConsent,
       staleOrgs,
       pendingInvites,
@@ -161,8 +334,7 @@ export async function getPlatformAdminHome() {
     },
     orgRows,
     recentAudit: auditResult.data ?? [],
-    recentNotifications: notifications.slice(0, 8),
-    scoreRows: scores,
+    recentNotifications,
   }
 }
 
@@ -173,27 +345,56 @@ export interface OrgsPageParams {
 }
 
 export async function getOrganizationsPageData(params: OrgsPageParams = {}) {
-  const data = await getPlatformAdminHome()
-  const page = Math.max(1, params.page ?? 1)
+  const context = await requirePlatformAdmin()
+  const service = createAdminClient()
+  const activeSupportSession = await getActiveSupportSession(context.user.id)
+  const page = normalizedPage(params.page)
+  const from = (page - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
 
-  let orgs = data.orgRows
+  let orgQuery = service
+    .from('organizations')
+    .select('id, name, type, status, plan, modules, created_at, updated_at', { count: 'exact' })
+    .order('name')
+    .order('id')
+    .range(from, to)
 
-  if (params.q) {
-    const q = params.q.toLowerCase()
-    orgs = orgs.filter((o) => o.name.toLowerCase().includes(q))
+  if (params.q) orgQuery = orgQuery.ilike('name', `%${params.q}%`)
+  if (params.status) orgQuery = orgQuery.eq('status', params.status)
+
+  const [
+    orgsResult,
+    totalOrgsResult,
+    activeOrgsResult,
+    suspendedOrgsResult,
+    missingConsentResult,
+  ] = await Promise.all([
+    orgQuery,
+    service.from('organizations').select('id', { count: 'exact', head: true }),
+    service.from('organizations').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+    service.from('organizations').select('id', { count: 'exact', head: true }).eq('status', 'suspended'),
+    service.from('athletes').select('id', { count: 'exact', head: true }).eq('active', true).is('consent_date', null),
+  ])
+
+  if (orgsResult.error) throw new Error(`Failed to load organizations: ${orgsResult.error.message}`)
+
+  const pageOrgs = (orgsResult.data ?? []) as OrganizationRow[]
+  const orgRows = await getOrgOperationalRows(service, pageOrgs)
+
+  const summary: OrganizationSummary = {
+    total: countFromResult(totalOrgsResult, 'organization count'),
+    active: countFromResult(activeOrgsResult, 'active organization count'),
+    suspended: countFromResult(suspendedOrgsResult, 'suspended organization count'),
+    missingConsent: countFromResult(missingConsentResult, 'missing consent count'),
   }
-  if (params.status) orgs = orgs.filter((o) => o.status === params.status)
-
-  const total = orgs.length
-  const paginated = orgs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   return {
-    context:              data.context,
-    activeSupportSession: data.activeSupportSession,
-    orgRows:              paginated,
-    total,
+    context,
+    activeSupportSession,
+    orgRows,
+    total:                orgsResult.count ?? pageOrgs.length,
     page,
-    allOrgRows:           data.orgRows,
+    summary,
   }
 }
 
@@ -208,7 +409,8 @@ export async function getUsersPageData(params: UsersPageParams = {}) {
   const context = await requirePlatformAdmin()
   const service = createAdminClient()
   const activeSupportSession = await getActiveSupportSession(context.user.id)
-  const page = Math.max(1, params.page ?? 1)
+  const requestedPage = Number(params.page)
+  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
 
   const [profilesResult, orgsResult, authUsersResult] = await Promise.all([
     service.from('profiles').select('id, org_id, role, full_name, created_at').order('full_name'),
@@ -274,27 +476,42 @@ export async function getSecurityPageData(params: SecurityPageParams = {}) {
   const context = await requirePlatformAdmin()
   const service = createAdminClient()
   const activeSupportSession = await getActiveSupportSession(context.user.id)
-  const page = Math.max(1, params.page ?? 1)
+  const requestedPage = Number(params.page)
+  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
+  const from = (page - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
+
+  let auditQuery = service
+    .from('platform_audit_logs')
+    .select('id, actor_user_id, event_type, target_type, target_id, support_session_id, org_id, created_at', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(from, to)
+
+  if (params.type) auditQuery = auditQuery.ilike('event_type', `%${params.type}%`)
 
   const [auditResult, sessionsResult, adminsResult, orgsResult, authUsersResult] = await Promise.all([
-    service.from('platform_audit_logs').select('*').order('created_at', { ascending: false }).limit(500),
-    service.from('support_sessions').select('*').order('started_at', { ascending: false }).limit(50),
+    auditQuery,
+    service
+      .from('support_sessions')
+      .select('id, actor_user_id, org_id, ticket_id, reason, status, started_at, expires_at, ended_at')
+      .order('started_at', { ascending: false })
+      .limit(50),
     service.from('platform_admins').select('user_id, level, active, created_at, last_seen_at').order('created_at', { ascending: false }),
     service.from('organizations').select('id, name'),
     service.auth.admin.listUsers({ page: 1, perPage: 1000 }),
   ])
 
+  if (auditResult.error) throw new Error(`Failed to load audit logs: ${auditResult.error.message}`)
+
   const orgById    = new Map((orgsResult.data ?? []).map((o) => [o.id, o.name]))
   const authById   = new Map((authUsersResult.data?.users ?? []).map((u) => [u.id, u]))
 
-  let logs = (auditResult.data ?? []).map((log) => ({
+  const logs = (auditResult.data ?? []).map((log) => ({
     ...log,
     org_name: log.org_id ? orgById.get(log.org_id) : null,
   }))
-  if (params.type) logs = logs.filter((l) => l.event_type.includes(params.type as string))
 
-  const totalLogs = logs.length
-  const paginatedLogs = logs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const totalLogs = auditResult.count ?? logs.length
 
   const admins = (adminsResult.data ?? []).map((a) => {
     const auth = authById.get(a.user_id)
@@ -314,7 +531,7 @@ export async function getSecurityPageData(params: SecurityPageParams = {}) {
   return {
     context,
     activeSupportSession,
-    auditLogs:  paginatedLogs,
+    auditLogs:  logs,
     totalLogs,
     auditPage:  page,
     supportSessions: ((sessionsResult.data ?? []) as SupportSessionRow[]).map((s) => ({
@@ -330,42 +547,54 @@ export async function getAnalyticsData(rangeDays = 7) {
   const context = await requirePlatformAdmin()
   const service = createAdminClient()
   const activeSupportSession = await getActiveSupportSession(context.user.id)
+  const safeRangeDays = [7, 30, 90].includes(rangeDays) ? rangeDays : 7
 
-  const since = new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
-
-  const [orgsResult, profilesResult, athletesResult, scoreResult, notificationsResult] = await Promise.all([
-    service.from('organizations').select('id, name, status, created_at').order('name'),
-    service.from('profiles').select('id, created_at').order('created_at'),
-    service.from('athletes').select('id, org_id, active, consent_date'),
-    service
-      .from('score_history')
-      .select('id, athlete_id, score_date, total_score')
-      .gte('score_date', since)
-      .order('score_date'),
-    service.from('notifications').select('id, org_id, read_by, created_at').order('created_at', { ascending: false }).limit(1000),
-  ])
-
-  const orgs     = orgsResult.data ?? []
-  const profiles = profilesResult.data ?? []
-  const athletes = athletesResult.data ?? []
-  const scores   = scoreResult.data ?? []
-  const notifications = notificationsResult.data ?? []
-
-  // Day series
-  const days = Array.from({ length: rangeDays }, (_, i) => {
-    const d = new Date(Date.now() - (rangeDays - 1 - i) * 24 * 60 * 60 * 1000)
+  const days = Array.from({ length: safeRangeDays }, (_, i) => {
+    const d = new Date(Date.now() - (safeRangeDays - 1 - i) * 24 * 60 * 60 * 1000)
     return d.toISOString().slice(0, 10)
   })
 
-  const riskSeries = days.map((day) => ({
+  const [
+    orgsResult,
+    athletesResult,
+    notificationsResult,
+    activeOrgsResult,
+    missingConsentResult,
+    riskCountResults,
+    signupCountResults,
+  ] = await Promise.all([
+    service.from('organizations').select('id, name, status, created_at').order('name'),
+    service.from('athletes').select('id, org_id, active, consent_date'),
+    service.from('notifications').select('id, org_id, read_by, created_at').order('created_at', { ascending: false }).limit(1000),
+    service.from('organizations').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+    service.from('athletes').select('id', { count: 'exact', head: true }).eq('active', true).is('consent_date', null),
+    Promise.all(days.map((day) =>
+      service
+        .from('score_history')
+        .select('id', { count: 'exact', head: true })
+        .eq('score_date', day)
+        .gte('total_score', 0.65)
+    )),
+    Promise.all(days.map((day) =>
+      service
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .lte('created_at', `${day}T23:59:59.999Z`)
+    )),
+  ])
+
+  const orgs     = orgsResult.data ?? []
+  const athletes = athletesResult.data ?? []
+  const notifications = notificationsResult.data ?? []
+
+  const riskSeries = days.map((day, index) => ({
     label:    day.slice(5),
-    highRisk: scores.filter((s) => s.score_date === day && Number(s.total_score) >= 0.65).length,
+    highRisk: countFromResult(riskCountResults[index], `high-risk count for ${day}`),
   }))
 
-  // Cumulative user signups
-  const signupSeries = days.map((day) => ({
+  const signupSeries = days.map((day, index) => ({
     label:   day.slice(5),
-    signups: profiles.filter((p) => p.created_at.slice(0, 10) <= day).length,
+    signups: countFromResult(signupCountResults[index], `signup count for ${day}`),
   }))
 
   const orgFreshness = [...orgs]
@@ -380,7 +609,6 @@ export async function getAnalyticsData(rangeDays = 7) {
       athletes: athletes.filter((a) => a.org_id === o.id && a.active).length,
     }))
 
-  const missingConsent = athletes.filter((a) => a.active && !a.consent_date).length
   const notificationReadRate = notifications.length
     ? Math.round(
         (notifications.filter((n) => Array.isArray(n.read_by) && n.read_by.length > 0).length /
@@ -396,10 +624,10 @@ export async function getAnalyticsData(rangeDays = 7) {
     signupSeries,
     orgFreshness,
     metrics: {
-      staleOrgs:           orgs.filter((o) => o.status === 'active').length,
-      highRiskScores:      scores.filter((s) => Number(s.total_score) >= 0.65).length,
+      staleOrgs:           countFromResult(activeOrgsResult, 'active organization count'),
+      highRiskScores:      riskSeries.reduce((sum, row) => sum + row.highRisk, 0),
       notificationReadRate,
-      missingConsent,
+      missingConsent:      countFromResult(missingConsentResult, 'missing consent count'),
     },
     orgRows: orgs.map((o) => ({
       id:                  o.id,

@@ -13,7 +13,7 @@ export async function GET(
 
   let query = supabase
     .from('medical_documents')
-    .select('*')
+    .select('id, athlete_id, category, exam_type, exam_date, file_url, file_name, file_size, file_type, uploaded_by, notes, is_archived, created_at')
     .eq('athlete_id', id)
     .eq('is_archived', false)
     .order('created_at', { ascending: false })

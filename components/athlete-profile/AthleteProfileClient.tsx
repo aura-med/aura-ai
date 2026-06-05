@@ -2,15 +2,10 @@
 
 import { useState, useRef } from 'react'
 import { Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import { Camera, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { TabNavigation }      from './TabNavigation'
-import { OverviewTab }        from './OverviewTab'
-import { MedicalTab }         from './MedicalTab'
-import { InjuriesTab }        from './InjuriesTab'
-import { TreatmentsTab }      from './TreatmentsTab'
-import { DocumentsTab }       from './DocumentsTab'
-import { RecommendationsTab } from './RecommendationsTab'
 import type { AthleteProfileData, TabId } from '@/types/athlete-profile'
 
 const PHOTO_BUCKET = 'athlete-photos'
@@ -26,6 +21,25 @@ function TabSkeleton() {
     </div>
   )
 }
+
+const OverviewTab = dynamic(() => import('./OverviewTab').then((mod) => mod.OverviewTab), {
+  loading: () => <TabSkeleton />,
+})
+const MedicalTab = dynamic(() => import('./MedicalTab').then((mod) => mod.MedicalTab), {
+  loading: () => <TabSkeleton />,
+})
+const InjuriesTab = dynamic(() => import('./InjuriesTab').then((mod) => mod.InjuriesTab), {
+  loading: () => <TabSkeleton />,
+})
+const TreatmentsTab = dynamic(() => import('./TreatmentsTab').then((mod) => mod.TreatmentsTab), {
+  loading: () => <TabSkeleton />,
+})
+const DocumentsTab = dynamic(() => import('./DocumentsTab').then((mod) => mod.DocumentsTab), {
+  loading: () => <TabSkeleton />,
+})
+const RecommendationsTab = dynamic(() => import('./RecommendationsTab').then((mod) => mod.RecommendationsTab), {
+  loading: () => <TabSkeleton />,
+})
 
 // ── Athlete header with photo upload ─────────────────────────────────────────
 

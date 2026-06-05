@@ -24,6 +24,7 @@ docs/
 /playwright-report
 /.playwright-mcp
 tests/.auth/
+/.perf/
 
 # next.js
 /.next/

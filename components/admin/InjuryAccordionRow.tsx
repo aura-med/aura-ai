@@ -15,6 +15,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import {
   ChevronRight, CheckCircle2, Circle, ArrowRight, ArrowLeft, Clock,
   AlertTriangle, Edit2, Trash2,
@@ -23,13 +24,14 @@ import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import type { ActiveRehabSession, AvailabilityStatus, ClinicalNote, RehabPhase } from '@/types'
 import { useFederatedSync } from '@/lib/federated/useFederatedSync'
-import { EditInjuryModal } from './EditInjuryModal'
 import {
   sendStaffNotification,
   buildPhaseAdvanceMessage,
   buildAvailabilityMessage,
   buildRtpClearedMessage,
 } from '@/lib/medical/notifications'
+
+const EditInjuryModal = dynamic(() => import('./EditInjuryModal').then((mod) => mod.EditInjuryModal))
 
 // ── RTP thresholds ─────────────────────────────────────────────────────────────
 const RTP_STRENGTH_THRESHOLD = 10    // deficit must be < 10 %
@@ -1105,12 +1107,14 @@ export function InjuryAccordionRow({
       )}
 
       {/* Feature 1: Edit modal */}
-      <EditInjuryModal
-        open={showEdit}
-        session={session}
-        onClose={() => setShowEdit(false)}
-        onSuccess={onUpdated}
-      />
+      {showEdit && (
+        <EditInjuryModal
+          open={showEdit}
+          session={session}
+          onClose={() => setShowEdit(false)}
+          onSuccess={onUpdated}
+        />
+      )}
     </>
   )
 }

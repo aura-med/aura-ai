@@ -28,15 +28,11 @@ export default async function OrganizationsPage({
   searchParams: Promise<SearchParams>
 }) {
   const sp = await searchParams
-  const { orgRows, total, page, allOrgRows } = await getOrganizationsPageData({
+  const { orgRows, total, page, summary } = await getOrganizationsPageData({
     q:      sp.q,
     status: sp.status,
     page:   sp.page ? Number(sp.page) : 1,
   })
-
-  const active    = allOrgRows.filter((o) => o.status === 'active').length
-  const suspended = allOrgRows.filter((o) => o.status === 'suspended').length
-  const missing   = allOrgRows.reduce((s, o) => s + o.missing_consent_count, 0)
 
   return (
     <div className="space-y-6">
@@ -48,10 +44,10 @@ export default async function OrganizationsPage({
       <FeedbackBanner success={sp.success} error={sp.error} />
 
       <div className="grid gap-3 md:grid-cols-4">
-        <Kpi label="Total" value={allOrgRows.length} />
-        <Kpi label="Active" tone="green" value={active} />
-        <Kpi label="Suspended" tone="warn" value={suspended} />
-        <Kpi label="Missing consent" tone={missing ? 'danger' : 'green'} value={missing} />
+        <Kpi label="Total" value={summary.total} />
+        <Kpi label="Active" tone="green" value={summary.active} />
+        <Kpi label="Suspended" tone="warn" value={summary.suspended} />
+        <Kpi label="Missing consent" tone={summary.missingConsent ? 'danger' : 'green'} value={summary.missingConsent} />
       </div>
 
       {/* Create organization */}

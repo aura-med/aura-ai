@@ -6,40 +6,59 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceRoleClient } from '@/lib/supabase/service'
+import { verifyApiViewerFromRequest, type ApiViewer } from '@/lib/api/auth'
+import { errorFromUnknown } from '@/lib/api/errors'
+import { requireClinical } from '@/lib/api/supabase-services'
 import { calculateScore, BASE_WEIGHTS_V1 } from '@/lib/scoring/engine'
 import { authorizeScoreAccess, normalizeOrgId } from '@/lib/scoring/score-access'
 import { ScoreHistorySchema } from '@/lib/schemas/score'
 import { generateAndPersistRecommendations } from '@/lib/actions/recommendations'
 import type { ScoreInputs } from '@/types'
 
-type SupabaseClient = Awaited<ReturnType<typeof createClient>>
+type SupabaseClient = Awaited<ReturnType<typeof createClient>> | NonNullable<ReturnType<typeof createServiceRoleClient>>
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const response = await recalculateAthleteScore(id)
+  const apiViewer = await getApiViewer(request).catch((error) => error)
+  if (apiViewer instanceof Error) return errorFromUnknown(apiViewer)
+  const apiClient = apiViewer ? createServiceRoleClient() : null
+  if (apiViewer && !apiClient) {
+    return NextResponse.json({ error: 'Supabase service role is not configured' }, { status: 500 })
+  }
+  if (apiViewer) requireClinical(apiViewer)
+  const response = await recalculateAthleteScore(id, apiClient ?? undefined, apiViewer ?? undefined)
 
   return NextResponse.json(response.body, { status: response.status })
 }
 
-export async function recalculateAthleteScore(id: string, supabase?: SupabaseClient) {
+async function getApiViewer(request: NextRequest) {
+  if (!request.headers.get('authorization')) return null
+  return verifyApiViewerFromRequest(request)
+}
+
+export async function recalculateAthleteScore(id: string, supabase?: SupabaseClient, apiViewer?: ApiViewer) {
   const client = supabase ?? await createClient()
 
-  const { data: { user } } = await client.auth.getUser()
-  if (!user) {
+  const { data: { user } } = apiViewer
+    ? { data: { user: { id: apiViewer.userId } } }
+    : await client.auth.getUser()
+  if (!user?.id) {
     return { body: { error: 'Unauthorized' }, status: 401 }
   }
 
   const today = new Date().toISOString().split('T')[0]
 
   const [{ data: profile }, { data: athlete }] = await Promise.all([
-    client
-      .from('profiles')
-      .select('org_id')
-      .eq('id', user.id)
-      .single(),
+    apiViewer
+      ? Promise.resolve({ data: { org_id: apiViewer.orgId } })
+      : client
+        .from('profiles')
+        .select('org_id')
+        .eq('id', user.id)
+        .single(),
     client
       .from('athletes')
       .select('org_id')

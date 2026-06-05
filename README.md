@@ -88,9 +88,49 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 DATABASE_URL=postgresql://user:password@host:5432/aura
 NEXT_PUBLIC_API_KEY=your-public-api-key
 SUPABASE_SERVICE_ROLE_KEY=server-only-service-role-key
+AURA_API_JWT_SECRET=replace-with-a-long-random-secret
 ```
 
 Never commit `.env.local` or production secrets.
+
+## API Documentation
+
+Open Swagger UI at [http://localhost:3000/api/docs](http://localhost:3000/api/docs). The OpenAPI spec is served from `/api/docs/openapi.yaml` and tracked in `docs/openapi.yaml`.
+
+Generate a 30-minute API token:
+
+```bash
+curl -X POST http://localhost:3000/api/auth/token \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"your-password"}'
+```
+
+Use the returned token on REST API calls:
+
+```bash
+TOKEN="paste-access-token-here"
+
+curl http://localhost:3000/api/athletes?page=1&pageSize=20 \
+  -H "Authorization: Bearer $TOKEN"
+
+curl http://localhost:3000/api/athletes/athlete-id \
+  -H "Authorization: Bearer $TOKEN"
+
+curl -X POST http://localhost:3000/api/users \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"new-user@example.com","role":"physio","full_name":"New User"}'
+
+curl -X POST http://localhost:3000/api/athletes/athlete-id/score \
+  -H "Authorization: Bearer $TOKEN"
+
+curl -X POST http://localhost:3000/api/rehab/session-id/rtp \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"rtp_criteria":[{"label":"Pain-free sprinting","done":true}]}'
+```
+
+API tokens are Aura REST tokens only. They expire after 30 minutes and do not expose Supabase refresh tokens.
 
 ## Security & Data Integrity
 

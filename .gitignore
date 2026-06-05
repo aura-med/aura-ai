@@ -9,6 +9,9 @@ apps/admin/node_modules/
 
 # local docs / planning artifacts
 docs/
+!docs/
+docs/*
+!docs/openapi.yaml
 /.pnp
 .pnp.*
 .yarn/*
@@ -60,3 +63,6 @@ aura.code-workspace
 
 # local planning docs
 docs/
+!docs/
+docs/*
+!docs/openapi.yaml

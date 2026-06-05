@@ -1,0 +1,516 @@
+openapi: 3.1.0
+info:
+  title: Aura API
+  version: 0.1.0
+  description: REST API for Aura sports medicine integrations.
+servers:
+  - url: /
+    description: Current deployment
+security:
+  - bearerAuth: []
+paths:
+  /api/auth/token:
+    post:
+      security: []
+      summary: Create a 30 minute API token
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRequest'
+      responses:
+        '200':
+          description: API token created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/athletes:
+    get:
+      summary: List athletes
+      tags: [Athletes]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Paginated athletes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAthletes'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/athletes/{id}:
+    get:
+      summary: Get athlete by ID
+      tags: [Athletes]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Athlete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Athlete'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/athletes/{id}/score:
+    post:
+      summary: Recalculate an athlete injury risk score
+      tags: [Score]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Score recalculated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                  recommendations:
+                    type: object
+                    properties:
+                      clinical:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Recommendation'
+                      coach:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Recommendation'
+                      athlete:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Recommendation'
+                  recommendationLogId:
+                    type: [string, 'null']
+                  recommendationLogError:
+                    type: [string, 'null']
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/injuries:
+    get:
+      summary: List injury events
+      tags: [Injuries]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Paginated injuries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInjuries'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/injuries/{id}:
+    get:
+      summary: Get injury event by ID
+      tags: [Injuries]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Injury event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Injury'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/protocols:
+    get:
+      summary: List rehab protocols
+      tags: [Protocols]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Paginated protocols
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProtocols'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/protocols/{id}:
+    get:
+      summary: Get rehab protocol by ID
+      tags: [Protocols]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Rehab protocol
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Protocol'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/rehab/{sessionId}/rtp:
+    post:
+      summary: Update RTP criteria for a rehab session
+      tags: [RTP]
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rtp_criteria]
+              properties:
+                rtp_criteria:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/RtpCriterion'
+      responses:
+        '200':
+          description: RTP criteria updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/users:
+    get:
+      summary: List organization users
+      tags: [Users]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Paginated users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUsers'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      summary: Invite a user into the authenticated organization
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User invited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Duplicate email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/users/{id}:
+    get:
+      summary: Get organization user by ID
+      tags: [Users]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: pageSize
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Missing, invalid, or expired Bearer token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    TokenRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    TokenResponse:
+      type: object
+      required: [token_type, access_token, expires_in, expires_at]
+      properties:
+        token_type:
+          type: string
+          const: Bearer
+        access_token:
+          type: string
+        expires_in:
+          type: integer
+          const: 1800
+        expires_at:
+          type: string
+          format: date-time
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+    Athlete:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        shirt_number:
+          type: [integer, 'null']
+        position:
+          type: [string, 'null']
+        status:
+          type: string
+        squad_id:
+          type: [string, 'null']
+        org_id:
+          type: [string, 'null']
+        active:
+          type: boolean
+    Injury:
+      type: object
+      properties:
+        id:
+          type: string
+        athlete_id:
+          type: string
+        injury_date:
+          type: string
+          format: date
+        return_date:
+          type: [string, 'null']
+          format: date
+        diagnosis:
+          type: [string, 'null']
+        location:
+          type: [string, 'null']
+        mechanism:
+          type: [string, 'null']
+        severity:
+          type: [string, 'null']
+        days_absent:
+          type: [integer, 'null']
+        is_recurrence:
+          type: boolean
+    Protocol:
+      type: object
+      properties:
+        id:
+          type: string
+        key:
+          type: string
+        name:
+          type: string
+        phases:
+          type: array
+          items:
+            type: object
+        total_days:
+          type: [integer, 'null']
+        evidence:
+          type: [string, 'null']
+    RtpCriterion:
+      type: object
+      required: [label, done]
+      properties:
+        label:
+          type: string
+        done:
+          type: boolean
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        full_name:
+          type: [string, 'null']
+        role:
+          type: [string, 'null']
+    CreateUserRequest:
+      type: object
+      required: [email, role]
+      properties:
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [admin, doctor, physio, coach, fitness_coach, athlete]
+        full_name:
+          type: [string, 'null']
+    PaginatedAthletes:
+      allOf:
+        - $ref: '#/components/schemas/Paginated'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Athlete'
+    PaginatedInjuries:
+      allOf:
+        - $ref: '#/components/schemas/Paginated'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Injury'
+    PaginatedProtocols:
+      allOf:
+        - $ref: '#/components/schemas/Paginated'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Protocol'
+    PaginatedUsers:
+      allOf:
+        - $ref: '#/components/schemas/Paginated'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/User'
+    Recommendation:
+      type: object
+      required: [type, icon, text, timing]
+      properties:
+        type:
+          type: string
+          enum: [critical, warning, success, info]
+        icon:
+          type: string
+        text:
+          type: string
+        timing:
+          type: string
+    Paginated:
+      type: object
+      required: [items, page, pageSize, total]
+      properties:
+        items:
+          type: array
+          items: {}
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer

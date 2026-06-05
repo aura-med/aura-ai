@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Activity, Pill, Wrench, Plus, Clock, Edit2, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import type {
@@ -197,17 +197,20 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
   const [editingOrthoIdx, setEditingOrthoIdx] = useState<number | null>(null)
 
   // ── Fetch rehab sessions ───────────────────────────────────────────────────
-  const fetchSessions = useCallback(async () => {
-    setLoadingS(true)
-    try {
-      const res = await fetch(`/api/athletes/${profile.id}/rehab-sessions`)
-      if (res.ok) setSessions(await res.json())
-    } finally {
-      setLoadingS(false)
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      setLoadingS(true)
+      try {
+        const res = await fetch(`/api/athletes/${profile.id}/rehab-sessions`)
+        if (!cancelled && res.ok) setSessions(await res.json())
+      } finally {
+        if (!cancelled) setLoadingS(false)
+      }
     }
+    load()
+    return () => { cancelled = true }
   }, [profile.id])
-
-  useEffect(() => { fetchSessions() }, [fetchSessions])
 
   // ── Derived ────────────────────────────────────────────────────────────────
   const medications = medHistory?.medications ?? []

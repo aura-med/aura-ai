@@ -14,7 +14,7 @@
  *     notification to the `notifications` table for coaching staff
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import {
   ChevronRight, CheckCircle2, Circle, ArrowRight, ArrowLeft, Clock,
   AlertTriangle, Edit2, Trash2,
@@ -228,7 +228,6 @@ function RtpMetricsPanel({
 function PhaseStepper({
   phases,
   currentDay,
-  sessionId,
   phaseProgress,
   rtpMetrics,
   onProgressUpdate,
@@ -238,7 +237,6 @@ function PhaseStepper({
 }: {
   phases: RehabPhase[]
   currentDay: number
-  sessionId: string
   phaseProgress: Record<string, boolean[]>
   rtpMetrics: RtpMetrics
   onProgressUpdate: (phaseId: string, idx: number, checked: boolean) => void
@@ -699,10 +697,13 @@ export function InjuryAccordionRow({
   const injury   = session.injury_events
 
   // Prefer custom_phases stored in clinical_data (from protocol sandbox) over template
-  const rawPhases: RehabPhase[] =
-    (session.clinical_data?.custom_phases as RehabPhase[] | undefined) ??
-    (protocol?.phases as RehabPhase[] | undefined) ??
-    []
+  const rawPhases = useMemo<RehabPhase[]>(
+    () =>
+      (session.clinical_data?.custom_phases as RehabPhase[] | undefined) ??
+      (protocol?.phases as RehabPhase[] | undefined) ??
+      [],
+    [session.clinical_data?.custom_phases, protocol?.phases],
+  )
 
   // ── Derived ──────────────────────────────────────────────────────────────
   const daysIn = session.current_day
@@ -1085,7 +1086,6 @@ export function InjuryAccordionRow({
                   <PhaseStepper
                     phases={rawPhases}
                     currentDay={daysIn}
-                    sessionId={session.id}
                     phaseProgress={localPhaseProgress}
                     rtpMetrics={rtpMetrics}
                     onProgressUpdate={handleProgressUpdate}

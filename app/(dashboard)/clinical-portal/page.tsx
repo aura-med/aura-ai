@@ -11,7 +11,7 @@ import { RecordInjuryModal } from '@/components/admin/RecordInjuryModal'
 import { ToastContainer } from '@/components/admin/Toast'
 import { useToast } from '@/components/admin/useToast'
 import { useFederatedSync } from '@/lib/federated/useFederatedSync'
-import type { ActiveRehabSession, Athlete, AvailabilityStatus } from '@/types'
+import type { ActiveRehabSession, Athlete } from '@/types'
 
 // ── Summary card ──────────────────────────────────────────────────────────────
 
@@ -195,6 +195,7 @@ export default function MedicalPage() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSessions()
     fetchAthletes()
   }, [fetchSessions, fetchAthletes])

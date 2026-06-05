@@ -39,7 +39,7 @@ export function EmdModal({ athleteId, existing, onClose, onSaved }: Props) {
 
   // ── PDF upload ────────────────────────────────────────────────────────────
   const [file,      setFile]      = useState<File | null>(null)
-  const [pdfUrl,    setPdfUrl]    = useState<string | null>(existing?.pdf_url ?? null)
+  const [pdfUrl]                  = useState<string | null>(existing?.pdf_url ?? null)
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 

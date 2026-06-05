@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { FileText, Image, FlaskConical, Heart, Smile, FolderOpen, Upload, ExternalLink, File, Loader2, Trash2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { FileText, Image, FlaskConical, Heart, Smile, FolderOpen, Upload, ExternalLink, Loader2, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { AthleteProfileData, MedicalDocument, DocumentCategory } from '@/types/athlete-profile'
@@ -146,20 +146,23 @@ export function DocumentsTab({ profile }: { profile: AthleteProfileData }) {
   const [activeCategory, setActiveCategory] = useState<DocumentCategory | 'all'>('all')
   const [showUpload,    setShowUpload]    = useState(false)
 
-  const fetchDocuments = useCallback(async () => {
-    setLoading(true)
-    try {
-      const url = activeCategory === 'all'
-        ? `/api/athletes/${profile.id}/documents`
-        : `/api/athletes/${profile.id}/documents?category=${activeCategory}`
-      const res = await fetch(url)
-      if (res.ok) setDocuments(await res.json())
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      setLoading(true)
+      try {
+        const url = activeCategory === 'all'
+          ? `/api/athletes/${profile.id}/documents`
+          : `/api/athletes/${profile.id}/documents?category=${activeCategory}`
+        const res = await fetch(url)
+        if (!cancelled && res.ok) setDocuments(await res.json())
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
     }
+    load()
+    return () => { cancelled = true }
   }, [profile.id, activeCategory])
-
-  useEffect(() => { fetchDocuments() }, [fetchDocuments])
 
   function handleUploaded(doc: MedicalDocument) {
     setDocuments((prev) => [doc, ...prev])

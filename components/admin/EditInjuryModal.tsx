@@ -47,6 +47,7 @@ export function EditInjuryModal({
   // ── Populate fields when session loads ────────────────────────────────────
   useEffect(() => {
     if (!session || !open) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInjuryDate(session.injury_events?.injury_date ?? session.start_date)
     setStartDate(session.start_date)
     setProtocolId(session.protocol_id ?? '')

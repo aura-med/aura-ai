@@ -1,7 +1,6 @@
 'use client'
 
-import { AlertTriangle, TrendingUp, TrendingDown, Minus, Shield } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { AlertTriangle } from 'lucide-react'
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts'

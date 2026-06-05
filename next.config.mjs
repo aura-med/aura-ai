@@ -5,6 +5,9 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   cacheComponents: true,
+  outputFileTracingIncludes: {
+    '/api/docs/openapi\\.yaml': ['./docs/openapi.yaml'],
+  },
 }
 
 export default withNextIntl(nextConfig)

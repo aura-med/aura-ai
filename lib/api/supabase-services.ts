@@ -16,6 +16,12 @@ function requireAdmin(viewer: ApiViewer) {
   if (viewer.role !== 'admin') throw new ApiError('Forbidden', 403)
 }
 
+const CLINICAL_ROLES: UserRole[] = ['admin', 'doctor', 'physio']
+
+export function requireClinical(viewer: ApiViewer) {
+  if (!CLINICAL_ROLES.includes(viewer.role)) throw new ApiError('Forbidden', 403)
+}
+
 async function currentViewer(service: SupabaseServiceClient, viewer: ApiViewer): Promise<ApiViewer> {
   const [{ data: profile, error }, { data: authUser, error: authError }] = await Promise.all([
     service
@@ -59,6 +65,7 @@ export function createSupabaseUsersService(): ApiUsersService {
     async listUsers(viewer, input): Promise<PaginatedApiUsers> {
       const service = serviceClient()
       const freshViewer = await currentViewer(service, viewer)
+      requireAdmin(freshViewer)
       const emails = await emailMapForUsers(service)
       const { data, error, count } = await service
         .from('profiles')
@@ -80,6 +87,7 @@ export function createSupabaseUsersService(): ApiUsersService {
     async getUserById(viewer, id) {
       const service = serviceClient()
       const freshViewer = await currentViewer(service, viewer)
+      requireAdmin(freshViewer)
       const [{ data: profile, error }, { data: authUser, error: authError }] = await Promise.all([
         service
           .from('profiles')

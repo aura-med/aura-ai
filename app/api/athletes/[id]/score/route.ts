@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceRoleClient } from '@/lib/supabase/service'
 import { verifyApiViewerFromRequest, type ApiViewer } from '@/lib/api/auth'
 import { errorFromUnknown } from '@/lib/api/errors'
+import { requireClinical } from '@/lib/api/supabase-services'
 import { calculateScore, BASE_WEIGHTS_V1 } from '@/lib/scoring/engine'
 import { authorizeScoreAccess, normalizeOrgId } from '@/lib/scoring/score-access'
 import { ScoreHistorySchema } from '@/lib/schemas/score'
@@ -27,6 +28,7 @@ export async function POST(
   if (apiViewer && !apiClient) {
     return NextResponse.json({ error: 'Supabase service role is not configured' }, { status: 500 })
   }
+  if (apiViewer) requireClinical(apiViewer)
   const response = await recalculateAthleteScore(id, apiClient ?? undefined, apiViewer ?? undefined)
 
   return NextResponse.json(response.body, { status: response.status })

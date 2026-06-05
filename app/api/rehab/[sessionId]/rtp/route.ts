@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceRoleClient } from '@/lib/supabase/service'
 import { verifyApiViewerFromRequest } from '@/lib/api/auth'
 import { errorFromUnknown, readJsonBody } from '@/lib/api/errors'
+import { requireClinical } from '@/lib/api/supabase-services'
 import { RtpCriteriaSchema } from '@/lib/schemas/rehab'
 
 export async function POST(
@@ -22,6 +23,7 @@ export async function POST(
   if (apiViewer && !apiClient) {
     return NextResponse.json({ error: 'Supabase service role is not configured' }, { status: 500 })
   }
+  if (apiViewer) requireClinical(apiViewer)
   const supabase = apiClient ?? await createClient()
 
   const { data: { user }, error: authError } = apiViewer

@@ -81,9 +81,20 @@ paths:
                   result:
                     type: object
                   recommendations:
-                    type: array
-                    items:
-                      type: object
+                    type: object
+                    properties:
+                      clinical:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Recommendation'
+                      coach:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Recommendation'
+                      athlete:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Recommendation'
                   recommendationLogId:
                     type: [string, 'null']
                   recommendationLogError:
@@ -477,6 +488,19 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/User'
+    Recommendation:
+      type: object
+      required: [type, icon, text, timing]
+      properties:
+        type:
+          type: string
+          enum: [critical, warning, success, info]
+        icon:
+          type: string
+        text:
+          type: string
+        timing:
+          type: string
     Paginated:
       type: object
       required: [items, page, pageSize, total]

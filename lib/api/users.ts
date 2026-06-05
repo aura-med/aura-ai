@@ -58,6 +58,7 @@ export async function handleGetUser(request: Request, id: string, deps: HandlerD
 export async function handleCreateUser(request: Request, deps: HandlerDeps) {
   try {
     const viewer = await requireViewer(request, deps)
+    if (viewer.role !== 'admin') throw new ApiError('Forbidden', 403)
     const body = parseCreateUserBody(await readJsonBody(request))
     const existing = await deps.service.findUserByEmail(viewer, body.email)
     if (existing) throw new ApiError('Email already exists', 409)

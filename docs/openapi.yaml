@@ -4,8 +4,8 @@ info:
   version: 0.1.0
   description: REST API for Aura sports medicine integrations.
 servers:
-  - url: http://localhost:3000
-    description: Local development
+  - url: /
+    description: Current deployment
 security:
   - bearerAuth: []
 paths:

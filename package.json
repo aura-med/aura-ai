@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --test --experimental-strip-types tests/**/*.test.ts",
+    "test:unit": "vitest run",
     "test:a11y": "node --test --experimental-strip-types tests/a11y/**/*.test.ts",
     "test:e2e": "playwright test",
     "perf:test": "playwright test -c playwright.perf.config.ts",
@@ -46,10 +47,13 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.9",
     "axe-core": "^4.11.4",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.9"
   }
 }

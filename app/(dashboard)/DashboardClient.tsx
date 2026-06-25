@@ -277,27 +277,25 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
                   {group.map((a) => {
                     const cfg = STATUS_CONFIG[a.availability_status]
                     return (
-                      <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
-                        <div style={{
-                          borderRadius: 16, overflow: 'hidden',
-                          border: `2px solid ${cfg.dot}`,
-                          background: 'var(--aura-bg2)',
-                        }}>
-                          <AthleteCard
-                            href={withSquadParam(`/athletes/${a.id}`, squadId)}
-                            name={a.name}
-                            photoUrl={a.photo_url}
-                            shirtNumber={a.shirt_number}
-                            position={posCodes[pos] ?? pos}
-                            status={a.availability_status === 'available' ? 'available'
-                              : a.availability_status === 'rtp' ? 'rehab'
-                              : 'unavailable'}
-                            score={a.score}
-                            scoreColor={a.scoreColor}
-                            scoreLabel={a.scoreLabel}
-                          />
-                        </div>
-                      </Link>
+                      <div key={a.id} style={{
+                        borderRadius: 16, overflow: 'hidden',
+                        border: `2px solid ${cfg.dot}`,
+                        background: 'var(--aura-bg2)',
+                      }}>
+                        <AthleteCard
+                          href={withSquadParam(`/athletes/${a.id}`, squadId)}
+                          name={a.name}
+                          photoUrl={a.photo_url}
+                          shirtNumber={a.shirt_number}
+                          position={posCodes[pos] ?? pos}
+                          status={a.availability_status === 'available' ? 'available'
+                            : a.availability_status === 'rtp' ? 'rehab'
+                            : 'unavailable'}
+                          score={a.score}
+                          scoreColor={a.scoreColor}
+                          scoreLabel={a.scoreLabel}
+                        />
+                      </div>
                     )
                   })}
                 </div>

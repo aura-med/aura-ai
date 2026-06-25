@@ -9,7 +9,7 @@ import type { UserRole } from '@/types'
 import {
   LayoutDashboard, Users, Activity, Calendar,
   Heart, Gauge, BookOpen, Settings,
-  ClipboardList, TrendingUp, Stethoscope, FileText, AlertCircle,
+  ClipboardList, TrendingUp, FileText, AlertCircle,
 } from 'lucide-react'
 
 const CLINICAL_ROLES: UserRole[] = ['admin', 'doctor', 'physio', 'masseur']

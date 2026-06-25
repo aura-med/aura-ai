@@ -28,9 +28,55 @@ export interface MedicalHistory {
   surgical_history: SurgicalRecord[]
   medications: MedicationRecord[]
   orthotics: OrthoticRecord[]
+  chronic_conditions: string[] | null
   notes: string | null
   created_at: string
   updated_at: string
+}
+
+// ── Clinical Module Types (migration 009) ────────────────────────────────────
+
+export interface ActiveDiagnosis {
+  id: string
+  osiics_code: string | null
+  osiics_description: string | null
+  diagnosis_type: string | null
+  custom_description: string | null
+  availability_status: string | null
+  diagnosed_at: string
+  is_resolved: boolean
+}
+
+export interface ActiveOccurrence {
+  id: string
+  occurrence_date: string
+  occurrence_type: string | null
+  availability_status: string | null
+  subjective: string | null
+}
+
+export interface MedicationAdministration {
+  id: string
+  medication_name: string
+  dose: string | null
+  route: string | null
+  administered_by_name: string | null
+  administered_at: string
+  notes: string | null
+  created_at: string
+}
+
+export interface OrthosisRecord {
+  id: string
+  orthosis_type: string | null
+  body_part: string | null
+  registered_by_name: string | null
+  applied_by_name: string | null
+  application_date: string
+  requires_daily_application: boolean
+  is_active: boolean
+  notes: string | null
+  created_at: string
 }
 
 export interface SurgicalRecord {
@@ -286,6 +332,7 @@ export interface AthleteProfileData {
   date_of_birth: string | null
   club: string | null
   status: string
+  availabilityStatus: string
   // Score
   score: number | null
   riskLevel: string | null
@@ -303,6 +350,9 @@ export interface AthleteProfileData {
   activeConcussion: Scat6Assessment | null
   // Injuries (from existing table)
   injuryEvents: InjuryEventSummary[]
+  // Clinical module (migration 009)
+  activeDiagnoses: ActiveDiagnosis[]
+  activeOccurrences: ActiveOccurrence[]
   // Documents count (not full list — fetched lazily)
   documentCount: number
   consultationCount: number

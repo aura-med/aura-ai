@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
-import { UserPlus, Users } from 'lucide-react'
+import { UserPlus, Users, Check, ChevronDown, Loader2 } from 'lucide-react'
 import type { UserRole } from '@/types'
 
 interface ProfileRow {
@@ -16,20 +16,95 @@ const ROLE_COLORS: Record<string, { bg: string; color: string }> = {
   admin:         { bg: 'rgba(0,229,160,0.12)',  color: 'var(--aura-green)' },
   doctor:        { bg: 'rgba(77,154,255,0.12)', color: 'var(--aura-blue)' },
   physio:        { bg: 'rgba(77,154,255,0.12)', color: 'var(--aura-blue)' },
+  masseur:       { bg: 'rgba(77,154,255,0.12)', color: 'var(--aura-blue)' },
   coach:         { bg: 'rgba(255,211,0,0.12)',  color: 'var(--aura-warn)' },
   fitness_coach: { bg: 'rgba(255,211,0,0.12)',  color: 'var(--aura-warn)' },
   athlete:       { bg: 'rgba(255,255,255,0.08)', color: 'var(--aura-text2)' },
 }
 
-const ROLE_OPTIONS: UserRole[] = ['admin', 'doctor', 'physio', 'coach', 'fitness_coach']
+const ROLE_OPTIONS: UserRole[] = ['admin', 'doctor', 'physio', 'masseur', 'coach', 'fitness_coach', 'athlete']
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: 'Admin', doctor: 'Médico', physio: 'Fisioterapeuta', masseur: 'Massagista',
+  coach: 'Treinador', fitness_coach: 'Prep. Físico', athlete: 'Atleta',
+}
+
+function RoleDropdown({
+  userId,
+  currentRole,
+  onChanged,
+}: {
+  userId: string
+  currentRole: UserRole | null
+  onChanged: (id: string, role: UserRole) => void
+}) {
+  const [open,   setOpen]   = useState(false)
+  const [saving, setSaving] = useState(false)
+  const roleStyle = ROLE_COLORS[currentRole ?? ''] ?? ROLE_COLORS.athlete
+
+  async function changeRole(newRole: UserRole) {
+    if (newRole === currentRole) { setOpen(false); return }
+    setSaving(true)
+    try {
+      const supabase = createClient()
+      await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
+      onChanged(userId, newRole)
+    } finally {
+      setSaving(false)
+      setOpen(false)
+    }
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((p) => !p)}
+        className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium"
+        style={{ background: roleStyle.bg, color: roleStyle.color }}
+      >
+        {saving ? <Loader2 size={10} className="animate-spin" /> : null}
+        {ROLE_LABELS[currentRole ?? ''] ?? currentRole ?? '—'}
+        <ChevronDown size={10} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div
+            className="absolute right-0 top-full mt-1 z-20 rounded-lg border shadow-xl overflow-hidden"
+            style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)', minWidth: 160 }}
+          >
+            {ROLE_OPTIONS.map((r) => {
+              const s = ROLE_COLORS[r] ?? ROLE_COLORS.athlete
+              return (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => changeRole(r)}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-xs hover:bg-[var(--aura-bg3)]"
+                  style={{ color: 'var(--aura-text)' }}
+                >
+                  <span className="w-3 h-3 rounded-full shrink-0" style={{ background: s.color }} />
+                  {ROLE_LABELS[r] ?? r}
+                  {r === currentRole && <Check size={11} className="ml-auto" style={{ color: 'var(--aura-green)' }} />}
+                </button>
+              )
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 
 export default function UsersPage() {
   const t = useTranslations('settings.users')
-  const [users, setUsers] = useState<ProfileRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [users,       setUsers]       = useState<ProfileRow[]>([])
+  const [loading,     setLoading]     = useState(true)
+  const [error,       setError]       = useState<string | null>(null)
+  const [isAdmin,     setIsAdmin]     = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
-  const [inviteRole, setInviteRole] = useState<UserRole>('physio')
+  const [inviteRole,  setInviteRole]  = useState<UserRole>('physio')
 
   useEffect(() => {
     const supabase = createClient()
@@ -38,11 +113,13 @@ export default function UsersPage() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('org_id')
+        .select('org_id, role')
         .eq('id', user.id)
         .single()
 
       if (!profile?.org_id) { setLoading(false); return }
+
+      setIsAdmin(profile.role === 'admin')
 
       const { data, error } = await supabase
         .from('profiles')
@@ -55,6 +132,10 @@ export default function UsersPage() {
       setLoading(false)
     })
   }, [])
+
+  function handleRoleChanged(userId: string, newRole: UserRole) {
+    setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, role: newRole } : u))
+  }
 
   if (loading) {
     return (
@@ -103,7 +184,7 @@ export default function UsersPage() {
               style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)', fontFamily: 'var(--font-mono)' }}
             >
               {ROLE_OPTIONS.map(r => (
-                <option key={r} value={r}>{r}</option>
+                <option key={r} value={r}>{ROLE_LABELS[r] ?? r}</option>
               ))}
             </select>
           </div>
@@ -143,7 +224,7 @@ export default function UsersPage() {
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
                     style={{ background: 'rgba(0,229,160,0.1)', color: 'var(--aura-green)' }}
                   >
                     {(u.full_name ?? '?')[0].toUpperCase()}
@@ -153,16 +234,20 @@ export default function UsersPage() {
                       {u.full_name ?? t('noName')}
                     </div>
                     <div className="text-xs" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}>
-                      {u.role ?? '—'}
+                      {ROLE_LABELS[u.role ?? ''] ?? u.role ?? '—'}
                     </div>
                   </div>
                 </div>
-                <span
-                  className="px-2 py-0.5 rounded text-xs font-medium"
-                  style={{ background: roleStyle.bg, color: roleStyle.color }}
-                >
-                  {u.role ?? '—'}
-                </span>
+                {isAdmin ? (
+                  <RoleDropdown userId={u.id} currentRole={u.role} onChanged={handleRoleChanged} />
+                ) : (
+                  <span
+                    className="px-2 py-0.5 rounded text-xs font-medium"
+                    style={{ background: roleStyle.bg, color: roleStyle.color }}
+                  >
+                    {ROLE_LABELS[u.role ?? ''] ?? u.role ?? '—'}
+                  </span>
+                )}
               </div>
             )
           })

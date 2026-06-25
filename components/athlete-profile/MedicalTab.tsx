@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { FileText, Stethoscope, Brain, Plus, ChevronDown, ChevronRight, Shield, Edit2, Loader2 } from 'lucide-react'
+import { FileText, Stethoscope, Brain, Plus, ChevronDown, ChevronRight, Shield, Edit2, Loader2, Heart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import type {
   AthleteProfileData,
   MedicalConsultation,
@@ -73,7 +74,7 @@ function EmdCard({ emd, onEdit, onCreate }: { emd: EmdSubmission | null; onEdit:
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
-            Exame Médico-Desportivo
+            Avaliação Pré-Época
           </p>
           <p className="text-sm font-bold mt-0.5" style={{ color: 'var(--aura-text)' }}>
             {emd ? `Época ${emd.season}` : 'Sem EMD registado'}
@@ -377,6 +378,39 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
   const activeMeds  = medications.filter((m) => !m.end_date || new Date(m.end_date) > new Date())
   const surgeries   = medHistory?.surgical_history ?? []
 
+  // ── Chronic conditions ─────────────────────────────────────────────────────
+  const [chronicConditions,   setChronicConditions]   = useState<string[]>(medHistory?.chronic_conditions ?? [])
+  const [editingChronic,      setEditingChronic]      = useState(false)
+  const [chronicDraft,        setChronicDraft]        = useState<string[]>([])
+  const [savingChronic,       setSavingChronic]       = useState(false)
+
+  const PRESET_CONDITIONS = [
+    'Asma', 'Diabetes', 'Epilepsia', 'Hipertensão', 'Doença de Crohn',
+    'Síndrome do QT Longo', 'Doença Cardíaca', 'Apneia do Sono', 'Anemia', 'Alergia Alimentar',
+  ]
+
+  async function saveChronicConditions(conditions: string[]) {
+    setSavingChronic(true)
+    try {
+      const supabase = createClient()
+      if (medHistory?.id) {
+        await supabase
+          .from('athletes_medical_history')
+          .update({ chronic_conditions: conditions })
+          .eq('id', medHistory.id)
+      } else {
+        await supabase
+          .from('athletes_medical_history')
+          .insert({ athlete_id: profile.id, chronic_conditions: conditions })
+      }
+      setChronicConditions(conditions)
+      setEditingChronic(false)
+      router.refresh()
+    } finally {
+      setSavingChronic(false)
+    }
+  }
+
   return (
     <>
       <div className="space-y-4">
@@ -397,6 +431,85 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
         {/* Bio */}
         <Section icon={Stethoscope} title="Dados Clínicos">
           <MedicalBio profile={profile} medHistory={medHistory} onEdit={() => setShowHistModal(true)} />
+        </Section>
+
+        {/* Antecedentes Pessoais */}
+        <Section
+          icon={Heart}
+          title="Antecedentes Pessoais"
+          action={
+            !editingChronic ? (
+              <button
+                type="button"
+                onClick={() => { setChronicDraft([...chronicConditions]); setEditingChronic(true) }}
+                className="flex items-center gap-1 text-[10px] font-medium hover:opacity-70"
+                style={{ color: 'var(--aura-green)' }}
+              >
+                <Edit2 size={10} /> Editar
+              </button>
+            ) : undefined
+          }
+        >
+          {editingChronic ? (
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-2">
+                {PRESET_CONDITIONS.map((c) => {
+                  const active = chronicDraft.includes(c)
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setChronicDraft((prev) => active ? prev.filter((x) => x !== c) : [...prev, c])}
+                      className="text-xs px-2.5 py-1 rounded-full border transition-colors"
+                      style={{
+                        background:  active ? 'var(--aura-warn-bg)' : 'var(--aura-bg3)',
+                        color:       active ? 'var(--aura-warn)'    : 'var(--aura-text2)',
+                        borderColor: active ? 'var(--aura-warn)'    : 'var(--aura-border)',
+                      }}
+                    >
+                      {c}
+                    </button>
+                  )
+                })}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingChronic(false)}
+                  className="flex-1 text-xs py-1.5 rounded-lg border hover:bg-[var(--aura-bg3)]"
+                  style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => saveChronicConditions(chronicDraft)}
+                  disabled={savingChronic}
+                  className="flex-1 text-xs py-1.5 rounded-lg font-bold flex items-center justify-center gap-1"
+                  style={{ background: 'var(--aura-green)', color: '#000' }}
+                >
+                  {savingChronic && <Loader2 size={11} className="animate-spin" />}
+                  Guardar
+                </button>
+              </div>
+            </div>
+          ) : chronicConditions.length === 0 ? (
+            <p className="text-xs text-center py-3" style={{ color: 'var(--aura-text3)' }}>
+              Sem antecedentes registados
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {chronicConditions.map((c) => (
+                <span
+                  key={c}
+                  className="text-xs px-2.5 py-1 rounded-full"
+                  style={{ background: 'var(--aura-warn-bg)', color: 'var(--aura-warn)' }}
+                >
+                  {c}
+                </span>
+              ))}
+            </div>
+          )}
         </Section>
 
         {/* Medication + Surgical */}

@@ -2,14 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { Activity, Pill, Wrench, Plus, Clock, Edit2, Loader2 } from 'lucide-react'
+import { Activity, Pill, Wrench, Plus, Clock, Edit2, Loader2, Syringe, Bandage } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import type {
   AthleteProfileData,
   MedicalHistory,
   MedicationRecord,
   OrthoticRecord,
   RehabSession,
+  MedicationAdministration,
+  OrthosisRecord,
 } from '@/types/athlete-profile'
 
 const MedicationModal = dynamic(() => import('./MedicationModal').then((mod) => mod.MedicationModal))
@@ -174,6 +177,237 @@ function OrthoticRow({ o, onEdit }: { o: OrthoticRecord; onEdit: () => void }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
+// ── Medication Administration Modal ──────────────────────────────────────────
+
+const ROUTE_OPTIONS = [
+  { value: 'oral',           label: 'Oral' },
+  { value: 'im',             label: 'IM (intramuscular)' },
+  { value: 'intra-articular', label: 'Intra-articular' },
+  { value: 'iv',             label: 'IV (intravenoso)' },
+  { value: 'topical',        label: 'Tópico' },
+  { value: 'other',          label: 'Outro' },
+]
+
+function formatDateTime(dt: string) {
+  return new Date(dt).toLocaleString('pt-PT', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  })
+}
+
+function MedAdminModal({
+  athleteId,
+  onClose,
+  onSaved,
+}: {
+  athleteId: string
+  onClose: () => void
+  onSaved: (record: MedicationAdministration) => void
+}) {
+  const [medName,        setMedName]        = useState('')
+  const [dose,           setDose]           = useState('')
+  const [route,          setRoute]          = useState('oral')
+  const [notes,          setNotes]          = useState('')
+  const [administeredAt, setAdministeredAt] = useState(() => new Date().toISOString().slice(0, 16))
+  const [saving,         setSaving]         = useState(false)
+  const [error,          setError]          = useState<string | null>(null)
+
+  async function handleSave() {
+    if (!medName.trim()) { setError('Nome do medicamento obrigatório'); return }
+    setSaving(true)
+    setError(null)
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      const { data: prof } = await supabase.from('profiles').select('org_id, full_name').eq('id', user?.id ?? '').single()
+      const { data, error: err } = await supabase.from('medication_administrations').insert({
+        athlete_id:           athleteId,
+        org_id:               prof?.org_id ?? null,
+        medication_name:      medName.trim(),
+        dose:                 dose.trim() || null,
+        route,
+        notes:                notes.trim() || null,
+        administered_by:      user?.id ?? null,
+        administered_by_name: prof?.full_name ?? null,
+        administered_at:      new Date(administeredAt).toISOString(),
+      }).select().single()
+      if (err) throw err
+      onSaved(data as MedicationAdministration)
+    } catch (e) {
+      setError((e as Error).message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="w-full max-w-sm rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+          Registar Administração
+        </h3>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Medicamento</label>
+            <input value={medName} onChange={(e) => setMedName(e.target.value)} placeholder="Nome do medicamento"
+              className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
+              style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Dose</label>
+              <input value={dose} onChange={(e) => setDose(e.target.value)} placeholder="ex: 500 mg"
+                className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
+                style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Via</label>
+              <select value={route} onChange={(e) => setRoute(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
+                style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }}>
+                {ROUTE_OPTIONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Data e hora</label>
+            <input type="datetime-local" value={administeredAt} onChange={(e) => setAdministeredAt(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
+              style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }} />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Notas (opcional)</label>
+            <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notas adicionais"
+              className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
+              style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }} />
+          </div>
+        </div>
+        {error && <p className="text-xs" style={{ color: 'var(--aura-danger)' }}>{error}</p>}
+        <div className="flex gap-3">
+          <button type="button" onClick={onClose}
+            className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--aura-bg3)]"
+            style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }}>
+            Cancelar
+          </button>
+          <button type="button" onClick={handleSave} disabled={saving}
+            className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1"
+            style={{ background: 'var(--aura-green)', color: '#000' }}>
+            {saving && <Loader2 size={12} className="animate-spin" />} Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Orthosis Record Modal ─────────────────────────────────────────────────────
+
+function OrthosisModal({
+  athleteId,
+  onClose,
+  onSaved,
+}: {
+  athleteId: string
+  onClose: () => void
+  onSaved: (record: OrthosisRecord) => void
+}) {
+  const [orthosisType, setOrthosisType] = useState('')
+  const [bodyPart,     setBodyPart]     = useState('')
+  const [appliedBy,    setAppliedBy]    = useState('')
+  const [requiresDaily, setRequiresDaily] = useState(false)
+  const [notes,        setNotes]        = useState('')
+  const [saving,       setSaving]       = useState(false)
+  const [error,        setError]        = useState<string | null>(null)
+
+  async function handleSave() {
+    if (!orthosisType.trim()) { setError('Tipo de ortótese obrigatório'); return }
+    setSaving(true)
+    setError(null)
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      const { data: prof } = await supabase.from('profiles').select('org_id, full_name').eq('id', user?.id ?? '').single()
+      const today = new Date().toISOString().slice(0, 10)
+      const { data, error: err } = await supabase.from('orthosis_records').insert({
+        athlete_id:                 athleteId,
+        org_id:                     prof?.org_id ?? null,
+        orthosis_type:              orthosisType.trim(),
+        body_part:                  bodyPart.trim() || null,
+        registered_by_name:         prof?.full_name ?? null,
+        applied_by_name:            appliedBy.trim() || null,
+        application_date:           today,
+        requires_daily_application: requiresDaily,
+        notes:                      notes.trim() || null,
+        is_active:                  true,
+      }).select().single()
+      if (err) throw err
+      onSaved(data as OrthosisRecord)
+    } catch (e) {
+      setError((e as Error).message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="w-full max-w-sm rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+          Registar Ortótese / Ligadura
+        </h3>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Tipo de ortótese / ligadura</label>
+            <input value={orthosisType} onChange={(e) => setOrthosisType(e.target.value)} placeholder="ex: Ligadura funcional, Taping, Joelheira"
+              className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
+              style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Segmento corporal</label>
+              <input value={bodyPart} onChange={(e) => setBodyPart(e.target.value)} placeholder="ex: Tornozelo"
+                className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
+                style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Aplicado por</label>
+              <input value={appliedBy} onChange={(e) => setAppliedBy(e.target.value)} placeholder="Nome do clínico"
+                className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
+                style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }} />
+            </div>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={requiresDaily} onChange={(e) => setRequiresDaily(e.target.checked)} />
+            <span className="text-xs" style={{ color: 'var(--aura-text2)' }}>Requer aplicação diária</span>
+          </label>
+          <div className="space-y-1.5">
+            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Notas (opcional)</label>
+            <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Observações"
+              className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
+              style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }} />
+          </div>
+        </div>
+        {error && <p className="text-xs" style={{ color: 'var(--aura-danger)' }}>{error}</p>}
+        <div className="flex gap-3">
+          <button type="button" onClick={onClose}
+            className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--aura-bg3)]"
+            style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }}>
+            Cancelar
+          </button>
+          <button type="button" onClick={handleSave} disabled={saving}
+            className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1"
+            style={{ background: 'var(--aura-green)', color: '#000' }}>
+            {saving && <Loader2 size={12} className="animate-spin" />} Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
 export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
   const router = useRouter()
 
@@ -198,6 +432,16 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
   const [editingOrtho,    setEditingOrtho]    = useState<OrthoticRecord | null>(null)
   const [editingOrthoIdx, setEditingOrthoIdx] = useState<number | null>(null)
 
+  // Medication administrations (clinical table)
+  const [medAdminRecords,  setMedAdminRecords]  = useState<MedicationAdministration[]>([])
+  const [loadingMedAdmin,  setLoadingMedAdmin]  = useState(true)
+  const [showMedAdminModal, setShowMedAdminModal] = useState(false)
+
+  // Orthosis records (clinical table)
+  const [orthosisRecords,  setOrthosisRecords]  = useState<OrthosisRecord[]>([])
+  const [loadingOrthosis,  setLoadingOrthosis]  = useState(true)
+  const [showOrthosisModal, setShowOrthosisModal] = useState(false)
+
   // ── Fetch rehab sessions ───────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false
@@ -208,6 +452,50 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
         if (!cancelled && res.ok) setSessions(await res.json())
       } finally {
         if (!cancelled) setLoadingS(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [profile.id])
+
+  // ── Fetch medication administrations ───────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      setLoadingMedAdmin(true)
+      try {
+        const supabase = createClient()
+        const { data } = await supabase
+          .from('medication_administrations')
+          .select('id, medication_name, dose, route, administered_by_name, administered_at, notes, created_at')
+          .eq('athlete_id', profile.id)
+          .order('administered_at', { ascending: false })
+          .limit(50)
+        if (!cancelled) setMedAdminRecords((data ?? []) as MedicationAdministration[])
+      } finally {
+        if (!cancelled) setLoadingMedAdmin(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [profile.id])
+
+  // ── Fetch orthosis records ─────────────────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      setLoadingOrthosis(true)
+      try {
+        const supabase = createClient()
+        const { data } = await supabase
+          .from('orthosis_records')
+          .select('id, orthosis_type, body_part, registered_by_name, applied_by_name, application_date, requires_daily_application, is_active, notes, created_at')
+          .eq('athlete_id', profile.id)
+          .order('application_date', { ascending: false })
+          .limit(50)
+        if (!cancelled) setOrthosisRecords((data ?? []) as OrthosisRecord[])
+      } finally {
+        if (!cancelled) setLoadingOrthosis(false)
       }
     }
     load()
@@ -366,7 +654,7 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
           </Section>
         )}
 
-        {/* Orthotics */}
+        {/* Orthotics (JSONB legacy) */}
         <Section
           icon={Wrench}
           title={`Ortóteses & Auxiliares${orthotics.length > 0 ? ` (${orthotics.length})` : ''}`}
@@ -387,6 +675,103 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
             <div className="space-y-2">
               {orthotics.map((o, i) => (
                 <OrthoticRow key={i} o={o} onEdit={() => openEditOrtho(o, i)} />
+              ))}
+            </div>
+          )}
+        </Section>
+
+        {/* Medication administrations (antidoping log) */}
+        <Section
+          icon={Syringe}
+          title={`Administração de Medicamentos${medAdminRecords.length > 0 ? ` (${medAdminRecords.length})` : ''}`}
+          action={
+            <button
+              type="button"
+              onClick={() => setShowMedAdminModal(true)}
+              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg transition-colors hover:bg-[var(--aura-green-bg)]"
+              style={{ color: 'var(--aura-green)' }}
+            >
+              <Plus size={10} /> Registar
+            </button>
+          }
+        >
+          {loadingMedAdmin ? (
+            <div className="flex justify-center py-4">
+              <Loader2 size={16} className="animate-spin" style={{ color: 'var(--aura-text3)' }} />
+            </div>
+          ) : medAdminRecords.length === 0 ? (
+            <EmptyState label="Sem administrações registadas" cta="Registar administração" onClick={() => setShowMedAdminModal(true)} />
+          ) : (
+            <div className="space-y-2">
+              {medAdminRecords.map((r) => (
+                <div key={r.id} className="rounded-lg border px-3 py-2.5 space-y-1" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-xs font-semibold" style={{ color: 'var(--aura-text)' }}>{r.medication_name}</p>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {r.route && (
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase" style={{ background: 'var(--aura-bg4)', color: 'var(--aura-text3)' }}>
+                          {r.route}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 text-[10px]" style={{ color: 'var(--aura-text3)' }}>
+                    {r.dose && <span>{r.dose}</span>}
+                    <span className="flex items-center gap-1"><Clock size={9} />{formatDateTime(r.administered_at)}</span>
+                    {r.administered_by_name && <span>· {r.administered_by_name}</span>}
+                  </div>
+                  {r.notes && <p className="text-[10px] italic" style={{ color: 'var(--aura-text3)' }}>{r.notes}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        {/* Orthosis records (clinical table) */}
+        <Section
+          icon={Bandage}
+          title={`Ligaduras & Ortóteses Clínicas${orthosisRecords.length > 0 ? ` (${orthosisRecords.length})` : ''}`}
+          action={
+            <button
+              type="button"
+              onClick={() => setShowOrthosisModal(true)}
+              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg transition-colors hover:bg-[var(--aura-green-bg)]"
+              style={{ color: 'var(--aura-green)' }}
+            >
+              <Plus size={10} /> Registar
+            </button>
+          }
+        >
+          {loadingOrthosis ? (
+            <div className="flex justify-center py-4">
+              <Loader2 size={16} className="animate-spin" style={{ color: 'var(--aura-text3)' }} />
+            </div>
+          ) : orthosisRecords.length === 0 ? (
+            <EmptyState label="Sem registos clínicos de ligaduras" cta="Registar" onClick={() => setShowOrthosisModal(true)} />
+          ) : (
+            <div className="space-y-2">
+              {orthosisRecords.map((r) => (
+                <div key={r.id} className="rounded-lg border px-3 py-2.5 space-y-1" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-xs font-semibold" style={{ color: 'var(--aura-text)' }}>
+                      {r.orthosis_type}{r.body_part ? ` · ${r.body_part}` : ''}
+                    </p>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {r.is_active && (
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--aura-green-bg)', color: 'var(--aura-green)' }}>Ativo</span>
+                      )}
+                      {r.requires_daily_application && (
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--aura-warn-bg)', color: 'var(--aura-warn)' }}>Diário</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 text-[10px]" style={{ color: 'var(--aura-text3)' }}>
+                    <span className="flex items-center gap-1"><Clock size={9} />{r.application_date}</span>
+                    {r.registered_by_name && <span>Reg.: {r.registered_by_name}</span>}
+                    {r.applied_by_name && <span>Apl.: {r.applied_by_name}</span>}
+                  </div>
+                  {r.notes && <p className="text-[10px] italic" style={{ color: 'var(--aura-text3)' }}>{r.notes}</p>}
+                </div>
               ))}
             </div>
           )}
@@ -422,6 +807,20 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
           editingIndex={editingOrthoIdx}
           onClose={() => { setShowOrthoModal(false); setEditingOrtho(null); setEditingOrthoIdx(null) }}
           onSaved={handleOrthoSaved}
+        />
+      )}
+      {showMedAdminModal && (
+        <MedAdminModal
+          athleteId={profile.id}
+          onClose={() => setShowMedAdminModal(false)}
+          onSaved={(r) => { setMedAdminRecords((prev) => [r, ...prev]); setShowMedAdminModal(false) }}
+        />
+      )}
+      {showOrthosisModal && (
+        <OrthosisModal
+          athleteId={profile.id}
+          onClose={() => setShowOrthosisModal(false)}
+          onSaved={(r) => { setOrthosisRecords((prev) => [r, ...prev]); setShowOrthosisModal(false) }}
         />
       )}
     </>

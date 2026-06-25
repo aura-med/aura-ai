@@ -9,7 +9,7 @@ import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import { AthleteProfileClient } from '@/components/athlete-profile/AthleteProfileClient'
 import { getLatestRecommendations } from '@/lib/actions/recommendations'
 import type { UserRole } from '@/types'
-import type { AthleteProfileData, TabId, InjuryEventSummary } from '@/types/athlete-profile'
+import type { AthleteProfileData, TabId, InjuryEventSummary, ActiveDiagnosis, ActiveOccurrence } from '@/types/athlete-profile'
 
 const VALID_TABS: TabId[] = ['overview', 'medical', 'injuries', 'treatments', 'documents', 'recommendations']
 
@@ -48,7 +48,7 @@ async function AthleteDetailContent({
   const { data: athlete, error } = await supabase
     .from('athletes')
     .select(`
-      id, name, shirt_number, photo_url, position, date_of_birth, club, status,
+      id, name, shirt_number, photo_url, position, date_of_birth, club, status, availability_status,
       score_history (score_date, total_score, acwr_partial, hrv_partial, fatigue_partial, sleep_partial, tqr_partial, history_partial, stress_partial, decel_partial, confidence, days_since_match)
     `)
     .eq('id', id)
@@ -116,6 +116,22 @@ async function AthleteDetailContent({
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
+
+  // ── Active diagnoses + occurrences (clinical module) ─────────────────────
+  const [{ data: activeDiagnoses }, { data: activeOccurrences }] = await Promise.all([
+    supabase
+      .from('diagnoses')
+      .select('id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, diagnosed_at, is_resolved')
+      .eq('athlete_id', id)
+      .eq('is_resolved', false)
+      .order('diagnosed_at', { ascending: false }),
+    supabase
+      .from('occurrences')
+      .select('id, occurrence_date, occurrence_type, availability_status, subjective')
+      .eq('athlete_id', id)
+      .eq('is_resolved', false)
+      .order('occurrence_date', { ascending: false }),
+  ])
 
   // ── Document + consultation counts ────────────────────────────────────────
   const [{ count: documentCount }, { count: consultationCount }] = await Promise.all([
@@ -213,15 +229,20 @@ async function AthleteDetailContent({
     }))
 
   // ── Assemble profile ──────────────────────────────────────────────────────
+  const rawAthlete = athlete as typeof athlete & { availability_status?: string | null }
+  const availabilityStatus = rawAthlete.availability_status
+    ?? (athlete.status === 'rehab' ? 'rtp' : 'available')
+
   const profile: AthleteProfileData = {
     id:                athlete.id,
     name:              athlete.name,
     shirt_number:      athlete.shirt_number ?? null,
-    photo_url:         (athlete as { photo_url?: string | null }).photo_url ?? null,
+    photo_url:         rawAthlete.photo_url ?? null,
     position:          athlete.position ?? null,
     date_of_birth:     athlete.date_of_birth ?? null,
     club:              athlete.club ?? null,
     status:            athlete.status ?? 'available',
+    availabilityStatus,
     score,
     riskLevel,
     confidence,
@@ -235,6 +256,8 @@ async function AthleteDetailContent({
     baselineScat6:     baselineScat6 ?? null,
     activeConcussion:  activeConcussion ?? null,
     injuryEvents,
+    activeDiagnoses:   (activeDiagnoses ?? []) as ActiveDiagnosis[],
+    activeOccurrences: (activeOccurrences ?? []) as ActiveOccurrence[],
     documentCount:     documentCount ?? 0,
     consultationCount: consultationCount ?? 0,
     recommendations,

@@ -183,7 +183,7 @@ function TabContent({ tab, profile }: { tab: TabId; profile: AthleteProfileData 
     case 'injuries':         return <InjuriesTab        profile={profile} />
     case 'treatments':       return <TreatmentsTab      profile={profile} />
     case 'documents':        return <DocumentsTab       profile={profile} />
-    case 'recommendations':  return <RecommendationsTab profile={profile} />
+    case 'recommendations':  return <RecommendationsTab />
     default:                 return <OverviewTab        profile={profile} />
   }
 }

@@ -61,6 +61,8 @@
       "readiness": "Readiness",
       "rehab": "Rehabilitation",
       "clinical_portal": "Clinical Portal",
+      "clinical_file": "Clinical File",
+      "occurrences": "Occurrences",
       "load": "Load & GPS",
       "performance": "Max Values & Profile",
       "calendar": "Calendar Intelligence",

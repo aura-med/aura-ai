@@ -5,49 +5,55 @@ import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import { useUiStore } from '@/stores/uiStore'
+import type { UserRole } from '@/types'
 import {
-  LayoutDashboard, Users, UserCircle, Activity, Calendar,
-  Heart, Gauge, Zap, BookOpen, Settings,
-  ClipboardList, TrendingUp, Stethoscope,
+  LayoutDashboard, Users, Activity, Calendar,
+  Heart, Gauge, BookOpen, Settings,
+  ClipboardList, TrendingUp, Stethoscope, FileText, AlertCircle,
 } from 'lucide-react'
+
+const CLINICAL_ROLES: UserRole[] = ['admin', 'doctor', 'physio', 'masseur']
+const PERFORMANCE_ROLES: UserRole[] = ['admin', 'doctor', 'physio', 'fitness_coach', 'coach', 'director', 'team_manager', 'nutritionist', 'scout']
+const ALL_ROLES: UserRole[] = ['admin', 'doctor', 'physio', 'masseur', 'coach', 'fitness_coach', 'nutritionist', 'director', 'scout', 'team_manager', 'athlete']
 
 interface NavItem {
   href: string
   labelKey: string
   icon: React.ElementType
   badge?: number
+  roles: UserRole[]
+  inDevelopment?: boolean
   sectionKey: string
 }
 
 const NAV_ITEMS: NavItem[] = [
-  // Overview
-  { href: '/',             labelKey: 'dashboard',       icon: LayoutDashboard, badge: 3, sectionKey: 'overview' },
-  { href: '/squad',        labelKey: 'squad',           icon: Users,                     sectionKey: 'overview' },
-  // Clinical
-  { href: '/athletes',     labelKey: 'athletes',        icon: UserCircle,                sectionKey: 'clinical' },
-  { href: '/input',        labelKey: 'input',           icon: ClipboardList,             sectionKey: 'clinical' },
-  { href: '/readiness',    labelKey: 'readiness',       icon: Heart,                     sectionKey: 'clinical' },
-  { href: '/rehab',        labelKey: 'rehab',           icon: Activity, badge: 2,        sectionKey: 'clinical' },
-  { href: '/clinical-portal', labelKey: 'clinical_portal', icon: Stethoscope,            sectionKey: 'clinical' },
-  // Performance
-  { href: '/load',         labelKey: 'load',            icon: Gauge,                     sectionKey: 'performance' },
-  { href: '/performance',  labelKey: 'performance',     icon: TrendingUp,                sectionKey: 'performance' },
+  // Overview — visible to all
+  { href: '/',              labelKey: 'dashboard',         icon: LayoutDashboard, roles: ALL_ROLES,        sectionKey: 'overview' },
+  { href: '/squad',         labelKey: 'squad',             icon: Users,           roles: ALL_ROLES,        sectionKey: 'overview' },
+  // Clínico — clinical staff only
+  { href: '/clinical',      labelKey: 'clinical_file',     icon: FileText,        roles: CLINICAL_ROLES,   sectionKey: 'clinical' },
+  { href: '/occurrences',   labelKey: 'occurrences',       icon: AlertCircle,     roles: CLINICAL_ROLES,   sectionKey: 'clinical' },
+  { href: '/rehab',         labelKey: 'rehab',             icon: Activity,        roles: CLINICAL_ROLES,   sectionKey: 'clinical' },
+  // Performance — visible to all, marked as in development
+  { href: '/load',          labelKey: 'load',              icon: Gauge,           roles: PERFORMANCE_ROLES, inDevelopment: true, sectionKey: 'performance' },
+  { href: '/performance',   labelKey: 'performance',       icon: TrendingUp,      roles: PERFORMANCE_ROLES, inDevelopment: true, sectionKey: 'performance' },
+  { href: '/readiness',     labelKey: 'readiness',         icon: Heart,           roles: PERFORMANCE_ROLES, inDevelopment: true, sectionKey: 'performance' },
+  { href: '/input',         labelKey: 'input',             icon: ClipboardList,   roles: PERFORMANCE_ROLES, inDevelopment: true, sectionKey: 'performance' },
   // Intelligence
-  { href: '/calendar',     labelKey: 'calendar',        icon: Calendar,                  sectionKey: 'intelligence' },
-  { href: '/passport',     labelKey: 'passport',        icon: BookOpen,                  sectionKey: 'intelligence' },
-  // Special
-  { href: '/female-squad', labelKey: 'female_squad',   icon: Zap,                       sectionKey: 'special' },
+  { href: '/calendar',      labelKey: 'calendar',          icon: Calendar,        roles: ALL_ROLES,        sectionKey: 'intelligence' },
+  { href: '/passport',      labelKey: 'passport',          icon: BookOpen,        roles: ALL_ROLES,        sectionKey: 'intelligence' },
   // System
-  { href: '/settings',     labelKey: 'settings',        icon: Settings,                  sectionKey: 'system' },
+  { href: '/settings',      labelKey: 'settings',          icon: Settings,        roles: ALL_ROLES,        sectionKey: 'system' },
 ]
 
-const SECTION_KEYS = ['overview', 'clinical', 'performance', 'intelligence', 'special', 'system'] as const
+const SECTION_KEYS = ['overview', 'clinical', 'performance', 'intelligence', 'system'] as const
+type SectionKey = typeof SECTION_KEYS[number]
 
 export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const t = useTranslations('sidebar')
-  const { mobileSidebarOpen, setMobileSidebarOpen, squads, selectedSquadId, setSquad, selectedOrg } = useUiStore()
+  const { mobileSidebarOpen, setMobileSidebarOpen, squads, selectedSquadId, setSquad, selectedOrg, role } = useUiStore()
 
   function close() { setMobileSidebarOpen(false) }
 
@@ -58,6 +64,8 @@ export function Sidebar() {
     router.replace(`${window.location.pathname}?${params.toString()}`, { scroll: false })
     close()
   }
+
+  const visibleItems = NAV_ITEMS.filter((item) => item.roles.includes(role))
 
   return (
     <>
@@ -118,8 +126,8 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-6">
-        {SECTION_KEYS.map((sectionKey) => {
-          const items = NAV_ITEMS.filter((i) => i.sectionKey === sectionKey)
+        {SECTION_KEYS.map((sectionKey: SectionKey) => {
+          const items = visibleItems.filter((i) => i.sectionKey === sectionKey)
           if (!items.length) return null
           return (
             <div key={sectionKey}>
@@ -134,6 +142,7 @@ export function Sidebar() {
                   const Icon = item.icon
                   const isActive = pathname === item.href ||
                     (item.href !== '/' && pathname.startsWith(item.href))
+                  const label = t(`nav.${item.labelKey}`)
                   return (
                     <li key={item.href}>
                       <Link
@@ -141,27 +150,43 @@ export function Sidebar() {
                         onClick={close}
                         className={cn(
                           'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors group',
-                          isActive
-                            ? 'text-[var(--aura-green)] font-medium'
-                            : 'text-[var(--aura-text2)] hover:text-[var(--aura-text)] hover:bg-[var(--aura-bg3)]'
+                          item.inDevelopment
+                            ? 'opacity-50 cursor-default pointer-events-none'
+                            : isActive
+                              ? 'text-[var(--aura-green)] font-medium'
+                              : 'text-[var(--aura-text2)] hover:text-[var(--aura-text)] hover:bg-[var(--aura-bg3)]'
                         )}
                         style={
-                          isActive
+                          isActive && !item.inDevelopment
                             ? { background: 'rgba(0,229,160,0.08)' }
                             : undefined
                         }
+                        aria-disabled={item.inDevelopment}
+                        tabIndex={item.inDevelopment ? -1 : undefined}
                       >
                         <Icon
                           size={15}
                           className={cn(
                             'shrink-0',
-                            isActive
+                            isActive && !item.inDevelopment
                               ? 'text-[var(--aura-green)]'
                               : 'text-[var(--aura-text3)] group-hover:text-[var(--aura-text2)]'
                           )}
                         />
-                        <span className="flex-1 truncate">{t(`nav.${item.labelKey}`)}</span>
-                        {item.badge ? (
+                        <span className="flex-1 truncate">{label}</span>
+                        {item.inDevelopment && (
+                          <span
+                            className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full"
+                            style={{
+                              background: 'var(--aura-bg3)',
+                              color: 'var(--aura-text3)',
+                              border: '1px solid var(--aura-border)',
+                            }}
+                          >
+                            Em dev.
+                          </span>
+                        )}
+                        {item.badge && !item.inDevelopment ? (
                           <span
                             className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full"
                             style={{

@@ -27,8 +27,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/athletes',     labelKey: 'athletes',        icon: UserCircle,                sectionKey: 'clinical' },
   { href: '/input',        labelKey: 'input',           icon: ClipboardList,             sectionKey: 'clinical' },
   { href: '/readiness',    labelKey: 'readiness',       icon: Heart,                     sectionKey: 'clinical' },
+  { href: '/clinical',     labelKey: 'clinical',        icon: Stethoscope,               sectionKey: 'clinical' },
   { href: '/rehab',        labelKey: 'rehab',           icon: Activity, badge: 2,        sectionKey: 'clinical' },
-  { href: '/clinical-portal', labelKey: 'clinical_portal', icon: Stethoscope,            sectionKey: 'clinical' },
   // Performance
   { href: '/load',         labelKey: 'load',            icon: Gauge,                     sectionKey: 'performance' },
   { href: '/performance',  labelKey: 'performance',     icon: TrendingUp,                sectionKey: 'performance' },

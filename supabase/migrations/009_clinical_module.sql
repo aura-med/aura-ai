@@ -19,6 +19,13 @@ ALTER TABLE calendar_events
   ADD COLUMN IF NOT EXISTS opponent text,
   ADD COLUMN IF NOT EXISTS venue text CHECK (venue IN ('home', 'away', 'neutral'));
 
+-- Allow 'recovery' as an event_type (calendar editor offers recovery sessions).
+-- The original CHECK only permitted rest/training/match/travel.
+ALTER TABLE calendar_events DROP CONSTRAINT IF EXISTS calendar_events_event_type_check;
+ALTER TABLE calendar_events
+  ADD CONSTRAINT calendar_events_event_type_check
+  CHECK (event_type IN ('rest', 'training', 'match', 'travel', 'recovery'));
+
 -- Update existing match events
 UPDATE calendar_events SET is_match_day = true WHERE event_type = 'match';
 

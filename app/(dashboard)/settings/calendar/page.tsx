@@ -49,7 +49,10 @@ export default function CalendarSettingsPage() {
       .select('org_id')
       .single()
 
-    if (!profile?.org_id) return
+    if (!profile?.org_id) {
+      setLoading(false)
+      return
+    }
 
     const { data } = await supabase
       .from('calendar_events')
@@ -61,6 +64,7 @@ export default function CalendarSettingsPage() {
     setLoading(false)
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchEvents() }, [])
 
   function handleAddMatch() {

@@ -11,7 +11,6 @@ interface AthleteAvatarProps {
 }
 
 export function AthleteAvatar({ photoUrl, shirtNumber, name, size }: AthleteAvatarProps) {
-  const sizeStyle = size ? { width: size, height: size } : undefined
   const className = size ? undefined : 'ath-avatar'
 
   const containerStyle: CSSProperties = size

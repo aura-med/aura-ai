@@ -60,8 +60,20 @@ async function getData(squadId: string | null, date: string) {
   const matchDays = (matchEvents ?? []).map((e: { event_date: string }) => e.event_date)
   const microcycle = calculateMDStatus(date, matchDays)
 
+  // Supabase infers the to-one `athletes` relation as an array — normalise to
+  // a single object so the runtime shape matches the client component's types.
+  type RawOccurrence = Omit<
+    Parameters<typeof OccurrencesClient>[0]['occurrences'][number],
+    'athletes'
+  > & { athletes: Parameters<typeof OccurrencesClient>[0]['athletes'][number] | Array<Parameters<typeof OccurrencesClient>[0]['athletes'][number]> }
+
+  const normalisedOccurrences = ((occurrences ?? []) as unknown as RawOccurrence[]).map((o) => ({
+    ...o,
+    athletes: Array.isArray(o.athletes) ? o.athletes[0] : o.athletes,
+  })) as Parameters<typeof OccurrencesClient>[0]['occurrences']
+
   return {
-    occurrences: (occurrences ?? []) as Parameters<typeof OccurrencesClient>[0]['occurrences'],
+    occurrences: normalisedOccurrences,
     athletes: (athletes ?? []) as Parameters<typeof OccurrencesClient>[0]['athletes'],
     orgId,
     clinicianName: profile?.full_name ?? '',

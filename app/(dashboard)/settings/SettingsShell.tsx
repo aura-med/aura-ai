@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import {
   User, Building2, Users, SlidersHorizontal, Bell,
-  Puzzle, CreditCard, ShieldCheck, LogOut, ChevronRight,
+  Puzzle, CreditCard, ShieldCheck, LogOut, ChevronRight, CalendarDays,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -16,6 +16,7 @@ const SETTINGS_NAV = [
   { href: '/settings/squads', icon: Users, key: 'squads' },
   { href: '/settings/preferences', icon: SlidersHorizontal, key: 'preferences' },
   { href: '/settings/users', icon: Users, key: 'users' },
+  { href: '/settings/calendar', icon: CalendarDays, key: 'calendar' },
   { href: '/settings/notifications', icon: Bell, key: 'notifications' },
   { href: '/settings/integrations', icon: Puzzle, key: 'integrations' },
   { href: '/settings/subscription', icon: CreditCard, key: 'subscription' },

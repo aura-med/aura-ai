@@ -1,253 +1,148 @@
-import { connection } from 'next/server'
-import Link from 'next/link'
-import { Activity, FileText, AlertCircle, Users, CheckCircle2, ChevronRight } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
-import { getRehabPageDTO } from '@/lib/data/rehab'
-import type { RehabSessionDTO } from '@/lib/data/types'
+import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
+import Link from 'next/link'
+import type { AthleteAvailabilityStatus } from '@/types'
 
-// ── Tab nav ───────────────────────────────────────────────────────────────────
-
-const TABS = [
-  { id: 'file',   label: 'Ficheiro Clínico', icon: FileText   },
-  { id: 'occurrences', label: 'Ocorrências', icon: AlertCircle },
-  { id: 'rehab',  label: 'Reabilitação',     icon: Activity   },
-] as const
-
-type TabId = typeof TABS[number]['id']
-
-function TabNav({ active, squadId }: { active: TabId; squadId: string | null }) {
-  return (
-    <div className="flex gap-1 border-b" style={{ borderColor: 'var(--aura-border)' }}>
-      {TABS.map(({ id, label, icon: Icon }) => {
-        const isActive = active === id
-        return (
-          <Link
-            key={id}
-            href={withSquadParam(`/clinical?tab=${id}`, squadId)}
-            className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors"
-            style={{
-              borderColor: isActive ? 'var(--aura-green)' : 'transparent',
-              color: isActive ? 'var(--aura-green)' : 'var(--aura-text3)',
-            }}
-          >
-            <Icon size={13} />
-            {label}
-          </Link>
-        )
-      })}
-    </div>
-  )
+const STATUS_CONFIG: Record<AthleteAvailabilityStatus, { label: string; color: string; dot: string; bg: string }> = {
+  available:   { label: 'Disponível',   color: 'var(--aura-green)',  dot: '#00e5a0', bg: 'rgba(0,229,160,0.08)' },
+  evaluation:  { label: 'Em Avaliação', color: 'var(--aura-warn)',   dot: '#f6ad55', bg: 'rgba(246,173,85,0.08)' },
+  unavailable: { label: 'Indisponível', color: 'var(--aura-danger)', dot: '#ff4d6d', bg: 'rgba(255,77,109,0.08)' },
+  rtp:         { label: 'Em RTP',       color: 'var(--aura-purple)', dot: '#b48dfc', bg: 'rgba(180,141,252,0.08)' },
 }
 
-// ── Ficheiro Clínico tab (placeholder) ───────────────────────────────────────
+const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 'rtp', 'available']
 
-function FileTab({ squadId }: { squadId: string | null }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-      <FileText size={32} style={{ color: 'var(--aura-text3)', opacity: 0.4 }} />
-      <div className="space-y-1">
-        <p className="text-sm font-semibold" style={{ color: 'var(--aura-text2)' }}>Ficheiro Clínico</p>
-        <p className="text-xs max-w-xs" style={{ color: 'var(--aura-text3)' }}>
-          Aceda ao ficheiro individual de cada atleta através do respectivo perfil.
-        </p>
-      </div>
-      <Link
-        href={withSquadParam('/athletes', squadId)}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold"
-        style={{ background: 'var(--aura-green)', color: '#000' }}
-      >
-        <Users size={13} />
-        Ver lista de atletas
-        <ChevronRight size={13} />
-      </Link>
-    </div>
-  )
+async function getData(squadId: string | null) {
+  const supabase = await createClient()
+  let query = supabase
+    .from('athletes')
+    .select('id, name, shirt_number, photo_url, position, status, availability_status, squad_id')
+    .eq('active', true)
+    .order('shirt_number')
+  if (squadId) query = query.eq('squad_id', squadId)
+  const { data } = await query
+  return data ?? []
 }
 
-// ── Ocorrências tab (placeholder — links to clinical portal) ─────────────────
-
-function OccurrencesTab({ squadId }: { squadId: string | null }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-      <AlertCircle size={32} style={{ color: 'var(--aura-text3)', opacity: 0.4 }} />
-      <div className="space-y-1">
-        <p className="text-sm font-semibold" style={{ color: 'var(--aura-text2)' }}>Ocorrências Clínicas</p>
-        <p className="text-xs max-w-xs" style={{ color: 'var(--aura-text3)' }}>
-          Registo SOAP de queixas, traumas e doenças. Portal clínico disponível abaixo.
-        </p>
-      </div>
-      <Link
-        href={withSquadParam('/clinical-portal', squadId)}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold"
-        style={{ background: 'var(--aura-green)', color: '#000' }}
-      >
-        <Activity size={13} />
-        Abrir portal clínico
-        <ChevronRight size={13} />
-      </Link>
-    </div>
-  )
-}
-
-// ── Rehab session card ────────────────────────────────────────────────────────
-
-function RehabCard({ session }: { session: RehabSessionDTO }) {
-  const protocol = session.protocol
-  const phases = protocol?.phases ?? []
-  const currentPhase = phases.find(
-    (p) => session.currentDay >= p.d1 && session.currentDay <= p.d2,
-  ) ?? phases[phases.length - 1]
-  const progress = currentPhase
-    ? Math.min(100, Math.round(((session.currentDay - currentPhase.d1) / Math.max(1, currentPhase.d2 - currentPhase.d1 + 1)) * 100))
-    : 0
-
-  const doneRtp = session.rtpCriteria.filter((c) => c.done).length
-  const totalRtp = session.rtpCriteria.length
-
-  return (
-    <div
-      className="rounded-xl border p-4 space-y-3"
-      style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold truncate" style={{ color: 'var(--aura-text)' }}>
-            {session.athleteName}
-          </p>
-          <p className="text-[11px] mt-0.5" style={{ color: 'var(--aura-text3)' }}>
-            {session.position ?? '—'}{session.club ? ` · ${session.club}` : ''}
-          </p>
-        </div>
-        <span
-          className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
-          style={{ background: 'rgba(180,141,252,0.12)', color: 'var(--aura-purple)' }}
-        >
-          RTP
-        </span>
-      </div>
-
-      {protocol && (
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-[11px]">
-            <span style={{ color: 'var(--aura-text2)' }}>{protocol.name}</span>
-            <span className="font-mono font-bold" style={{ color: 'var(--aura-text2)' }}>
-              Dia {session.currentDay}{protocol.totalDays ? ` / ${protocol.totalDays}` : ''}
-            </span>
-          </div>
-          {currentPhase && (
-            <div>
-              <div className="flex items-center justify-between text-[10px] mb-1" style={{ color: 'var(--aura-text3)' }}>
-                <span>{currentPhase.name}</span>
-                <span className="font-mono">{progress}%</span>
-              </div>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--aura-bg4)' }}>
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{ width: `${progress}%`, background: 'var(--aura-purple)' }}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {totalRtp > 0 && (
-        <div className="flex items-center gap-2 text-[11px]">
-          <CheckCircle2 size={11} style={{ color: doneRtp === totalRtp ? 'var(--aura-green)' : 'var(--aura-text3)' }} />
-          <span style={{ color: 'var(--aura-text3)' }}>
-            Critérios RTP: <span className="font-mono font-bold" style={{ color: 'var(--aura-text2)' }}>{doneRtp}/{totalRtp}</span>
-          </span>
-        </div>
-      )}
-
-      <Link
-        href={`/rehab/${session.id}`}
-        className="flex items-center justify-center gap-1.5 w-full py-1.5 rounded-lg text-xs font-medium transition-colors"
-        style={{ background: 'var(--aura-bg3)', color: 'var(--aura-text2)' }}
-      >
-        Ver protocolo completo
-        <ChevronRight size={11} />
-      </Link>
-    </div>
-  )
-}
-
-// ── Reabilitação tab ──────────────────────────────────────────────────────────
-
-function RehabTab({ sessions }: { sessions: RehabSessionDTO[] }) {
-  if (sessions.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
-        <CheckCircle2 size={28} style={{ color: 'var(--aura-green)' }} />
-        <p className="text-sm font-medium" style={{ color: 'var(--aura-text2)' }}>Sem atletas em reabilitação</p>
-        <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>
-          Atletas com estado RTP aparecerão aqui automaticamente.
-        </p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
-          Em Reabilitação
-        </p>
-        <span
-          className="text-[10px] font-bold px-2 py-0.5 rounded-full font-mono"
-          style={{ background: 'rgba(180,141,252,0.12)', color: 'var(--aura-purple)' }}
-        >
-          {sessions.length}
-        </span>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {sessions.map((session) => (
-          <RehabCard key={session.id} session={session} />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// ── Page ──────────────────────────────────────────────────────────────────────
-
-export default async function ClinicalPage({
+export default async function ClinicalFilePage({
   searchParams,
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
-  await connection()
-  const params = searchParams ? await searchParams : null
+  const params = searchParams ? await searchParams : {}
   const squadId = getSquadIdParam(params)
-  const rawTab = (params?.tab as string) ?? 'file'
-  const activeTab: TabId = ['file', 'occurrences', 'rehab'].includes(rawTab)
-    ? (rawTab as TabId)
-    : 'file'
+  const athletes = await getData(squadId)
 
-  const dto = activeTab === 'rehab' ? await getRehabPageDTO(squadId) : { sessions: [] }
+  const byStatus = STATUS_ORDER.reduce<Record<AthleteAvailabilityStatus, typeof athletes>>(
+    (acc, s) => ({ ...acc, [s]: athletes.filter((a) => (a.availability_status ?? 'available') === s) }),
+    { available: [], evaluation: [], unavailable: [], rtp: [] }
+  )
+
+  const nonAvailable = athletes.filter((a) => (a.availability_status ?? 'available') !== 'available')
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1
-          className="text-2xl font-bold"
-          style={{ fontFamily: 'var(--font-syne)', color: 'var(--aura-text)' }}
-        >
-          Módulo Clínico
-        </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--aura-text3)' }}>
-          Ficheiro clínico · ocorrências · reabilitação
-        </p>
+    <div>
+      <div className="sec-hdr">
+        <div className="sec-title">Ficheiro Clínico</div>
+        <div className="sec-sub">{athletes.length} atletas · {nonAvailable.length} com ocorrência ativa</div>
       </div>
 
-      {/* Tabs */}
-      <TabNav active={activeTab} squadId={squadId} />
+      {/* Alerts banner */}
+      {nonAvailable.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <div style={{
+            background: 'rgba(255,77,109,0.06)', border: '1px solid rgba(255,77,109,0.2)',
+            borderRadius: 10, padding: '10px 16px', marginBottom: 10,
+          }}>
+            <div style={{ fontSize: 11, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-danger)', fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Atenção clínica necessária
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {nonAvailable.map((a) => {
+                const status = (a.availability_status ?? 'available') as AthleteAvailabilityStatus
+                const cfg = STATUS_CONFIG[status]
+                return (
+                  <Link key={a.id} href={withSquadParam(`/athletes/${a.id}?tab=medical`, squadId)} style={{ textDecoration: 'none' }}>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      background: cfg.bg, border: `1px solid ${cfg.dot}33`,
+                      borderRadius: 20, padding: '4px 10px 4px 4px',
+                    }}>
+                      <div style={{ borderRadius: '50%', padding: 1, background: cfg.dot }}>
+                        <div style={{ borderRadius: '50%', overflow: 'hidden', width: 22, height: 22 }}>
+                          <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={22} />
+                        </div>
+                      </div>
+                      <span style={{ fontSize: 12, color: 'var(--aura-text)', fontWeight: 500 }}>{a.name}</span>
+                      <span style={{ fontSize: 10, color: cfg.color, fontFamily: 'var(--font-dm-mono)' }}>{cfg.label}</span>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Content */}
-      {activeTab === 'file'        && <FileTab        squadId={squadId} />}
-      {activeTab === 'occurrences' && <OccurrencesTab squadId={squadId} />}
-      {activeTab === 'rehab'       && <RehabTab       sessions={dto.sessions} />}
+      {/* Athletes by status group */}
+      {STATUS_ORDER.map((status) => {
+        const group = byStatus[status]
+        if (!group.length) return null
+        const cfg = STATUS_CONFIG[status]
+        return (
+          <div key={status} style={{ marginBottom: 28 }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--aura-border)',
+            }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: cfg.dot }} />
+              <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: cfg.color, fontFamily: 'var(--font-dm-mono)' }}>
+                {cfg.label}
+              </span>
+              <span style={{ fontSize: 11, color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+                ({group.length})
+              </span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8 }}>
+              {group.map((a) => (
+                <Link key={a.id} href={withSquadParam(`/athletes/${a.id}?tab=medical`, squadId)} className="clinical-athlete-card" style={{ textDecoration: 'none' }}>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '10px 14px', borderRadius: 10,
+                    background: 'var(--aura-bg2)', border: `1px solid var(--aura-border)`,
+                  }}>
+                    <div style={{ borderRadius: '50%', padding: 2, background: cfg.dot, flexShrink: 0 }}>
+                      <div style={{ borderRadius: '50%', overflow: 'hidden', width: 36, height: 36 }}>
+                        <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={36} />
+                      </div>
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--aura-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {a.shirt_number != null ? `${a.shirt_number}. ` : ''}{a.name}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+                        {a.position ?? '—'}
+                      </div>
+                    </div>
+                    <div style={{ marginLeft: 'auto', flexShrink: 0 }}>
+                      <span style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: cfg.color }}>
+                        Ver ficheiro →
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )
+      })}
+
+      {athletes.length === 0 && (
+        <div className="empty-state">
+          <h3>Sem atletas nesta squad</h3>
+        </div>
+      )}
     </div>
   )
 }

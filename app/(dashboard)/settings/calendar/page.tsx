@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Calendar, Trash2, Plus, Trophy, Dumbbell } from 'lucide-react'
 import { formatDisplayDate } from '@/lib/utils/microcycle'
+import { useUiStore } from '@/stores/uiStore'
 
 interface CalendarEvent {
   id: string
@@ -29,6 +30,7 @@ export default function CalendarSettingsPage() {
   const [showAddMatch, setShowAddMatch] = useState(false)
   const [showAddTraining, setShowAddTraining] = useState(false)
   const router = useRouter()
+  const selectedSquadId = useUiStore((s) => s.selectedSquadId)
 
   const [matchForm, setMatchForm] = useState({
     event_date: '',
@@ -44,9 +46,16 @@ export default function CalendarSettingsPage() {
 
   async function fetchEvents() {
     const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      setLoading(false)
+      return
+    }
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('org_id')
+      .eq('id', user.id)
       .single()
 
     if (!profile?.org_id) {
@@ -78,6 +87,7 @@ export default function CalendarSettingsPage() {
         is_match_day: true,
         opponent: matchForm.opponent || null,
         venue: matchForm.venue,
+        squad_id: selectedSquadId,
       })
       setMatchForm({ event_date: '', opponent: '', venue: 'home' })
       setShowAddMatch(false)
@@ -95,6 +105,7 @@ export default function CalendarSettingsPage() {
         event_type: trainingForm.event_type,
         label: trainingForm.label || null,
         is_match_day: false,
+        squad_id: selectedSquadId,
       })
       setTrainingForm({ event_date: '', event_type: 'training', label: '' })
       setShowAddTraining(false)

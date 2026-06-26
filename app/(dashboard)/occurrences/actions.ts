@@ -3,6 +3,48 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
+type AvailabilityStatus = 'available' | 'evaluation' | 'unavailable' | 'rtp'
+
+// Higher number = more restrictive. When an athlete has several open
+// occurrences/diagnoses, the most restrictive one wins.
+const STATUS_SEVERITY: Record<AvailabilityStatus, number> = {
+  available: 0,
+  evaluation: 1,
+  rtp: 2,
+  unavailable: 3,
+}
+
+// Derive an athlete's availability from all their still-open occurrences and
+// diagnoses. Falls back to `fallback` when nothing else is active.
+async function recomputeAthleteAvailability(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  athleteId: string,
+  fallback: AvailabilityStatus
+): Promise<AvailabilityStatus> {
+  const [{ data: occ }, { data: diag }] = await Promise.all([
+    supabase
+      .from('occurrences')
+      .select('availability_status')
+      .eq('athlete_id', athleteId)
+      .eq('is_resolved', false),
+    supabase
+      .from('diagnoses')
+      .select('availability_status')
+      .eq('athlete_id', athleteId)
+      .eq('is_resolved', false),
+  ])
+
+  const statuses = [...(occ ?? []), ...(diag ?? [])]
+    .map((r) => r.availability_status as AvailabilityStatus | null)
+    .filter((s): s is AvailabilityStatus => s != null && s in STATUS_SEVERITY)
+
+  if (statuses.length === 0) return fallback
+
+  return statuses.reduce((worst, s) =>
+    STATUS_SEVERITY[s] > STATUS_SEVERITY[worst] ? s : worst
+  )
+}
+
 export interface RegisterOccurrenceInput {
   athleteId: string
   orgId: string
@@ -71,10 +113,15 @@ export async function resolveOccurrence(
     })
     .eq('id', occurrenceId)
 
-  // Update athlete availability if resolving to available
+  // Recompute athlete availability from the remaining open occurrences/diagnoses
+  // so resolving one occurrence doesn't clear a still-active injury elsewhere.
+  // This occurrence is now resolved, so `resolutionStatus` only applies as the
+  // fallback when nothing else is open.
+  const nextStatus = await recomputeAthleteAvailability(supabase, athleteId, resolutionStatus)
+
   await supabase
     .from('athletes')
-    .update({ availability_status: resolutionStatus })
+    .update({ availability_status: nextStatus })
     .eq('id', athleteId)
 
   revalidatePath('/occurrences')

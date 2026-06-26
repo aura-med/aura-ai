@@ -285,7 +285,7 @@ function DiagnosisCard({
       const nextStatus = statuses.length === 0
         ? 'available'
         : statuses.reduce((worst, s) => DIAG_SEVERITY[s] > DIAG_SEVERITY[worst] ? s : worst)
-      await supabase.from('athletes').update({ availability_status: nextStatus }).eq('id', athleteId)
+      await supabase.rpc('update_athlete_availability', { p_athlete_id: athleteId, p_status: nextStatus })
 
       onResolved(diag.id)
       router.refresh()

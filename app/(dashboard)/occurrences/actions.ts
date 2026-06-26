@@ -88,10 +88,7 @@ export async function registerOccurrence(input: RegisterOccurrenceInput) {
   // Recompute from all active issues so a less-restrictive new occurrence
   // doesn't clear a still-active unavailable/rtp one.
   const nextStatus = await recomputeAthleteAvailability(supabase, input.athleteId, input.availabilityStatus)
-  await supabase
-    .from('athletes')
-    .update({ availability_status: nextStatus })
-    .eq('id', input.athleteId)
+  await supabase.rpc('update_athlete_availability', { p_athlete_id: input.athleteId, p_status: nextStatus })
 
   revalidatePath('/occurrences')
   revalidatePath('/')
@@ -120,11 +117,7 @@ export async function resolveOccurrence(
   // This occurrence is now resolved, so `resolutionStatus` only applies as the
   // fallback when nothing else is open.
   const nextStatus = await recomputeAthleteAvailability(supabase, athleteId, resolutionStatus)
-
-  await supabase
-    .from('athletes')
-    .update({ availability_status: nextStatus })
-    .eq('id', athleteId)
+  await supabase.rpc('update_athlete_availability', { p_athlete_id: athleteId, p_status: nextStatus })
 
   revalidatePath('/occurrences')
   revalidatePath('/')
@@ -166,10 +159,7 @@ export async function addOccurrenceRecord(input: {
   // Recompute from all active occurrences/diagnoses so a less-restrictive
   // reassessment on one issue doesn't clear a still-active one elsewhere.
   const nextStatus = await recomputeAthleteAvailability(supabase, input.athleteId, input.availabilityStatus)
-  await supabase
-    .from('athletes')
-    .update({ availability_status: nextStatus })
-    .eq('id', input.athleteId)
+  await supabase.rpc('update_athlete_availability', { p_athlete_id: input.athleteId, p_status: nextStatus })
 
   revalidatePath('/occurrences')
   revalidatePath('/')

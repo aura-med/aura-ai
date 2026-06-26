@@ -74,7 +74,7 @@ export function DiagnosisModal({ athleteId, occurrences, onClose, onSaved }: Dia
         .filter((s): s is string => s != null && s in SEVERITY)
       const nextStatus = statuses.length === 0 ? status
         : statuses.reduce((worst, s) => SEVERITY[s] > SEVERITY[worst] ? s : worst)
-      await supabase.from('athletes').update({ availability_status: nextStatus }).eq('id', athleteId)
+      await supabase.rpc('update_athlete_availability', { p_athlete_id: athleteId, p_status: nextStatus })
 
       onSaved()
     } catch (e) {

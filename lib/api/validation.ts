@@ -1,7 +1,12 @@
 import type { UserRole } from '@/types'
 import { ApiError } from './errors.ts'
 
-const USER_ROLES: UserRole[] = ['admin', 'doctor', 'physio', 'coach', 'fitness_coach', 'athlete']
+const USER_ROLES: UserRole[] = [
+  'admin', 'doctor', 'physio', 'masseur',
+  'coach', 'fitness_coach',
+  'nutritionist', 'director', 'scout', 'team_manager',
+  'athlete',
+]
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)

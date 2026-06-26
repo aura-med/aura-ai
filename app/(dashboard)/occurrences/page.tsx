@@ -43,7 +43,12 @@ async function getData(squadId: string | null, date: string) {
 
   if (squadId) {
     const athleteIds = (athletes ?? []).map((a: { id: string }) => a.id)
-    if (athleteIds.length) occQuery = occQuery.in('athlete_id', athleteIds)
+    if (athleteIds.length) {
+      occQuery = occQuery.in('athlete_id', athleteIds)
+    } else {
+      // Squad has no athletes — return empty set without leaking other squads' data.
+      occQuery = occQuery.is('athlete_id', null)
+    }
   }
 
   const { data: occurrences } = await occQuery

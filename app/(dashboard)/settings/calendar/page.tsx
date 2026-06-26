@@ -63,18 +63,20 @@ export default function CalendarSettingsPage() {
       return
     }
 
-    const { data } = await supabase
+    let eventsQuery = supabase
       .from('calendar_events')
       .select('id, event_date, event_type, label, is_match_day, opponent, venue')
       .order('event_date', { ascending: false })
       .limit(60)
+    if (selectedSquadId) eventsQuery = eventsQuery.eq('squad_id', selectedSquadId)
+    const { data } = await eventsQuery
 
     setEvents(data ?? [])
     setLoading(false)
   }
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { fetchEvents() }, [])
+  useEffect(() => { fetchEvents() }, [selectedSquadId])
 
   function handleAddMatch() {
     if (!matchForm.event_date) return

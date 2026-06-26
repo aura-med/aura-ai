@@ -85,10 +85,12 @@ export async function registerOccurrence(input: RegisterOccurrenceInput) {
 
   if (error) throw new Error(error.message)
 
-  // Update athlete availability_status
+  // Recompute from all active issues so a less-restrictive new occurrence
+  // doesn't clear a still-active unavailable/rtp one.
+  const nextStatus = await recomputeAthleteAvailability(supabase, input.athleteId, input.availabilityStatus)
   await supabase
     .from('athletes')
-    .update({ availability_status: input.availabilityStatus })
+    .update({ availability_status: nextStatus })
     .eq('id', input.athleteId)
 
   revalidatePath('/occurrences')

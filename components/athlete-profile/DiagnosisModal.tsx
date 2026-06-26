@@ -62,10 +62,19 @@ export function DiagnosisModal({ athleteId, occurrences, onClose, onSaved }: Dia
       })
       if (insertErr) throw insertErr
 
-      await supabase
-        .from('athletes')
-        .update({ availability_status: status })
-        .eq('id', athleteId)
+      // Recompute from all active issues (includes the new diagnosis just inserted)
+      // so adding a less-restrictive diagnosis never downgrades a more-restricted athlete.
+      const SEVERITY: Record<string, number> = { available: 0, evaluation: 1, rtp: 2, unavailable: 3 }
+      const [{ data: occ }, { data: diag }] = await Promise.all([
+        supabase.from('occurrences').select('availability_status').eq('athlete_id', athleteId).eq('is_resolved', false),
+        supabase.from('diagnoses').select('availability_status').eq('athlete_id', athleteId).eq('is_resolved', false),
+      ])
+      const statuses = [...(occ ?? []), ...(diag ?? [])]
+        .map((r) => r.availability_status as string | null)
+        .filter((s): s is string => s != null && s in SEVERITY)
+      const nextStatus = statuses.length === 0 ? status
+        : statuses.reduce((worst, s) => SEVERITY[s] > SEVERITY[worst] ? s : worst)
+      await supabase.from('athletes').update({ availability_status: nextStatus }).eq('id', athleteId)
 
       onSaved()
     } catch (e) {

@@ -155,16 +155,18 @@ export async function addOccurrenceRecord(input: {
     clinician_name: input.clinicianName,
   })
 
-  // Update occurrence availability status
+  // Update this occurrence's own status
   await supabase
     .from('occurrences')
     .update({ availability_status: input.availabilityStatus })
     .eq('id', input.occurrenceId)
 
-  // Update athlete availability
+  // Recompute from all active occurrences/diagnoses so a less-restrictive
+  // reassessment on one issue doesn't clear a still-active one elsewhere.
+  const nextStatus = await recomputeAthleteAvailability(supabase, input.athleteId, input.availabilityStatus)
   await supabase
     .from('athletes')
-    .update({ availability_status: input.availabilityStatus })
+    .update({ availability_status: nextStatus })
     .eq('id', input.athleteId)
 
   revalidatePath('/occurrences')

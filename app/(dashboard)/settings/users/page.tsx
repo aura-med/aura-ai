@@ -47,7 +47,14 @@ function RoleDropdown({
     setSaving(true)
     try {
       const supabase = createClient()
-      await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('id', userId)
+      if (error) {
+        console.error('Role update failed:', error.message)
+        return
+      }
       onChanged(userId, newRole)
     } finally {
       setSaving(false)

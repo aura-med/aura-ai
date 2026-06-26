@@ -246,12 +246,16 @@ function RiskBreakdown({ partials, dominantVariable }: { partials: Record<string
 
 // ── Active Diagnoses Section ──────────────────────────────────────────────────
 
+const DIAG_SEVERITY: Record<string, number> = { available: 0, evaluation: 1, rtp: 2, unavailable: 3 }
+
 function DiagnosisCard({
   diag,
+  athleteId,
   canResolve,
   onResolved,
 }: {
   diag: ActiveDiagnosis
+  athleteId: string
   canResolve: boolean
   onResolved: (id: string) => void
 }) {
@@ -269,6 +273,20 @@ function DiagnosisCard({
         .from('diagnoses')
         .update({ is_resolved: true, resolved_at: new Date().toISOString(), resolved_by: user?.id })
         .eq('id', diag.id)
+
+      // Recompute from remaining active occurrences/diagnoses (this one is now resolved).
+      const [{ data: occ }, { data: activeDiag }] = await Promise.all([
+        supabase.from('occurrences').select('availability_status').eq('athlete_id', athleteId).eq('is_resolved', false),
+        supabase.from('diagnoses').select('availability_status').eq('athlete_id', athleteId).eq('is_resolved', false),
+      ])
+      const statuses = [...(occ ?? []), ...(activeDiag ?? [])]
+        .map((r) => r.availability_status as string | null)
+        .filter((s): s is string => s != null && s in DIAG_SEVERITY)
+      const nextStatus = statuses.length === 0
+        ? 'available'
+        : statuses.reduce((worst, s) => DIAG_SEVERITY[s] > DIAG_SEVERITY[worst] ? s : worst)
+      await supabase.from('athletes').update({ availability_status: nextStatus }).eq('id', athleteId)
+
       onResolved(diag.id)
       router.refresh()
     } finally {
@@ -373,6 +391,7 @@ function ActiveDiagnosesSection({
               <DiagnosisCard
                 key={d.id}
                 diag={d}
+                athleteId={athleteId}
                 canResolve={canCreate}
                 onResolved={handleResolved}
               />

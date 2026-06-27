@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { ChevronDown, ChevronUp, Plus, X, Check } from 'lucide-react'
 import { registerOccurrence, resolveOccurrence, addOccurrenceRecord } from './actions'
-import { calculateMDStatus, type MicrocycleStatus } from '@/lib/utils/microcycle'
+import { calculateMDStatus, todayStr, type MicrocycleStatus } from '@/lib/utils/microcycle'
 import { exportOccurrencesPDF } from '@/lib/utils/pdf-export'
 import { useUiStore } from '@/stores/uiStore'
 import { Download } from 'lucide-react'
@@ -113,7 +113,7 @@ function OccurrenceRow({ occ, clinicianName, onRevalidate }: { occ: Occurrence; 
       await addOccurrenceRecord({
         occurrenceId: occ.id,
         athleteId: occ.athlete_id,
-        recordDate: new Date().toISOString().split('T')[0],
+        recordDate: todayStr(),
         subjective: reevalData.subjective,
         objective: reevalData.objective,
         assessment: reevalData.assessment,
@@ -298,7 +298,7 @@ function RegisterModal({
   const [isPending, startTransition] = useTransition()
   const [form, setForm] = useState({
     athleteId: athletes[0]?.id ?? '',
-    occurrenceDate: new Date().toISOString().split('T')[0],
+    occurrenceDate: todayStr(),
     occurrenceType: 'complaint' as 'complaint' | 'trauma' | 'disease' | 'other',
     subjective: '',
     objective: '',

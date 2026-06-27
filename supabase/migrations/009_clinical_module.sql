@@ -225,7 +225,9 @@ CREATE POLICY "doctor_update_diagnoses" ON diagnoses
       occurrence_id IS NULL
       OR EXISTS (
         SELECT 1 FROM occurrences o
-        WHERE o.id = occurrence_id AND o.org_id = get_user_org_id()
+        WHERE o.id = occurrence_id
+          AND o.org_id = get_user_org_id()
+          AND o.athlete_id = athlete_id
       )
     )
   );

@@ -399,9 +399,11 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
           .update({ chronic_conditions: conditions })
           .eq('id', medHistory.id)
       } else {
+        // No history row yet — upsert on athlete_id so a second save in the same
+        // mount updates the existing row instead of hitting the unique constraint.
         await supabase
           .from('athletes_medical_history')
-          .insert({ athlete_id: profile.id, chronic_conditions: conditions })
+          .upsert({ athlete_id: profile.id, chronic_conditions: conditions }, { onConflict: 'athlete_id' })
       }
       setChronicConditions(conditions)
       setEditingChronic(false)

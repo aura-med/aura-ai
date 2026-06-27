@@ -3,12 +3,14 @@
 import { useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download } from 'lucide-react'
 import { AthleteCard } from '@/components/ui/AthleteCard'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { withSquadParam } from '@/lib/squad-url'
 import { formatDisplayDate, addDays } from '@/lib/utils/microcycle'
 import type { MicrocycleStatus } from '@/lib/utils/microcycle'
+import { exportDashboardPDF } from '@/lib/utils/pdf-export'
+import { useUiStore } from '@/stores/uiStore'
 import type { AthleteAvailabilityStatus } from '@/types'
 
 interface DashboardAthlete {
@@ -73,12 +75,31 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
     { available: [], evaluation: [], unavailable: [], rtp: [] }
   )
 
-  const positionGroups: Record<string, DashboardAthlete[]> = { GK: [], DEF: [], MID: [], FWD: [] }
+  const positionGroups: Record<string, DashboardAthlete[]> = { GK: [], DEF: [], MID: [], FWD: [], OTHER: [] }
   athletes.forEach((a) => {
+    // Athletes without a known position still belong in the roster — bucket them
+    // under "Sem posição" instead of dropping them from the Plantel tab.
     if (a.position && positionGroups[a.position]) positionGroups[a.position].push(a)
+    else positionGroups.OTHER.push(a)
   })
-  const posLabels: Record<string, string> = { GK: 'Guarda-Redes', DEF: 'Defesas', MID: 'Médios', FWD: 'Avançados' }
-  const posCodes: Record<string, string> = { GK: 'GK', DEF: 'DEF', MID: 'MED', FWD: 'AVA' }
+  const posLabels: Record<string, string> = { GK: 'Guarda-Redes', DEF: 'Defesas', MID: 'Médios', FWD: 'Avançados', OTHER: 'Sem posição' }
+  const posCodes: Record<string, string> = { GK: 'GK', DEF: 'DEF', MID: 'MED', FWD: 'AVA', OTHER: '—' }
+
+  const squads = useUiStore((s) => s.squads)
+  const squadName = squads.find((s) => s.id === squadId)?.name
+
+  function handleExport() {
+    exportDashboardPDF(
+      athletes.map((a) => ({
+        name: a.name,
+        position: a.position,
+        availabilityStatus: a.availability_status,
+        scoreLabel: a.scoreLabel,
+        score: a.score,
+      })),
+      { squadName, microcycleLabel: microcycle.microcycleNumber != null ? `MC ${microcycle.microcycleNumber} · ${microcycle.label}` : undefined, currentDate },
+    )
+  }
 
   return (
     <div>
@@ -111,6 +132,22 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
               </span>
             </div>
           )}
+
+          <button
+            onClick={handleExport}
+            disabled={athletes.length === 0}
+            style={{
+              marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 12px', borderRadius: 8,
+              background: 'transparent', border: '1px solid var(--aura-border2)',
+              color: 'var(--aura-text2)', fontWeight: 600, fontSize: 12,
+              cursor: athletes.length === 0 ? 'default' : 'pointer',
+              opacity: athletes.length === 0 ? 0.5 : 1,
+            }}
+          >
+            <Download size={13} />
+            Exportar PDF
+          </button>
         </div>
 
         {/* Date navigation */}
@@ -261,7 +298,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
       {/* ── Tab: Plantel ─────────────────────────────────────────────── */}
       {tab === 'squad' && (
         <div>
-          {(['GK', 'DEF', 'MID', 'FWD'] as const).map((pos) => {
+          {(['GK', 'DEF', 'MID', 'FWD', 'OTHER'] as const).map((pos) => {
             const group = positionGroups[pos]
             if (!group.length) return null
             return (

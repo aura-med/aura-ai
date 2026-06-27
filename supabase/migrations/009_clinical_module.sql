@@ -213,6 +213,21 @@ CREATE POLICY "doctor_update_diagnoses" ON diagnoses
   FOR UPDATE USING (
     org_id = get_user_org_id()
     AND get_user_role() IN ('admin', 'doctor')
+  )
+  WITH CHECK (
+    org_id = get_user_org_id()
+    AND get_user_role() IN ('admin', 'doctor')
+    AND EXISTS (
+      SELECT 1 FROM athletes a
+      WHERE a.id = athlete_id AND a.org_id = get_user_org_id()
+    )
+    AND (
+      occurrence_id IS NULL
+      OR EXISTS (
+        SELECT 1 FROM occurrences o
+        WHERE o.id = occurrence_id AND o.org_id = get_user_org_id()
+      )
+    )
   );
 
 -- Medication administrations

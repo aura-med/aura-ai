@@ -6,6 +6,9 @@ import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { ChevronDown, ChevronUp, Plus, X, Check } from 'lucide-react'
 import { registerOccurrence, resolveOccurrence, addOccurrenceRecord } from './actions'
 import { calculateMDStatus, type MicrocycleStatus } from '@/lib/utils/microcycle'
+import { exportOccurrencesPDF } from '@/lib/utils/pdf-export'
+import { useUiStore } from '@/stores/uiStore'
+import { Download } from 'lucide-react'
 import type { AthleteAvailabilityStatus } from '@/types'
 
 const STATUS_CONFIG: Record<AthleteAvailabilityStatus, { label: string; color: string; bg: string; dot: string }> = {
@@ -470,6 +473,8 @@ export function OccurrencesClient({
   const [filter, setFilter] = useState<'all' | 'active' | 'resolved'>('active')
   const [showRegister, setShowRegister] = useState(false)
   const router = useRouter()
+  const squads = useUiStore((s) => s.squads)
+  const squadName = squads.find((s) => s.id === squadId)?.name
 
   function refresh() { router.refresh() }
 
@@ -478,6 +483,21 @@ export function OccurrencesClient({
     if (filter === 'resolved') return o.is_resolved
     return true
   })
+
+  function handleExport() {
+    exportOccurrencesPDF(
+      filtered.map((o) => ({
+        athleteName: o.athletes?.name ?? '—',
+        position: o.athletes?.position ?? null,
+        occurrenceType: o.occurrence_type,
+        occurrenceDate: o.occurrence_date,
+        availabilityStatus: o.availability_status,
+        clinicianName: o.clinician_name,
+        isResolved: o.is_resolved,
+      })),
+      { squadName, microcycleLabel: microcycle.microcycleNumber != null ? `MC ${microcycle.microcycleNumber} · ${microcycle.label}` : undefined, currentDate },
+    )
+  }
 
   const activeCount = occurrences.filter((o) => !o.is_resolved).length
 
@@ -493,18 +513,35 @@ export function OccurrencesClient({
               : currentDate}
           </div>
         </div>
-        <button
-          onClick={() => setShowRegister(true)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '8px 14px', borderRadius: 8,
-            background: 'var(--aura-green)', border: 'none',
-            color: '#000', fontWeight: 700, fontSize: 12, cursor: 'pointer',
-          }}
-        >
-          <Plus size={13} />
-          Registar Ocorrência
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            onClick={handleExport}
+            disabled={filtered.length === 0}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 12px', borderRadius: 8,
+              background: 'transparent', border: '1px solid var(--aura-border)',
+              color: 'var(--aura-text2)', fontWeight: 600, fontSize: 12,
+              cursor: filtered.length === 0 ? 'default' : 'pointer',
+              opacity: filtered.length === 0 ? 0.5 : 1,
+            }}
+          >
+            <Download size={13} />
+            Exportar PDF
+          </button>
+          <button
+            onClick={() => setShowRegister(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 14px', borderRadius: 8,
+              background: 'var(--aura-green)', border: 'none',
+              color: '#000', fontWeight: 700, fontSize: 12, cursor: 'pointer',
+            }}
+          >
+            <Plus size={13} />
+            Registar Ocorrência
+          </button>
+        </div>
       </div>
 
       {/* Filters */}

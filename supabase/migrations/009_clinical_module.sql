@@ -9,8 +9,10 @@ ALTER TABLE athletes
   CHECK (availability_status IN ('available', 'evaluation', 'unavailable', 'rtp'))
   DEFAULT 'available';
 
--- Migrate existing data: rehab → rtp
-UPDATE athletes SET availability_status = 'rtp' WHERE status = 'rehab';
+-- Migrate existing data: rehab → rtp. Guarded on the column default so replaying
+-- this migration never clobbers an availability already set by occurrences/diagnoses.
+UPDATE athletes SET availability_status = 'rtp'
+  WHERE status = 'rehab' AND availability_status = 'available';
 
 -- 2. Extend calendar_events for microcycle tracking
 ALTER TABLE calendar_events

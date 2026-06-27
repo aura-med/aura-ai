@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { ChevronDown, ChevronUp, Plus, X, Check } from 'lucide-react'
 import { registerOccurrence, resolveOccurrence, addOccurrenceRecord } from './actions'
-import type { MicrocycleStatus } from '@/lib/utils/microcycle'
+import { calculateMDStatus, type MicrocycleStatus } from '@/lib/utils/microcycle'
 import type { AthleteAvailabilityStatus } from '@/types'
 
 const STATUS_CONFIG: Record<AthleteAvailabilityStatus, { label: string; color: string; bg: string; dot: string }> = {
@@ -58,6 +58,7 @@ interface OccurrencesClientProps {
   orgId: string
   squadId: string | null
   microcycle: MicrocycleStatus
+  matchDays: string[]
   currentDate: string
   clinicianName: string
   clinicianRole: string
@@ -85,7 +86,7 @@ function StatusBadge({ status }: { status: AthleteAvailabilityStatus }) {
   )
 }
 
-function OccurrenceRow({ occ, onRevalidate }: { occ: Occurrence; onRevalidate: () => void }) {
+function OccurrenceRow({ occ, clinicianName, onRevalidate }: { occ: Occurrence; clinicianName: string; onRevalidate: () => void }) {
   const [expanded, setExpanded] = useState(false)
   const [showReeval, setShowReeval] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -115,7 +116,7 @@ function OccurrenceRow({ occ, onRevalidate }: { occ: Occurrence; onRevalidate: (
         assessment: reevalData.assessment,
         plan: reevalData.plan,
         availabilityStatus: reevalData.availability_status,
-        clinicianName: occ.clinician_name ?? '',
+        clinicianName,
       })
       setShowReeval(false)
       setReevalData({ subjective: '', objective: '', assessment: '', plan: '', availability_status: occ.availability_status })
@@ -278,7 +279,7 @@ function RegisterModal({
   athletes,
   orgId,
   squadId,
-  microcycleNumber,
+  matchDays,
   clinicianName,
   clinicianRole,
   onClose,
@@ -286,7 +287,7 @@ function RegisterModal({
   athletes: Athlete[]
   orgId: string
   squadId: string | null
-  microcycleNumber: number | null
+  matchDays: string[]
   clinicianName: string
   clinicianRole: string
   onClose: () => void
@@ -305,6 +306,9 @@ function RegisterModal({
 
   function handleSubmit() {
     startTransition(async () => {
+      // Derive the microcycle from the chosen occurrence date, not the page's
+      // today value, so back/future-dated occurrences classify correctly.
+      const microcycleNumber = calculateMDStatus(form.occurrenceDate, matchDays).microcycleNumber
       await registerOccurrence({
         athleteId: form.athleteId,
         orgId,
@@ -458,6 +462,7 @@ export function OccurrencesClient({
   orgId,
   squadId,
   microcycle,
+  matchDays,
   currentDate,
   clinicianName,
   clinicianRole,
@@ -530,7 +535,7 @@ export function OccurrencesClient({
           </div>
         ) : (
           filtered.map((occ) => (
-            <OccurrenceRow key={occ.id} occ={occ} onRevalidate={refresh} />
+            <OccurrenceRow key={occ.id} occ={occ} clinicianName={clinicianName} onRevalidate={refresh} />
           ))
         )}
       </div>
@@ -541,7 +546,7 @@ export function OccurrencesClient({
           athletes={athletes}
           orgId={orgId}
           squadId={squadId}
-          microcycleNumber={microcycle.microcycleNumber}
+          matchDays={matchDays}
           clinicianName={clinicianName}
           clinicianRole={clinicianRole}
           onClose={() => { setShowRegister(false); refresh() }}

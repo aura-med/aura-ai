@@ -84,6 +84,7 @@ async function getData(squadId: string | null, date: string) {
     clinicianName: profile?.full_name ?? '',
     clinicianRole: profile?.role ?? '',
     microcycle,
+    matchDays,
   }
 }
 
@@ -96,7 +97,7 @@ export default async function OccurrencesPage({
   const squadId = getSquadIdParam(params)
   const today = todayStr()
 
-  const { occurrences, athletes, orgId, clinicianName, clinicianRole, microcycle } = await getData(squadId, today)
+  const { occurrences, athletes, orgId, clinicianName, clinicianRole, microcycle, matchDays } = await getData(squadId, today)
 
   return (
     <OccurrencesClient
@@ -105,6 +106,7 @@ export default async function OccurrencesPage({
       orgId={orgId}
       squadId={squadId}
       microcycle={microcycle}
+      matchDays={matchDays}
       currentDate={today}
       clinicianName={clinicianName}
       clinicianRole={clinicianRole}

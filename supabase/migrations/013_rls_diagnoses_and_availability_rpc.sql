@@ -25,7 +25,7 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  IF get_user_role() NOT IN ('admin', 'doctor', 'physio', 'masseur') THEN
+  IF get_user_role() IS NULL OR get_user_role() NOT IN ('admin', 'doctor', 'physio', 'masseur') THEN
     RAISE EXCEPTION 'Insufficient permissions';
   END IF;
 

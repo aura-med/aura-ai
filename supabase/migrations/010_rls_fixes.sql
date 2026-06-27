@@ -45,5 +45,6 @@ CREATE POLICY "clinical_write_occurrence_records" ON occurrence_records
       SELECT 1 FROM occurrences o
       WHERE o.id = occurrence_id
         AND o.org_id = get_user_org_id()
+        AND o.athlete_id = occurrence_records.athlete_id
     )
   );

@@ -34,9 +34,26 @@ export function calculateMDStatus(
   const nextMatch = upcoming[0] ?? null
   const prevMatch = past[past.length - 1] ?? null
 
-  // Primary reference: next upcoming match within 14 days
+  // Primary reference: the nearest match. A same-day match is MD. If a past
+  // match is closer than the next one, we're in that match's post-match window
+  // (MD+N of the previous microcycle), not yet in the build-up to the next.
   if (nextMatch !== null) {
     const daysUntil = Math.round((nextMatch - d) / 86400000)
+
+    if (prevMatch !== null) {
+      const daysSince = Math.round((d - prevMatch) / 86400000)
+      if (daysSince < daysUntil) {
+        const mcNumber = matchDays.indexOf(formatDate(prevMatch)) + 1
+        return {
+          label: `MD+${daysSince}`,
+          mdOffset: daysSince,
+          nextMatchDate: formatDate(nextMatch),
+          prevMatchDate: formatDate(prevMatch),
+          microcycleNumber: mcNumber,
+        }
+      }
+    }
+
     if (daysUntil <= 14) {
       const mcNumber = matchDays.indexOf(formatDate(nextMatch)) + 1
       const label = daysUntil === 0 ? 'MD' : `MD-${daysUntil}`

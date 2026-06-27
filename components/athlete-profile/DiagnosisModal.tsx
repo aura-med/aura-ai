@@ -65,13 +65,16 @@ export function DiagnosisModal({ athleteId, occurrences, onClose, onSaved }: Dia
       // Recompute from all active issues (includes the new diagnosis just inserted)
       // so adding a less-restrictive diagnosis never downgrades a more-restricted athlete.
       const SEVERITY: Record<string, number> = { available: 0, evaluation: 1, rtp: 2, unavailable: 3 }
-      const [{ data: occ }, { data: diag }] = await Promise.all([
+      const [{ data: occ }, { data: diag }, { data: ath }] = await Promise.all([
         supabase.from('occurrences').select('availability_status').eq('athlete_id', athleteId).eq('is_resolved', false),
         supabase.from('diagnoses').select('availability_status').eq('athlete_id', athleteId).eq('is_resolved', false),
+        supabase.from('athletes').select('status').eq('id', athleteId).single(),
       ])
       const statuses = [...(occ ?? []), ...(diag ?? [])]
         .map((r) => r.availability_status as string | null)
         .filter((s): s is string => s != null && s in SEVERITY)
+      // Legacy rehab flag keeps the athlete in RTP as a floor.
+      if (ath?.status === 'rehab') statuses.push('rtp')
       const nextStatus = statuses.length === 0 ? status
         : statuses.reduce((worst, s) => SEVERITY[s] > SEVERITY[worst] ? s : worst)
       await supabase.rpc('update_athlete_availability', { p_athlete_id: athleteId, p_status: nextStatus })

@@ -21,7 +21,7 @@ async function recomputeAthleteAvailability(
   athleteId: string,
   fallback: AvailabilityStatus
 ): Promise<AvailabilityStatus> {
-  const [{ data: occ }, { data: diag }] = await Promise.all([
+  const [{ data: occ }, { data: diag }, { data: athlete }] = await Promise.all([
     supabase
       .from('occurrences')
       .select('availability_status')
@@ -32,11 +32,20 @@ async function recomputeAthleteAvailability(
       .select('availability_status')
       .eq('athlete_id', athleteId)
       .eq('is_resolved', false),
+    supabase
+      .from('athletes')
+      .select('status')
+      .eq('id', athleteId)
+      .single(),
   ])
 
   const statuses = [...(occ ?? []), ...(diag ?? [])]
     .map((r) => r.availability_status as AvailabilityStatus | null)
     .filter((s): s is AvailabilityStatus => s != null && s in STATUS_SEVERITY)
+
+  // The legacy rehab flag keeps the athlete in RTP as a floor: resolving a
+  // less-restrictive issue must not pull an athlete out of active rehab.
+  if (athlete?.status === 'rehab') statuses.push('rtp')
 
   if (statuses.length === 0) return fallback
 

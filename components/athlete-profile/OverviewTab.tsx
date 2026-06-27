@@ -275,13 +275,16 @@ function DiagnosisCard({
         .eq('id', diag.id)
 
       // Recompute from remaining active occurrences/diagnoses (this one is now resolved).
-      const [{ data: occ }, { data: activeDiag }] = await Promise.all([
+      const [{ data: occ }, { data: activeDiag }, { data: ath }] = await Promise.all([
         supabase.from('occurrences').select('availability_status').eq('athlete_id', athleteId).eq('is_resolved', false),
         supabase.from('diagnoses').select('availability_status').eq('athlete_id', athleteId).eq('is_resolved', false),
+        supabase.from('athletes').select('status').eq('id', athleteId).single(),
       ])
       const statuses = [...(occ ?? []), ...(activeDiag ?? [])]
         .map((r) => r.availability_status as string | null)
         .filter((s): s is string => s != null && s in DIAG_SEVERITY)
+      // Legacy rehab flag keeps the athlete in RTP as a floor.
+      if (ath?.status === 'rehab') statuses.push('rtp')
       const nextStatus = statuses.length === 0
         ? 'available'
         : statuses.reduce((worst, s) => DIAG_SEVERITY[s] > DIAG_SEVERITY[worst] ? s : worst)

@@ -2,14 +2,16 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 
-test('main app moves medical panel into the clinical section as Clinical Portal', () => {
+test('main app exposes the clinical file in the clinical section', () => {
   const sidebar = readFileSync('components/layout/Sidebar.tsx', 'utf8')
   const enMessages = readFileSync('messages/en.json', 'utf8')
 
-  assert.match(sidebar, /href:\s*'\/clinical-portal'/)
-  assert.match(sidebar, /labelKey:\s*'clinical_portal'/)
+  // The legacy /clinical-portal was superseded by /clinical + /occurrences + /rehab.
+  assert.match(sidebar, /href:\s*'\/clinical'/)
+  assert.match(sidebar, /labelKey:\s*'clinical_file'/)
   assert.match(sidebar, /sectionKey:\s*'clinical'/)
-  assert.match(enMessages, /"clinical_portal":\s*"Clinical Portal"/)
+  assert.match(enMessages, /"clinical_file":/)
+  assert.doesNotMatch(sidebar, /href:\s*'\/clinical-portal'/)
   assert.doesNotMatch(sidebar, /labelKey:\s*'admin_injuries'/)
   assert.doesNotMatch(sidebar, /labelKey:\s*'admin_protocols'/)
 })

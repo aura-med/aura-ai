@@ -261,4 +261,12 @@ CREATE POLICY "clinical_update_orthosis" ON orthosis_records
   FOR UPDATE USING (
     org_id = get_user_org_id()
     AND get_user_role() IN ('admin', 'doctor', 'physio', 'masseur')
+  )
+  WITH CHECK (
+    org_id = get_user_org_id()
+    AND get_user_role() IN ('admin', 'doctor', 'physio', 'masseur')
+    AND EXISTS (
+      SELECT 1 FROM athletes a
+      WHERE a.id = athlete_id AND a.org_id = get_user_org_id()
+    )
   );

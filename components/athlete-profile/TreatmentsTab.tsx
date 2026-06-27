@@ -21,6 +21,20 @@ const OrthoticModal = dynamic(() => import('./OrthoticModal').then((mod) => mod.
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+// Local-time defaults — UTC (toISOString) shifts the clinician's day/time by
+// their timezone offset, which corrupts the medication/orthosis audit log.
+function localDateTimeValue(): string {
+  const d = new Date()
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
+}
+
+function localDateValue(): string {
+  const d = new Date()
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+}
+
 function formatDate(dateStr: string | null | undefined) {
   if (!dateStr) return '—'
   return new Date(dateStr).toLocaleDateString('pt-PT', {
@@ -207,7 +221,7 @@ function MedAdminModal({
   const [dose,           setDose]           = useState('')
   const [route,          setRoute]          = useState('oral')
   const [notes,          setNotes]          = useState('')
-  const [administeredAt, setAdministeredAt] = useState(() => new Date().toISOString().slice(0, 16))
+  const [administeredAt, setAdministeredAt] = useState(localDateTimeValue)
   const [saving,         setSaving]         = useState(false)
   const [error,          setError]          = useState<string | null>(null)
 
@@ -327,7 +341,7 @@ function OrthosisModal({
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       const { data: prof } = await supabase.from('profiles').select('org_id, full_name').eq('id', user?.id ?? '').single()
-      const today = new Date().toISOString().slice(0, 10)
+      const today = localDateValue()
       const { data, error: err } = await supabase.from('orthosis_records').insert({
         athlete_id:                 athleteId,
         org_id:                     prof?.org_id ?? null,

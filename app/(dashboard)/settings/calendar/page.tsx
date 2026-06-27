@@ -29,6 +29,9 @@ export default function CalendarSettingsPage() {
   const [isPending, startTransition] = useTransition()
   const [showAddMatch, setShowAddMatch] = useState(false)
   const [showAddTraining, setShowAddTraining] = useState(false)
+  // Only admin/coach may write (matches the calendar_write RLS policy).
+  const [canManage, setCanManage] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const selectedSquadId = useUiStore((s) => s.selectedSquadId)
 
@@ -54,7 +57,7 @@ export default function CalendarSettingsPage() {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('org_id')
+      .select('org_id, role')
       .eq('id', user.id)
       .single()
 
@@ -62,6 +65,8 @@ export default function CalendarSettingsPage() {
       setLoading(false)
       return
     }
+
+    setCanManage(profile.role === 'admin' || profile.role === 'coach')
 
     let eventsQuery = supabase
       .from('calendar_events')
@@ -82,7 +87,8 @@ export default function CalendarSettingsPage() {
     if (!matchForm.event_date) return
     startTransition(async () => {
       const supabase = createClient()
-      await supabase.from('calendar_events').insert({
+      setError(null)
+      const { error: insertErr } = await supabase.from('calendar_events').insert({
         event_date: matchForm.event_date,
         event_type: 'match',
         label: matchForm.opponent ? `vs ${matchForm.opponent}` : 'Jogo',
@@ -91,6 +97,10 @@ export default function CalendarSettingsPage() {
         venue: matchForm.venue,
         squad_id: selectedSquadId,
       })
+      if (insertErr) {
+        setError('Não foi possível guardar o jogo. Sem permissões ou erro de rede.')
+        return
+      }
       setMatchForm({ event_date: '', opponent: '', venue: 'home' })
       setShowAddMatch(false)
       await fetchEvents()
@@ -102,13 +112,18 @@ export default function CalendarSettingsPage() {
     if (!trainingForm.event_date) return
     startTransition(async () => {
       const supabase = createClient()
-      await supabase.from('calendar_events').insert({
+      setError(null)
+      const { error: insertErr } = await supabase.from('calendar_events').insert({
         event_date: trainingForm.event_date,
         event_type: trainingForm.event_type,
         label: trainingForm.label || null,
         is_match_day: false,
         squad_id: selectedSquadId,
       })
+      if (insertErr) {
+        setError('Não foi possível guardar a sessão. Sem permissões ou erro de rede.')
+        return
+      }
       setTrainingForm({ event_date: '', event_type: 'training', label: '' })
       setShowAddTraining(false)
       await fetchEvents()
@@ -118,7 +133,12 @@ export default function CalendarSettingsPage() {
   function handleDelete(id: string) {
     startTransition(async () => {
       const supabase = createClient()
-      await supabase.from('calendar_events').delete().eq('id', id)
+      setError(null)
+      const { error: deleteErr } = await supabase.from('calendar_events').delete().eq('id', id)
+      if (deleteErr) {
+        setError('Não foi possível eliminar o evento. Sem permissões ou erro de rede.')
+        return
+      }
       setEvents((prev) => prev.filter((e) => e.id !== id))
       router.refresh()
     })
@@ -136,6 +156,16 @@ export default function CalendarSettingsPage() {
         <p style={{ fontSize: 13, color: 'var(--aura-text3)' }}>
           Gere os jogos e treinos. Os dias de jogo são usados para calcular o microciclo e a posição MD no dashboard.
         </p>
+        {!loading && !canManage && (
+          <p style={{ fontSize: 12, color: 'var(--aura-text3)', marginTop: 8, fontStyle: 'italic' }}>
+            Só administradores e treinadores podem gerir o calendário. Tens acesso só de leitura.
+          </p>
+        )}
+        {error && (
+          <div style={{ marginTop: 10, fontSize: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(255,77,109,0.1)', color: 'var(--aura-danger)' }}>
+            {error}
+          </div>
+        )}
       </div>
 
       {/* Match days section */}
@@ -154,18 +184,20 @@ export default function CalendarSettingsPage() {
               {matchDays.length}
             </span>
           </div>
-          <button
-            onClick={() => { setShowAddMatch(true); setShowAddTraining(false) }}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              fontSize: 11, padding: '5px 10px', borderRadius: 6,
-              border: '1px solid rgba(246,173,85,0.3)', background: 'rgba(246,173,85,0.06)',
-              color: 'var(--aura-warn)', cursor: 'pointer', fontWeight: 600,
-            }}
-          >
-            <Plus size={11} />
-            Adicionar Jogo
-          </button>
+          {canManage && (
+            <button
+              onClick={() => { setShowAddMatch(true); setShowAddTraining(false) }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                fontSize: 11, padding: '5px 10px', borderRadius: 6,
+                border: '1px solid rgba(246,173,85,0.3)', background: 'rgba(246,173,85,0.06)',
+                color: 'var(--aura-warn)', cursor: 'pointer', fontWeight: 600,
+              }}
+            >
+              <Plus size={11} />
+              Adicionar Jogo
+            </button>
+          )}
         </div>
 
         {/* Add match form */}
@@ -249,14 +281,16 @@ export default function CalendarSettingsPage() {
                     {VENUE_LABELS[e.venue] ?? e.venue}
                   </span>
                 )}
-                <button
-                  onClick={() => handleDelete(e.id)}
-                  disabled={isPending}
-                  style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--aura-text3)', display: 'flex', alignItems: 'center' }}
-                  aria-label="Eliminar"
-                >
-                  <Trash2 size={13} />
-                </button>
+                {canManage && (
+                  <button
+                    onClick={() => handleDelete(e.id)}
+                    disabled={isPending}
+                    style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--aura-text3)', display: 'flex', alignItems: 'center' }}
+                    aria-label="Eliminar"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -279,18 +313,20 @@ export default function CalendarSettingsPage() {
               {trainings.length}
             </span>
           </div>
-          <button
-            onClick={() => { setShowAddTraining(true); setShowAddMatch(false) }}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              fontSize: 11, padding: '5px 10px', borderRadius: 6,
-              border: '1px solid rgba(77,154,255,0.3)', background: 'rgba(77,154,255,0.06)',
-              color: 'var(--aura-blue)', cursor: 'pointer', fontWeight: 600,
-            }}
-          >
-            <Plus size={11} />
-            Adicionar Sessão
-          </button>
+          {canManage && (
+            <button
+              onClick={() => { setShowAddTraining(true); setShowAddMatch(false) }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                fontSize: 11, padding: '5px 10px', borderRadius: 6,
+                border: '1px solid rgba(77,154,255,0.3)', background: 'rgba(77,154,255,0.06)',
+                color: 'var(--aura-blue)', cursor: 'pointer', fontWeight: 600,
+              }}
+            >
+              <Plus size={11} />
+              Adicionar Sessão
+            </button>
+          )}
         </div>
 
         {/* Add training form */}
@@ -368,14 +404,16 @@ export default function CalendarSettingsPage() {
                 {e.label && (
                   <span style={{ fontSize: 12, color: 'var(--aura-text2)' }}>{e.label}</span>
                 )}
-                <button
-                  onClick={() => handleDelete(e.id)}
-                  disabled={isPending}
-                  style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--aura-text3)', display: 'flex', alignItems: 'center' }}
-                  aria-label="Eliminar"
-                >
-                  <Trash2 size={13} />
-                </button>
+                {canManage && (
+                  <button
+                    onClick={() => handleDelete(e.id)}
+                    disabled={isPending}
+                    style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--aura-text3)', display: 'flex', alignItems: 'center' }}
+                    aria-label="Eliminar"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                )}
               </div>
             ))}
           </div>

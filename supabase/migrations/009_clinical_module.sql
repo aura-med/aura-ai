@@ -155,15 +155,18 @@ ALTER TABLE medication_administrations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orthosis_records ENABLE ROW LEVEL SECURITY;
 
 -- Occurrences: org-scoped read, clinical write
+DROP POLICY IF EXISTS "org_read_occurrences" ON occurrences;
 CREATE POLICY "org_read_occurrences" ON occurrences
   FOR SELECT USING (org_id = get_user_org_id());
 
+DROP POLICY IF EXISTS "clinical_write_occurrences" ON occurrences;
 CREATE POLICY "clinical_write_occurrences" ON occurrences
   FOR INSERT WITH CHECK (
     org_id = get_user_org_id()
     AND get_user_role() IN ('admin', 'doctor', 'physio', 'masseur')
   );
 
+DROP POLICY IF EXISTS "clinical_update_occurrences" ON occurrences;
 CREATE POLICY "clinical_update_occurrences" ON occurrences
   FOR UPDATE USING (
     org_id = get_user_org_id()
@@ -171,26 +174,31 @@ CREATE POLICY "clinical_update_occurrences" ON occurrences
   );
 
 -- Occurrence records
+DROP POLICY IF EXISTS "org_read_occurrence_records" ON occurrence_records;
 CREATE POLICY "org_read_occurrence_records" ON occurrence_records
   FOR SELECT USING (EXISTS (
     SELECT 1 FROM occurrences o WHERE o.id = occurrence_id AND o.org_id = get_user_org_id()
   ));
 
+DROP POLICY IF EXISTS "clinical_write_occurrence_records" ON occurrence_records;
 CREATE POLICY "clinical_write_occurrence_records" ON occurrence_records
   FOR INSERT WITH CHECK (
     get_user_role() IN ('admin', 'doctor', 'physio', 'masseur')
   );
 
 -- Diagnoses: only doctors can create
+DROP POLICY IF EXISTS "org_read_diagnoses" ON diagnoses;
 CREATE POLICY "org_read_diagnoses" ON diagnoses
   FOR SELECT USING (org_id = get_user_org_id());
 
+DROP POLICY IF EXISTS "doctor_write_diagnoses" ON diagnoses;
 CREATE POLICY "doctor_write_diagnoses" ON diagnoses
   FOR INSERT WITH CHECK (
     org_id = get_user_org_id()
     AND get_user_role() IN ('admin', 'doctor')
   );
 
+DROP POLICY IF EXISTS "doctor_update_diagnoses" ON diagnoses;
 CREATE POLICY "doctor_update_diagnoses" ON diagnoses
   FOR UPDATE USING (
     org_id = get_user_org_id()
@@ -198,9 +206,11 @@ CREATE POLICY "doctor_update_diagnoses" ON diagnoses
   );
 
 -- Medication administrations
+DROP POLICY IF EXISTS "org_read_med_admin" ON medication_administrations;
 CREATE POLICY "org_read_med_admin" ON medication_administrations
   FOR SELECT USING (org_id = get_user_org_id());
 
+DROP POLICY IF EXISTS "clinical_write_med_admin" ON medication_administrations;
 CREATE POLICY "clinical_write_med_admin" ON medication_administrations
   FOR INSERT WITH CHECK (
     org_id = get_user_org_id()
@@ -208,15 +218,18 @@ CREATE POLICY "clinical_write_med_admin" ON medication_administrations
   );
 
 -- Orthosis records
+DROP POLICY IF EXISTS "org_read_orthosis" ON orthosis_records;
 CREATE POLICY "org_read_orthosis" ON orthosis_records
   FOR SELECT USING (org_id = get_user_org_id());
 
+DROP POLICY IF EXISTS "clinical_write_orthosis" ON orthosis_records;
 CREATE POLICY "clinical_write_orthosis" ON orthosis_records
   FOR INSERT WITH CHECK (
     org_id = get_user_org_id()
     AND get_user_role() IN ('admin', 'doctor', 'physio', 'masseur')
   );
 
+DROP POLICY IF EXISTS "clinical_update_orthosis" ON orthosis_records;
 CREATE POLICY "clinical_update_orthosis" ON orthosis_records
   FOR UPDATE USING (
     org_id = get_user_org_id()

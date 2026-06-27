@@ -13,6 +13,9 @@ import {
 } from 'lucide-react'
 
 const CLINICAL_ROLES: UserRole[] = ['admin', 'doctor', 'physio', 'masseur']
+// Rehab protocols / RTP are physio & doctor work; rehab_sessions RLS and the
+// RTP/score APIs exclude masseurs, so keep /rehab out of their nav.
+const REHAB_ROLES: UserRole[] = ['admin', 'doctor', 'physio']
 const PERFORMANCE_ROLES: UserRole[] = ['admin', 'doctor', 'physio', 'fitness_coach', 'coach', 'director', 'team_manager', 'nutritionist', 'scout']
 const ALL_ROLES: UserRole[] = ['admin', 'doctor', 'physio', 'masseur', 'coach', 'fitness_coach', 'nutritionist', 'director', 'scout', 'team_manager', 'athlete']
 
@@ -33,7 +36,7 @@ const NAV_ITEMS: NavItem[] = [
   // Clínico — clinical staff only
   { href: '/clinical',      labelKey: 'clinical_file',     icon: FileText,        roles: CLINICAL_ROLES,   sectionKey: 'clinical' },
   { href: '/occurrences',   labelKey: 'occurrences',       icon: AlertCircle,     roles: CLINICAL_ROLES,   sectionKey: 'clinical' },
-  { href: '/rehab',         labelKey: 'rehab',             icon: Activity,        roles: CLINICAL_ROLES,   sectionKey: 'clinical' },
+  { href: '/rehab',         labelKey: 'rehab',             icon: Activity,        roles: REHAB_ROLES,      sectionKey: 'clinical' },
   // Performance — visible to all, marked as in development
   { href: '/load',          labelKey: 'load',              icon: Gauge,           roles: PERFORMANCE_ROLES, inDevelopment: true, sectionKey: 'performance' },
   { href: '/performance',   labelKey: 'performance',       icon: TrendingUp,      roles: PERFORMANCE_ROLES, inDevelopment: true, sectionKey: 'performance' },

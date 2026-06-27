@@ -114,5 +114,12 @@ export function addDays(dateStr: string, days: number): string {
 }
 
 export function todayStr(): string {
-  return new Date().toISOString().split('T')[0]
+  // Local calendar day, not the UTC day — otherwise just after local midnight
+  // east of UTC (e.g. Portugal summer time) this returns yesterday and the
+  // dashboard/occurrences microcycle is computed for the wrong day.
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }

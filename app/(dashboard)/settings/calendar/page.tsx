@@ -34,6 +34,10 @@ export default function CalendarSettingsPage() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const selectedSquadId = useUiStore((s) => s.selectedSquadId)
+  const squads = useUiStore((s) => s.squads)
+  // Events are squad-scoped; the calendar_read RLS policy never returns rows
+  // with a null squad_id. Fall back to the first squad so a save is never lost.
+  const effectiveSquadId = selectedSquadId ?? squads[0]?.id ?? null
 
   const [matchForm, setMatchForm] = useState({
     event_date: '',
@@ -73,7 +77,7 @@ export default function CalendarSettingsPage() {
       .select('id, event_date, event_type, label, is_match_day, opponent, venue')
       .order('event_date', { ascending: false })
       .limit(60)
-    if (selectedSquadId) eventsQuery = eventsQuery.eq('squad_id', selectedSquadId)
+    if (effectiveSquadId) eventsQuery = eventsQuery.eq('squad_id', effectiveSquadId)
     const { data } = await eventsQuery
 
     setEvents(data ?? [])
@@ -81,10 +85,11 @@ export default function CalendarSettingsPage() {
   }
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { fetchEvents() }, [selectedSquadId])
+  useEffect(() => { fetchEvents() }, [effectiveSquadId])
 
   function handleAddMatch() {
     if (!matchForm.event_date) return
+    if (!effectiveSquadId) { setError('Cria ou seleciona uma squad antes de adicionar eventos.'); return }
     startTransition(async () => {
       const supabase = createClient()
       setError(null)
@@ -95,7 +100,7 @@ export default function CalendarSettingsPage() {
         is_match_day: true,
         opponent: matchForm.opponent || null,
         venue: matchForm.venue,
-        squad_id: selectedSquadId,
+        squad_id: effectiveSquadId,
       })
       if (insertErr) {
         setError('Não foi possível guardar o jogo. Sem permissões ou erro de rede.')
@@ -110,6 +115,7 @@ export default function CalendarSettingsPage() {
 
   function handleAddTraining() {
     if (!trainingForm.event_date) return
+    if (!effectiveSquadId) { setError('Cria ou seleciona uma squad antes de adicionar eventos.'); return }
     startTransition(async () => {
       const supabase = createClient()
       setError(null)
@@ -118,7 +124,7 @@ export default function CalendarSettingsPage() {
         event_type: trainingForm.event_type,
         label: trainingForm.label || null,
         is_match_day: false,
-        squad_id: selectedSquadId,
+        squad_id: effectiveSquadId,
       })
       if (insertErr) {
         setError('Não foi possível guardar a sessão. Sem permissões ou erro de rede.')

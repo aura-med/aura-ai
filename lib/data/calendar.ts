@@ -15,7 +15,7 @@ export async function getCalendarPageDTO(squadId: string | null): Promise<Calend
     .from('athletes')
     .select('id, name, shirt_number, position, wellness_checkins(checkin_date, fatigue, sleep_hours, tqr), injury_events(id), fatigue_profiles(recovery_speed, congestion_sensitivity, typical_md1_drop, typical_md2_drop)')
     .eq('active', true)
-    .eq('status', 'available')
+    .or('availability_status.is.null,availability_status.eq.available')
     .order('shirt_number')
     .order('checkin_date', { referencedTable: 'wellness_checkins', ascending: false })
     .limit(1, { referencedTable: 'wellness_checkins' })

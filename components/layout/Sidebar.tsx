@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl'
 import { useUiStore } from '@/stores/uiStore'
 import type { UserRole } from '@/types'
 import {
-  LayoutDashboard, Users, Activity, Calendar,
+  LayoutDashboard, Activity, Calendar,
   Heart, Gauge, BookOpen, Settings,
   ClipboardList, TrendingUp, FileText, AlertCircle,
 } from 'lucide-react'
@@ -27,9 +27,9 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  // Overview — visible to all
+  // Overview — visible to all. The squad/"Plantel" view lives as a tab inside
+  // the dashboard, so it is intentionally not a separate sidebar entry.
   { href: '/',              labelKey: 'dashboard',         icon: LayoutDashboard, roles: ALL_ROLES,        sectionKey: 'overview' },
-  { href: '/squad',         labelKey: 'squad',             icon: Users,           roles: ALL_ROLES,        sectionKey: 'overview' },
   // Clínico — clinical staff only
   { href: '/clinical',      labelKey: 'clinical_file',     icon: FileText,        roles: CLINICAL_ROLES,   sectionKey: 'clinical' },
   { href: '/occurrences',   labelKey: 'occurrences',       icon: AlertCircle,     roles: CLINICAL_ROLES,   sectionKey: 'clinical' },

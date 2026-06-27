@@ -88,7 +88,14 @@ function parseDate(s: string): number {
 }
 
 function formatDate(ts: number): string {
-  return new Date(ts).toISOString().split('T')[0]
+  // Format in local time to mirror parseDate's local-midnight parsing. Using
+  // toISOString() here would shift the date a day in zones east of UTC (e.g.
+  // Portugal summer time), breaking matchDays.indexOf() lookups.
+  const d = new Date(ts)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }
 
 export function formatDisplayDate(dateStr: string, locale = 'pt-PT'): string {

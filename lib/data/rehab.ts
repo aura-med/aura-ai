@@ -15,7 +15,7 @@ export async function getRehabPageDTO(squadId: string | null): Promise<RehabPage
     .from('athletes')
     .select('id, name, position, club, rehab_sessions(id, current_day, rtp_criteria, clinical_data, rehab_protocols(key, name, total_days, evidence, phases))')
     .eq('active', true)
-    .eq('status', 'rehab')
+    .eq('availability_status', 'rtp')
     .order('shirt_number')
     .order('updated_at', { referencedTable: 'rehab_sessions', ascending: false })
     .limit(1, { referencedTable: 'rehab_sessions' })

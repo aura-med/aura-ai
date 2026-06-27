@@ -19,14 +19,25 @@ const ROLE_COLORS: Record<string, { bg: string; color: string }> = {
   masseur:       { bg: 'rgba(77,154,255,0.12)', color: 'var(--aura-blue)' },
   coach:         { bg: 'rgba(255,211,0,0.12)',  color: 'var(--aura-warn)' },
   fitness_coach: { bg: 'rgba(255,211,0,0.12)',  color: 'var(--aura-warn)' },
+  nutritionist:  { bg: 'rgba(180,141,252,0.12)', color: 'var(--aura-purple)' },
+  director:      { bg: 'rgba(180,141,252,0.12)', color: 'var(--aura-purple)' },
+  scout:         { bg: 'rgba(180,141,252,0.12)', color: 'var(--aura-purple)' },
+  team_manager:  { bg: 'rgba(180,141,252,0.12)', color: 'var(--aura-purple)' },
   athlete:       { bg: 'rgba(255,255,255,0.08)', color: 'var(--aura-text2)' },
 }
 
-const ROLE_OPTIONS: UserRole[] = ['admin', 'doctor', 'physio', 'masseur', 'coach', 'fitness_coach', 'athlete']
+const ROLE_OPTIONS: UserRole[] = [
+  'admin', 'doctor', 'physio', 'masseur',
+  'coach', 'fitness_coach',
+  'nutritionist', 'director', 'scout', 'team_manager',
+  'athlete',
+]
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Admin', doctor: 'Médico', physio: 'Fisioterapeuta', masseur: 'Massagista',
-  coach: 'Treinador', fitness_coach: 'Prep. Físico', athlete: 'Atleta',
+  coach: 'Treinador', fitness_coach: 'Prep. Físico',
+  nutritionist: 'Nutricionista', director: 'Diretor', scout: 'Scout', team_manager: 'Team Manager',
+  athlete: 'Atleta',
 }
 
 function RoleDropdown({

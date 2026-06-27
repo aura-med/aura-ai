@@ -1,8 +1,29 @@
 'use client'
 
 import { Brain } from 'lucide-react'
+import { RecommendationsPanel } from '@/components/recommendations-panel'
+import { acknowledgeRecommendations } from '@/lib/actions/recommendations'
+import type { AthleteProfileData } from '@/types/athlete-profile'
 
-export function RecommendationsTab() {
+export function RecommendationsTab({ profile }: { profile: AthleteProfileData }) {
+  const rec = profile.recommendations
+
+  if (rec) {
+    return (
+      <RecommendationsPanel
+        recommendations={rec}
+        logId={rec.logId}
+        generatedAt={rec.generatedAt}
+        dominantVariable={profile.dominantVariable}
+        riskLevel={(profile.riskLevel ?? 'low') as 'low' | 'medium' | 'high' | 'critical'}
+        confidence={profile.confidence}
+        viewerRole={profile.viewerRole}
+        acknowledged={rec.acknowledged}
+        onAcknowledge={acknowledgeRecommendations}
+      />
+    )
+  }
+
   return (
     <div
       className="rounded-xl border p-12 flex flex-col items-center gap-3 text-center"

@@ -11,6 +11,7 @@ import { formatDisplayDate, addDays } from '@/lib/utils/microcycle'
 import type { MicrocycleStatus } from '@/lib/utils/microcycle'
 import { exportDashboardPDF } from '@/lib/utils/pdf-export'
 import { useUiStore } from '@/stores/uiStore'
+import { MonthCalendar, type MonthCalendarEvent } from '@/components/dashboard/MonthCalendar'
 import type { AthleteAvailabilityStatus } from '@/types'
 
 interface DashboardAthlete {
@@ -33,6 +34,7 @@ interface DashboardClientProps {
   currentDate: string
   microcycle: MicrocycleStatus
   isToday: boolean
+  calendarEvents: MonthCalendarEvent[]
 }
 
 const STATUS_CONFIG: Record<AthleteAvailabilityStatus, {
@@ -51,7 +53,7 @@ const STATUS_CONFIG: Record<AthleteAvailabilityStatus, {
 
 const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 'rtp', 'available']
 
-export function DashboardClient({ athletes, squadId, currentDate, microcycle, isToday }: DashboardClientProps) {
+export function DashboardClient({ athletes, squadId, currentDate, microcycle, isToday, calendarEvents }: DashboardClientProps) {
   const [tab, setTab] = useState<'overview' | 'squad'>('overview')
   const router = useRouter()
   const pathname = usePathname()
@@ -292,6 +294,9 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
               )
             })}
           </div>
+
+          {/* Month calendar (Google-style month view) */}
+          <MonthCalendar events={calendarEvents} />
         </div>
       )}
 

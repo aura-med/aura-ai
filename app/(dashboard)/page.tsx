@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getSquadIdParam } from '@/lib/squad-url'
 import { calcScore, riskColor, riskLabel } from '@/lib/scoring'
-import { calculateMDStatus, todayStr } from '@/lib/utils/microcycle'
+import { calculateMDStatus, todayStr, addDays } from '@/lib/utils/microcycle'
 import { DashboardClient } from './DashboardClient'
 
 async function getData(squadId: string | null, date: string) {
@@ -35,7 +35,19 @@ async function getData(squadId: string | null, date: string) {
   const matchDays = (matchEvents ?? []).map((e: { event_date: string }) => e.event_date)
   const microcycle = calculateMDStatus(date, matchDays)
 
-  return { athletes: athletes ?? [], microcycle }
+  // Calendar events for the dashboard month view — a wide window so the
+  // client can flip months without refetching (season calendars are small).
+  let eventsQuery = supabase
+    .from('calendar_events')
+    .select('event_date, event_type, label, is_match_day, opponent')
+    .gte('event_date', addDays(date, -90))
+    .lte('event_date', addDays(date, 180))
+    .order('event_date')
+    .limit(500)
+  if (squadId) eventsQuery = eventsQuery.eq('squad_id', squadId)
+  const { data: calendarEvents } = await eventsQuery
+
+  return { athletes: athletes ?? [], microcycle, calendarEvents: calendarEvents ?? [] }
 }
 
 export default async function Dashboard({
@@ -50,7 +62,7 @@ export default async function Dashboard({
   const currentDate = typeof rawDate === 'string' ? rawDate : today
   const isToday = currentDate === today
 
-  const { athletes, microcycle } = await getData(squadId, currentDate)
+  const { athletes, microcycle, calendarEvents } = await getData(squadId, currentDate)
 
   const withScores = athletes.map((a) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -101,6 +113,7 @@ export default async function Dashboard({
       currentDate={currentDate}
       microcycle={microcycle}
       isToday={isToday}
+      calendarEvents={calendarEvents}
     />
   )
 }

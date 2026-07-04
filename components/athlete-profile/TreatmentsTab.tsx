@@ -425,6 +425,10 @@ function OrthosisModal({
 export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
   const router = useRouter()
 
+  // Clinical write actions mirror the RLS insert policies (admin/doctor/physio/
+  // masseur) — other roles get a read-only view instead of an RLS error on save.
+  const canClinical = ['admin', 'doctor', 'physio', 'masseur'].includes(profile.viewerRole)
+
   // ── Local state ────────────────────────────────────────────────────────────
   const [medHistory, setMedHistory] = useState<MedicalHistory | null>(profile.medicalHistory)
 
@@ -698,7 +702,7 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
         <Section
           icon={Syringe}
           title={`Administração de Medicamentos${medAdminRecords.length > 0 ? ` (${medAdminRecords.length})` : ''}`}
-          action={
+          action={canClinical ? (
             <button
               type="button"
               onClick={() => setShowMedAdminModal(true)}
@@ -707,14 +711,18 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
             >
               <Plus size={10} /> Registar
             </button>
-          }
+          ) : undefined}
         >
           {loadingMedAdmin ? (
             <div className="flex justify-center py-4">
               <Loader2 size={16} className="animate-spin" style={{ color: 'var(--aura-text3)' }} />
             </div>
           ) : medAdminRecords.length === 0 ? (
-            <EmptyState label="Sem administrações registadas" cta="Registar administração" onClick={() => setShowMedAdminModal(true)} />
+            canClinical ? (
+              <EmptyState label="Sem administrações registadas" cta="Registar administração" onClick={() => setShowMedAdminModal(true)} />
+            ) : (
+              <p className="py-6 text-center text-xs" style={{ color: 'var(--aura-text3)' }}>Sem administrações registadas</p>
+            )
           ) : (
             <div className="space-y-2">
               {medAdminRecords.map((r) => (
@@ -745,7 +753,7 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
         <Section
           icon={Bandage}
           title={`Ligaduras & Ortóteses Clínicas${orthosisRecords.length > 0 ? ` (${orthosisRecords.length})` : ''}`}
-          action={
+          action={canClinical ? (
             <button
               type="button"
               onClick={() => setShowOrthosisModal(true)}
@@ -754,14 +762,18 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
             >
               <Plus size={10} /> Registar
             </button>
-          }
+          ) : undefined}
         >
           {loadingOrthosis ? (
             <div className="flex justify-center py-4">
               <Loader2 size={16} className="animate-spin" style={{ color: 'var(--aura-text3)' }} />
             </div>
           ) : orthosisRecords.length === 0 ? (
-            <EmptyState label="Sem registos clínicos de ligaduras" cta="Registar" onClick={() => setShowOrthosisModal(true)} />
+            canClinical ? (
+              <EmptyState label="Sem registos clínicos de ligaduras" cta="Registar" onClick={() => setShowOrthosisModal(true)} />
+            ) : (
+              <p className="py-6 text-center text-xs" style={{ color: 'var(--aura-text3)' }}>Sem registos clínicos de ligaduras</p>
+            )
           ) : (
             <div className="space-y-2">
               {orthosisRecords.map((r) => (

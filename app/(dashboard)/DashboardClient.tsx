@@ -54,7 +54,7 @@ const STATUS_CONFIG: Record<AthleteAvailabilityStatus, {
 const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 'rtp', 'available']
 
 export function DashboardClient({ athletes, squadId, currentDate, microcycle, isToday, calendarEvents }: DashboardClientProps) {
-  const [tab, setTab] = useState<'overview' | 'squad'>('overview')
+  const [tab, setTab] = useState<'overview' | 'squad' | 'calendar'>('overview')
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -188,7 +188,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
 
       {/* ── Tabs ──────────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid var(--aura-border)', paddingBottom: 0 }}>
-        {(['overview', 'squad'] as const).map((t) => (
+        {(['overview', 'squad', 'calendar'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -200,7 +200,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
               marginBottom: -1,
             }}
           >
-            {t === 'overview' ? 'Visão Geral' : 'Plantel'}
+            {t === 'overview' ? 'Visão Geral' : t === 'squad' ? 'Plantel' : 'Calendário'}
           </button>
         ))}
       </div>
@@ -294,10 +294,16 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
               )
             })}
           </div>
-
-          {/* Month calendar (Google-style month view) */}
-          <MonthCalendar events={calendarEvents} />
         </div>
+      )}
+
+      {/* ── Tab: Calendário ──────────────────────────────────────────── */}
+      {tab === 'calendar' && (
+        <MonthCalendar
+          key={currentDate.slice(0, 7)}
+          events={calendarEvents}
+          initialDate={currentDate}
+        />
       )}
 
       {/* ── Tab: Plantel ─────────────────────────────────────────────── */}

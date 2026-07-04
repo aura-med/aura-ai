@@ -32,11 +32,13 @@ function dateKey(y: number, m: number, d: number): string {
   return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 }
 
-export function MonthCalendar({ events }: { events: MonthCalendarEvent[] }) {
+export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEvent[]; initialDate?: string }) {
   const today = todayStr()
-  const [ty, tm] = [Number(today.slice(0, 4)), Number(today.slice(5, 7)) - 1]
-  const [year, setYear] = useState(ty)
-  const [month, setMonth] = useState(tm) // 0-based
+  // Open on the dashboard's selected date (e.g. ?date=2026-08-05 shows August),
+  // falling back to today; the today-highlight below always uses the real today.
+  const seed = initialDate ?? today
+  const [year, setYear] = useState(Number(seed.slice(0, 4)))
+  const [month, setMonth] = useState(Number(seed.slice(5, 7)) - 1) // 0-based
 
   function navigate(delta: number) {
     const next = new Date(year, month + delta, 1)

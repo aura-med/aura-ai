@@ -59,7 +59,14 @@ export default async function Dashboard({
   const squadId = getSquadIdParam(params)
   const today = todayStr()
   const rawDate = params?.date
-  const currentDate = typeof rawDate === 'string' ? rawDate : today
+  // Only accept a well-formed, parseable YYYY-MM-DD — a malformed ?date= would
+  // make addDays() throw on an Invalid Date and 500 the dashboard.
+  const currentDate =
+    typeof rawDate === 'string' &&
+    /^\d{4}-\d{2}-\d{2}$/.test(rawDate) &&
+    !Number.isNaN(new Date(`${rawDate}T00:00:00`).getTime())
+      ? rawDate
+      : today
   const isToday = currentDate === today
 
   const { athletes, microcycle, calendarEvents } = await getData(squadId, currentDate)

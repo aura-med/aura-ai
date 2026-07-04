@@ -2,8 +2,10 @@
 -- Populates calendar_events with the July pre-season plan so the dashboard
 -- month view and microcycle/MD calculations have real data.
 --
--- Squad: uses the club's first squad. If you have more than one squad,
--- replace the v_squad SELECT below with the exact squad id.
+-- Squad targeting: this is club-specific fixture data, so the seed refuses to
+-- guess in multi-tenant databases. It applies only when (a) v_squad is set
+-- explicitly below, (b) a squad/org named like 'Estrela' exists, or (c) the
+-- database has exactly one squad. Otherwise it skips with a NOTICE.
 -- Idempotent: re-running deletes this seed's own rows (by label pattern in
 -- the seed window) before inserting; hand-entered events are left alone.
 -- Note from the plan: "Se 1ª jornada dia 09/08 fazemos folga" — if the league
@@ -11,10 +13,24 @@
 
 DO $$
 DECLARE
-  v_squad uuid := (SELECT id FROM squads ORDER BY created_at LIMIT 1);
+  -- To target a specific squad, set its id here:
+  v_squad uuid := NULL;
 BEGIN
   IF v_squad IS NULL THEN
-    RAISE NOTICE 'No squad found — pre-season seed skipped.';
+    SELECT s.id INTO v_squad
+    FROM squads s
+    LEFT JOIN organizations o ON o.id = s.org_id
+    WHERE s.name ILIKE '%estrela%' OR o.name ILIKE '%estrela%'
+    ORDER BY s.created_at
+    LIMIT 1;
+  END IF;
+
+  IF v_squad IS NULL AND (SELECT count(*) FROM squads) = 1 THEN
+    SELECT id INTO v_squad FROM squads;
+  END IF;
+
+  IF v_squad IS NULL THEN
+    RAISE NOTICE 'Pre-season seed skipped: no Estrela squad found and multiple squads exist — set v_squad explicitly.';
     RETURN;
   END IF;
 

@@ -146,7 +146,9 @@ export async function addOccurrenceRecord(input: {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  await supabase.from('occurrence_records').insert({
+  // Abort if the record insert fails (e.g. RLS rejection) — otherwise the
+  // occurrence/athlete state would change with no reassessment in the audit trail.
+  const { error: recordError } = await supabase.from('occurrence_records').insert({
     occurrence_id: input.occurrenceId,
     athlete_id: input.athleteId,
     record_date: input.recordDate,
@@ -158,6 +160,7 @@ export async function addOccurrenceRecord(input: {
     created_by: user?.id,
     clinician_name: input.clinicianName,
   })
+  if (recordError) throw new Error(recordError.message)
 
   // Update this occurrence's own status
   await supabase

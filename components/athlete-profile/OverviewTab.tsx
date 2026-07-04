@@ -408,8 +408,18 @@ function ActiveDiagnosesSection({
           athleteId={athleteId}
           occurrences={profile.activeOccurrences}
           onClose={() => setShowModal(false)}
-          onSaved={() => {
+          onSaved={async () => {
             setShowModal(false)
+            // router.refresh() preserves this mounted component's state, so
+            // re-read the active diagnoses directly or the new row won't show.
+            const supabase = createClient()
+            const { data } = await supabase
+              .from('diagnoses')
+              .select('id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, diagnosed_at, is_resolved')
+              .eq('athlete_id', athleteId)
+              .eq('is_resolved', false)
+              .order('diagnosed_at', { ascending: false })
+            if (data) setDiagnoses(data as ActiveDiagnosis[])
             router.refresh()
           }}
         />

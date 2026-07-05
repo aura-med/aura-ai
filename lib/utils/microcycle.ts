@@ -43,7 +43,9 @@ export function calculateMDStatus(
     if (prevMatch !== null) {
       const daysSince = Math.round((d - prevMatch) / 86400000)
       if (daysSince < daysUntil) {
-        const mcNumber = matchDays.indexOf(formatDate(prevMatch)) + 1
+        // Chronological match number from the sorted list; lastIndexOf so two
+        // matches on the same day count the second as the current microcycle.
+        const mcNumber = sorted.lastIndexOf(prevMatch) + 1
         return {
           label: `MD+${daysSince}`,
           mdOffset: daysSince,
@@ -55,7 +57,7 @@ export function calculateMDStatus(
     }
 
     if (daysUntil <= 14) {
-      const mcNumber = matchDays.indexOf(formatDate(nextMatch)) + 1
+      const mcNumber = sorted.indexOf(nextMatch) + 1
       const label = daysUntil === 0 ? 'MD' : `MD-${daysUntil}`
       return {
         label,
@@ -70,7 +72,7 @@ export function calculateMDStatus(
   // Secondary: days after last match
   if (prevMatch !== null) {
     const daysSince = Math.round((d - prevMatch) / 86400000)
-    const mcNumber = matchDays.indexOf(formatDate(prevMatch)) + 1
+    const mcNumber = sorted.lastIndexOf(prevMatch) + 1
     return {
       label: `MD+${daysSince}`,
       mdOffset: daysSince,

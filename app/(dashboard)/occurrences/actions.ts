@@ -197,15 +197,21 @@ export async function addOccurrenceRecord(input: {
   if (recordError) throw new Error(recordError.message)
 
   // Now update the occurrence's own status (still guarded on is_resolved=false).
-  await supabase
+  // If it matched no row, the occurrence was resolved concurrently between our
+  // SELECT and here — in that case this occurrence's status must NOT be the
+  // recompute fallback (it would wrongly re-open the athlete).
+  const { data: statusUpdated } = await supabase
     .from('occurrences')
     .update({ availability_status: input.availabilityStatus })
     .eq('id', input.occurrenceId)
     .eq('is_resolved', false)
+    .select('id')
+    .maybeSingle()
 
   // Recompute from all active occurrences/diagnoses so a less-restrictive
   // reassessment on one issue doesn't clear a still-active one elsewhere.
-  const nextStatus = await recomputeAthleteAvailability(supabase, targetAthleteId, input.availabilityStatus)
+  const fallback = statusUpdated ? input.availabilityStatus : 'available'
+  const nextStatus = await recomputeAthleteAvailability(supabase, targetAthleteId, fallback)
   await supabase.rpc('update_athlete_availability', { p_athlete_id: targetAthleteId, p_status: nextStatus })
 
   revalidatePath('/occurrences')

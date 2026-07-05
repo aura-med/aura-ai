@@ -39,7 +39,7 @@ async function getData(squadId: string | null, date: string) {
   // client can flip months without refetching (season calendars are small).
   let eventsQuery = supabase
     .from('calendar_events')
-    .select('event_date, event_type, label, is_match_day, opponent')
+    .select('id, event_date, event_type, label, is_match_day, opponent, venue')
     .gte('event_date', addDays(date, -90))
     .lte('event_date', addDays(date, 180))
     .order('event_date')

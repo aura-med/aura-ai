@@ -70,9 +70,21 @@ export interface RegisterOccurrenceInput {
   clinicianRole: string
 }
 
+// Resolve the acting clinician's audit labels from the authenticated profile,
+// never from client-supplied fields (which could impersonate another clinician).
+async function getClinician(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name, role')
+    .eq('id', user?.id ?? '')
+    .single()
+  return { userId: user?.id, name: profile?.full_name ?? '', role: profile?.role ?? '' }
+}
+
 export async function registerOccurrence(input: RegisterOccurrenceInput) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const clinician = await getClinician(supabase)
 
   const { error } = await supabase.from('occurrences').insert({
     athlete_id: input.athleteId,
@@ -86,9 +98,9 @@ export async function registerOccurrence(input: RegisterOccurrenceInput) {
     assessment: input.assessment,
     plan: input.plan,
     availability_status: input.availabilityStatus,
-    created_by: user?.id,
-    clinician_name: input.clinicianName,
-    clinician_role: input.clinicianRole,
+    created_by: clinician.userId,
+    clinician_name: clinician.name,
+    clinician_role: clinician.role,
     is_resolved: false,
   })
 
@@ -111,7 +123,9 @@ export async function resolveOccurrence(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  await supabase
+  // Trust the occurrence row's own athlete_id (returned from the update), not the
+  // client-supplied athleteId, so we never recompute availability for the wrong athlete.
+  const { data: resolved } = await supabase
     .from('occurrences')
     .update({
       is_resolved: true,
@@ -120,13 +134,17 @@ export async function resolveOccurrence(
       availability_status: resolutionStatus,
     })
     .eq('id', occurrenceId)
+    .select('athlete_id')
+    .single()
+
+  const targetAthleteId = resolved?.athlete_id ?? athleteId
 
   // Recompute athlete availability from the remaining open occurrences/diagnoses
   // so resolving one occurrence doesn't clear a still-active injury elsewhere.
   // This occurrence is now resolved, so `resolutionStatus` only applies as the
   // fallback when nothing else is open.
-  const nextStatus = await recomputeAthleteAvailability(supabase, athleteId, resolutionStatus)
-  await supabase.rpc('update_athlete_availability', { p_athlete_id: athleteId, p_status: nextStatus })
+  const nextStatus = await recomputeAthleteAvailability(supabase, targetAthleteId, resolutionStatus)
+  await supabase.rpc('update_athlete_availability', { p_athlete_id: targetAthleteId, p_status: nextStatus })
 
   revalidatePath('/occurrences')
   revalidatePath('/')
@@ -141,10 +159,9 @@ export async function addOccurrenceRecord(input: {
   assessment: string
   plan: string
   availabilityStatus: 'available' | 'evaluation' | 'unavailable' | 'rtp'
-  clinicianName: string
 }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const clinician = await getClinician(supabase)
 
   // Abort if the record insert fails (e.g. RLS rejection) — otherwise the
   // occurrence/athlete state would change with no reassessment in the audit trail.
@@ -157,8 +174,8 @@ export async function addOccurrenceRecord(input: {
     assessment: input.assessment,
     plan: input.plan,
     availability_status: input.availabilityStatus,
-    created_by: user?.id,
-    clinician_name: input.clinicianName,
+    created_by: clinician.userId,
+    clinician_name: clinician.name,
   })
   if (recordError) throw new Error(recordError.message)
 

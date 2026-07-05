@@ -89,7 +89,7 @@ function StatusBadge({ status }: { status: AthleteAvailabilityStatus }) {
   )
 }
 
-function OccurrenceRow({ occ, clinicianName, onRevalidate }: { occ: Occurrence; clinicianName: string; onRevalidate: () => void }) {
+function OccurrenceRow({ occ, onRevalidate }: { occ: Occurrence; onRevalidate: () => void }) {
   const [expanded, setExpanded] = useState(false)
   const [showReeval, setShowReeval] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -119,7 +119,6 @@ function OccurrenceRow({ occ, clinicianName, onRevalidate }: { occ: Occurrence; 
         assessment: reevalData.assessment,
         plan: reevalData.plan,
         availabilityStatus: reevalData.availability_status,
-        clinicianName,
       })
       setShowReeval(false)
       setReevalData({ subjective: '', objective: '', assessment: '', plan: '', availability_status: occ.availability_status })
@@ -572,7 +571,7 @@ export function OccurrencesClient({
           </div>
         ) : (
           filtered.map((occ) => (
-            <OccurrenceRow key={occ.id} occ={occ} clinicianName={clinicianName} onRevalidate={refresh} />
+            <OccurrenceRow key={occ.id} occ={occ} onRevalidate={refresh} />
           ))
         )}
       </div>

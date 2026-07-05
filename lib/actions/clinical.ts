@@ -102,3 +102,40 @@ export async function administerMedication(input: AdministerMedicationInput) {
   revalidatePath(`/athletes/${input.athleteId}`)
   return data
 }
+
+export interface RegisterOrthosisInput {
+  athleteId: string
+  orthosisType: string
+  bodyPart: string | null
+  appliedByName: string | null
+  applicationDate: string // local YYYY-MM-DD
+  requiresDailyApplication: boolean
+  notes: string | null
+}
+
+export async function registerOrthosis(input: RegisterOrthosisInput) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: prof } = await supabase
+    .from('profiles')
+    .select('org_id, full_name')
+    .eq('id', user?.id ?? '')
+    .single()
+
+  const { data, error } = await supabase.from('orthosis_records').insert({
+    athlete_id:                 input.athleteId,
+    org_id:                     prof?.org_id ?? null,
+    orthosis_type:              input.orthosisType,
+    body_part:                  input.bodyPart,
+    registered_by_name:         prof?.full_name ?? null, // derived, not client-supplied
+    applied_by_name:            input.appliedByName,
+    application_date:           input.applicationDate,
+    requires_daily_application: input.requiresDailyApplication,
+    notes:                      input.notes,
+    is_active:                  true,
+  }).select().single()
+  if (error) throw new Error(error.message)
+
+  revalidatePath(`/athletes/${input.athleteId}`)
+  return data
+}

@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { Activity, Pill, Wrench, Plus, Clock, Edit2, Loader2, Syringe, Bandage } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { administerMedication } from '@/lib/actions/clinical'
+import { administerMedication, registerOrthosis } from '@/lib/actions/clinical'
 import type {
   AthleteProfileData,
   MedicalHistory,
@@ -333,23 +333,16 @@ function OrthosisModal({
     setSaving(true)
     setError(null)
     try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      const { data: prof } = await supabase.from('profiles').select('org_id, full_name').eq('id', user?.id ?? '').single()
-      const today = localDateValue()
-      const { data, error: err } = await supabase.from('orthosis_records').insert({
-        athlete_id:                 athleteId,
-        org_id:                     prof?.org_id ?? null,
-        orthosis_type:              orthosisType.trim(),
-        body_part:                  bodyPart.trim() || null,
-        registered_by_name:         prof?.full_name ?? null,
-        applied_by_name:            appliedBy.trim() || null,
-        application_date:           today,
-        requires_daily_application: requiresDaily,
-        notes:                      notes.trim() || null,
-        is_active:                  true,
-      }).select().single()
-      if (err) throw err
+      // Registrar/org derived server-side so the treatment audit trail can't be forged.
+      const data = await registerOrthosis({
+        athleteId,
+        orthosisType:             orthosisType.trim(),
+        bodyPart:                 bodyPart.trim() || null,
+        appliedByName:            appliedBy.trim() || null,
+        applicationDate:          localDateValue(),
+        requiresDailyApplication: requiresDaily,
+        notes:                    notes.trim() || null,
+      })
       onSaved(data as OrthosisRecord)
     } catch (e) {
       setError((e as Error).message)

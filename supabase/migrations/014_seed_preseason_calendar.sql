@@ -3,9 +3,8 @@
 -- month view and microcycle/MD calculations have real data.
 --
 -- Squad targeting: this is club-specific fixture data, so the seed refuses to
--- guess in multi-tenant databases. It applies only when (a) v_squad is set
--- explicitly below, (b) a squad/org named like 'Estrela' exists, or (c) the
--- database has exactly one squad. Otherwise it skips with a NOTICE.
+-- guess. It applies only when (a) v_squad is set explicitly below, or (b) a
+-- squad/org named like 'Estrela' exists. Otherwise it skips with a NOTICE.
 -- Idempotent & non-destructive: it only seeds when the squad has NO events in
 -- the pre-season window, so re-running never duplicates and never deletes
 -- hand-entered events (which may share labels like "UT 12" or "Folga").
@@ -26,12 +25,11 @@ BEGIN
     LIMIT 1;
   END IF;
 
-  IF v_squad IS NULL AND (SELECT count(*) FROM squads) = 1 THEN
-    SELECT id INTO v_squad FROM squads;
-  END IF;
-
+  -- No single-squad fallback: this is Estrela da Amadora fixture data, so it must
+  -- never be injected into an unrelated club's calendar just because they happen
+  -- to have one squad. Require an Estrela match or an explicit v_squad above.
   IF v_squad IS NULL THEN
-    RAISE NOTICE 'Pre-season seed skipped: no Estrela squad found and multiple squads exist — set v_squad explicitly.';
+    RAISE NOTICE 'Pre-season seed skipped: no Estrela squad/org found — set v_squad explicitly to seed a specific squad.';
     RETURN;
   END IF;
 

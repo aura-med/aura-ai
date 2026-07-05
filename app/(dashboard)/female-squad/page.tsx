@@ -49,7 +49,9 @@ export default async function FemalePage({
     return { ...a, base_score: base.score, adjusted_score: adjusted.adjusted, phase: adjusted.phase }
   })
 
-  const rehab     = withData.filter(a => a.status === 'rehab')
+  const isRtp = (a: { availability_status?: string | null; status?: string | null }) =>
+    (a.availability_status ?? (a.status === 'rehab' ? 'rtp' : 'available')) === 'rtp'
+  const rehab     = withData.filter(isRtp)
   const highRisk  = withData.filter(a => a.adjusted_score >= 65)
   const inOvulation = withData.filter(a => a.phase?.phase === 'ovulatory')
 
@@ -134,7 +136,7 @@ export default async function FemalePage({
                   </div>
                 )}
 
-                {a.status === 'rehab' && (
+                {isRtp(a) && (
                   <div style={{ marginTop: 6 }}>
                     <span style={{ fontSize: 9, fontFamily: 'var(--mono)', padding: '2px 6px', borderRadius: 4, background: 'var(--blue2)', color: 'var(--blue)' }}>
                       REABILITAÇÃO

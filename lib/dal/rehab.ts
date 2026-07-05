@@ -36,7 +36,7 @@ export async function getRehabSessions(squadId?: string | null): Promise<RehabSe
       )
     `)
     .eq('active', true)
-    .eq('status', 'rehab')
+    .eq('availability_status', 'rtp')
   if (squadId) query = query.eq('squad_id', squadId)
   const { data, error } = await query
   if (error) throw error

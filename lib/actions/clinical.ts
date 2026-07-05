@@ -16,15 +16,21 @@ async function recomputeAvailability(
   athleteId: string,
   fallback: Avail,
 ): Promise<Avail> {
-  const [{ data: occ }, { data: diag }, { data: ath }] = await Promise.all([
+  const [{ data: occ }, { data: diag }, { data: ath }, { data: rehabSessions }, { data: openInjuries }] = await Promise.all([
     supabase.from('occurrences').select('availability_status').eq('athlete_id', athleteId).eq('is_resolved', false),
     supabase.from('diagnoses').select('availability_status').eq('athlete_id', athleteId).eq('is_resolved', false),
     supabase.from('athletes').select('status').eq('id', athleteId).single(),
+    supabase.from('rehab_sessions').select('id').eq('athlete_id', athleteId).limit(1),
+    supabase.from('injury_events').select('id').eq('athlete_id', athleteId).is('return_date', null).limit(1),
   ])
   const statuses = [...(occ ?? []), ...(diag ?? [])]
     .map((r) => r.availability_status as Avail | null)
     .filter((s): s is Avail => s != null && s in SEVERITY)
-  if (ath?.status === 'rehab') statuses.push('rtp')
+  // Active rehab floor (mirror 009): legacy status='rehab' OR rehab session + open injury.
+  const inActiveRehab =
+    ath?.status === 'rehab' ||
+    ((rehabSessions?.length ?? 0) > 0 && (openInjuries?.length ?? 0) > 0)
+  if (inActiveRehab) statuses.push('rtp')
   if (statuses.length === 0) return fallback
   return statuses.reduce((worst, s) => (SEVERITY[s] > SEVERITY[worst] ? s : worst))
 }

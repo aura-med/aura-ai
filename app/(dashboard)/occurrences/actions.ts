@@ -21,7 +21,7 @@ async function recomputeAthleteAvailability(
   athleteId: string,
   fallback: AvailabilityStatus
 ): Promise<AvailabilityStatus> {
-  const [{ data: occ }, { data: diag }, { data: athlete }] = await Promise.all([
+  const [{ data: occ }, { data: diag }, { data: athlete }, { data: rehabSessions }, { data: openInjuries }] = await Promise.all([
     supabase
       .from('occurrences')
       .select('availability_status')
@@ -37,15 +37,21 @@ async function recomputeAthleteAvailability(
       .select('status')
       .eq('id', athleteId)
       .single(),
+    supabase.from('rehab_sessions').select('id').eq('athlete_id', athleteId).limit(1),
+    supabase.from('injury_events').select('id').eq('athlete_id', athleteId).is('return_date', null).limit(1),
   ])
 
   const statuses = [...(occ ?? []), ...(diag ?? [])]
     .map((r) => r.availability_status as AvailabilityStatus | null)
     .filter((s): s is AvailabilityStatus => s != null && s in STATUS_SEVERITY)
 
-  // The legacy rehab flag keeps the athlete in RTP as a floor: resolving a
-  // less-restrictive issue must not pull an athlete out of active rehab.
-  if (athlete?.status === 'rehab') statuses.push('rtp')
+  // Active rehab keeps the athlete in RTP as a floor: resolving a less-restrictive
+  // issue must not pull an athlete out of rehab. Mirror the 009 backfill signal —
+  // legacy status='rehab', OR an active rehab session with an unresolved injury.
+  const inActiveRehab =
+    athlete?.status === 'rehab' ||
+    ((rehabSessions?.length ?? 0) > 0 && (openInjuries?.length ?? 0) > 0)
+  if (inActiveRehab) statuses.push('rtp')
 
   if (statuses.length === 0) return fallback
 

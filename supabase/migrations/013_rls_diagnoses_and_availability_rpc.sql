@@ -43,4 +43,9 @@ DROP POLICY IF EXISTS athletes_update ON athletes;
 
 CREATE POLICY athletes_update ON athletes FOR UPDATE
   USING (org_id = get_user_org_id())
-  WITH CHECK (get_user_role() IN ('admin', 'doctor', 'physio'));
+  WITH CHECK (
+    -- Keep the row in the caller's org: without this an admin/doctor/physio could
+    -- set org_id to another tenant and move the athlete out of their org.
+    org_id = get_user_org_id()
+    AND get_user_role() IN ('admin', 'doctor', 'physio')
+  );

@@ -77,16 +77,18 @@ export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
     .from('diagnoses')
     .update({ is_resolved: true, resolved_at: new Date().toISOString(), resolved_by: user?.id ?? null })
     .eq('id', diagnosisId)
-    .select('id')
+    .select('athlete_id')
     .single()
-  if (error || !resolved) throw new Error(error?.message ?? 'Diagnóstico não encontrado')
+  if (error || !resolved?.athlete_id) throw new Error(error?.message ?? 'Diagnóstico não encontrado')
 
+  // Recompute for the diagnosis row's own athlete, not the client-supplied id.
   // 'available' fallback: with this diagnosis now resolved, nothing else open
   // means the athlete is available (rehab floor still applies inside the helper).
-  const next = await recomputeAvailability(supabase, athleteId, 'available')
-  await supabase.rpc('update_athlete_availability', { p_athlete_id: athleteId, p_status: next })
+  const targetAthleteId = resolved.athlete_id
+  const next = await recomputeAvailability(supabase, targetAthleteId, 'available')
+  await supabase.rpc('update_athlete_availability', { p_athlete_id: targetAthleteId, p_status: next })
 
-  revalidatePath(`/athletes/${athleteId}`)
+  revalidatePath(`/athletes/${targetAthleteId}`)
   revalidatePath('/')
 }
 

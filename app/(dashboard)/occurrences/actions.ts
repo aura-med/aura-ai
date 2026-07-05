@@ -168,11 +168,27 @@ export async function addOccurrenceRecord(input: {
   const supabase = await createClient()
   const clinician = await getClinician(supabase)
 
+  // Reassessments only apply to a still-open occurrence. Update its status guarded
+  // by is_resolved=false and abort if no row matched (already resolved / stale
+  // form), so a late submit can't re-open an athlete's availability. Also gives us
+  // the row's own athlete_id rather than trusting the client-supplied one.
+  const { data: openOcc, error: occErr } = await supabase
+    .from('occurrences')
+    .update({ availability_status: input.availabilityStatus })
+    .eq('id', input.occurrenceId)
+    .eq('is_resolved', false)
+    .select('athlete_id')
+    .single()
+  if (occErr || !openOcc?.athlete_id) {
+    throw new Error(occErr?.message ?? 'Ocorrência já resolvida ou inexistente')
+  }
+  const targetAthleteId = openOcc.athlete_id
+
   // Abort if the record insert fails (e.g. RLS rejection) — otherwise the
   // occurrence/athlete state would change with no reassessment in the audit trail.
   const { error: recordError } = await supabase.from('occurrence_records').insert({
     occurrence_id: input.occurrenceId,
-    athlete_id: input.athleteId,
+    athlete_id: targetAthleteId,
     record_date: input.recordDate,
     subjective: input.subjective,
     objective: input.objective,
@@ -184,16 +200,10 @@ export async function addOccurrenceRecord(input: {
   })
   if (recordError) throw new Error(recordError.message)
 
-  // Update this occurrence's own status
-  await supabase
-    .from('occurrences')
-    .update({ availability_status: input.availabilityStatus })
-    .eq('id', input.occurrenceId)
-
   // Recompute from all active occurrences/diagnoses so a less-restrictive
   // reassessment on one issue doesn't clear a still-active one elsewhere.
-  const nextStatus = await recomputeAthleteAvailability(supabase, input.athleteId, input.availabilityStatus)
-  await supabase.rpc('update_athlete_availability', { p_athlete_id: input.athleteId, p_status: nextStatus })
+  const nextStatus = await recomputeAthleteAvailability(supabase, targetAthleteId, input.availabilityStatus)
+  await supabase.rpc('update_athlete_availability', { p_athlete_id: targetAthleteId, p_status: nextStatus })
 
   revalidatePath('/occurrences')
   revalidatePath('/')

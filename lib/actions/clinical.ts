@@ -68,6 +68,28 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
   revalidatePath('/')
 }
 
+export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // resolved_by derived from the session, not the client payload.
+  const { data: resolved, error } = await supabase
+    .from('diagnoses')
+    .update({ is_resolved: true, resolved_at: new Date().toISOString(), resolved_by: user?.id ?? null })
+    .eq('id', diagnosisId)
+    .select('id')
+    .single()
+  if (error || !resolved) throw new Error(error?.message ?? 'Diagnóstico não encontrado')
+
+  // 'available' fallback: with this diagnosis now resolved, nothing else open
+  // means the athlete is available (rehab floor still applies inside the helper).
+  const next = await recomputeAvailability(supabase, athleteId, 'available')
+  await supabase.rpc('update_athlete_availability', { p_athlete_id: athleteId, p_status: next })
+
+  revalidatePath(`/athletes/${athleteId}`)
+  revalidatePath('/')
+}
+
 export interface AdministerMedicationInput {
   athleteId: string
   medicationName: string

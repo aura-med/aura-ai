@@ -4,6 +4,7 @@ import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { AlertTriangle, Plus, CheckCircle2, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { resolveDiagnosis } from '@/lib/actions/clinical'
 import { useRouter } from 'next/navigation'
 import type { AthleteProfileData, InjuryEventSummary, ActiveDiagnosis } from '@/types/athlete-profile'
 
@@ -246,8 +247,6 @@ function RiskBreakdown({ partials, dominantVariable }: { partials: Record<string
 
 // ── Active Diagnoses Section ──────────────────────────────────────────────────
 
-const DIAG_SEVERITY: Record<string, number> = { available: 0, evaluation: 1, rtp: 2, unavailable: 3 }
-
 function DiagnosisCard({
   diag,
   athleteId,
@@ -267,29 +266,8 @@ function DiagnosisCard({
   async function handleResolve() {
     setResolving(true)
     try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      await supabase
-        .from('diagnoses')
-        .update({ is_resolved: true, resolved_at: new Date().toISOString(), resolved_by: user?.id })
-        .eq('id', diag.id)
-
-      // Recompute from remaining active occurrences/diagnoses (this one is now resolved).
-      const [{ data: occ }, { data: activeDiag }, { data: ath }] = await Promise.all([
-        supabase.from('occurrences').select('availability_status').eq('athlete_id', athleteId).eq('is_resolved', false),
-        supabase.from('diagnoses').select('availability_status').eq('athlete_id', athleteId).eq('is_resolved', false),
-        supabase.from('athletes').select('status').eq('id', athleteId).single(),
-      ])
-      const statuses = [...(occ ?? []), ...(activeDiag ?? [])]
-        .map((r) => r.availability_status as string | null)
-        .filter((s): s is string => s != null && s in DIAG_SEVERITY)
-      // Legacy rehab flag keeps the athlete in RTP as a floor.
-      if (ath?.status === 'rehab') statuses.push('rtp')
-      const nextStatus = statuses.length === 0
-        ? 'available'
-        : statuses.reduce((worst, s) => DIAG_SEVERITY[s] > DIAG_SEVERITY[worst] ? s : worst)
-      await supabase.rpc('update_athlete_availability', { p_athlete_id: athleteId, p_status: nextStatus })
-
+      // Author/recompute handled server-side (resolved_by can't be forged).
+      await resolveDiagnosis(diag.id, athleteId)
       onResolved(diag.id)
       router.refresh()
     } finally {

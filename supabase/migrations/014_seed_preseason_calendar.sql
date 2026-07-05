@@ -6,8 +6,9 @@
 -- guess in multi-tenant databases. It applies only when (a) v_squad is set
 -- explicitly below, (b) a squad/org named like 'Estrela' exists, or (c) the
 -- database has exactly one squad. Otherwise it skips with a NOTICE.
--- Idempotent: re-running deletes this seed's own rows (by label pattern in
--- the seed window) before inserting; hand-entered events are left alone.
+-- Idempotent & non-destructive: it only seeds when the squad has NO events in
+-- the pre-season window, so re-running never duplicates and never deletes
+-- hand-entered events (which may share labels like "UT 12" or "Folga").
 -- Note from the plan: "Se 1ª jornada dia 09/08 fazemos folga" — if the league
 -- fixture moves to 09/08, adjust the last row accordingly.
 
@@ -34,13 +35,15 @@ BEGIN
     RETURN;
   END IF;
 
-  DELETE FROM calendar_events
-  WHERE squad_id = v_squad
-    AND event_date BETWEEN '2026-06-29' AND '2026-08-08'
-    AND (
-      label LIKE 'UT %' OR label LIKE 'JT %' OR label = 'Folga'
-      OR label LIKE 'Viagem%' OR label LIKE 'Exames%' OR label LIKE '1ª Jornada%'
-    );
+  -- Only seed a squad whose pre-season window is empty, so we never overwrite or
+  -- delete manually-entered events (and re-running is a no-op).
+  IF EXISTS (
+    SELECT 1 FROM calendar_events
+    WHERE squad_id = v_squad AND event_date BETWEEN '2026-06-29' AND '2026-08-08'
+  ) THEN
+    RAISE NOTICE 'Pre-season seed skipped: squad already has events in the window.';
+    RETURN;
+  END IF;
 
   INSERT INTO calendar_events (squad_id, event_date, event_type, label, is_match_day, opponent, venue) VALUES
     -- Semana 29/jun – 05/jul

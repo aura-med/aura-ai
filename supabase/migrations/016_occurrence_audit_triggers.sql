@@ -51,3 +51,31 @@ DROP TRIGGER IF EXISTS trg_set_occurrence_record_audit ON occurrence_records;
 CREATE TRIGGER trg_set_occurrence_record_audit
   BEFORE INSERT OR UPDATE ON occurrence_records
   FOR EACH ROW EXECUTE FUNCTION set_occurrence_audit();
+
+-- Freeze immutable diagnosis fields on UPDATE. The diagnoses UPDATE policy grants
+-- full-row writes, but the only intended existing-row change is resolution. A
+-- direct-API caller could otherwise rewrite the author/timestamp/OSIICS fields or
+-- move the diagnosis to another athlete; restore those from OLD so only resolution
+-- fields (is_resolved/resolved_at/resolved_by), availability_status and notes change.
+CREATE OR REPLACE FUNCTION freeze_diagnosis_immutable()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.athlete_id         := OLD.athlete_id;
+  NEW.occurrence_id      := OLD.occurrence_id;
+  NEW.org_id             := OLD.org_id;
+  NEW.osiics_code        := OLD.osiics_code;
+  NEW.osiics_description := OLD.osiics_description;
+  NEW.diagnosis_type     := OLD.diagnosis_type;
+  NEW.custom_description := OLD.custom_description;
+  NEW.diagnosed_by       := OLD.diagnosed_by;
+  NEW.diagnosed_at       := OLD.diagnosed_at;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_freeze_diagnosis_immutable ON diagnoses;
+CREATE TRIGGER trg_freeze_diagnosis_immutable
+  BEFORE UPDATE ON diagnoses
+  FOR EACH ROW EXECUTE FUNCTION freeze_diagnosis_immutable();

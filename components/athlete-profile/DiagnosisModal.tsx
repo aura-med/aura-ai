@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { Search, X, Loader2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { createDiagnosis } from '@/lib/actions/clinical'
 import { searchOsiics } from '@/lib/data/osiics'
 import type { OsiicsEntry } from '@/lib/data/osiics'
 import type { ActiveOccurrence } from '@/types/athlete-profile'
@@ -40,45 +40,16 @@ export function DiagnosisModal({ athleteId, occurrences, onClose, onSaved }: Dia
     setSaving(true)
     setError(null)
     try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-
-      const { data: prof } = await supabase
-        .from('profiles')
-        .select('org_id')
-        .eq('id', user?.id ?? '')
-        .single()
-
-      const { error: insertErr } = await supabase.from('diagnoses').insert({
-        athlete_id:          athleteId,
-        org_id:              prof?.org_id ?? null,
-        osiics_code:         selectedOsiics?.code ?? null,
-        osiics_description:  selectedOsiics?.description ?? null,
-        diagnosis_type:      diagnosisType,
-        custom_description:  customDesc.trim() || null,
-        availability_status: status,
-        diagnosed_by:        user?.id ?? null,
-        occurrence_id:       occurrenceId || null,
+      // Author/org derived server-side + availability recomputed there.
+      await createDiagnosis({
+        athleteId,
+        osiicsCode:         selectedOsiics?.code ?? null,
+        osiicsDescription:  selectedOsiics?.description ?? null,
+        diagnosisType,
+        customDescription:  customDesc.trim() || null,
+        availabilityStatus: status as 'available' | 'evaluation' | 'unavailable' | 'rtp',
+        occurrenceId:       occurrenceId || null,
       })
-      if (insertErr) throw insertErr
-
-      // Recompute from all active issues (includes the new diagnosis just inserted)
-      // so adding a less-restrictive diagnosis never downgrades a more-restricted athlete.
-      const SEVERITY: Record<string, number> = { available: 0, evaluation: 1, rtp: 2, unavailable: 3 }
-      const [{ data: occ }, { data: diag }, { data: ath }] = await Promise.all([
-        supabase.from('occurrences').select('availability_status').eq('athlete_id', athleteId).eq('is_resolved', false),
-        supabase.from('diagnoses').select('availability_status').eq('athlete_id', athleteId).eq('is_resolved', false),
-        supabase.from('athletes').select('status').eq('id', athleteId).single(),
-      ])
-      const statuses = [...(occ ?? []), ...(diag ?? [])]
-        .map((r) => r.availability_status as string | null)
-        .filter((s): s is string => s != null && s in SEVERITY)
-      // Legacy rehab flag keeps the athlete in RTP as a floor.
-      if (ath?.status === 'rehab') statuses.push('rtp')
-      const nextStatus = statuses.length === 0 ? status
-        : statuses.reduce((worst, s) => SEVERITY[s] > SEVERITY[worst] ? s : worst)
-      await supabase.rpc('update_athlete_availability', { p_athlete_id: athleteId, p_status: nextStatus })
-
       onSaved()
     } catch (e) {
       setError((e as Error).message)

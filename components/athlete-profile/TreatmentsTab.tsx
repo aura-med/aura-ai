@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { Activity, Pill, Wrench, Plus, Clock, Edit2, Loader2, Syringe, Bandage } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { administerMedication } from '@/lib/actions/clinical'
 import type {
   AthleteProfileData,
   MedicalHistory,
@@ -230,21 +231,15 @@ function MedAdminModal({
     setSaving(true)
     setError(null)
     try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      const { data: prof } = await supabase.from('profiles').select('org_id, full_name').eq('id', user?.id ?? '').single()
-      const { data, error: err } = await supabase.from('medication_administrations').insert({
-        athlete_id:           athleteId,
-        org_id:               prof?.org_id ?? null,
-        medication_name:      medName.trim(),
-        dose:                 dose.trim() || null,
+      // Author/org derived server-side so the antidoping log can't be forged.
+      const data = await administerMedication({
+        athleteId,
+        medicationName: medName.trim(),
+        dose:           dose.trim() || null,
         route,
-        notes:                notes.trim() || null,
-        administered_by:      user?.id ?? null,
-        administered_by_name: prof?.full_name ?? null,
-        administered_at:      new Date(administeredAt).toISOString(),
-      }).select().single()
-      if (err) throw err
+        notes:          notes.trim() || null,
+        administeredAt: new Date(administeredAt).toISOString(),
+      })
       onSaved(data as MedicationAdministration)
     } catch (e) {
       setError((e as Error).message)

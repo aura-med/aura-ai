@@ -19,7 +19,9 @@ CREATE POLICY "doctor_write_diagnoses" ON diagnoses
         SELECT 1 FROM occurrences o
         WHERE o.id = occurrence_id
           AND o.org_id = get_user_org_id()
-          AND o.athlete_id = athlete_id
+          -- Qualify the outer column: inside this subquery an unqualified
+          -- athlete_id would bind to o.athlete_id and be tautological.
+          AND o.athlete_id = diagnoses.athlete_id
       )
     )
   );

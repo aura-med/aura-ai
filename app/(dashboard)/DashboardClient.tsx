@@ -300,7 +300,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
       {/* ── Tab: Calendário ──────────────────────────────────────────── */}
       {tab === 'calendar' && (
         <MonthCalendar
-          key={currentDate.slice(0, 7)}
+          key={`${squadId ?? 'all'}-${currentDate.slice(0, 7)}`}
           events={calendarEvents}
           initialDate={currentDate}
         />

@@ -78,14 +78,17 @@ export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // resolved_by derived from the session, not the client payload.
+  // resolved_by derived from the session, not the client payload. Guard on
+  // is_resolved=false so a stale/double resolve doesn't overwrite the original
+  // resolved_at/resolved_by on an already-resolved diagnosis.
   const { data: resolved, error } = await supabase
     .from('diagnoses')
     .update({ is_resolved: true, resolved_at: new Date().toISOString(), resolved_by: user?.id ?? null })
     .eq('id', diagnosisId)
+    .eq('is_resolved', false)
     .select('athlete_id')
-    .single()
-  if (error || !resolved?.athlete_id) throw new Error(error?.message ?? 'Diagnóstico não encontrado')
+    .maybeSingle()
+  if (error || !resolved?.athlete_id) throw new Error(error?.message ?? 'Diagnóstico já resolvido ou inexistente')
 
   // Recompute for the diagnosis row's own athlete, not the client-supplied id.
   // 'available' fallback: with this diagnosis now resolved, nothing else open

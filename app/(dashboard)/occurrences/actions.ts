@@ -131,6 +131,8 @@ export async function resolveOccurrence(
 
   // Trust the occurrence row's own athlete_id (returned from the update), not the
   // client-supplied athleteId, so we never recompute availability for the wrong athlete.
+  // Guard on is_resolved=false so a stale/double resolve doesn't overwrite the
+  // original resolved_at/resolved_by on an already-resolved row.
   const { data: resolved, error: resolveError } = await supabase
     .from('occurrences')
     .update({
@@ -140,8 +142,9 @@ export async function resolveOccurrence(
       availability_status: resolutionStatus,
     })
     .eq('id', occurrenceId)
+    .eq('is_resolved', false)
     .select('athlete_id')
-    .single()
+    .maybeSingle()
 
   // No row updated (stale or RLS-filtered id) → nothing was resolved; abort
   // before touching availability so a crafted call can't move an athlete's state.

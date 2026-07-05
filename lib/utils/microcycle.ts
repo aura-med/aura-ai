@@ -57,7 +57,10 @@ export function calculateMDStatus(
     }
 
     if (daysUntil <= 14) {
-      const mcNumber = sorted.indexOf(nextMatch) + 1
+      // On the match day itself, a same-day double-header belongs to the LAST of
+      // that day's matches (so occurrences count toward the later MC); during the
+      // build-up we're heading to the first match of the target day.
+      const mcNumber = (daysUntil === 0 ? sorted.lastIndexOf(nextMatch) : sorted.indexOf(nextMatch)) + 1
       const label = daysUntil === 0 ? 'MD' : `MD-${daysUntil}`
       return {
         label,

@@ -168,24 +168,20 @@ export async function addOccurrenceRecord(input: {
   const supabase = await createClient()
   const clinician = await getClinician(supabase)
 
-  // Reassessments only apply to a still-open occurrence. Update its status guarded
-  // by is_resolved=false and abort if no row matched (already resolved / stale
-  // form), so a late submit can't re-open an athlete's availability. Also gives us
-  // the row's own athlete_id rather than trusting the client-supplied one.
+  // Reassessments only apply to a still-open occurrence. Verify (read-only) first
+  // and use the row's own athlete_id, not the client-supplied one.
   const { data: openOcc, error: occErr } = await supabase
     .from('occurrences')
-    .update({ availability_status: input.availabilityStatus })
+    .select('athlete_id, is_resolved')
     .eq('id', input.occurrenceId)
-    .eq('is_resolved', false)
-    .select('athlete_id')
     .single()
-  if (occErr || !openOcc?.athlete_id) {
+  if (occErr || !openOcc?.athlete_id || openOcc.is_resolved) {
     throw new Error(occErr?.message ?? 'Ocorrência já resolvida ou inexistente')
   }
   const targetAthleteId = openOcc.athlete_id
 
-  // Abort if the record insert fails (e.g. RLS rejection) — otherwise the
-  // occurrence/athlete state would change with no reassessment in the audit trail.
+  // Insert the reassessment record BEFORE mutating the occurrence status, so a
+  // rejected insert can't leave the status changed with no audit entry.
   const { error: recordError } = await supabase.from('occurrence_records').insert({
     occurrence_id: input.occurrenceId,
     athlete_id: targetAthleteId,
@@ -199,6 +195,13 @@ export async function addOccurrenceRecord(input: {
     clinician_name: clinician.name,
   })
   if (recordError) throw new Error(recordError.message)
+
+  // Now update the occurrence's own status (still guarded on is_resolved=false).
+  await supabase
+    .from('occurrences')
+    .update({ availability_status: input.availabilityStatus })
+    .eq('id', input.occurrenceId)
+    .eq('is_resolved', false)
 
   // Recompute from all active occurrences/diagnoses so a less-restrictive
   // reassessment on one issue doesn't clear a still-active one elsewhere.

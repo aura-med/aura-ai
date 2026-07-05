@@ -14,6 +14,14 @@ ALTER TABLE athletes
 UPDATE athletes SET availability_status = 'rtp'
   WHERE status = 'rehab' AND availability_status = 'available';
 
+-- Also backfill athletes who are in a rehab protocol (a rehab_sessions row) but
+-- whose legacy status was never flipped to 'rehab', so they aren't shown as
+-- 'available' and dropped from the clinical/rehab buckets. Conservative (toward
+-- rtp) and guarded to untouched default rows only.
+UPDATE athletes a SET availability_status = 'rtp'
+  WHERE a.availability_status = 'available'
+    AND EXISTS (SELECT 1 FROM rehab_sessions rs WHERE rs.athlete_id = a.id);
+
 -- 2. Extend calendar_events for microcycle tracking
 ALTER TABLE calendar_events
   ADD COLUMN IF NOT EXISTS is_match_day boolean DEFAULT false,

@@ -15,16 +15,27 @@ DECLARE
   v_name text;
   v_role text;
 BEGIN
-  SELECT full_name, role INTO v_name, v_role
-  FROM profiles WHERE id = auth.uid();
+  IF TG_OP = 'INSERT' THEN
+    SELECT full_name, role INTO v_name, v_role
+    FROM profiles WHERE id = auth.uid();
 
-  NEW.created_by := auth.uid();
-
-  IF TG_TABLE_NAME = 'occurrences' THEN
-    NEW.clinician_name := v_name;
-    NEW.clinician_role := v_role;
-  ELSIF TG_TABLE_NAME = 'occurrence_records' THEN
-    NEW.clinician_name := v_name;
+    NEW.created_by := auth.uid();
+    IF TG_TABLE_NAME = 'occurrences' THEN
+      NEW.clinician_name := v_name;
+      NEW.clinician_role := v_role;
+    ELSIF TG_TABLE_NAME = 'occurrence_records' THEN
+      NEW.clinician_name := v_name;
+    END IF;
+  ELSE
+    -- On UPDATE, freeze the audit fields: an existing SOAP note can't be
+    -- reassigned to another clinician after creation.
+    NEW.created_by := OLD.created_by;
+    IF TG_TABLE_NAME = 'occurrences' THEN
+      NEW.clinician_name := OLD.clinician_name;
+      NEW.clinician_role := OLD.clinician_role;
+    ELSIF TG_TABLE_NAME = 'occurrence_records' THEN
+      NEW.clinician_name := OLD.clinician_name;
+    END IF;
   END IF;
 
   RETURN NEW;
@@ -33,10 +44,10 @@ $$;
 
 DROP TRIGGER IF EXISTS trg_set_occurrence_audit ON occurrences;
 CREATE TRIGGER trg_set_occurrence_audit
-  BEFORE INSERT ON occurrences
+  BEFORE INSERT OR UPDATE ON occurrences
   FOR EACH ROW EXECUTE FUNCTION set_occurrence_audit();
 
 DROP TRIGGER IF EXISTS trg_set_occurrence_record_audit ON occurrence_records;
 CREATE TRIGGER trg_set_occurrence_record_audit
-  BEFORE INSERT ON occurrence_records
+  BEFORE INSERT OR UPDATE ON occurrence_records
   FOR EACH ROW EXECUTE FUNCTION set_occurrence_audit();

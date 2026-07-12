@@ -761,20 +761,8 @@ export default function RehabSessionClient({
               Critérios de retorno ao jogo
             </div>
             {rtp.map((criterion, idx) => (
-              <div
+              <label
                 key={idx}
-                onClick={async () => {
-                  const updated = rtp.map((r, i) =>
-                    i === idx ? { ...r, done: !r.done } : r
-                  )
-                  setRtp(updated)
-                  const res = await fetch(`/api/rehab/${session.id}/rtp`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ rtp_criteria: updated }),
-                  })
-                  if (!res.ok) setRtp(rtp)
-                }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -785,7 +773,25 @@ export default function RehabSessionClient({
                   fontSize: '12px',
                 }}
               >
+                <input
+                  type="checkbox"
+                  checked={criterion.done}
+                  onChange={async () => {
+                    const updated = rtp.map((r, i) =>
+                      i === idx ? { ...r, done: !r.done } : r
+                    )
+                    setRtp(updated)
+                    const res = await fetch(`/api/rehab/${session.id}/rtp`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ rtp_criteria: updated }),
+                    })
+                    if (!res.ok) setRtp(rtp)
+                  }}
+                  style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
+                />
                 <div
+                  aria-hidden="true"
                   style={{
                     width: 16,
                     height: 16,
@@ -806,7 +812,7 @@ export default function RehabSessionClient({
                 <span style={{ color: criterion.done ? 'var(--aura-green)' : 'var(--aura-text2)' }}>
                   {criterion.label}
                 </span>
-              </div>
+              </label>
             ))}
           </div>
         </div>

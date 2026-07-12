@@ -21,7 +21,7 @@ import type {
   ReadinessLevel,
   Confidence,
 } from '@/types'
-import { normalizeReadinessInputs } from './normalization'
+import { normalizeReadinessInputs } from './normalization.ts'
 
 export const READINESS_WEIGHTS_V1: ReadinessWeights = {
   hrv:     0.25,

@@ -19,10 +19,14 @@ export default async function RehabSessionPage({ params }: Props) {
     .from('rehab_sessions')
     .select(`
       *,
-      athletes ( id, name, shirt_number, position, club, date_of_birth ),
+      athletes (
+        id, name, shirt_number, position, club, date_of_birth,
+        injury_events(injury_date, return_date, diagnosis, severity, location)
+      ),
       rehab_protocols ( * )
     `)
     .eq('id', sessionId)
+    .order('injury_date', { referencedTable: 'injury_events', ascending: false })
     .single()
 
   if (error || !session) notFound()
@@ -45,6 +49,13 @@ export default async function RehabSessionPage({ params }: Props) {
   const blockingGates = currentEligibility?.eligibility.blocking_gates ?? []
   const overrideLog = (session.override_log ?? []) as ProgressionOverride[]
 
+  // Active injury: no return_date, or most recent if all recovered
+  const injuryEvents = (session.athletes as { injury_events?: unknown[] } | null)?.injury_events ?? []
+  const activeInjury = (injuryEvents as Array<{
+    injury_date: string; return_date: string | null
+    diagnosis: string | null; severity: string | null; location: string | null
+  }>).find((inj) => !inj.return_date) ?? injuryEvents[0] ?? null
+
   return (
     <RehabSessionClient
       session={session}
@@ -55,6 +66,11 @@ export default async function RehabSessionPage({ params }: Props) {
       blockingGates={blockingGates}
       overrideLog={overrideLog}
       currentPhaseId={currentPhaseId}
+      startDate={(session.start_date as string | null) ?? null}
+      activeInjury={activeInjury as {
+        injury_date: string; return_date: string | null
+        diagnosis: string | null; severity: string | null; location: string | null
+      } | null}
     />
   )
 }

@@ -142,6 +142,12 @@ export function rehabSessionDTO(row: DbRecord): RehabSessionDTO {
         ? clinicalStatus('red', 'Protocolo ultrapassou duração prevista')
         : clinicalStatus('amber', 'Reabilitação em curso')
 
+  // Most recent active injury (no return_date) or latest if all recovered
+  const injuries = sortByDateDesc(asRecordArray(row.injury_events), 'injury_date')
+  const activeInjury = injuries.find((inj) => !asString(inj.return_date)) ?? injuries[0] ?? {}
+
+  const clinicalData = asRecord(session.clinical_data)
+
   return {
     id: asString(session.id) ?? `no-session-${athleteId}`,
     athleteId,
@@ -149,6 +155,11 @@ export function rehabSessionDTO(row: DbRecord): RehabSessionDTO {
     position: asString(row.position),
     club: asString(row.club),
     noSession,
+    diagnosis: asString(activeInjury.diagnosis),
+    injuryDate: asString(activeInjury.injury_date),
+    severity: asString(activeInjury.severity),
+    injuryLocation: asString(activeInjury.location),
+    startDate: asString(session.start_date),
     protocol: noSession
       ? null
       : {
@@ -169,7 +180,15 @@ export function rehabSessionDTO(row: DbRecord): RehabSessionDTO {
         },
     currentDay,
     rtpCriteria,
-    clinicalData: asRecord(session.clinical_data),
+    clinicalData: {
+      pain_vas: typeof clinicalData.pain_vas === 'number' ? clinicalData.pain_vas : undefined,
+      strength_pct: typeof clinicalData.strength_pct === 'number' ? clinicalData.strength_pct : undefined,
+      test_ok: typeof clinicalData.test_ok === 'boolean' ? clinicalData.test_ok : undefined,
+      balance_s: typeof clinicalData.balance_s === 'number' ? clinicalData.balance_s : undefined,
+      hop_pct: typeof clinicalData.hop_pct === 'number' ? clinicalData.hop_pct : undefined,
+      vmax_pct: typeof clinicalData.vmax_pct === 'number' ? clinicalData.vmax_pct : undefined,
+      calendar: clinicalData.calendar as Record<string, { morning?: string; afternoon?: string }> | undefined,
+    },
     status,
   }
 }

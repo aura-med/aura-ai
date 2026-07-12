@@ -1,181 +1,176 @@
 'use client'
 
 import Link from 'next/link'
-import { useTransition } from 'react'
-import { toggleRtpCriterion, updateRehabClinicalValue } from '@/lib/data/actions'
 import type { RehabPageDTO, RehabSessionDTO } from '@/lib/data/types'
 
-function currentPhase(session: RehabSessionDTO) {
-  const phases = session.protocol?.phases ?? []
-  return phases.find((phase) => session.currentDay >= phase.d1 && session.currentDay <= phase.d2)
-    ?? phases[phases.length - 1]
+const SEV_COLOR: Record<string, string> = {
+  minor:    'var(--warn)',
+  moderate: 'var(--warn)',
+  major:    'var(--danger)',
+  severe:   'var(--danger)',
 }
 
-function protocolProgress(session: RehabSessionDTO) {
-  const phase = currentPhase(session)
-  if (!phase) return 0
-  return Math.max(0, Math.min(100, Math.round(((session.currentDay - phase.d1) / (phase.d2 - phase.d1 + 1)) * 100)))
-}
-
-function RehabClinicalControl({ session }: { session: RehabSessionDTO }) {
-  const [isPending, startTransition] = useTransition()
-  const clinical = session.clinicalData
-  const protocolKey = session.protocol?.key
-
-  function update(field: string, value: number | boolean) {
-    startTransition(async () => {
-      await updateRehabClinicalValue(session.id, field, value)
-    })
-  }
-
+function ProgressBar({ value, total, color }: { value: number; total: number; color: string }) {
+  const pct = total > 0 ? Math.min(100, Math.round((value / total) * 100)) : 0
   return (
-    <div style={{ marginTop: 14 }}>
-      <div className="ctitle">Avaliacao clinica</div>
-      <div style={{ background: 'var(--bg3)', borderRadius: 10, padding: 14, opacity: isPending ? 0.7 : 1 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <label>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span style={{ fontSize: 12, color: 'var(--text2)' }}>Dor (EVA 0-10)</span>
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 600, color: (clinical.pain_vas ?? 5) <= 2 ? 'var(--green2)' : (clinical.pain_vas ?? 5) <= 5 ? 'var(--warn)' : 'var(--danger)' }}>
-                {clinical.pain_vas ?? '-'}/10
-              </span>
-            </div>
-            <input
-              type="range"
-              min={0}
-              max={10}
-              step={1}
-              defaultValue={clinical.pain_vas ?? 5}
-              onChange={(e) => update('pain_vas', parseInt(e.target.value, 10))}
-              style={{ width: '100%', accentColor: 'var(--green2)', minHeight: 32 }}
-            />
-          </label>
-
-          {protocolKey === 'hamstring' && (
-            <SegmentedNumberControl
-              label="Forca exc. (%)"
-              values={[60, 70, 80, 90, 100]}
-              current={clinical.strength_pct}
-              onChange={(value) => update('strength_pct', value)}
-            />
-          )}
-
-          {protocolKey === 'hamstring' && (
-            <div>
-              <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 6 }}>Askling H-test</div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[{ v: false, label: 'Positivo' }, { v: true, label: 'Negativo' }].map((opt) => (
-                  <button
-                    key={String(opt.v)}
-                    onClick={() => update('test_ok', opt.v)}
-                    aria-pressed={clinical.test_ok === opt.v}
-                    style={{
-                      flex: 1, minHeight: 40, padding: 6, borderRadius: 6, fontSize: 12, cursor: 'pointer',
-                      border: `1px solid ${clinical.test_ok === opt.v ? (opt.v ? 'var(--green2)' : 'var(--danger)') : 'var(--border)'}`,
-                      background: clinical.test_ok === opt.v ? (opt.v ? 'var(--green3)' : 'var(--danger2)') : 'var(--bg4)',
-                      color: clinical.test_ok === opt.v ? (opt.v ? 'var(--green2)' : 'var(--danger)') : 'var(--text2)',
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {protocolKey === 'ankle' && (
-            <SegmentedNumberControl
-              label="Equilibrio (s)"
-              values={[10, 15, 20, 25, 30]}
-              current={clinical.balance_s}
-              onChange={(value) => update('balance_s', value)}
-            />
-          )}
-
-          {protocolKey === 'ankle' && (
-            <SegmentedNumberControl
-              label="Hop test (%)"
-              values={[70, 75, 80, 85, 90, 95]}
-              current={clinical.hop_pct}
-              onChange={(value) => update('hop_pct', value)}
-            />
-          )}
-        </div>
-      </div>
+    <div style={{ height: 4, background: 'var(--bg5)', borderRadius: 2, overflow: 'hidden', width: '100%' }}>
+      <div style={{ width: `${pct}%`, height: 4, background: color, borderRadius: 2, transition: 'width .3s' }} />
     </div>
   )
 }
 
-function SegmentedNumberControl({
-  label,
-  values,
-  current,
-  onChange,
-}: {
-  label: string
-  values: number[]
-  current?: number
-  onChange: (value: number) => void
-}) {
+function currentPhaseForSession(session: RehabSessionDTO) {
+  return (session.protocol?.phases ?? []).find(
+    (p) => session.currentDay >= p.d1 && session.currentDay <= p.d2
+  ) ?? session.protocol?.phases?.[session.protocol.phases.length - 1] ?? null
+}
+
+function AthleteRow({ session }: { session: RehabSessionDTO }) {
+  const phase = currentPhaseForSession(session)
+  const phaseColor = phase?.color ?? 'var(--blue)'
+  const totalDays = session.protocol?.totalDays ?? 0
+
   return (
-    <div>
-      <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 6 }}>{label}</div>
-      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-        {values.map((value) => (
-          <button
-            key={value}
-            onClick={() => onChange(value)}
-            aria-pressed={current === value}
+    <tr>
+      {/* Status dot + name */}
+      <td>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div
             style={{
-              minHeight: 36,
-              padding: '3px 10px',
-              borderRadius: 4,
-              cursor: 'pointer',
+              width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+              background: session.status.key === 'green' ? 'var(--green2)'
+                : session.status.key === 'red' ? 'var(--danger)'
+                : 'var(--warn)',
+            }}
+          />
+          <div>
+            {session.noSession ? (
+              <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text)' }}>
+                {session.athleteName}
+              </div>
+            ) : (
+              <Link
+                href={`/rehab/${session.id}`}
+                style={{ fontWeight: 600, fontSize: 13, color: 'var(--text)', textDecoration: 'none' }}
+              >
+                {session.athleteName}
+              </Link>
+            )}
+            <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 1 }}>
+              {[session.position, session.club].filter(Boolean).join(' · ')}
+            </div>
+          </div>
+        </div>
+      </td>
+
+      {/* Diagnosis */}
+      <td>
+        {session.diagnosis ? (
+          <div>
+            <div style={{ fontSize: 12, color: 'var(--text)' }}>{session.diagnosis}</div>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 2 }}>
+              {session.injuryLocation && (
+                <span style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--text3)' }}>
+                  {session.injuryLocation}
+                </span>
+              )}
+              {session.severity && (
+                <span style={{
+                  fontSize: 9, fontFamily: 'var(--mono)',
+                  color: SEV_COLOR[session.severity] ?? 'var(--text3)',
+                  background: `${SEV_COLOR[session.severity] ?? 'var(--bg3)'}18`,
+                  padding: '1px 5px', borderRadius: 3,
+                }}>
+                  {session.severity}
+                </span>
+              )}
+            </div>
+          </div>
+        ) : (
+          <span style={{ fontSize: 12, color: 'var(--text3)' }}>—</span>
+        )}
+      </td>
+
+      {/* Protocol + day */}
+      <td>
+        {session.noSession ? (
+          <span style={{ fontSize: 12, color: 'var(--warn)' }}>Sem protocolo</span>
+        ) : (
+          <div>
+            <div style={{ fontSize: 12, color: 'var(--text)', fontFamily: 'var(--mono)' }}>
+              {session.protocol?.name}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 1 }}>
+              Dia {session.currentDay}/{session.protocol?.totalDays ?? '?'}
+              {session.injuryDate && (
+                <> · desde {new Date(session.injuryDate).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' })}</>
+              )}
+            </div>
+          </div>
+        )}
+      </td>
+
+      {/* Progress */}
+      <td style={{ minWidth: 120 }}>
+        {!session.noSession && totalDays > 0 && (
+          <div>
+            <ProgressBar value={session.currentDay} total={totalDays} color={phaseColor} />
+            <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--text3)', marginTop: 3 }}>
+              {Math.min(100, Math.round((session.currentDay / totalDays) * 100))}%
+            </div>
+          </div>
+        )}
+      </td>
+
+      {/* Current phase */}
+      <td>
+        {phase ? (
+          <span style={{
+            display: 'inline-block', fontSize: 10, fontFamily: 'var(--mono)',
+            padding: '3px 8px', borderRadius: 4,
+            background: `${phaseColor}18`, color: phaseColor,
+            border: `1px solid ${phaseColor}40`,
+          }}>
+            {phase.name}
+          </span>
+        ) : (
+          <span style={{ fontSize: 12, color: 'var(--text3)' }}>—</span>
+        )}
+      </td>
+
+      {/* RTP status */}
+      <td>
+        {!session.noSession && session.rtpCriteria.length > 0 && (() => {
+          const done = session.rtpCriteria.filter((c) => c.done).length
+          const total = session.rtpCriteria.length
+          return (
+            <div>
+              <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: done === total ? 'var(--green2)' : 'var(--text3)' }}>
+                RTP {done}/{total}
+              </div>
+              <ProgressBar value={done} total={total} color="var(--green2)" />
+            </div>
+          )
+        })()}
+      </td>
+
+      {/* Action */}
+      <td>
+        {!session.noSession && (
+          <Link
+            href={`/rehab/${session.id}`}
+            style={{
+              display: 'inline-block', fontSize: 11, padding: '5px 10px',
+              borderRadius: 6, border: '1px solid var(--border)',
+              color: 'var(--text2)', textDecoration: 'none',
               fontFamily: 'var(--mono)',
-              fontSize: 11,
-              border: `1px solid ${current === value ? 'var(--green2)' : 'var(--border)'}`,
-              background: current === value ? 'var(--green3)' : 'var(--bg4)',
-              color: current === value ? 'var(--green2)' : 'var(--text2)',
             }}
           >
-            {value}
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function RtpChecklist({ session }: { session: RehabSessionDTO }) {
-  const [isPending, startTransition] = useTransition()
-  const done = session.rtpCriteria.filter((criterion) => criterion.done).length
-
-  return (
-    <div>
-      <div className="ctitle">Criterios de RTP ({done}/{session.rtpCriteria.length})</div>
-      {session.rtpCriteria.map((criterion, index) => (
-        <label key={`${session.id}-${criterion.label}`} className="rtp-item" style={{ minHeight: 40, cursor: 'pointer' }}>
-          <input
-            type="checkbox"
-            checked={criterion.done}
-            disabled={isPending}
-            onChange={() => {
-              startTransition(async () => {
-                await toggleRtpCriterion(session.id, index, session.rtpCriteria)
-              })
-            }}
-            style={{ width: 18, height: 18, accentColor: 'var(--green2)' }}
-          />
-          <span style={{ color: criterion.done ? 'var(--green2)' : 'var(--text2)' }}>{criterion.label}</span>
-        </label>
-      ))}
-      <div style={{ marginTop: 10, height: 5, background: 'var(--bg5)', borderRadius: 3, overflow: 'hidden' }}>
-        <div style={{ width: `${Math.round((done / Math.max(session.rtpCriteria.length, 1)) * 100)}%`, height: 5, background: 'var(--green2)', borderRadius: 3, transition: 'width .3s' }} />
-      </div>
-      <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 5 }}>
-        {done} de {session.rtpCriteria.length} criterios cumpridos
-      </div>
-    </div>
+            Abrir →
+          </Link>
+        )}
+      </td>
+    </tr>
   )
 }
 
@@ -194,117 +189,61 @@ export function RehabClient({ dto }: { dto: RehabPageDTO }) {
     )
   }
 
+  const withProtocol   = dto.sessions.filter((s) => !s.noSession)
+  const rtpReady       = withProtocol.filter((s) => s.rtpCriteria.length > 0 && s.rtpCriteria.every((c) => c.done))
+
   return (
     <div>
       <div className="sec-hdr">
         <div className="sec-title">Reabilitacao activa</div>
         <div className="sec-sub">
-          {dto.sessions.length} atleta{dto.sessions.length > 1 ? 's' : ''} em protocolo · RTP adaptativo
+          {dto.sessions.length} atleta{dto.sessions.length > 1 ? 's' : ''} em protocolo · Seleciona para detalhe
         </div>
       </div>
 
-      {dto.sessions.map((session) => {
-        if (session.noSession) {
-          return (
-            <div key={session.id} className="card" style={{ marginBottom: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 16 }}>{session.athleteName}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 4 }}>
-                    {session.position ?? '-'} · {session.club ?? '-'}
-                  </div>
-                </div>
-                <div className="alert alert-w" style={{ margin: 0 }}>
-                  <div className="adot ad-w" />
-                  <div style={{ fontSize: 12 }}>{session.status.label}</div>
-                </div>
-              </div>
-            </div>
-          )
-        }
+      {/* KPI summary */}
+      <div className="kpi-grid" style={{ marginBottom: 16 }}>
+        <div className="kpi">
+          <div className="kpi-num" style={{ color: 'var(--danger)' }}>{dto.sessions.length}</div>
+          <div className="kpi-label">Em reabilitação</div>
+        </div>
+        <div className="kpi">
+          <div className="kpi-num" style={{ color: 'var(--warn)' }}>{withProtocol.length}</div>
+          <div className="kpi-label">Com protocolo</div>
+        </div>
+        <div className="kpi">
+          <div className="kpi-num" style={{ color: 'var(--green2)' }}>{rtpReady.length}</div>
+          <div className="kpi-label">Prontos RTP</div>
+        </div>
+        <div className="kpi">
+          <div className="kpi-num" style={{ color: 'var(--text3)' }}>{dto.sessions.length - withProtocol.length}</div>
+          <div className="kpi-label">Sem protocolo</div>
+        </div>
+      </div>
 
-        const phase = currentPhase(session)
-        const phasePct = protocolProgress(session)
-
-        return (
-          <div key={session.id} className="card" style={{ marginBottom: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
-              <div>
-                <Link href={`/rehab/${session.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <div style={{ fontWeight: 700, fontSize: 16 }}>{session.athleteName}</div>
-                </Link>
-                <div style={{ fontSize: 12, color: 'var(--text2)', fontFamily: 'var(--mono)' }}>
-                  {session.protocol?.name} · Dia {session.currentDay}/{session.protocol?.totalDays ?? '-'}
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 2 }}>
-                  {session.protocol?.evidence}
-                </div>
-              </div>
-              <div style={{
-                padding: '4px 12px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--mono)',
-                background: session.status.key === 'green' ? 'var(--green3)' : 'var(--blue2)',
-                color: session.status.key === 'green' ? 'var(--green2)' : 'var(--blue)',
-                border: '1px solid rgba(77,154,255,0.25)',
-              }}>
-                {session.status.label}
-              </div>
-            </div>
-
-            <div className="ctitle">Protocolo - fases</div>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 14, overflowX: 'auto' }}>
-              {(session.protocol?.phases ?? []).map((phaseItem, i) => {
-                const isDone = session.currentDay > phaseItem.d2
-                const isActive = session.currentDay >= phaseItem.d1 && session.currentDay <= phaseItem.d2
-                return (
-                  <div key={`${phaseItem.name}-${i}`} style={{
-                    flex: '0 0 auto', padding: '10px 14px', borderRadius: 8,
-                    border: `1px solid ${isActive ? phaseItem.color : 'var(--border)'}`,
-                    background: isActive ? `${phaseItem.color}15` : 'var(--bg3)',
-                    minWidth: 140,
-                  }}>
-                    <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--text3)', marginBottom: 3 }}>
-                      {phaseItem.range}
-                    </div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: isDone ? 'var(--green2)' : isActive ? phaseItem.color : 'var(--text3)' }}>
-                      {isDone ? 'Completa: ' : ''}{phaseItem.name}
-                    </div>
-                    {isActive && (
-                      <div style={{ marginTop: 8 }}>
-                        <div style={{ height: 3, background: 'var(--bg5)', borderRadius: 2, overflow: 'hidden' }}>
-                          <div style={{ width: `${phasePct}%`, height: 3, background: phaseItem.color, borderRadius: 2 }} />
-                        </div>
-                        <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2, fontFamily: 'var(--mono)' }}>
-                          Dia {session.currentDay} - {phasePct}% da fase
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-
-            <div className="g2">
-              {phase && (
-                <div>
-                  <div className="ctitle">Exercicios prescritos - {phase.name}</div>
-                  {phase.ex.map((exercise) => (
-                    <div key={exercise} style={{ fontSize: 12, color: 'var(--text2)', padding: '5px 0', borderBottom: '1px solid var(--border)' }}>
-                      {exercise}
-                    </div>
-                  ))}
-                  <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text3)' }}>
-                    Criterio de progressao: {phase.criteria}
-                  </div>
-                </div>
-              )}
-
-              <RtpChecklist session={session} />
-            </div>
-
-            <RehabClinicalControl session={session} />
-          </div>
-        )
-      })}
+      {/* Athlete panel */}
+      <div className="card" style={{ padding: 0 }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table" style={{ minWidth: 680 }}>
+            <thead>
+              <tr>
+                <th>Atleta</th>
+                <th>Diagnóstico</th>
+                <th>Protocolo</th>
+                <th>Progresso</th>
+                <th>Fase</th>
+                <th>RTP</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {dto.sessions.map((session) => (
+                <AthleteRow key={session.id} session={session} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   )
 }

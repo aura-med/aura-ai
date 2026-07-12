@@ -108,6 +108,13 @@ export interface RehabSessionDTO {
   position: string | null
   club: string | null
   noSession: boolean
+  /** Active injury — null when athlete is in rehab without a logged injury event */
+  diagnosis: string | null
+  injuryDate: string | null
+  severity: string | null
+  injuryLocation: string | null
+  /** Session start date (ISO), used to map calendar dates to protocol days */
+  startDate: string | null
   protocol: {
     key: string
     name: string
@@ -133,6 +140,7 @@ export interface RehabSessionDTO {
     balance_s?: number
     hop_pct?: number
     vmax_pct?: number
+    calendar?: Record<string, { morning?: string; afternoon?: string }>
   }
   status: ClinicalStatusDTO
 }

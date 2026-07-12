@@ -13,10 +13,18 @@ export async function getRehabPageDTO(squadId: string | null): Promise<RehabPage
   const supabase = await createClient()
   let query = supabase
     .from('athletes')
-    .select('id, name, position, club, rehab_sessions(id, current_day, rtp_criteria, clinical_data, rehab_protocols(key, name, total_days, evidence, phases))')
+    .select(`
+      id, name, position, club,
+      injury_events(injury_date, return_date, diagnosis, severity, location),
+      rehab_sessions(
+        id, start_date, current_day, rtp_criteria, clinical_data,
+        rehab_protocols(key, name, total_days, evidence, phases)
+      )
+    `)
     .eq('active', true)
     .eq('status', 'rehab')
     .order('shirt_number')
+    .order('injury_date', { referencedTable: 'injury_events', ascending: false })
     .order('updated_at', { referencedTable: 'rehab_sessions', ascending: false })
     .limit(1, { referencedTable: 'rehab_sessions' })
     .limit(1, { referencedTable: 'rehab_protocols' })

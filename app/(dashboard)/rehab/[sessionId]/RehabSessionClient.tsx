@@ -38,6 +38,272 @@ interface Props {
   blockingGates: PhaseGate[]
   overrideLog: ProgressionOverride[]
   currentPhaseId: number
+  startDate: string | null
+  activeInjury: {
+    injury_date: string
+    return_date: string | null
+    diagnosis: string | null
+    severity: string | null
+    location: string | null
+  } | null
+}
+
+// ── Weekly planning calendar ─────────────────────────────────────────────────
+
+const SEV_COLOR: Record<string, string> = {
+  minor: 'var(--aura-warn)', moderate: 'var(--aura-warn)',
+  major: 'var(--aura-danger)', severe: 'var(--aura-danger)',
+}
+
+const DAY_LABELS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+
+function mondayOf(date: Date): Date {
+  const d = new Date(date)
+  const day = d.getDay()
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1))
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+function CalendarCell({
+  dateKey,
+  slot,
+  initialValue,
+  phaseColor,
+  onSave,
+}: {
+  dateKey: string
+  slot: string
+  initialValue: string
+  phaseColor: string
+  onSave: (v: string) => void
+}) {
+  const [value, setValue] = useState(initialValue)
+  const [saving, setSaving] = useState(false)
+
+  async function handleBlur() {
+    if (value === initialValue) return
+    setSaving(true)
+    onSave(value)
+    setSaving(false)
+  }
+
+  return (
+    <textarea
+      key={`${dateKey}-${slot}`}
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={handleBlur}
+      placeholder="—"
+      rows={3}
+      style={{
+        width: '100%',
+        resize: 'vertical',
+        border: `1px solid ${saving ? phaseColor : 'var(--aura-border)'}`,
+        borderRadius: 6,
+        background: 'var(--aura-bg3)',
+        color: 'var(--aura-text)',
+        fontSize: 11,
+        fontFamily: 'var(--font-inter)',
+        padding: '6px 8px',
+        lineHeight: 1.5,
+        boxSizing: 'border-box',
+        transition: 'border-color .2s',
+      }}
+    />
+  )
+}
+
+function WeekCalendar({
+  assessment,
+  updateAssessment,
+  startDate,
+  protocol,
+}: {
+  assessment: ClinicalAssessment
+  updateAssessment: (field: string, value: unknown) => Promise<void>
+  startDate: string | null
+  protocol: RehabProtocolDef
+}) {
+  const [weekOffset, setWeekOffset] = useState(0)
+
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const monday = mondayOf(new Date())
+    monday.setDate(monday.getDate() + weekOffset * 7 + i)
+    return monday
+  })
+
+  const calendar = (assessment.calendar ?? {}) as Record<string, { morning?: string; afternoon?: string }>
+
+  function protocolDay(date: Date): number | null {
+    if (!startDate) return null
+    const start = new Date(startDate)
+    start.setHours(0, 0, 0, 0)
+    const diff = Math.floor((date.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+    return diff >= 0 ? diff + 1 : null
+  }
+
+  function phaseFor(date: Date) {
+    const d = protocolDay(date)
+    if (d === null) return null
+    return protocol.phases.find((p) => d >= p.d1 && d <= p.d2) ?? null
+  }
+
+  function saveCell(date: Date, slot: 'morning' | 'afternoon', text: string) {
+    const key = date.toISOString().slice(0, 10)
+    const updated = {
+      ...calendar,
+      [key]: { ...(calendar[key] ?? {}), [slot]: text },
+    }
+    updateAssessment('calendar', updated)
+  }
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const weekLabel = `${weekDays[0].toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' })} – ${weekDays[6].toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' })}`
+
+  return (
+    <div
+      style={{
+        background: 'var(--aura-bg2)',
+        border: '1px solid var(--aura-border)',
+        borderRadius: 12,
+        padding: '18px 20px',
+      }}
+    >
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <button
+          onClick={() => setWeekOffset((w) => w - 1)}
+          style={{
+            width: 28, height: 28, borderRadius: 6, border: '1px solid var(--aura-border)',
+            background: 'var(--aura-bg3)', color: 'var(--aura-text2)', cursor: 'pointer', fontSize: 14,
+          }}
+        >
+          ←
+        </button>
+        <span style={{ fontFamily: 'var(--font-dm-mono)', fontSize: 11, color: 'var(--aura-text2)', flex: 1, textAlign: 'center' }}>
+          {weekLabel}
+        </span>
+        <button
+          onClick={() => setWeekOffset((w) => w + 1)}
+          style={{
+            width: 28, height: 28, borderRadius: 6, border: '1px solid var(--aura-border)',
+            background: 'var(--aura-bg3)', color: 'var(--aura-text2)', cursor: 'pointer', fontSize: 14,
+          }}
+        >
+          →
+        </button>
+        {weekOffset !== 0 && (
+          <button
+            onClick={() => setWeekOffset(0)}
+            style={{
+              padding: '4px 10px', borderRadius: 6, border: '1px solid var(--aura-border)',
+              background: 'var(--aura-bg3)', color: 'var(--aura-text3)', cursor: 'pointer', fontSize: 10,
+              fontFamily: 'var(--font-dm-mono)',
+            }}
+          >
+            Hoje
+          </button>
+        )}
+      </div>
+
+      {/* Calendar grid */}
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
+          <thead>
+            <tr>
+              <th style={{ width: 60, padding: '6px 8px', textAlign: 'left' }} />
+              {weekDays.map((day, i) => {
+                const phase = phaseFor(day)
+                const pDay = protocolDay(day)
+                const isToday = day.getTime() === today.getTime()
+                return (
+                  <th
+                    key={i}
+                    style={{
+                      padding: '6px 8px',
+                      textAlign: 'center',
+                      borderBottom: `2px solid ${phase?.color ?? 'var(--aura-border)'}`,
+                      background: isToday ? `${phase?.color ?? 'var(--aura-green)'}10` : 'transparent',
+                      borderRadius: isToday ? '6px 6px 0 0' : 0,
+                    }}
+                  >
+                    <div style={{ fontFamily: 'var(--font-dm-mono)', fontSize: 10, color: 'var(--aura-text3)' }}>
+                      {DAY_LABELS[i]}
+                    </div>
+                    <div style={{
+                      fontFamily: 'var(--font-dm-mono)', fontSize: 12,
+                      color: isToday ? (phase?.color ?? 'var(--aura-green)') : 'var(--aura-text)',
+                      fontWeight: isToday ? 700 : 400,
+                    }}>
+                      {day.getDate()}/{day.getMonth() + 1}
+                    </div>
+                    {pDay !== null && (
+                      <div style={{ fontSize: 9, fontFamily: 'var(--font-dm-mono)', color: phase?.color ?? 'var(--aura-text3)', marginTop: 1 }}>
+                        D{pDay} {phase ? `· ${phase.name}` : ''}
+                      </div>
+                    )}
+                  </th>
+                )
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {(['morning', 'afternoon'] as const).map((slot) => (
+              <tr key={slot}>
+                <td style={{
+                  padding: '8px',
+                  fontFamily: 'var(--font-dm-mono)',
+                  fontSize: 9,
+                  letterSpacing: '1px',
+                  textTransform: 'uppercase',
+                  color: 'var(--aura-text3)',
+                  verticalAlign: 'top',
+                  paddingTop: 14,
+                  borderTop: '1px solid var(--aura-border)',
+                }}>
+                  {slot === 'morning' ? 'Manhã' : 'Tarde'}
+                </td>
+                {weekDays.map((day, i) => {
+                  const dateKey = day.toISOString().slice(0, 10)
+                  const phase = phaseFor(day)
+                  const phaseColor = phase?.color ?? 'var(--aura-border)'
+                  const initial = calendar[dateKey]?.[slot] ?? ''
+                  return (
+                    <td
+                      key={i}
+                      style={{
+                        padding: '6px 4px',
+                        verticalAlign: 'top',
+                        borderTop: '1px solid var(--aura-border)',
+                      }}
+                    >
+                      <CalendarCell
+                        key={`${weekOffset}-${dateKey}-${slot}`}
+                        dateKey={dateKey}
+                        slot={slot}
+                        initialValue={initial}
+                        phaseColor={phaseColor}
+                        onSave={(text) => saveCell(day, slot, text)}
+                      />
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {!startDate && (
+        <div style={{ marginTop: 12, fontSize: 11, color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+          * Sem data de início de sessão — dias de protocolo não calculados
+        </div>
+      )}
+    </div>
+  )
 }
 
 const OVERRIDE_REASONS: Array<{ value: OverrideReason; label: string }> = [
@@ -57,6 +323,8 @@ export default function RehabSessionClient({
   blockingGates,
   overrideLog,
   currentPhaseId,
+  startDate,
+  activeInjury,
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -65,7 +333,7 @@ export default function RehabSessionClient({
   const [showOverride, setShowOverride] = useState(false)
   const [overrideReason, setOverrideReason] = useState<OverrideReason>('medical_clearance')
   const [overrideNotes, setOverrideNotes] = useState('')
-  const [activeTab, setActiveTab] = useState<'assessment' | 'timeline' | 'audit'>('assessment')
+  const [activeTab, setActiveTab] = useState<'assessment' | 'timeline' | 'calendario' | 'audit'>('assessment')
   const [saving, setSaving] = useState(false)
   const [savedField, setSavedField] = useState<string | null>(null)
 
@@ -145,6 +413,25 @@ export default function RehabSessionClient({
           <div style={{ fontSize: '12px', color: 'var(--aura-text2)', fontFamily: 'var(--font-dm-mono)' }}>
             {athlete?.position} · {athlete?.club} · {protocol.name} · Dia {session.current_day}/{protocol.total_days}
           </div>
+          {activeInjury?.diagnosis && (
+            <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 11, color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+                {activeInjury.diagnosis}
+                {activeInjury.location && ` · ${activeInjury.location}`}
+              </span>
+              {activeInjury.severity && (
+                <span style={{
+                  fontSize: 9, fontFamily: 'var(--font-dm-mono)',
+                  color: SEV_COLOR[activeInjury.severity] ?? 'var(--aura-text3)',
+                  background: `${SEV_COLOR[activeInjury.severity] ?? 'var(--aura-bg3)'}20`,
+                  padding: '1px 6px', borderRadius: 3,
+                  border: `1px solid ${SEV_COLOR[activeInjury.severity] ?? 'var(--aura-border)'}40`,
+                }}>
+                  {activeInjury.severity}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Phase advancement button */}
@@ -204,7 +491,7 @@ export default function RehabSessionClient({
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
-        {(['assessment', 'timeline', 'audit'] as const).map(tab => (
+        {(['assessment', 'timeline', 'calendario', 'audit'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -222,7 +509,7 @@ export default function RehabSessionClient({
               transition: 'all .15s',
             }}
           >
-            {tab === 'assessment' ? 'Avaliação clínica' : tab === 'timeline' ? 'Protocolo' : 'Histórico'}
+            {tab === 'assessment' ? 'Avaliação clínica' : tab === 'timeline' ? 'Protocolo' : tab === 'calendario' ? 'Calendário' : 'Histórico'}
           </button>
         ))}
       </div>
@@ -668,6 +955,16 @@ export default function RehabSessionClient({
             ))
           )}
         </div>
+      )}
+
+      {/* ── Tab: Calendário ── */}
+      {activeTab === 'calendario' && (
+        <WeekCalendar
+          assessment={assessment}
+          updateAssessment={updateAssessment}
+          startDate={startDate}
+          protocol={protocol}
+        />
       )}
 
       {/* ── Override Modal ── */}

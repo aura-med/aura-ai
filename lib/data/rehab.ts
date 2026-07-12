@@ -28,8 +28,8 @@ export async function getRehabPageDTO(squadId: string | null): Promise<RehabPage
     .limit(1, { referencedTable: 'rehab_sessions' })
     .limit(1, { referencedTable: 'rehab_protocols' })
 
-  if (squadId) query = query.eq('squad_id', squadId)
-
+  // Rehab is an org-wide clinical view — athletes from all squads are shown.
+  // The squadId URL param is ignored here intentionally; RLS scopes by org_id.
   const { data, error } = await query
   if (error) console.error('[rehab] Supabase query error:', error)
 

@@ -2,14 +2,17 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardSkeleton } from '@/components/ui/DashboardSkeleton'
+import { canUseSquad, getViewerContext } from '@/lib/data/auth'
+import { getSquadIdParam } from '@/lib/squad-url'
 
 export default function RehabPage(props: {
   params: Promise<{ id: string }>
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
   return (
     <Suspense fallback={<DashboardSkeleton title="A carregar reabilitacao" />}>
       {props.params.then(({ id }) => (
-        <RehabContent id={id} />
+        <RehabContent id={id} searchParams={props.searchParams} />
       ))}
     </Suspense>
   )
@@ -17,13 +20,19 @@ export default function RehabPage(props: {
 
 async function RehabContent({
   id,
+  searchParams,
 }: {
   id: string
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
+  const squadId = getSquadIdParam(searchParams ? await searchParams : null)
+  const viewer = await getViewerContext()
+  if (!canUseSquad(viewer, squadId)) notFound()
+
   const supabase = await createClient()
 
   const [{ data: athlete }, { data: session }] = await Promise.all([
-    supabase.from('athletes').select('name, shirt_number').eq('id', id).single(),
+    supabase.from('athletes').select('name, shirt_number, squad_id').eq('id', id).single(),
     supabase
       .from('rehab_sessions')
       .select('*, rehab_protocols(*)')
@@ -34,6 +43,7 @@ async function RehabContent({
   ])
 
   if (!athlete) notFound()
+  if (squadId && athlete.squad_id !== squadId) notFound()
 
   const protocol = session?.rehab_protocols as Record<string, unknown> | null
   const phases: Array<{

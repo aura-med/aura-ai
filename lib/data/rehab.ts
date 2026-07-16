@@ -3,7 +3,7 @@ import 'server-only'
 import { createClient } from '@/lib/supabase/server'
 import { canUseSquad, getViewerContext } from '@/lib/data/auth'
 import { asRecordArray } from '@/lib/data/records'
-import { rehabSessionDTO } from '@/lib/data/transforms'
+import { rehabSessionFromSessionDTO } from '@/lib/data/transforms'
 import type { RehabPageDTO } from '@/lib/data/types'
 
 export async function getRehabPageDTO(squadId: string | null): Promise<RehabPageDTO> {
@@ -12,29 +12,26 @@ export async function getRehabPageDTO(squadId: string | null): Promise<RehabPage
 
   const supabase = await createClient()
   let query = supabase
-    .from('athletes')
+    .from('rehab_sessions')
     .select(`
-      id, name, position, club,
-      injury_events(injury_date, return_date, diagnosis, severity, location),
-      rehab_sessions(
-        id, start_date, current_day, rtp_criteria, clinical_data,
-        rehab_protocols(key, name, total_days, evidence, phases)
-      )
+      id, athlete_id, start_date, current_day, rtp_criteria, clinical_data, updated_at,
+      athletes!inner(
+        id, name, position, club, active, squad_id,
+        injury_events(injury_date, return_date, diagnosis, severity, location)
+      ),
+      rehab_protocols!inner(key, name, total_days, evidence, phases)
     `)
-    .eq('active', true)
-    .eq('status', 'rehab')
-    .order('shirt_number')
-    .order('updated_at', { referencedTable: 'rehab_sessions', ascending: false })
-    .limit(1, { referencedTable: 'rehab_sessions' })
-    .limit(1, { referencedTable: 'rehab_protocols' })
+    .not('protocol_id', 'is', null)
+    .eq('athletes.active', true)
+    .order('updated_at', { ascending: false })
 
-  // Rehab is an org-wide clinical view — athletes from all squads are shown.
-  // The squadId URL param is ignored here intentionally; RLS scopes by org_id.
+  if (squadId) query = query.eq('athletes.squad_id', squadId)
+
   const { data, error } = await query
   if (error) console.error('[rehab] Supabase query error:', error)
 
   return {
     squadId,
-    sessions: asRecordArray(data).map(rehabSessionDTO),
+    sessions: asRecordArray(data).map(rehabSessionFromSessionDTO),
   }
 }

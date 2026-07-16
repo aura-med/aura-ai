@@ -69,6 +69,9 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
   return (
     <div className="relative" ref={ref}>
       <button
+        aria-label={`Menu do utilizador: ${displayName}`}
+        aria-expanded={open}
+        aria-haspopup="menu"
         className="flex items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-white/5"
         onClick={() => setOpen((v) => !v)}
         type="button"
@@ -85,6 +88,7 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
 
       {open && (
         <div
+          role="menu"
           className="absolute right-0 top-full z-50 mt-1 w-60 rounded-xl border shadow-lg"
           style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border2)' }}
         >

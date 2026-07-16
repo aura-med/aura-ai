@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { DashboardSkeleton } from '@/components/ui/DashboardSkeleton'
+import { canUseSquad, getViewerContext } from '@/lib/data/auth'
 import { BASE_WEIGHTS_V1 } from '@/lib/scoring/engine'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import { AthleteProfileClient } from '@/components/athlete-profile/AthleteProfileClient'
@@ -41,6 +42,9 @@ async function AthleteDetailContent({
   const resolvedSearch = searchParams ? await searchParams : {}
   const squadId   = getSquadIdParam(resolvedSearch)
   const activeTab = parseTab(resolvedSearch.tab)
+  const viewer    = await getViewerContext()
+  if (!canUseSquad(viewer, squadId)) notFound()
+
   const supabase  = await createClient()
   const injuryEventColumns = 'id, injury_date, return_date, diagnosis, location, severity, is_recurrence'
 
@@ -48,7 +52,7 @@ async function AthleteDetailContent({
   const { data: athlete, error } = await supabase
     .from('athletes')
     .select(`
-      id, name, shirt_number, photo_url, position, date_of_birth, club, status,
+      id, squad_id, name, shirt_number, photo_url, position, date_of_birth, club, status,
       score_history (score_date, total_score, acwr_partial, hrv_partial, fatigue_partial, sleep_partial, tqr_partial, history_partial, stress_partial, decel_partial, confidence, days_since_match)
     `)
     .eq('id', id)
@@ -57,6 +61,7 @@ async function AthleteDetailContent({
     .single()
 
   if (error || !athlete) notFound()
+  if (squadId && athlete.squad_id !== squadId) notFound()
 
   const [activeInjuriesResult, resolvedInjuriesResult] = await Promise.all([
     supabase

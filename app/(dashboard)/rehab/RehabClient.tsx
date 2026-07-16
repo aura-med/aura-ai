@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { withSquadParam } from '@/lib/squad-url'
 import type { RehabPageDTO, RehabSessionDTO } from '@/lib/data/types'
 
 const SEV_COLOR: Record<string, string> = {
@@ -25,10 +26,11 @@ function currentPhaseForSession(session: RehabSessionDTO) {
   ) ?? session.protocol?.phases?.[session.protocol.phases.length - 1] ?? null
 }
 
-function AthleteRow({ session }: { session: RehabSessionDTO }) {
+function AthleteRow({ session, squadId }: { session: RehabSessionDTO; squadId: string | null }) {
   const phase = currentPhaseForSession(session)
   const phaseColor = phase?.color ?? 'var(--blue)'
   const totalDays = session.protocol?.totalDays ?? 0
+  const detailHref = withSquadParam(`/rehab/${session.id}`, squadId)
 
   return (
     <tr>
@@ -50,7 +52,7 @@ function AthleteRow({ session }: { session: RehabSessionDTO }) {
               </div>
             ) : (
               <Link
-                href={`/rehab/${session.id}`}
+                href={detailHref}
                 style={{ fontWeight: 600, fontSize: 13, color: 'var(--text)', textDecoration: 'none' }}
               >
                 {session.athleteName}
@@ -158,7 +160,7 @@ function AthleteRow({ session }: { session: RehabSessionDTO }) {
       <td>
         {!session.noSession && (
           <Link
-            href={`/rehab/${session.id}`}
+            href={detailHref}
             style={{
               display: 'inline-block', fontSize: 11, padding: '5px 10px',
               borderRadius: 6, border: '1px solid var(--border)',
@@ -238,7 +240,7 @@ export function RehabClient({ dto }: { dto: RehabPageDTO }) {
             </thead>
             <tbody>
               {dto.sessions.map((session) => (
-                <AthleteRow key={session.id} session={session} />
+                <AthleteRow key={session.id} session={session} squadId={dto.squadId} />
               ))}
             </tbody>
           </table>

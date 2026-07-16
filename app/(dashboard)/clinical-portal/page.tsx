@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import {
   Activity, Plus, RefreshCw, AlertCircle, Stethoscope,
@@ -11,6 +12,7 @@ import { InjuryAccordionRow } from '@/components/admin/InjuryAccordionRow'
 import { ToastContainer } from '@/components/admin/Toast'
 import { useToast } from '@/components/admin/useToast'
 import { useFederatedSync } from '@/lib/federated/useFederatedSync'
+import { getSquadIdParam } from '@/lib/squad-url'
 import type { ActiveRehabSession, Athlete } from '@/types'
 
 const RecordInjuryModal = dynamic(() =>
@@ -121,6 +123,8 @@ const STATUS_LABELS: Record<string, string> = {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function MedicalPage() {
+  const searchParams = useSearchParams()
+  const squadId = getSquadIdParam(searchParams)
   const [sessions, setSessions]           = useState<ActiveRehabSession[]>([])
   const [athletes, setAthletes]           = useState<Athlete[]>([])
   const [loading, setLoading]             = useState(true)
@@ -140,7 +144,7 @@ export default function MedicalPage() {
     const SELECT_FULL = `
       id, athlete_id, protocol_id, injury_event_id, start_date, current_day,
       rtp_criteria, clinical_data, availability_status, created_at, updated_at,
-      athletes ( id, name, shirt_number, position, status ),
+      athletes!inner ( id, squad_id, name, shirt_number, position, status ),
       rehab_protocols ( id, key, name, total_days, phases, color, evidence ),
       injury_events ( id, diagnosis, location, injury_date, severity, osiics_code, mechanism )
     `
@@ -148,14 +152,18 @@ export default function MedicalPage() {
     const SELECT_FALLBACK = `
       id, athlete_id, protocol_id, start_date, current_day,
       rtp_criteria, clinical_data, availability_status, created_at, updated_at,
-      athletes ( id, name, shirt_number, position, status ),
+      athletes!inner ( id, squad_id, name, shirt_number, position, status ),
       rehab_protocols ( id, key, name, total_days, phases, color, evidence )
     `
 
-    let { data, error } = await supabase
+    let fullQuery = supabase
       .from('rehab_sessions')
       .select(SELECT_FULL)
       .order('created_at', { ascending: false })
+
+    if (squadId) fullQuery = fullQuery.eq('athletes.squad_id', squadId)
+
+    let { data, error } = await fullQuery
 
     // PGRST200 = relationship not found in schema cache (FK column missing)
     if (error?.code === 'PGRST200') {
@@ -164,10 +172,14 @@ export default function MedicalPage() {
         'Run supabase/migrations/002_medical_portal.sql to add the injury_event_id FK. ' +
         'Falling back to query without injury_events join.',
       )
-      const fallback = await supabase
+      let fallbackQuery = supabase
         .from('rehab_sessions')
         .select(SELECT_FALLBACK)
         .order('created_at', { ascending: false })
+
+      if (squadId) fallbackQuery = fallbackQuery.eq('athletes.squad_id', squadId)
+
+      const fallback = await fallbackQuery
       // Cast to unknown first so TS accepts the narrower shape
       data = fallback.data as unknown as typeof data
       error = fallback.error
@@ -186,17 +198,21 @@ export default function MedicalPage() {
       setSessions((data ?? []) as unknown as ActiveRehabSession[])
     }
     setLoading(false)
-  }, [])
+  }, [squadId])
 
   const fetchAthletes = useCallback(async () => {
     const supabase = createClient()
-    const { data } = await supabase
+    let query = supabase
       .from('athletes')
       .select('id, squad_id, org_id, name, shirt_number, position, date_of_birth, club, status, active, consent_date, consent_version, created_at, updated_at')
       .eq('active', true)
       .order('shirt_number')
+
+    if (squadId) query = query.eq('squad_id', squadId)
+
+    const { data } = await query
     setAthletes((data ?? []) as unknown as Athlete[])
-  }, [])
+  }, [squadId])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

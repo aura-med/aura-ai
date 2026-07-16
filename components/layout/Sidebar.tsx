@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import { useUiStore } from '@/stores/uiStore'
+import { withSquadParam } from '@/lib/squad-url'
 import {
   LayoutDashboard, Users, UserCircle, Activity, Calendar,
   Heart, Gauge, Zap, BookOpen, Settings,
@@ -100,6 +101,7 @@ export function Sidebar() {
         )}
         {squads.length > 1 && (
           <select
+            aria-label="Choose squad"
             value={selectedSquadId ?? ''}
             onChange={(e) => handleSquad(e.target.value)}
             className="w-full rounded-md px-3 py-2 text-xs font-medium outline-none"
@@ -134,10 +136,11 @@ export function Sidebar() {
                   const Icon = item.icon
                   const isActive = pathname === item.href ||
                     (item.href !== '/' && pathname.startsWith(item.href))
+                  const href = withSquadParam(item.href, selectedSquadId)
                   return (
                     <li key={item.href}>
                       <Link
-                        href={item.href}
+                        href={href}
                         onClick={close}
                         className={cn(
                           'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors group',

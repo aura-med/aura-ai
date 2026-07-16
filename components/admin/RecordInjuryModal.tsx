@@ -753,6 +753,7 @@ export function RecordInjuryModal({
             <>
               <Field label="Atleta">
                 <select
+                  aria-label="Atleta"
                   value={athleteId}
                   onChange={(e) => setAthleteId(e.target.value)}
                   className={inputClass}

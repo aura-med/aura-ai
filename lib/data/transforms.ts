@@ -1,6 +1,7 @@
 import { calcScore } from '@/lib/scoring'
 import { calculateReadiness } from '@/lib/readiness/engine'
 import { asNumber, asRecord, asRecordArray, asString, firstRecord, latestByDate, sortByDateDesc, type DbRecord } from '@/lib/data/records'
+import { rehabSessionRootFromSession } from '@/lib/data/rehab-shape'
 import { clinicalStatus, readinessStatus, riskStatus } from '@/lib/data/status'
 import type { CalendarEvent, ReadinessInputs, RtpCriterion } from '@/types'
 import type {
@@ -191,6 +192,10 @@ export function rehabSessionDTO(row: DbRecord): RehabSessionDTO {
     },
     status,
   }
+}
+
+export function rehabSessionFromSessionDTO(sessionRow: DbRecord): RehabSessionDTO {
+  return rehabSessionDTO(rehabSessionRootFromSession(sessionRow))
 }
 
 export function readinessIndicatorDTO(indicator: { label: string; value: string; status: string; detail?: string }): ReadinessIndicatorDTO {

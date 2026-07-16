@@ -22,6 +22,7 @@ export interface ViewerContextDTO {
   org: { id: string; name: string; type: string } | null
   role: string | null
   squads: Array<{ id: string; name: string; type: string; season: string | null; orgId: string }>
+  athleteId: string | null
 }
 
 export interface NotificationDTO {

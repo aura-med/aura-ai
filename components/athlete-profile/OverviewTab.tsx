@@ -409,7 +409,7 @@ function ActiveDiagnosesSection({
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export function OverviewTab({ profile }: { profile: AthleteProfileData }) {
-  const canCreateDiagnosis = profile.viewerRole === 'doctor' || profile.viewerRole === 'admin'
+  const canCreateDiagnosis = profile.viewerRole === 'doctor' || profile.viewerRole === 'owner'
 
   return (
     <div className="space-y-4 max-w-2xl">

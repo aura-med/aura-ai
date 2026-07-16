@@ -2,7 +2,7 @@
 
 // Google-style month view for the dashboard: today is highlighted, past days
 // are dimmed, and each day lists its calendar_events as coloured chips.
-// Admin/coach users (the calendar_write RLS roles) can click a day to add an
+// Owner/coach users (the calendar_write RLS roles) can click a day to add an
 // event or click a chip to edit/delete it; changes write to calendar_events —
 // the same rows that drive the microcycle/MD badge and the occurrences page.
 import { useState } from 'react'
@@ -11,6 +11,7 @@ import { ChevronLeft, ChevronRight, X, Plus, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUiStore } from '@/stores/uiStore'
 import { todayStr } from '@/lib/utils/microcycle'
+import { isOwner } from '@/lib/roles'
 
 export interface MonthCalendarEvent {
   id: string
@@ -63,7 +64,7 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
   const squads = useUiStore((s) => s.squads)
   const selectedSquadId = useUiStore((s) => s.selectedSquadId)
   const effectiveSquadId = selectedSquadId ?? squads[0]?.id ?? null
-  const canManage = role === 'admin' || role === 'coach'
+  const canManage = isOwner(role) || role === 'coach'
 
   // Local copy so edits reflect immediately without waiting for a full reload.
   const [items, setItems] = useState<MonthCalendarEvent[]>(events)

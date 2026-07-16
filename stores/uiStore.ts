@@ -24,6 +24,8 @@ interface UiState {
   selectedOrg: OrgInfo | null
   setSquad: (squadId: string | null) => void
   setOrg: (org: OrgInfo | null) => void
+  athleteId: string | null
+  setAthleteId: (athleteId: string | null) => void
 }
 
 export const useUiStore = create<UiState>()(
@@ -49,6 +51,8 @@ export const useUiStore = create<UiState>()(
       selectedOrg: null,
       setSquad: (squadId) => set({ selectedSquadId: squadId }),
       setOrg: (org) => set({ selectedOrg: org }),
+      athleteId: null,
+      setAthleteId: (athleteId) => set({ athleteId }),
     }),
     {
       name: 'aura-ui',
@@ -59,6 +63,7 @@ export const useUiStore = create<UiState>()(
         locale: s.locale,
         selectedSquadId: s.selectedSquadId,
         selectedOrg: s.selectedOrg,
+        athleteId: s.athleteId,
       }),
     }
   )

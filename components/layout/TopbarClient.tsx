@@ -31,7 +31,7 @@ const NotificationCenter = dynamic(
 )
 
 export function TopbarClient({ dto }: { dto: TopbarDTO }) {
-  const { selectedSquadId, setSquad, setOrg, setSquads, setTheme, setRole, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
+  const { selectedSquadId, setSquad, setOrg, setSquads, setTheme, setRole, setAthleteId, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
   const appliedThemePreference = useRef<'dark' | 'light' | null>(null)
   const router = useRouter()
   const pathname = usePathname()
@@ -45,6 +45,10 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
   useEffect(() => {
     if (dto.role) setRole(dto.role as import('@/types').UserRole)
   }, [dto.role, setRole])
+
+  useEffect(() => {
+    setAthleteId(dto.athleteId ?? null)
+  }, [dto.athleteId, setAthleteId])
 
   useEffect(() => {
     setSquads(squads)

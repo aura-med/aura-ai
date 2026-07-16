@@ -113,7 +113,7 @@ export async function inviteUser(formData: FormData) {
     const role     = requiredString(formData, 'role')
     const fullName = String(formData.get('full_name') ?? '').trim() || null
 
-    const validRoles = ['admin', 'doctor', 'physio', 'coach', 'fitness_coach', 'athlete']
+    const validRoles = ['owner', 'doctor', 'physio', 'masseur', 'coach', 'fitness_coach', 'nutritionist', 'director', 'scout', 'team_manager', 'athlete']
     if (!validRoles.includes(role)) throw new Error('Invalid role')
 
     const service = createAdminClient()
@@ -195,7 +195,7 @@ export async function updateUserRole(formData: FormData) {
     const role    = requiredString(formData, 'role')
     const orgId   = String(formData.get('org_id') ?? '').trim() || undefined
 
-    const validRoles = ['admin', 'doctor', 'physio', 'coach', 'fitness_coach', 'athlete']
+    const validRoles = ['owner', 'doctor', 'physio', 'masseur', 'coach', 'fitness_coach', 'nutritionist', 'director', 'scout', 'team_manager', 'athlete']
     if (!validRoles.includes(role)) throw new Error('Invalid role')
 
     const service = createAdminClient()

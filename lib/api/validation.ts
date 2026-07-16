@@ -2,7 +2,7 @@ import type { UserRole } from '@/types'
 import { ApiError } from './errors.ts'
 
 const USER_ROLES: UserRole[] = [
-  'admin', 'doctor', 'physio', 'masseur',
+  'owner', 'doctor', 'physio', 'masseur',
   'coach', 'fitness_coach',
   'nutritionist', 'director', 'scout', 'team_manager',
   'athlete',

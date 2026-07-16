@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { Building2, Save } from 'lucide-react'
+import { isOwner } from '@/lib/roles'
 
 interface OrgData {
   id: string
@@ -21,7 +22,7 @@ export default function OrganizationsPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [isOwnerRole, setIsOwnerRole] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -35,7 +36,7 @@ export default function OrganizationsPage() {
         .single()
 
       if (profile) {
-        setIsAdmin(profile.role === 'admin')
+        setIsOwnerRole(isOwner(profile.role))
         if (profile.org_id) {
           const { data: orgData } = await supabase
             .from('organizations')
@@ -53,7 +54,7 @@ export default function OrganizationsPage() {
   }, [])
 
   async function handleSave() {
-    if (!org || !isAdmin) return
+    if (!org || !isOwnerRole) return
     setSaving(true)
     setError(null)
     try {
@@ -116,14 +117,14 @@ export default function OrganizationsPage() {
               <input
                 value={orgName}
                 onChange={(e) => setOrgName(e.target.value)}
-                disabled={!isAdmin}
+                disabled={!isOwnerRole}
                 className="w-full px-3 py-2 rounded-md text-sm border focus:outline-none focus:ring-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
                   background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)',
                   color: 'var(--aura-text)', fontFamily: 'var(--font-mono)',
                 } as React.CSSProperties}
               />
-              {!isAdmin && (
+              {!isOwnerRole && (
                 <p className="text-[11px]" style={{ color: 'var(--aura-text3)' }}>{t('adminOnly')}</p>
               )}
             </div>
@@ -145,7 +146,7 @@ export default function OrganizationsPage() {
             </div>
           )}
 
-          {isAdmin && (
+          {isOwnerRole && (
             <button
               onClick={handleSave}
               disabled={saving}

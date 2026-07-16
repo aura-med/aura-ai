@@ -3,6 +3,7 @@ import 'server-only'
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { asRecord, asRecordArray, asString } from '@/lib/data/records'
+import { OWNER_ROLE } from '@/lib/roles'
 import type { ViewerContextDTO } from '@/lib/data/types'
 
 export const getViewerContext = cache(async (): Promise<ViewerContextDTO> => {
@@ -11,7 +12,7 @@ export const getViewerContext = cache(async (): Promise<ViewerContextDTO> => {
   const user = userData.user
 
   if (!user) {
-    return { userId: null, user: null, org: null, role: null, squads: [] }
+    return { userId: null, user: null, org: null, role: null, squads: [], athleteId: null }
   }
 
   const { data: profileData } = await supabase
@@ -27,20 +28,32 @@ export const getViewerContext = cache(async (): Promise<ViewerContextDTO> => {
   const userInfo = { email: user.email ?? '', fullName }
 
   if (!orgId) {
-    return { userId: user.id, user: userInfo, org: null, role, squads: [] }
+    return { userId: user.id, user: userInfo, org: null, role, squads: [], athleteId: null }
   }
 
-  const [{ data: orgData }, { data: squadsData }] = await Promise.all([
+  const squadsQuery = role === OWNER_ROLE
+    ? supabase
+        .from('squads')
+        .select('id, name, type, season, org_id')
+        .eq('org_id', orgId)
+        .order('name')
+    : supabase
+        .from('squads')
+        .select('id, name, type, season, org_id, staff_squads!inner(profile_id)')
+        .eq('org_id', orgId)
+        .eq('staff_squads.profile_id', user.id)
+        .order('name')
+
+  const [{ data: orgData }, { data: squadsData }, { data: athleteData }] = await Promise.all([
     supabase
       .from('organizations')
       .select('id, name, type')
       .eq('id', orgId)
       .single(),
-    supabase
-      .from('squads')
-      .select('id, name, type, season, org_id')
-      .eq('org_id', orgId)
-      .order('name'),
+    squadsQuery,
+    role === 'athlete'
+      ? supabase.from('athletes').select('id').eq('user_id', user.id).maybeSingle()
+      : Promise.resolve({ data: null }),
   ])
 
   const org = asRecord(orgData)
@@ -60,6 +73,7 @@ export const getViewerContext = cache(async (): Promise<ViewerContextDTO> => {
       season: asString(squad.season),
       orgId: asString(squad.org_id) ?? orgId,
     })).filter((squad) => squad.id),
+    athleteId: asString(asRecord(athleteData).id),
   }
 })
 

@@ -1,9 +1,12 @@
+import type { UserRole } from '../../types/index.ts'
+import { OWNER_ROLE, CLINICAL_ROLES, SQUAD_ROLES } from '../roles.ts'
+
 export type RecommendationStakeholder = 'clinical' | 'coach'
-export type RecommendationActorRole = 'admin' | 'doctor' | 'physio' | 'coach' | 'fitness_coach' | 'athlete'
+export type RecommendationActorRole = UserRole
 
 const ACK_ROLES: Record<RecommendationStakeholder, RecommendationActorRole[]> = {
-  clinical: ['admin', 'doctor', 'physio'],
-  coach: ['admin', 'coach', 'fitness_coach'],
+  clinical: [OWNER_ROLE, ...CLINICAL_ROLES],
+  coach: [OWNER_ROLE, ...SQUAD_ROLES],
 }
 
 export function canAcknowledgeRecommendation(

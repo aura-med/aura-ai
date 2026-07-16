@@ -7,7 +7,7 @@ import { disableUser, enableUser, inviteUser, updateUserRole } from '@/lib/actio
 import { getUsersPageData, PAGE_SIZE } from '@/lib/admin-data'
 import { formatDateTime } from '@/lib/utils'
 
-const ROLES = ['admin', 'doctor', 'physio', 'coach', 'fitness_coach', 'athlete']
+const ROLES = ['owner', 'doctor', 'physio', 'masseur', 'coach', 'fitness_coach', 'nutritionist', 'director', 'scout', 'team_manager', 'athlete']
 
 interface SearchParams {
   q?: string

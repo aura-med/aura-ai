@@ -2,6 +2,7 @@ import { API_TOKEN_TTL_SECONDS, signApiToken } from '@/lib/api/auth'
 import { errorFromUnknown, jsonResponse, ApiError, readJsonBody } from '@/lib/api/errors'
 import { parseTokenRequestBody } from '@/lib/api/validation'
 import { createApiAuthClient, createServiceRoleClient } from '@/lib/supabase/service'
+import { logAudit } from '@/lib/audit'
 import type { UserRole } from '@/types'
 
 export async function POST(request: Request) {
@@ -33,6 +34,15 @@ export async function POST(request: Request) {
       role: profile.role as UserRole,
     })
     const expiresAt = new Date(Date.now() + API_TOKEN_TTL_SECONDS * 1000).toISOString()
+
+    void logAudit({
+      userId:       data.user.id,
+      userEmail:    data.user.email ?? body.email,
+      orgId:        profile.org_id,
+      action:       'auth.token.issue',
+      resourceType: 'auth',
+      metadata:     { role: profile.role },
+    })
 
     return jsonResponse({
       token_type: 'Bearer',

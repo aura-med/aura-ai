@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { asString, firstRecord } from '@/lib/data/records'
 import { createClient } from '@/lib/supabase/server'
 import { getProtocol, evaluatePhase } from '@/lib/rehab/protocol-engine'
+import { logAudit } from '@/lib/audit'
 import type { ProgressionOverride, ClinicalAssessment } from '@/types/rehab'
 
 export async function POST(
@@ -139,6 +140,20 @@ export async function POST(
   if (updateError) {
     return NextResponse.json({ error: updateError.message }, { status: 500 })
   }
+
+  void logAudit({
+    userId:       user.id,
+    userEmail:    user.email ?? '',
+    orgId:        profile?.org_id ?? '',
+    action:       isOverride ? 'rehab.phase.override' : 'rehab.phase.advance',
+    resourceType: 'rehab_session',
+    resourceId:   sessionId,
+    metadata:     {
+      from_phase: currentPhaseId,
+      to_phase,
+      ...(isOverride ? { override_reason } : {}),
+    },
+  })
 
   return NextResponse.json({
     ok: true,

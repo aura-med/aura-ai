@@ -13,6 +13,7 @@ import { calculateScore, BASE_WEIGHTS_V1 } from '@/lib/scoring/engine'
 import { authorizeScoreAccess, normalizeOrgId } from '@/lib/scoring/score-access'
 import { ScoreHistorySchema } from '@/lib/schemas/score'
 import { generateAndPersistRecommendations } from '@/lib/actions/recommendations'
+import { logAudit } from '@/lib/audit'
 import type { ScoreInputs } from '@/types'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>> | NonNullable<ReturnType<typeof createServiceRoleClient>>
@@ -30,6 +31,17 @@ export async function POST(
   }
   if (apiViewer) requireClinical(apiViewer)
   const response = await recalculateAthleteScore(id, apiClient ?? undefined, apiViewer ?? undefined)
+
+  if (response.status === 200 && apiViewer) {
+    void logAudit({
+      userId:       apiViewer.userId,
+      userEmail:    apiViewer.email,
+      orgId:        apiViewer.orgId,
+      action:       'athlete.score.calculate',
+      resourceType: 'athlete',
+      resourceId:   id,
+    })
+  }
 
   return NextResponse.json(response.body, { status: response.status })
 }

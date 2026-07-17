@@ -16,12 +16,24 @@ STABLE
 SECURITY DEFINER
 SET search_path = public
 AS $$
-  SELECT
-    EXISTS (SELECT 1 FROM athletes a WHERE a.id = p_athlete_id AND a.status = 'rehab')
-    OR (
-      EXISTS (SELECT 1 FROM rehab_sessions rs WHERE rs.athlete_id = p_athlete_id)
-      AND EXISTS (SELECT 1 FROM injury_events ie WHERE ie.athlete_id = p_athlete_id AND ie.return_date IS NULL)
+  -- Scope the signal to athletes the caller may access (own org + owner/assigned
+  -- squad). Otherwise a SECURITY DEFINER function granted to all authenticated
+  -- users would leak a cross-tenant rehab/injury signal for any known UUID.
+  SELECT CASE
+    WHEN NOT EXISTS (
+      SELECT 1 FROM athletes a
+      WHERE a.id = p_athlete_id
+        AND a.org_id = get_user_org_id()
+        AND (get_user_role() = 'owner' OR a.squad_id IN (SELECT get_user_squad_ids()))
+    ) THEN false
+    ELSE (
+      EXISTS (SELECT 1 FROM athletes a WHERE a.id = p_athlete_id AND a.status = 'rehab')
+      OR (
+        EXISTS (SELECT 1 FROM rehab_sessions rs WHERE rs.athlete_id = p_athlete_id)
+        AND EXISTS (SELECT 1 FROM injury_events ie WHERE ie.athlete_id = p_athlete_id AND ie.return_date IS NULL)
+      )
     )
+  END
 $$;
 
 GRANT EXECUTE ON FUNCTION athlete_in_active_rehab(uuid) TO authenticated;

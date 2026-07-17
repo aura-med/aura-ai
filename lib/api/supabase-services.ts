@@ -175,7 +175,6 @@ function paginatedResponse<T>(items: T[], count: number | null, request: Request
 export async function listAthletes(request: Request, viewer: ApiViewer) {
   const service = serviceClient()
   const freshViewer = await currentViewer(service, viewer)
-  const squadIds = await getViewerSquadIds(service, freshViewer)
   const pagination = parsePagination(request.url)
   let query = service
     .from('athletes')
@@ -184,7 +183,13 @@ export async function listAthletes(request: Request, viewer: ApiViewer) {
     .eq('active', true)
     .order('shirt_number')
     .range(pagination.from, pagination.to)
-  if (squadIds) query = query.in('squad_id', squadIds)
+  if (freshViewer.role === 'athlete') {
+    // Athletes see only their own self-linked row, mirroring the athletes RLS.
+    query = query.eq('user_id', freshViewer.userId)
+  } else {
+    const squadIds = await getViewerSquadIds(service, freshViewer)
+    if (squadIds) query = query.in('squad_id', squadIds)
+  }
   const { data, error, count } = await query
 
   if (error) throw new ApiError(error.message, 500)
@@ -194,13 +199,18 @@ export async function listAthletes(request: Request, viewer: ApiViewer) {
 export async function getAthlete(id: string, viewer: ApiViewer) {
   const service = serviceClient()
   const freshViewer = await currentViewer(service, viewer)
-  const squadIds = await getViewerSquadIds(service, freshViewer)
   let query = service
     .from('athletes')
     .select('id, name, shirt_number, position, status, squad_id, org_id, active, created_at, updated_at')
     .eq('id', id)
     .eq('org_id', freshViewer.orgId)
-  if (squadIds) query = query.in('squad_id', squadIds)
+  if (freshViewer.role === 'athlete') {
+    // Athletes see only their own self-linked row, mirroring the athletes RLS.
+    query = query.eq('user_id', freshViewer.userId)
+  } else {
+    const squadIds = await getViewerSquadIds(service, freshViewer)
+    if (squadIds) query = query.in('squad_id', squadIds)
+  }
   const { data, error } = await query.maybeSingle()
 
   if (error) throw new ApiError(error.message, 500)

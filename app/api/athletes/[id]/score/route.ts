@@ -14,7 +14,12 @@ import { authorizeScoreAccess, normalizeOrgId } from '@/lib/scoring/score-access
 import { ScoreHistorySchema } from '@/lib/schemas/score'
 import { generateAndPersistRecommendations } from '@/lib/actions/recommendations'
 import { logAudit } from '@/lib/audit'
-import type { ScoreInputs } from '@/types'
+import { REHAB_ROLES } from '@/lib/roles'
+import type { ScoreInputs, UserRole } from '@/types'
+
+// score_history RLS restricts writes to owner/doctor/physio; REHAB_ROLES is
+// exactly [doctor, physio] and owner is checked separately.
+const SCORE_WRITER_ROLES = REHAB_ROLES
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>> | NonNullable<ReturnType<typeof createServiceRoleClient>>
 
@@ -89,10 +94,13 @@ export async function recalculateAthleteScore(id: string, supabase?: SupabaseCli
     return { body: { error: access.error }, status: access.status }
   }
 
-  // Squad scope: persistence below runs through the service-role client (bypasses
-  // RLS), so a non-owner staff member's access to this athlete's squad must be
-  // enforced here — mirroring get_user_squad_ids() / the athletes RLS policy.
+  // Persistence below runs through the service-role client (bypasses RLS), so
+  // both the score-write ROLE and the athlete's SQUAD must be enforced here,
+  // mirroring the score_history RLS (owner/doctor/physio) + athletes squad scope.
   const viewerRole = (profile as { role?: string | null } | null)?.role ?? null
+  if (viewerRole !== 'owner' && !SCORE_WRITER_ROLES.includes(viewerRole as UserRole)) {
+    return { body: { error: 'Forbidden' }, status: 403 }
+  }
   if (viewerRole !== 'owner') {
     const athleteSquadId = (athlete as { squad_id?: string | null } | null)?.squad_id ?? null
     const { data: squadRows } = await client

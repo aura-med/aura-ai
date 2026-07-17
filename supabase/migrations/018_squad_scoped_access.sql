@@ -396,7 +396,10 @@ CREATE POLICY calendar_read ON calendar_events FOR SELECT
     EXISTS (SELECT 1 FROM squads s WHERE s.id = squad_id AND s.org_id = get_user_org_id())
     AND (
       get_user_role() = 'owner'
-      OR squad_id IN (SELECT get_user_squad_ids())
+      -- Staff-squad branch is gated to non-athletes so a former staff user
+      -- downgraded to 'athlete' with stale staff_squads rows can't read those
+      -- squads' calendars — athletes only reach the self-linked branch below.
+      OR (get_user_role() <> 'athlete' AND squad_id IN (SELECT get_user_squad_ids()))
       OR (get_user_role() = 'athlete' AND squad_id IN (SELECT squad_id FROM athletes WHERE user_id = auth.uid()))
     )
   );

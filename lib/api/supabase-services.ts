@@ -220,7 +220,6 @@ export async function getAthlete(id: string, viewer: ApiViewer) {
 export async function listInjuries(request: Request, viewer: ApiViewer) {
   const service = serviceClient()
   const freshViewer = await currentViewer(service, viewer)
-  const squadIds = await getViewerSquadIds(service, freshViewer)
   const pagination = parsePagination(request.url)
   let query = service
     .from('injury_events')
@@ -228,7 +227,14 @@ export async function listInjuries(request: Request, viewer: ApiViewer) {
     .eq('athletes.org_id', freshViewer.orgId)
     .order('injury_date', { ascending: false })
     .range(pagination.from, pagination.to)
-  if (squadIds) query = query.in('athletes.squad_id', squadIds)
+  if (freshViewer.role === 'athlete') {
+    // Athletes see only their own injuries via the self-link, mirroring the
+    // injury_events_athlete RLS — not staff_squads assignments.
+    query = query.eq('athletes.user_id', freshViewer.userId)
+  } else {
+    const squadIds = await getViewerSquadIds(service, freshViewer)
+    if (squadIds) query = query.in('athletes.squad_id', squadIds)
+  }
   const { data, error, count } = await query
 
   if (error) throw new ApiError(error.message, 500)
@@ -238,13 +244,19 @@ export async function listInjuries(request: Request, viewer: ApiViewer) {
 export async function getInjury(id: string, viewer: ApiViewer) {
   const service = serviceClient()
   const freshViewer = await currentViewer(service, viewer)
-  const squadIds = await getViewerSquadIds(service, freshViewer)
   let query = service
     .from('injury_events')
     .select('id, athlete_id, injury_date, return_date, diagnosis, location, mechanism, severity, days_absent, is_recurrence, notes, created_at, athletes!inner(id, name, org_id, squad_id)')
     .eq('id', id)
     .eq('athletes.org_id', freshViewer.orgId)
-  if (squadIds) query = query.in('athletes.squad_id', squadIds)
+  if (freshViewer.role === 'athlete') {
+    // Athletes see only their own injuries via the self-link, mirroring the
+    // injury_events_athlete RLS — not staff_squads assignments.
+    query = query.eq('athletes.user_id', freshViewer.userId)
+  } else {
+    const squadIds = await getViewerSquadIds(service, freshViewer)
+    if (squadIds) query = query.in('athletes.squad_id', squadIds)
+  }
   const { data, error } = await query.maybeSingle()
 
   if (error) throw new ApiError(error.message, 500)

@@ -21,7 +21,7 @@ async function recomputeAthleteAvailability(
   athleteId: string,
   fallback: AvailabilityStatus
 ): Promise<AvailabilityStatus> {
-  const [{ data: occ }, { data: diag }, { data: athlete }, { data: rehabSessions }, { data: openInjuries }] = await Promise.all([
+  const [{ data: occ }, { data: diag }, { data: inActiveRehab }] = await Promise.all([
     supabase
       .from('occurrences')
       .select('availability_status')
@@ -32,13 +32,9 @@ async function recomputeAthleteAvailability(
       .select('availability_status')
       .eq('athlete_id', athleteId)
       .eq('is_resolved', false),
-    supabase
-      .from('athletes')
-      .select('status')
-      .eq('id', athleteId)
-      .single(),
-    supabase.from('rehab_sessions').select('id').eq('athlete_id', athleteId).limit(1),
-    supabase.from('injury_events').select('id').eq('athlete_id', athleteId).is('return_date', null).limit(1),
+    // SECURITY DEFINER RPC — reads rehab_sessions/injury_events regardless of the
+    // caller's role (masseurs have no direct SELECT on those tables).
+    supabase.rpc('athlete_in_active_rehab', { p_athlete_id: athleteId }),
   ])
 
   const statuses = [...(occ ?? []), ...(diag ?? [])]
@@ -46,12 +42,8 @@ async function recomputeAthleteAvailability(
     .filter((s): s is AvailabilityStatus => s != null && s in STATUS_SEVERITY)
 
   // Active rehab keeps the athlete in RTP as a floor: resolving a less-restrictive
-  // issue must not pull an athlete out of rehab. Mirror the 009 backfill signal —
-  // legacy status='rehab', OR an active rehab session with an unresolved injury.
-  const inActiveRehab =
-    athlete?.status === 'rehab' ||
-    ((rehabSessions?.length ?? 0) > 0 && (openInjuries?.length ?? 0) > 0)
-  if (inActiveRehab) statuses.push('rtp')
+  // issue must not pull an athlete out of rehab.
+  if (inActiveRehab === true) statuses.push('rtp')
 
   if (statuses.length === 0) return fallback
 

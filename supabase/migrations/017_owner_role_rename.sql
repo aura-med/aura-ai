@@ -15,6 +15,19 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- ─── 1. Data migration + role constraint ──────────────────────────────────────
+-- The constraint must be widened to accept 'owner' BEFORE the UPDATE below, or
+-- Postgres rejects the UPDATE against the still-active old constraint (which
+-- doesn't recognize 'owner' yet). Widen (keep 'admin' temporarily) -> migrate
+-- data -> narrow (drop 'admin').
+
+ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
+ALTER TABLE profiles ADD CONSTRAINT profiles_role_check
+  CHECK (role IN (
+    'owner', 'admin', 'doctor', 'physio', 'masseur',
+    'coach', 'fitness_coach',
+    'nutritionist', 'director', 'scout', 'team_manager',
+    'athlete'
+  ));
 
 UPDATE profiles SET role = 'owner' WHERE role = 'admin';
 

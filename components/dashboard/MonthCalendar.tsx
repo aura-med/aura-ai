@@ -5,7 +5,7 @@
 // Owner/coach users (the calendar_write RLS roles) can click a day to add an
 // event or click a chip to edit/delete it; changes write to calendar_events —
 // the same rows that drive the microcycle/MD badge and the occurrences page.
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight, X, Plus, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -69,6 +69,13 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
   // Local copy so edits reflect immediately without waiting for a full reload.
   const [items, setItems] = useState<MonthCalendarEvent[]>(events)
   const [editor, setEditor] = useState<{ date: string; event: MonthCalendarEvent | null } | null>(null)
+
+  // Re-sync when the source events change (squad switch, date-range refresh, or
+  // router.refresh() after a write); otherwise the calendar keeps rendering and
+  // editing the previous squad/window's stale events until a full remount.
+  useEffect(() => {
+    setItems(events)
+  }, [events])
 
   function navigate(delta: number) {
     const next = new Date(year, month + delta, 1)

@@ -184,10 +184,18 @@ CREATE POLICY score_history_clinical_update ON score_history FOR UPDATE
 DROP POLICY IF EXISTS wellness_insert ON wellness_checkins;
 CREATE POLICY wellness_insert ON wellness_checkins FOR INSERT
   WITH CHECK (
-    athlete_id IN (
-      SELECT id FROM athletes
-      WHERE org_id = get_user_org_id()
-        AND (get_user_role() = 'owner' OR squad_id IN (SELECT get_user_squad_ids()))
+    -- Athlete self-service check-in: linked athletes write their own row via the
+    -- self-link, independent of staff_squads (which they don't have rows in).
+    (get_user_role() = 'athlete' AND athlete_id IN (SELECT id FROM athletes WHERE user_id = auth.uid()))
+    OR (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
+    -- Staff-squad branch gated to non-athletes so a downgraded ex-staff athlete
+    -- with stale staff_squads rows can't insert for those squads.
+    OR (
+      get_user_role() <> 'athlete'
+      AND athlete_id IN (
+        SELECT id FROM athletes
+        WHERE org_id = get_user_org_id() AND squad_id IN (SELECT get_user_squad_ids())
+      )
     )
   );
 
@@ -204,10 +212,22 @@ CREATE POLICY wellness_select_clinical ON wellness_checkins FOR SELECT
     )
   );
 
+-- Athletes read their own self-reported check-ins (self-service readiness view),
+-- mirroring score_history_athlete / injury_events_athlete.
+DROP POLICY IF EXISTS wellness_select_athlete ON wellness_checkins;
+CREATE POLICY wellness_select_athlete ON wellness_checkins FOR SELECT
+  USING (
+    get_user_role() = 'athlete'
+    AND athlete_id IN (SELECT id FROM athletes WHERE user_id = auth.uid())
+  );
+
 DROP POLICY IF EXISTS wellness_update ON wellness_checkins;
 CREATE POLICY wellness_update ON wellness_checkins FOR UPDATE
   USING (
-    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
+    -- Athlete self-service: upsertWellnessCheckin() upserts, so re-submitting the
+    -- day's check-in resolves to an UPDATE — athletes need it on their own row.
+    (get_user_role() = 'athlete' AND athlete_id IN (SELECT id FROM athletes WHERE user_id = auth.uid()))
+    OR (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio', 'coach', 'fitness_coach')
       AND athlete_id IN (

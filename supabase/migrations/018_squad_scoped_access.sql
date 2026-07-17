@@ -449,13 +449,16 @@ DROP POLICY IF EXISTS "clinical_write_occurrences" ON occurrences;
 CREATE POLICY "clinical_write_occurrences" ON occurrences
   FOR INSERT WITH CHECK (
     org_id = get_user_org_id()
+    -- Owner included: the referenced athlete must belong to the caller's org, so
+    -- a direct-API owner can't attach an occurrence to a foreign-org athlete.
+    AND EXISTS (SELECT 1 FROM athletes a WHERE a.id = athlete_id AND a.org_id = get_user_org_id())
     AND (
       get_user_role() = 'owner'
       OR (
         get_user_role() IN ('doctor', 'physio', 'masseur')
         AND EXISTS (
           SELECT 1 FROM athletes a
-          WHERE a.id = athlete_id AND a.org_id = get_user_org_id() AND a.squad_id IN (SELECT get_user_squad_ids())
+          WHERE a.id = athlete_id AND a.squad_id IN (SELECT get_user_squad_ids())
         )
       )
     )

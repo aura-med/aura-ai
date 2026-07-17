@@ -86,7 +86,10 @@ CREATE POLICY athletes_select ON athletes FOR SELECT
     org_id = get_user_org_id()
     AND (
       get_user_role() = 'owner'
-      OR squad_id IN (SELECT get_user_squad_ids())
+      -- Gate the squad branch to non-athlete staff: a former staff member turned
+      -- athlete may still have stale staff_squads rows, which must not grant them
+      -- squad-wide access ahead of the self-only branch below.
+      OR (get_user_role() <> 'athlete' AND squad_id IN (SELECT get_user_squad_ids()))
       OR (get_user_role() = 'athlete' AND user_id = auth.uid())
     )
   );

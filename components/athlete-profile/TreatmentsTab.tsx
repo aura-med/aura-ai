@@ -6,6 +6,7 @@ import { Activity, Pill, Wrench, Plus, Clock, Edit2, Loader2, Syringe, Bandage }
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { administerMedication, registerOrthosis } from '@/lib/actions/clinical'
+import { OWNER_ROLE, CLINICAL_ROLES } from '@/lib/roles'
 import type {
   AthleteProfileData,
   MedicalHistory,
@@ -413,9 +414,9 @@ function OrthosisModal({
 export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
   const router = useRouter()
 
-  // Clinical write actions mirror the RLS insert policies (admin/doctor/physio/
+  // Clinical write actions mirror the RLS insert policies (owner/doctor/physio/
   // masseur) — other roles get a read-only view instead of an RLS error on save.
-  const canClinical = ['admin', 'doctor', 'physio', 'masseur'].includes(profile.viewerRole)
+  const canClinical = profile.viewerRole === OWNER_ROLE || CLINICAL_ROLES.includes(profile.viewerRole)
 
   // ── Local state ────────────────────────────────────────────────────────────
   const [medHistory, setMedHistory] = useState<MedicalHistory | null>(profile.medicalHistory)

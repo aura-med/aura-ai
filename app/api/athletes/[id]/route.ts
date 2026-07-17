@@ -1,19 +1,30 @@
-import { ApiError } from '@/lib/api/errors'
-import { handleAuthenticatedResource } from '@/lib/api/resource-handlers'
+import type { NextRequest } from 'next/server'
+import { verifyApiViewerFromRequest } from '@/lib/api/auth'
 import { getAthlete } from '@/lib/api/supabase-services'
+import { errorFromUnknown, jsonResponse, ApiError } from '@/lib/api/errors'
+import { logAudit } from '@/lib/audit'
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  return handleAuthenticatedResource({
-    request,
-    load: async (viewer) => {
-      const athlete = await getAthlete(id, viewer)
-      if (!athlete) throw new ApiError('Athlete not found', 404)
-      return athlete
-    },
-  })
-}
+  try {
+    const viewer  = await verifyApiViewerFromRequest(request)
+    const athlete = await getAthlete(id, viewer)
+    if (!athlete) throw new ApiError('Athlete not found', 404)
 
+    void logAudit({
+      userId:       viewer.userId,
+      userEmail:    viewer.email,
+      orgId:        viewer.orgId,
+      action:       'athlete.read',
+      resourceType: 'athlete',
+      resourceId:   id,
+    })
+
+    return jsonResponse(athlete)
+  } catch (error) {
+    return errorFromUnknown(error)
+  }
+}

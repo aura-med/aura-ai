@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Calendar, Trash2, Plus, Trophy, Dumbbell } from 'lucide-react'
 import { formatDisplayDate } from '@/lib/utils/microcycle'
 import { useUiStore } from '@/stores/uiStore'
+import { isOwner } from '@/lib/roles'
 
 interface CalendarEvent {
   id: string
@@ -70,7 +71,7 @@ export default function CalendarSettingsPage() {
       return
     }
 
-    setCanManage(profile.role === 'admin' || profile.role === 'coach')
+    setCanManage(isOwner(profile.role) || profile.role === 'coach')
 
     let eventsQuery = supabase
       .from('calendar_events')

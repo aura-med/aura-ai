@@ -91,7 +91,7 @@ export default async function OrganizationDetailPage({
               {data.users.map((user) => (
                 <tr key={user.id}>
                   <td style={{ color: 'var(--aura-text)' }}>{user.full_name ?? 'Unnamed user'}</td>
-                  <td><StatusBadge tone={user.role === 'admin' ? 'green' : 'neutral'}>{user.role ?? '-'}</StatusBadge></td>
+                  <td><StatusBadge tone={user.role === 'owner' ? 'green' : 'neutral'}>{user.role ?? '-'}</StatusBadge></td>
                   <td>{formatDate(user.created_at)}</td>
                 </tr>
               ))}

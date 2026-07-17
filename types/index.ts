@@ -14,7 +14,7 @@ export type SquadType = 'male' | 'female'
 
 // Aliases usados internamente
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical'
-export type UserRole = 'admin' | 'doctor' | 'physio' | 'masseur' | 'coach' | 'fitness_coach' | 'nutritionist' | 'director' | 'scout' | 'team_manager' | 'athlete'
+export type UserRole = 'owner' | 'doctor' | 'physio' | 'masseur' | 'coach' | 'fitness_coach' | 'nutritionist' | 'director' | 'scout' | 'team_manager' | 'athlete'
 
 export type AthleteAvailabilityStatus = 'available' | 'evaluation' | 'unavailable' | 'rtp'
 export type EventType = 'rest' | 'training' | 'match' | 'travel'

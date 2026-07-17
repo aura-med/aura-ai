@@ -9,6 +9,8 @@
 
 import { useState } from 'react'
 import type { RecommendationSet, Recommendation, UserRole } from '@/types'
+import { OWNER_ROLE, CLINICAL_ROLES, SQUAD_ROLES } from '@/lib/roles'
+import { canAcknowledgeRecommendation } from '@/lib/actions/recommendation-access'
 
 interface Props {
   recommendations:  RecommendationSet
@@ -49,9 +51,9 @@ const VARIABLE_LABELS: Record<string, string> = {
 }
 
 const STAKEHOLDER_TABS: { key: keyof RecommendationSet; label: string; roles: UserRole[] }[] = [
-  { key: 'clinical', label: 'Clínico',   roles: ['admin', 'doctor', 'physio'] },
-  { key: 'coach',    label: 'Treinador', roles: ['admin', 'coach', 'fitness_coach', 'doctor', 'physio'] },
-  { key: 'athlete',  label: 'Atleta',    roles: ['admin', 'athlete', 'doctor', 'physio', 'coach', 'fitness_coach'] },
+  { key: 'clinical', label: 'Clínico',   roles: [OWNER_ROLE, ...CLINICAL_ROLES] },
+  { key: 'coach',    label: 'Treinador', roles: [OWNER_ROLE, ...SQUAD_ROLES, ...CLINICAL_ROLES] },
+  { key: 'athlete',  label: 'Atleta',    roles: [OWNER_ROLE, 'athlete', ...CLINICAL_ROLES, ...SQUAD_ROLES] },
 ]
 
 function RecCard({ rec }: { rec: Recommendation }) {
@@ -128,8 +130,8 @@ export function RecommendationsPanel({
   const currentRecs  = recommendations[activeTab] ?? []
 
   const canAcknowledge =
-    (activeTab === 'clinical' && ['admin', 'doctor', 'physio'].includes(viewerRole)) ||
-    (activeTab === 'coach'    && ['admin', 'coach', 'fitness_coach'].includes(viewerRole))
+    (activeTab === 'clinical' || activeTab === 'coach') &&
+    canAcknowledgeRecommendation(viewerRole, activeTab)
 
   const isAcknowledged =
     (activeTab === 'clinical' && localAcknowledged.clinical) ||

@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { UserPlus, Users, Check, ChevronDown, Loader2 } from 'lucide-react'
 import type { UserRole } from '@/types'
+import { isOwner, isSquadScoped } from '@/lib/roles'
+import { assignStaffToSquad, removeStaffFromSquad } from '@/lib/actions/staff-squads'
 
 interface ProfileRow {
   id: string
@@ -12,8 +14,13 @@ interface ProfileRow {
   role: UserRole | null
 }
 
+interface SquadRow {
+  id: string
+  name: string
+}
+
 const ROLE_COLORS: Record<string, { bg: string; color: string }> = {
-  admin:         { bg: 'rgba(0,229,160,0.12)',  color: 'var(--aura-green)' },
+  owner:         { bg: 'rgba(0,229,160,0.12)',  color: 'var(--aura-green)' },
   doctor:        { bg: 'rgba(77,154,255,0.12)', color: 'var(--aura-blue)' },
   physio:        { bg: 'rgba(77,154,255,0.12)', color: 'var(--aura-blue)' },
   masseur:       { bg: 'rgba(77,154,255,0.12)', color: 'var(--aura-blue)' },
@@ -27,17 +34,106 @@ const ROLE_COLORS: Record<string, { bg: string; color: string }> = {
 }
 
 const ROLE_OPTIONS: UserRole[] = [
-  'admin', 'doctor', 'physio', 'masseur',
+  'owner', 'doctor', 'physio', 'masseur',
   'coach', 'fitness_coach',
   'nutritionist', 'director', 'scout', 'team_manager',
   'athlete',
 ]
 
 const ROLE_LABELS: Record<string, string> = {
-  admin: 'Admin', doctor: 'Médico', physio: 'Fisioterapeuta', masseur: 'Massagista',
+  owner: 'Owner', doctor: 'Médico', physio: 'Fisioterapeuta', masseur: 'Massagista',
   coach: 'Treinador', fitness_coach: 'Prep. Físico',
   nutritionist: 'Nutricionista', director: 'Diretor', scout: 'Scout', team_manager: 'Team Manager',
   athlete: 'Atleta',
+}
+
+function SquadAssignmentDropdown({
+  profileId,
+  allSquads,
+  assignedSquadIds,
+  onChanged,
+}: {
+  profileId: string
+  allSquads: SquadRow[]
+  assignedSquadIds: string[]
+  onChanged: (profileId: string, squadIds: string[]) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [saving, setSaving] = useState<string | null>(null)
+
+  async function toggleSquad(squadId: string) {
+    setSaving(squadId)
+    try {
+      const isAssigned = assignedSquadIds.includes(squadId)
+      const result = isAssigned
+        ? await removeStaffFromSquad(profileId, squadId)
+        : await assignStaffToSquad(profileId, squadId)
+      if (!result.success) {
+        console.error('Squad assignment update failed:', result.error)
+        return
+      }
+      onChanged(
+        profileId,
+        isAssigned ? assignedSquadIds.filter((id) => id !== squadId) : [...assignedSquadIds, squadId]
+      )
+    } finally {
+      setSaving(null)
+    }
+  }
+
+  const label = assignedSquadIds.length
+    ? allSquads.filter((s) => assignedSquadIds.includes(s.id)).map((s) => s.name).join(', ')
+    : 'Sem squads'
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((p) => !p)}
+        className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium max-w-40 truncate"
+        style={{ background: 'var(--aura-bg3)', color: 'var(--aura-text2)' }}
+      >
+        <span className="truncate">{label}</span>
+        <ChevronDown size={10} className="shrink-0" />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div
+            className="absolute right-0 top-full mt-1 z-20 rounded-lg border shadow-xl overflow-hidden"
+            style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)', minWidth: 180 }}
+          >
+            {allSquads.length === 0 ? (
+              <div className="px-3 py-2 text-xs" style={{ color: 'var(--aura-text3)' }}>Sem squads na organização</div>
+            ) : (
+              allSquads.map((squad) => {
+                const assigned = assignedSquadIds.includes(squad.id)
+                return (
+                  <button
+                    key={squad.id}
+                    type="button"
+                    onClick={() => toggleSquad(squad.id)}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-left text-xs hover:bg-[var(--aura-bg3)]"
+                    style={{ color: 'var(--aura-text)' }}
+                  >
+                    {saving === squad.id ? <Loader2 size={11} className="animate-spin shrink-0" /> : (
+                      <span
+                        className="w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center"
+                        style={{ borderColor: 'var(--aura-border2)', background: assigned ? 'var(--aura-green)' : 'transparent' }}
+                      >
+                        {assigned && <Check size={10} color="#000" />}
+                      </span>
+                    )}
+                    {squad.name}
+                  </button>
+                )
+              })
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  )
 }
 
 function RoleDropdown({
@@ -118,9 +214,11 @@ function RoleDropdown({
 export default function UsersPage() {
   const t = useTranslations('settings.users')
   const [users,       setUsers]       = useState<ProfileRow[]>([])
+  const [squads,      setSquads]      = useState<SquadRow[]>([])
+  const [staffSquads, setStaffSquads] = useState<Record<string, string[]>>({})
   const [loading,     setLoading]     = useState(true)
   const [error,       setError]       = useState<string | null>(null)
-  const [isAdmin,     setIsAdmin]     = useState(false)
+  const [isOwnerRole, setIsOwnerRole] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole,  setInviteRole]  = useState<UserRole>('physio')
 
@@ -137,22 +235,41 @@ export default function UsersPage() {
 
       if (!profile?.org_id) { setLoading(false); return }
 
-      setIsAdmin(profile.role === 'admin')
+      setIsOwnerRole(isOwner(profile.role))
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, role')
-        .eq('org_id', profile.org_id)
-        .order('full_name')
+      const [{ data, error }, { data: squadsData }] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('id, full_name, role')
+          .eq('org_id', profile.org_id)
+          .order('full_name'),
+        supabase
+          .from('squads')
+          .select('id, name')
+          .eq('org_id', profile.org_id)
+          .order('name'),
+      ])
 
       if (error) setError(error.message)
       else setUsers(data ?? [])
+      setSquads(squadsData ?? [])
+
+      const { data: assignments } = await supabase.from('staff_squads').select('profile_id, squad_id')
+      const grouped: Record<string, string[]> = {}
+      for (const row of assignments ?? []) {
+        grouped[row.profile_id] = [...(grouped[row.profile_id] ?? []), row.squad_id]
+      }
+      setStaffSquads(grouped)
       setLoading(false)
     })
   }, [])
 
   function handleRoleChanged(userId: string, newRole: UserRole) {
     setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, role: newRole } : u))
+  }
+
+  function handleSquadsChanged(profileId: string, squadIds: string[]) {
+    setStaffSquads((prev) => ({ ...prev, [profileId]: squadIds }))
   }
 
   if (loading) {
@@ -256,16 +373,26 @@ export default function UsersPage() {
                     </div>
                   </div>
                 </div>
-                {isAdmin ? (
-                  <RoleDropdown userId={u.id} currentRole={u.role} onChanged={handleRoleChanged} />
-                ) : (
-                  <span
-                    className="px-2 py-0.5 rounded text-xs font-medium"
-                    style={{ background: roleStyle.bg, color: roleStyle.color }}
-                  >
-                    {ROLE_LABELS[u.role ?? ''] ?? u.role ?? '—'}
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {isOwnerRole && isSquadScoped(u.role) && (
+                    <SquadAssignmentDropdown
+                      profileId={u.id}
+                      allSquads={squads}
+                      assignedSquadIds={staffSquads[u.id] ?? []}
+                      onChanged={handleSquadsChanged}
+                    />
+                  )}
+                  {isOwnerRole ? (
+                    <RoleDropdown userId={u.id} currentRole={u.role} onChanged={handleRoleChanged} />
+                  ) : (
+                    <span
+                      className="px-2 py-0.5 rounded text-xs font-medium"
+                      style={{ background: roleStyle.bg, color: roleStyle.color }}
+                    >
+                      {ROLE_LABELS[u.role ?? ''] ?? u.role ?? '—'}
+                    </span>
+                  )}
+                </div>
               </div>
             )
           })

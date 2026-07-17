@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { asString, firstRecord } from '@/lib/data/records'
 import { createClient } from '@/lib/supabase/server'
+import { logAudit } from '@/lib/audit'
 
 export async function POST(
   request: NextRequest,
@@ -64,6 +65,16 @@ export async function POST(
   if (updateError) {
     return NextResponse.json({ error: updateError.message }, { status: 500 })
   }
+
+  void logAudit({
+    userId:       user.id,
+    userEmail:    user.email ?? '',
+    orgId:        profile?.org_id ?? '',
+    action:       'rehab.assessment.update',
+    resourceType: 'rehab_session',
+    resourceId:   sessionId,
+    metadata:     { field },
+  })
 
   return NextResponse.json({ ok: true, clinical_data: updatedClinical })
 }

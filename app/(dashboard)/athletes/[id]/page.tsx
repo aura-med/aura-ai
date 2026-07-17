@@ -8,6 +8,7 @@ import { BASE_WEIGHTS_V1 } from '@/lib/scoring/engine'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import { AthleteProfileClient } from '@/components/athlete-profile/AthleteProfileClient'
 import { getLatestRecommendations } from '@/lib/actions/recommendations'
+import { getViewerContext } from '@/lib/data/auth'
 import type { UserRole } from '@/types'
 import type { AthleteProfileData, TabId, InjuryEventSummary, ActiveDiagnosis, ActiveOccurrence } from '@/types/athlete-profile'
 
@@ -43,6 +44,11 @@ async function AthleteDetailContent({
   const activeTab = parseTab(resolvedSearch.tab)
   const supabase  = await createClient()
   const injuryEventColumns = 'id, injury_date, return_date, diagnosis, location, severity, is_recurrence'
+
+  // Athletes may only ever view their own profile — RLS already enforces this
+  // at the data layer, but fail fast here to skip the queries below entirely.
+  const viewer = await getViewerContext()
+  if (viewer.role === 'athlete' && viewer.athleteId !== id) notFound()
 
   // ── Core athlete data ──────────────────────────────────────────────────────
   const { data: athlete, error } = await supabase
@@ -146,13 +152,9 @@ async function AthleteDetailContent({
       .eq('athlete_id', id),
   ])
 
-  // ── Viewer role + latest recommendations ──────────────────────────────────
-  const { data: { user } } = await supabase.auth.getUser()
-  const [profileResult, recommendations] = await Promise.all([
-    supabase.from('profiles').select('role').eq('id', user?.id ?? '').maybeSingle(),
-    getLatestRecommendations(id),
-  ])
-  const viewerRole = (profileResult.data?.role ?? 'athlete') as UserRole
+  // ── Latest recommendations ─────────────────────────────────────────────────
+  const recommendations = await getLatestRecommendations(id)
+  const viewerRole = (viewer.role ?? 'athlete') as UserRole
 
   // ── Score computations ────────────────────────────────────────────────────
   const latestScore = athlete.score_history?.[0]

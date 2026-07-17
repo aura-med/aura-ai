@@ -6,18 +6,17 @@ import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import { useUiStore } from '@/stores/uiStore'
 import type { UserRole } from '@/types'
+import { OWNER_ROLE, CLINICAL_ROLES, REHAB_ROLES, SQUAD_ROLES } from '@/lib/roles'
 import {
   LayoutDashboard, Activity, Calendar,
   Heart, Gauge, BookOpen, Settings,
-  ClipboardList, TrendingUp, FileText, AlertCircle,
+  ClipboardList, TrendingUp, FileText, AlertCircle, UserCircle,
 } from 'lucide-react'
 
-const CLINICAL_ROLES: UserRole[] = ['admin', 'doctor', 'physio', 'masseur']
 // Rehab protocols / RTP are physio & doctor work; rehab_sessions RLS and the
 // RTP/score APIs exclude masseurs, so keep /rehab out of their nav.
-const REHAB_ROLES: UserRole[] = ['admin', 'doctor', 'physio']
-const PERFORMANCE_ROLES: UserRole[] = ['admin', 'doctor', 'physio', 'fitness_coach', 'coach', 'director', 'team_manager', 'nutritionist', 'scout']
-const ALL_ROLES: UserRole[] = ['admin', 'doctor', 'physio', 'masseur', 'coach', 'fitness_coach', 'nutritionist', 'director', 'scout', 'team_manager', 'athlete']
+const PERFORMANCE_ROLES: UserRole[] = SQUAD_ROLES
+const ALL_ROLES: UserRole[] = [OWNER_ROLE, ...CLINICAL_ROLES, ...SQUAD_ROLES, 'athlete']
 
 interface NavItem {
   href: string
@@ -56,7 +55,8 @@ export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const t = useTranslations('sidebar')
-  const { mobileSidebarOpen, setMobileSidebarOpen, squads, selectedSquadId, setSquad, selectedOrg, role } = useUiStore()
+  const { mobileSidebarOpen, setMobileSidebarOpen, squads, selectedSquadId, setSquad, selectedOrg, role, athleteId } = useUiStore()
+  const isAthlete = role === 'athlete'
 
   function close() { setMobileSidebarOpen(false) }
 
@@ -68,7 +68,7 @@ export function Sidebar() {
     close()
   }
 
-  const visibleItems = NAV_ITEMS.filter((item) => item.roles.includes(role))
+  const visibleItems = role === OWNER_ROLE ? NAV_ITEMS : NAV_ITEMS.filter((item) => item.roles.includes(role))
 
   return (
     <>
@@ -109,7 +109,7 @@ export function Sidebar() {
             </div>
           </div>
         )}
-        {squads.length > 1 && (
+        {!isAthlete && squads.length > 1 && (
           <select
             value={selectedSquadId ?? ''}
             onChange={(e) => handleSquad(e.target.value)}
@@ -129,7 +129,31 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-6">
-        {SECTION_KEYS.map((sectionKey: SectionKey) => {
+        {isAthlete ? (
+          athleteId && (
+            <ul className="space-y-0.5">
+              <li>
+                <Link
+                  href={`/athletes/${athleteId}`}
+                  onClick={close}
+                  className={cn(
+                    'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors group',
+                    pathname.startsWith('/athletes')
+                      ? 'text-[var(--aura-green)] font-medium'
+                      : 'text-[var(--aura-text2)] hover:text-[var(--aura-text)] hover:bg-[var(--aura-bg3)]'
+                  )}
+                  style={pathname.startsWith('/athletes') ? { background: 'rgba(0,229,160,0.08)' } : undefined}
+                >
+                  <UserCircle
+                    size={15}
+                    className={cn('shrink-0', pathname.startsWith('/athletes') ? 'text-[var(--aura-green)]' : 'text-[var(--aura-text3)] group-hover:text-[var(--aura-text2)]')}
+                  />
+                  <span className="flex-1 truncate">{t('nav.my_profile')}</span>
+                </Link>
+              </li>
+            </ul>
+          )
+        ) : SECTION_KEYS.map((sectionKey: SectionKey) => {
           const items = visibleItems.filter((i) => i.sectionKey === sectionKey)
           if (!items.length) return null
           return (

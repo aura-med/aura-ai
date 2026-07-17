@@ -103,7 +103,13 @@ CREATE POLICY athletes_insert ON athletes FOR INSERT
 
 DROP POLICY IF EXISTS athletes_update ON athletes;
 CREATE POLICY athletes_update ON athletes FOR UPDATE
-  USING (org_id = get_user_org_id())
+  USING (
+    org_id = get_user_org_id()
+    AND (
+      get_user_role() = 'owner'
+      OR (get_user_role() IN ('doctor', 'physio') AND squad_id IN (SELECT get_user_squad_ids()))
+    )
+  )
   WITH CHECK (
     org_id = get_user_org_id()
     AND (
@@ -117,7 +123,7 @@ CREATE POLICY athletes_update ON athletes FOR UPDATE
 DROP POLICY IF EXISTS score_history_clinical ON score_history;
 CREATE POLICY score_history_clinical ON score_history FOR SELECT
   USING (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio', 'coach', 'fitness_coach')
       AND athlete_id IN (
@@ -137,7 +143,7 @@ CREATE POLICY score_history_athlete ON score_history FOR SELECT
 DROP POLICY IF EXISTS score_history_clinical_insert ON score_history;
 CREATE POLICY score_history_clinical_insert ON score_history FOR INSERT
   WITH CHECK (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio')
       AND athlete_id IN (
@@ -150,7 +156,7 @@ CREATE POLICY score_history_clinical_insert ON score_history FOR INSERT
 DROP POLICY IF EXISTS score_history_clinical_update ON score_history;
 CREATE POLICY score_history_clinical_update ON score_history FOR UPDATE
   USING (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio')
       AND athlete_id IN (
@@ -160,7 +166,7 @@ CREATE POLICY score_history_clinical_update ON score_history FOR UPDATE
     )
   )
   WITH CHECK (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio')
       AND athlete_id IN (
@@ -185,7 +191,7 @@ CREATE POLICY wellness_insert ON wellness_checkins FOR INSERT
 DROP POLICY IF EXISTS wellness_select_clinical ON wellness_checkins;
 CREATE POLICY wellness_select_clinical ON wellness_checkins FOR SELECT
   USING (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio', 'coach', 'fitness_coach')
       AND athlete_id IN (
@@ -198,7 +204,7 @@ CREATE POLICY wellness_select_clinical ON wellness_checkins FOR SELECT
 DROP POLICY IF EXISTS wellness_update ON wellness_checkins;
 CREATE POLICY wellness_update ON wellness_checkins FOR UPDATE
   USING (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio', 'coach', 'fitness_coach')
       AND athlete_id IN (
@@ -213,7 +219,7 @@ CREATE POLICY wellness_update ON wellness_checkins FOR UPDATE
 DROP POLICY IF EXISTS rehab_clinical_write ON rehab_sessions;
 CREATE POLICY rehab_clinical_write ON rehab_sessions FOR ALL
   USING (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio')
       AND athlete_id IN (
@@ -223,7 +229,7 @@ CREATE POLICY rehab_clinical_write ON rehab_sessions FOR ALL
     )
   )
   WITH CHECK (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio')
       AND athlete_id IN (
@@ -251,7 +257,7 @@ CREATE POLICY rehab_others_read ON rehab_sessions FOR SELECT
 DROP POLICY IF EXISTS "injury_clinical_insert" ON injury_events;
 CREATE POLICY "injury_clinical_insert" ON injury_events FOR INSERT
   WITH CHECK (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio')
       AND athlete_id IN (
@@ -264,7 +270,7 @@ CREATE POLICY "injury_clinical_insert" ON injury_events FOR INSERT
 DROP POLICY IF EXISTS "injury_clinical_update" ON injury_events;
 CREATE POLICY "injury_clinical_update" ON injury_events FOR UPDATE
   USING (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio')
       AND athlete_id IN (
@@ -277,7 +283,7 @@ CREATE POLICY "injury_clinical_update" ON injury_events FOR UPDATE
 DROP POLICY IF EXISTS "injury_clinical_select" ON injury_events;
 CREATE POLICY "injury_clinical_select" ON injury_events FOR SELECT
   USING (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio', 'coach', 'fitness_coach')
       AND athlete_id IN (
@@ -290,7 +296,7 @@ CREATE POLICY "injury_clinical_select" ON injury_events FOR SELECT
 DROP POLICY IF EXISTS injury_events_clinical ON injury_events;
 CREATE POLICY injury_events_clinical ON injury_events FOR SELECT
   USING (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio', 'coach', 'fitness_coach')
       AND athlete_id IN (
@@ -310,7 +316,7 @@ CREATE POLICY injury_events_athlete ON injury_events FOR SELECT
 DROP POLICY IF EXISTS injury_events_write ON injury_events;
 CREATE POLICY injury_events_write ON injury_events FOR ALL
   USING (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio')
       AND athlete_id IN (
@@ -325,7 +331,7 @@ CREATE POLICY injury_events_write ON injury_events FOR ALL
 DROP POLICY IF EXISTS performance_data_select ON performance_data;
 CREATE POLICY performance_data_select ON performance_data FOR SELECT
   USING (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio', 'coach', 'fitness_coach')
       AND athlete_id IN (
@@ -338,7 +344,7 @@ CREATE POLICY performance_data_select ON performance_data FOR SELECT
 DROP POLICY IF EXISTS performance_data_write ON performance_data;
 CREATE POLICY performance_data_write ON performance_data FOR ALL
   USING (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio', 'fitness_coach')
       AND athlete_id IN (
@@ -353,7 +359,7 @@ CREATE POLICY performance_data_write ON performance_data FOR ALL
 DROP POLICY IF EXISTS gps_sessions_select ON gps_sessions;
 CREATE POLICY gps_sessions_select ON gps_sessions FOR SELECT
   USING (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio', 'coach', 'fitness_coach')
       AND athlete_id IN (
@@ -366,7 +372,7 @@ CREATE POLICY gps_sessions_select ON gps_sessions FOR SELECT
 DROP POLICY IF EXISTS gps_sessions_write ON gps_sessions;
 CREATE POLICY gps_sessions_write ON gps_sessions FOR ALL
   USING (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() = 'fitness_coach'
       AND athlete_id IN (
@@ -377,6 +383,20 @@ CREATE POLICY gps_sessions_write ON gps_sessions FOR ALL
   );
 
 -- ─── 13. calendar_events (squad_id is direct on this table) ───────────────────
+
+-- The 001 calendar_read let any org member read every squad's events, which
+-- defeats squad scoping. Replace it: owner sees the whole org, staff see their
+-- assigned squads, and an athlete sees their own squad's calendar.
+DROP POLICY IF EXISTS calendar_read ON calendar_events;
+CREATE POLICY calendar_read ON calendar_events FOR SELECT
+  USING (
+    EXISTS (SELECT 1 FROM squads s WHERE s.id = squad_id AND s.org_id = get_user_org_id())
+    AND (
+      get_user_role() = 'owner'
+      OR squad_id IN (SELECT get_user_squad_ids())
+      OR (get_user_role() = 'athlete' AND squad_id IN (SELECT squad_id FROM athletes WHERE user_id = auth.uid()))
+    )
+  );
 
 DROP POLICY IF EXISTS calendar_write ON calendar_events;
 CREATE POLICY calendar_write ON calendar_events FOR ALL
@@ -400,7 +420,7 @@ CREATE POLICY calendar_write ON calendar_events FOR ALL
 DROP POLICY IF EXISTS athlete_passport_clinical_update_m2 ON athlete_passport;
 CREATE POLICY athlete_passport_clinical_update_m2 ON athlete_passport FOR UPDATE
   USING (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio')
       AND athlete_id IN (
@@ -410,7 +430,7 @@ CREATE POLICY athlete_passport_clinical_update_m2 ON athlete_passport FOR UPDATE
     )
   )
   WITH CHECK (
-    get_user_role() = 'owner'
+    (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
     OR (
       get_user_role() IN ('doctor', 'physio')
       AND athlete_id IN (

@@ -65,15 +65,15 @@ export async function recalculateAthleteScore(id: string, supabase?: SupabaseCli
 
   const [{ data: profile }, { data: athlete }] = await Promise.all([
     apiViewer
-      ? Promise.resolve({ data: { org_id: apiViewer.orgId } })
+      ? Promise.resolve({ data: { org_id: apiViewer.orgId, role: apiViewer.role } })
       : client
         .from('profiles')
-        .select('org_id')
+        .select('org_id, role')
         .eq('id', user.id)
         .single(),
     client
       .from('athletes')
-      .select('org_id')
+      .select('org_id, squad_id')
       .eq('id', id)
       .maybeSingle(),
   ])
@@ -87,6 +87,22 @@ export async function recalculateAthleteScore(id: string, supabase?: SupabaseCli
 
   if (!access.ok) {
     return { body: { error: access.error }, status: access.status }
+  }
+
+  // Squad scope: persistence below runs through the service-role client (bypasses
+  // RLS), so a non-owner staff member's access to this athlete's squad must be
+  // enforced here — mirroring get_user_squad_ids() / the athletes RLS policy.
+  const viewerRole = (profile as { role?: string | null } | null)?.role ?? null
+  if (viewerRole !== 'owner') {
+    const athleteSquadId = (athlete as { squad_id?: string | null } | null)?.squad_id ?? null
+    const { data: squadRows } = await client
+      .from('staff_squads')
+      .select('squad_id')
+      .eq('profile_id', user.id)
+    const allowed = new Set((squadRows ?? []).map((r) => (r as { squad_id: string }).squad_id))
+    if (!athleteSquadId || !allowed.has(athleteSquadId)) {
+      return { body: { error: 'Forbidden' }, status: 403 }
+    }
   }
 
   const persistenceClient = createServiceRoleClient() ?? client

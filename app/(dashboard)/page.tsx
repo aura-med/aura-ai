@@ -12,9 +12,7 @@ async function getData(squadId: string | null, date: string) {
     .select(`
       id, name, shirt_number, photo_url, position, club, status,
       availability_status,
-      wellness_checkins(*), injury_events(*), score_history(*),
-      occurrences(occurrence_date, is_resolved, resolved_at, availability_status),
-      diagnoses(diagnosed_at, is_resolved, resolved_at, availability_status)
+      wellness_checkins(*), injury_events(*), score_history(*)
     `)
     .eq('active', true)
     .order('shirt_number')
@@ -50,36 +48,6 @@ async function getData(squadId: string | null, date: string) {
   const { data: calendarEvents } = await eventsQuery
 
   return { athletes: athletes ?? [], microcycle, calendarEvents: calendarEvents ?? [] }
-}
-
-const AVAIL_SEVERITY: Record<string, number> = { available: 0, evaluation: 1, rtp: 2, unavailable: 3 }
-
-// Reconstruct an athlete's availability as of a past date from their occurrence
-// and diagnosis history, mirroring the server-side most-restrictive rule. Used
-// only for historical dashboard dates — the materialized availability_status is
-// the "now" value, so an issue created after (or resolved on) the selected day
-// would otherwise misreport the past.
-function availabilityAsOf(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  occurrences: any[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  diagnoses: any[],
-  hasOpenInjury: boolean,
-  date: string,
-): string {
-  const openOn = (start: string | null | undefined, resolved: boolean | null | undefined, resolvedAt: string | null | undefined) =>
-    (start ?? '') <= date && (!resolved || (resolvedAt != null && resolvedAt.slice(0, 10) > date))
-  const statuses: string[] = []
-  for (const o of occurrences) {
-    if (openOn(o.occurrence_date, o.is_resolved, o.resolved_at) && o.availability_status) statuses.push(o.availability_status)
-  }
-  for (const d of diagnoses) {
-    if (openOn(d.diagnosed_at?.slice(0, 10), d.is_resolved, d.resolved_at) && d.availability_status) statuses.push(d.availability_status)
-  }
-  if (hasOpenInjury) statuses.push('rtp') // injury/rehab floor, mirroring the server recompute
-  const valid = statuses.filter((s) => s in AVAIL_SEVERITY)
-  if (valid.length === 0) return 'available'
-  return valid.reduce((worst, s) => (AVAIL_SEVERITY[s] > AVAIL_SEVERITY[worst] ? s : worst))
 }
 
 export default async function Dashboard({
@@ -144,15 +112,13 @@ export default async function Dashboard({
     }
 
     const result = calcScore(inputs)
-    // Today uses the authoritative materialized status; historical dates are
-    // reconstructed from the occurrence/diagnosis/injury history as of that day.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const occ: any[] = a.occurrences ?? []
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const diag: any[] = a.diagnoses ?? []
-    const availabilityStatus = isToday
-      ? ((a.availability_status as string) ?? 'available')
-      : availabilityAsOf(occ, diag, openAsOf.length > 0, currentDate)
+    // NOTE: this is the materialized "now" availability. Reconstructing it
+    // accurately for a historical date needs a server-side status-history
+    // source (see the availability history RPC discussion) — a client-side
+    // reconstruction from raw occurrence/diagnosis rows is unsafe (RLS hides
+    // them from coaches) and lossy (availability_status is overwritten on
+    // resolve/reassessment), so we intentionally show the current status here.
+    const availabilityStatus = (a.availability_status as string) ?? 'available'
 
     return {
       id: a.id as string,

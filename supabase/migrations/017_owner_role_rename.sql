@@ -44,7 +44,12 @@ ALTER TABLE profiles ADD CONSTRAINT profiles_role_check
 
 DROP POLICY IF EXISTS profiles_select ON profiles;
 CREATE POLICY profiles_select ON profiles FOR SELECT
-  USING (id = auth.uid() OR get_user_role() = 'owner');
+  -- Self-access always; owners see only their own org's profiles (the bare
+  -- owner branch was true for every row, leaking all tenants' profiles).
+  USING (
+    id = auth.uid()
+    OR (get_user_role() = 'owner' AND org_id = get_user_org_id())
+  );
 
 DROP POLICY IF EXISTS "profiles_admin_update" ON profiles;
 CREATE POLICY "profiles_owner_update" ON profiles FOR UPDATE

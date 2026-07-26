@@ -118,13 +118,15 @@ export function addDays(dateStr: string, days: number): string {
   return d.toISOString().split('T')[0]
 }
 
+// The club's local timezone defines the "today" boundary. Server components run
+// in the server process timezone (UTC on Vercel), so getFullYear()/getDate()
+// would resolve to the UTC day — just after local midnight east of UTC (e.g.
+// Portugal on summer time) that is still yesterday, making the default
+// dashboard date and microcycle compute for the wrong day. Configurable via
+// NEXT_PUBLIC_CLUB_TIMEZONE; defaults to the platform's home timezone.
+const CLUB_TIMEZONE = process.env.NEXT_PUBLIC_CLUB_TIMEZONE || 'Europe/Lisbon'
+
 export function todayStr(): string {
-  // Local calendar day, not the UTC day — otherwise just after local midnight
-  // east of UTC (e.g. Portugal summer time) this returns yesterday and the
-  // dashboard/occurrences microcycle is computed for the wrong day.
-  const d = new Date()
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
+  // en-CA renders as YYYY-MM-DD; timeZone pins it to the club's calendar day.
+  return new Intl.DateTimeFormat('en-CA', { timeZone: CLUB_TIMEZONE }).format(new Date())
 }

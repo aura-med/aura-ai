@@ -71,6 +71,22 @@ BEGIN
   NEW.custom_description := OLD.custom_description;
   NEW.diagnosed_by       := OLD.diagnosed_by;
   NEW.diagnosed_at       := OLD.diagnosed_at;
+
+  -- Resolution audit: without this a direct-API caller could resolve a
+  -- diagnosis while attributing it to another user/timestamp. Derive the fields
+  -- from the caller on the unresolved→resolved transition, and freeze them on
+  -- any later update so an already-resolved diagnosis can't be reattributed.
+  IF NEW.is_resolved AND NOT OLD.is_resolved THEN
+    NEW.resolved_by := auth.uid();
+    NEW.resolved_at := now();
+  ELSIF OLD.is_resolved THEN
+    NEW.resolved_by := OLD.resolved_by;
+    NEW.resolved_at := OLD.resolved_at;
+  ELSE
+    -- Still unresolved — keep the resolution audit cleared.
+    NEW.resolved_by := NULL;
+    NEW.resolved_at := NULL;
+  END IF;
   RETURN NEW;
 END;
 $$;

@@ -87,9 +87,20 @@ export default async function Dashboard({
         new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime()
       )[0]
 
+    // Compute injury history as of the displayed day: only injuries that had
+    // occurred by then, treated as open if they had no return date yet on that
+    // day. Otherwise a historical date (or its PDF) would count a future injury
+    // or use an injury's present open/closed state instead of the day's.
+    const injuriesAsOf = injuries.filter(
+      (i: { injury_date?: string | null }) => !i.injury_date || i.injury_date <= currentDate
+    )
+    const openAsOf = injuriesAsOf.filter(
+      (i: { return_date: string | null }) => !i.return_date || i.return_date > currentDate
+    )
+
     const inputs = {
-      history: injuries.filter((i: { return_date: string | null }) => !i.return_date).length >= 2 ? 2
-        : injuries.length >= 1 ? 1 : 0,
+      history: openAsOf.length >= 2 ? 2
+        : injuriesAsOf.length >= 1 ? 1 : 0,
       acwr: null,
       hrv: null,
       fatigue: latest?.fatigue ?? null,

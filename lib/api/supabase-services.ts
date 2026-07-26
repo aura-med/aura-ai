@@ -21,6 +21,17 @@ export function requireClinical(viewer: ApiViewer) {
   if (!isOwner(viewer.role) && !CLINICAL_ROLES.includes(viewer.role)) throw new ApiError('Forbidden', 403)
 }
 
+// Roles allowed to read injuries, mirroring the injury_events SELECT policies in
+// 018 (owner + doctor/physio/coach/fitness_coach + athlete self). The service
+// role bypasses RLS, so masseurs/nutritionists/directors/scouts/team_managers —
+// who have no injury SELECT policy — must be rejected here in code.
+const INJURY_READER_ROLES: UserRole[] = ['doctor', 'physio', 'coach', 'fitness_coach']
+
+function requireInjuryReader(viewer: ApiViewer) {
+  if (isOwner(viewer.role) || viewer.role === 'athlete') return
+  if (!INJURY_READER_ROLES.includes(viewer.role)) throw new ApiError('Forbidden', 403)
+}
+
 // Squads this viewer is assigned to via staff_squads. The service-role client
 // bypasses RLS entirely, so squad scoping for non-owner viewers must be
 // replicated here in application code, mirroring get_user_squad_ids() in SQL.
@@ -220,6 +231,7 @@ export async function getAthlete(id: string, viewer: ApiViewer) {
 export async function listInjuries(request: Request, viewer: ApiViewer) {
   const service = serviceClient()
   const freshViewer = await currentViewer(service, viewer)
+  requireInjuryReader(freshViewer)
   const pagination = parsePagination(request.url)
   let query = service
     .from('injury_events')
@@ -244,6 +256,7 @@ export async function listInjuries(request: Request, viewer: ApiViewer) {
 export async function getInjury(id: string, viewer: ApiViewer) {
   const service = serviceClient()
   const freshViewer = await currentViewer(service, viewer)
+  requireInjuryReader(freshViewer)
   let query = service
     .from('injury_events')
     .select('id, athlete_id, injury_date, return_date, diagnosis, location, mechanism, severity, days_absent, is_recurrence, notes, created_at, athletes!inner(id, name, org_id, squad_id)')

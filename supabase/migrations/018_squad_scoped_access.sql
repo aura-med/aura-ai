@@ -252,6 +252,10 @@ DROP POLICY IF EXISTS "auth_delete_rehab_sessions" ON rehab_sessions;
 -- checks the role (doctor/physio), not org/squad — so it lets a clinician
 -- insert a rehab_sessions row for any athlete UUID in any tenant. Drop it too.
 DROP POLICY IF EXISTS "rehab_clinical_insert" ON rehab_sessions;
+-- 004's rehab_sessions_clinical_write_m2 is org- but not squad-scoped (it would
+-- OR past the squad check below). 007 already drops it, but repeat it here so
+-- this squad-scoping migration is self-contained regardless of apply order.
+DROP POLICY IF EXISTS rehab_sessions_clinical_write_m2 ON rehab_sessions;
 
 DROP POLICY IF EXISTS rehab_clinical_write ON rehab_sessions;
 CREATE POLICY rehab_clinical_write ON rehab_sessions FOR ALL

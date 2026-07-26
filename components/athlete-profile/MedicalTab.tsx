@@ -383,6 +383,7 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
   const [editingChronic,      setEditingChronic]      = useState(false)
   const [chronicDraft,        setChronicDraft]        = useState<string[]>([])
   const [savingChronic,       setSavingChronic]       = useState(false)
+  const [chronicError,        setChronicError]        = useState<string | null>(null)
 
   const PRESET_CONDITIONS = [
     'Asma', 'Diabetes', 'Epilepsia', 'Hipertensão', 'Doença de Crohn',
@@ -391,20 +392,29 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
 
   async function saveChronicConditions(conditions: string[]) {
     setSavingChronic(true)
+    setChronicError(null)
     try {
       const supabase = createClient()
-      if (medHistory?.id) {
-        await supabase
-          .from('athletes_medical_history')
-          .update({ chronic_conditions: conditions })
-          .eq('id', medHistory.id)
-      } else {
+      // Capture the write result — a coach/athlete who can open this tab is
+      // denied by migration 022's clinical-only RLS, and network/DB errors also
+      // return here. Ignoring it would show a phantom save that vanishes on the
+      // next reload.
+      const { error } = medHistory?.id
+        ? await supabase
+            .from('athletes_medical_history')
+            .update({ chronic_conditions: conditions })
+            .eq('id', medHistory.id)
         // No history row yet — upsert on athlete_id so a second save in the same
         // mount updates the existing row instead of hitting the unique constraint.
-        await supabase
-          .from('athletes_medical_history')
-          .upsert({ athlete_id: profile.id, chronic_conditions: conditions }, { onConflict: 'athlete_id' })
+        : await supabase
+            .from('athletes_medical_history')
+            .upsert({ athlete_id: profile.id, chronic_conditions: conditions }, { onConflict: 'athlete_id' })
+
+      if (error) {
+        setChronicError('Não foi possível guardar. Sem permissão ou erro de ligação.')
+        return
       }
+
       setChronicConditions(conditions)
       setEditingChronic(false)
       router.refresh()
@@ -443,7 +453,7 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
             !editingChronic ? (
               <button
                 type="button"
-                onClick={() => { setChronicDraft([...chronicConditions]); setEditingChronic(true) }}
+                onClick={() => { setChronicDraft([...chronicConditions]); setChronicError(null); setEditingChronic(true) }}
                 className="flex items-center gap-1 text-[10px] font-medium hover:opacity-70"
                 style={{ color: 'var(--aura-green)' }}
               >
@@ -477,7 +487,7 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setEditingChronic(false)}
+                  onClick={() => { setChronicError(null); setEditingChronic(false) }}
                   className="flex-1 text-xs py-1.5 rounded-lg border hover:bg-[var(--aura-bg3)]"
                   style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }}
                 >
@@ -494,6 +504,11 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
                   Guardar
                 </button>
               </div>
+              {chronicError && (
+                <p role="alert" className="text-xs mt-2" style={{ color: 'var(--aura-danger)' }}>
+                  {chronicError}
+                </p>
+              )}
             </div>
           ) : chronicConditions.length === 0 ? (
             <p className="text-xs text-center py-3" style={{ color: 'var(--aura-text3)' }}>

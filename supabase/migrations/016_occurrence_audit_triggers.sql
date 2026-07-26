@@ -42,6 +42,12 @@ BEGIN
     IF TG_TABLE_NAME = 'occurrences' THEN
       NEW.clinician_name := OLD.clinician_name;
       NEW.clinician_role := OLD.clinician_role;
+      -- Freeze the subject: the 018 UPDATE policy would otherwise allow moving
+      -- an occurrence to another in-scope athlete, orphaning its dated
+      -- occurrence_records (which keep the original athlete_id).
+      NEW.athlete_id := OLD.athlete_id;
+      NEW.org_id := OLD.org_id;
+      NEW.squad_id := OLD.squad_id;
       -- Derive the resolution audit on the unresolved→resolved transition and
       -- freeze it once set, so the resolver identity/time can't be forged or
       -- reattributed through a direct Data API update.

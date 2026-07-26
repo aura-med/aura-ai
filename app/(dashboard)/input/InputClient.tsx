@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState, useTransition } from 'react'
 import { calcScore, riskColor, VAR_ICONS, VAR_LABELS } from '@/lib/scoring'
 import { DecompositionBars, ConfBadge } from '@/components/ui/aura'
 import { upsertWellnessCheckin } from '@/lib/data/actions'
+import { useUiStore } from '@/stores/uiStore'
+import { isOwner, REHAB_ROLES } from '@/lib/roles'
 import type { AthleteScore } from '@/types'
 import type { InputPageDTO } from '@/lib/data/types'
 
@@ -41,6 +43,13 @@ export function InputClient({ dto }: { dto: InputPageDTO }) {
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  // Score recalculation is restricted to owner/doctor/physio server-side
+  // (score_history RLS + the /score route role gate). Other roles that can
+  // still enter a wellness check-in (coach, fitness_coach, …) must not have the
+  // score POST turn a successful check-in into a visible failure.
+  const role = useUiStore((s) => s.role)
+  const canRecalcScore = isOwner(role) || REHAB_ROLES.includes(role)
 
   useEffect(() => {
     if (dto.athletes.some((athlete) => athlete.id === selectedId)) return
@@ -80,13 +89,18 @@ export function InputClient({ dto }: { dto: InputPageDTO }) {
           stress: values.stress ?? null,
         })
 
-        const scoreResponse = await fetch(`/api/athletes/${selectedAthlete.id}/score`, {
-          method: 'POST',
-        })
+        // Only score-writer roles can recalculate; for everyone else the
+        // check-in is the deliverable and the score refreshes on the next
+        // clinical recompute.
+        if (canRecalcScore) {
+          const scoreResponse = await fetch(`/api/athletes/${selectedAthlete.id}/score`, {
+            method: 'POST',
+          })
 
-        if (!scoreResponse.ok) {
-          const payload = await scoreResponse.json().catch(() => null)
-          throw new Error(payload?.error ?? 'Falha ao recalcular score')
+          if (!scoreResponse.ok && scoreResponse.status !== 403) {
+            const payload = await scoreResponse.json().catch(() => null)
+            throw new Error(payload?.error ?? 'Falha ao recalcular score')
+          }
         }
 
         setSaved(true)

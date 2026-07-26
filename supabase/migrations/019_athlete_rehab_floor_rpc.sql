@@ -16,10 +16,14 @@ STABLE
 SECURITY DEFINER
 SET search_path = public
 AS $$
-  -- Scope the signal to athletes the caller may access (own org + owner/assigned
-  -- squad). Otherwise a SECURITY DEFINER function granted to all authenticated
-  -- users would leak a cross-tenant rehab/injury signal for any known UUID.
+  -- Scope the signal to athletes the caller may access AND to roles that can
+  -- read the underlying rehab_sessions/injury_events via RLS (owner + clinical
+  -- staff). Otherwise a SECURITY DEFINER function granted to all authenticated
+  -- users would let a squad-assigned non-clinical role (nutritionist, director,
+  -- scout, team_manager) — or any caller with a known UUID — infer a
+  -- rehab/injury signal they could not select directly.
   SELECT CASE
+    WHEN get_user_role() NOT IN ('owner', 'doctor', 'physio', 'masseur') THEN false
     WHEN NOT EXISTS (
       SELECT 1 FROM athletes a
       WHERE a.id = p_athlete_id

@@ -21,7 +21,7 @@ async function recomputeAthleteAvailability(
   athleteId: string,
   fallback: AvailabilityStatus
 ): Promise<AvailabilityStatus> {
-  const [{ data: occ }, { data: diag }, { data: inActiveRehab }] = await Promise.all([
+  const [occResult, diagResult, rehabResult] = await Promise.all([
     supabase
       .from('occurrences')
       .select('availability_status')
@@ -36,6 +36,18 @@ async function recomputeAthleteAvailability(
     // caller's role (masseurs have no direct SELECT on those tables).
     supabase.rpc('athlete_in_active_rehab', { p_athlete_id: athleteId }),
   ])
+
+  // A failed read resolves as { data: null, error } rather than throwing. If we
+  // ignored it, a restrictive diagnosis or active rehab could silently drop out
+  // of the computation and persist a wrongly-permissive status (often
+  // 'available'). Abort instead of recomputing from partial clinical data.
+  const sourceError = occResult.error ?? diagResult.error ?? rehabResult.error
+  if (sourceError) {
+    throw new Error(`Não foi possível recalcular a disponibilidade: ${sourceError.message}`)
+  }
+  const occ = occResult.data
+  const diag = diagResult.data
+  const inActiveRehab = rehabResult.data
 
   const statuses = [...(occ ?? []), ...(diag ?? [])]
     .map((r) => r.availability_status as AvailabilityStatus | null)

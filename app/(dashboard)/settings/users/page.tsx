@@ -140,10 +140,12 @@ function RoleDropdown({
   userId,
   currentRole,
   onChanged,
+  isLastOwner,
 }: {
   userId: string
   currentRole: UserRole | null
   onChanged: (id: string, role: UserRole) => void
+  isLastOwner: boolean
 }) {
   const [open,   setOpen]   = useState(false)
   const [saving, setSaving] = useState(false)
@@ -151,6 +153,10 @@ function RoleDropdown({
 
   async function changeRole(newRole: UserRole) {
     if (newRole === currentRole) { setOpen(false); return }
+    // Guard the sole-owner case: demoting the last owner would lock the tenant
+    // out of administration. The DB trigger is the authoritative backstop; this
+    // just avoids a confusing round-trip error.
+    if (isLastOwner && newRole !== 'owner') { setOpen(false); return }
     setSaving(true)
     try {
       const supabase = createClient()
@@ -190,12 +196,16 @@ function RoleDropdown({
           >
             {ROLE_OPTIONS.map((r) => {
               const s = ROLE_COLORS[r] ?? ROLE_COLORS.athlete
+              // The last owner can't be demoted — offer only the 'owner' option.
+              const disabled = isLastOwner && r !== 'owner'
               return (
                 <button
                   key={r}
                   type="button"
                   onClick={() => changeRole(r)}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-xs hover:bg-[var(--aura-bg3)]"
+                  disabled={disabled}
+                  title={disabled ? 'A organização tem de manter pelo menos um owner' : undefined}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-xs hover:bg-[var(--aura-bg3)] disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{ color: 'var(--aura-text)' }}
                 >
                   <span className="w-3 h-3 rounded-full shrink-0" style={{ background: s.color }} />
@@ -351,6 +361,9 @@ export default function UsersPage() {
         ) : (
           users.map((u) => {
             const roleStyle = ROLE_COLORS[u.role ?? ''] ?? ROLE_COLORS.athlete
+            // The org must always keep at least one owner, otherwise nobody can
+            // manage roles/squads and the tenant is locked out of administration.
+            const isLastOwner = u.role === 'owner' && users.filter((x) => x.role === 'owner').length <= 1
             return (
               <div
                 key={u.id}
@@ -383,7 +396,7 @@ export default function UsersPage() {
                     />
                   )}
                   {isOwnerRole ? (
-                    <RoleDropdown userId={u.id} currentRole={u.role} onChanged={handleRoleChanged} />
+                    <RoleDropdown userId={u.id} currentRole={u.role} onChanged={handleRoleChanged} isLastOwner={isLastOwner} />
                   ) : (
                     <span
                       className="px-2 py-0.5 rounded text-xs font-medium"

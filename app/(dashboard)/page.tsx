@@ -77,7 +77,12 @@ export default async function Dashboard({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const injuries: any[] = a.injury_events ?? []
 
+    // Use the latest check-in that is not newer than the displayed day, so a
+    // historical date (previous/next-day controls) shows that day's readiness
+    // rather than a future check-in. checkin_date is ISO YYYY-MM-DD, so string
+    // comparison orders correctly.
     const latest = checkins
+      .filter((c: { checkin_date: string }) => c.checkin_date <= currentDate)
       .sort((x: { checkin_date: string }, y: { checkin_date: string }) =>
         new Date(y.checkin_date).getTime() - new Date(x.checkin_date).getTime()
       )[0]

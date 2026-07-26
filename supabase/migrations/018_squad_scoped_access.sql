@@ -248,6 +248,10 @@ DROP POLICY IF EXISTS "auth_read_rehab_sessions" ON rehab_sessions;
 DROP POLICY IF EXISTS "auth_insert_rehab_sessions" ON rehab_sessions;
 DROP POLICY IF EXISTS "auth_update_rehab_sessions" ON rehab_sessions;
 DROP POLICY IF EXISTS "auth_delete_rehab_sessions" ON rehab_sessions;
+-- 002_medical_portal.sql's rehab_clinical_insert is never dropped and only
+-- checks the role (doctor/physio), not org/squad — so it lets a clinician
+-- insert a rehab_sessions row for any athlete UUID in any tenant. Drop it too.
+DROP POLICY IF EXISTS "rehab_clinical_insert" ON rehab_sessions;
 
 DROP POLICY IF EXISTS rehab_clinical_write ON rehab_sessions;
 CREATE POLICY rehab_clinical_write ON rehab_sessions FOR ALL

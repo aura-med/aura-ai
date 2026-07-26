@@ -16,18 +16,39 @@ async function recomputeAvailability(
   athleteId: string,
   fallback: Avail,
 ): Promise<Avail> {
-  const [{ data: occ }, { data: diag }, { data: inActiveRehab }] = await Promise.all([
+  const [occResult, diagResult, rehabResult] = await Promise.all([
     supabase.from('occurrences').select('availability_status').eq('athlete_id', athleteId).eq('is_resolved', false),
     supabase.from('diagnoses').select('availability_status').eq('athlete_id', athleteId).eq('is_resolved', false),
     // SECURITY DEFINER RPC so the rehab floor is seen regardless of role.
     supabase.rpc('athlete_in_active_rehab', { p_athlete_id: athleteId }),
   ])
+  // A failed read resolves as { data: null, error }, not a throw. Ignoring it
+  // would drop a restrictive open issue/rehab floor and persist a wrongly
+  // permissive status — abort instead of recomputing from partial data.
+  const sourceError = occResult.error ?? diagResult.error ?? rehabResult.error
+  if (sourceError) {
+    throw new Error(`Não foi possível recalcular a disponibilidade: ${sourceError.message}`)
+  }
+  const occ = occResult.data
+  const diag = diagResult.data
+  const inActiveRehab = rehabResult.data
   const statuses = [...(occ ?? []), ...(diag ?? [])]
     .map((r) => r.availability_status as Avail | null)
     .filter((s): s is Avail => s != null && s in SEVERITY)
   if (inActiveRehab === true) statuses.push('rtp')
   if (statuses.length === 0) return fallback
   return statuses.reduce((worst, s) => (SEVERITY[s] > SEVERITY[worst] ? s : worst))
+}
+
+// Persist availability, throwing on a structured RPC error so a transient
+// failure doesn't silently leave the athlete's status stale after a write.
+async function persistAvailability(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  athleteId: string,
+  status: Avail,
+) {
+  const { error } = await supabase.rpc('update_athlete_availability', { p_athlete_id: athleteId, p_status: status })
+  if (error) throw new Error(`Não foi possível atualizar a disponibilidade: ${error.message}`)
 }
 
 export interface CreateDiagnosisInput {
@@ -63,7 +84,7 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
   if (error) throw new Error(error.message)
 
   const next = await recomputeAvailability(supabase, input.athleteId, input.availabilityStatus)
-  await supabase.rpc('update_athlete_availability', { p_athlete_id: input.athleteId, p_status: next })
+  await persistAvailability(supabase, input.athleteId, next)
 
   revalidatePath(`/athletes/${input.athleteId}`)
   revalidatePath('/')
@@ -90,7 +111,7 @@ export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
   // means the athlete is available (rehab floor still applies inside the helper).
   const targetAthleteId = resolved.athlete_id
   const next = await recomputeAvailability(supabase, targetAthleteId, 'available')
-  await supabase.rpc('update_athlete_availability', { p_athlete_id: targetAthleteId, p_status: next })
+  await persistAvailability(supabase, targetAthleteId, next)
 
   revalidatePath(`/athletes/${targetAthleteId}`)
   revalidatePath('/')

@@ -64,6 +64,19 @@ async function recomputeAthleteAvailability(
   )
 }
 
+// Persist the computed availability. The RPC resolves as { error } on a
+// transient PostgREST/DB failure rather than throwing, so an unchecked call
+// would leave the dashboard showing a stale status (e.g. hiding a newly
+// unavailable athlete) while reporting success. Throw so the caller surfaces it.
+async function persistAvailability(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  athleteId: string,
+  status: AvailabilityStatus,
+) {
+  const { error } = await supabase.rpc('update_athlete_availability', { p_athlete_id: athleteId, p_status: status })
+  if (error) throw new Error(`Não foi possível atualizar a disponibilidade: ${error.message}`)
+}
+
 export interface RegisterOccurrenceInput {
   athleteId: string
   orgId: string
@@ -119,7 +132,7 @@ export async function registerOccurrence(input: RegisterOccurrenceInput) {
   // Recompute from all active issues so a less-restrictive new occurrence
   // doesn't clear a still-active unavailable/rtp one.
   const nextStatus = await recomputeAthleteAvailability(supabase, input.athleteId, input.availabilityStatus)
-  await supabase.rpc('update_athlete_availability', { p_athlete_id: input.athleteId, p_status: nextStatus })
+  await persistAvailability(supabase, input.athleteId, nextStatus)
 
   revalidatePath('/occurrences')
   revalidatePath('/')
@@ -162,7 +175,7 @@ export async function resolveOccurrence(
   // This occurrence is now resolved, so `resolutionStatus` only applies as the
   // fallback when nothing else is open.
   const nextStatus = await recomputeAthleteAvailability(supabase, targetAthleteId, resolutionStatus)
-  await supabase.rpc('update_athlete_availability', { p_athlete_id: targetAthleteId, p_status: nextStatus })
+  await persistAvailability(supabase, targetAthleteId, nextStatus)
 
   revalidatePath('/occurrences')
   revalidatePath('/')
@@ -225,7 +238,7 @@ export async function addOccurrenceRecord(input: {
   // reassessment on one issue doesn't clear a still-active one elsewhere.
   const fallback = statusUpdated ? input.availabilityStatus : 'available'
   const nextStatus = await recomputeAthleteAvailability(supabase, targetAthleteId, fallback)
-  await supabase.rpc('update_athlete_availability', { p_athlete_id: targetAthleteId, p_status: nextStatus })
+  await persistAvailability(supabase, targetAthleteId, nextStatus)
 
   revalidatePath('/occurrences')
   revalidatePath('/')

@@ -28,6 +28,13 @@ BEGIN
 
   v_org_id := OLD.org_id;
 
+  -- Serialize concurrent owner removals within the same org. Without this lock,
+  -- two transactions each demoting/deleting a different owner could both count
+  -- the other still-committed owner, pass the check, and commit — leaving the
+  -- org with zero owners. Locking the organization row forces the second
+  -- transaction to wait and re-count against the first's committed result.
+  PERFORM 1 FROM organizations WHERE id = v_org_id FOR UPDATE;
+
   -- Count the remaining owners in the org excluding this row.
   SELECT count(*) INTO v_owner_count
   FROM profiles

@@ -49,6 +49,10 @@ BEGIN
         NEW.resolved_by := auth.uid();
         NEW.resolved_at := now();
       ELSIF COALESCE(OLD.is_resolved, false) THEN
+        -- Already resolved: keep it resolved and freeze the audit. Allowing an
+        -- un-resolve here would let a caller reopen then re-resolve to
+        -- reattribute the resolution.
+        NEW.is_resolved := true;
         NEW.resolved_by := OLD.resolved_by;
         NEW.resolved_at := OLD.resolved_at;
       ELSE
@@ -102,6 +106,9 @@ BEGIN
     NEW.resolved_by := auth.uid();
     NEW.resolved_at := now();
   ELSIF OLD.is_resolved THEN
+    -- Already resolved: keep it resolved and freeze the audit, so it can't be
+    -- reopened and re-resolved to reattribute the resolution.
+    NEW.is_resolved := true;
     NEW.resolved_by := OLD.resolved_by;
     NEW.resolved_at := OLD.resolved_at;
   ELSE

@@ -6,7 +6,7 @@ import { Activity, Pill, Wrench, Plus, Clock, Edit2, Loader2, Syringe, Bandage }
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { administerMedication, registerOrthosis } from '@/lib/actions/clinical'
-import { OWNER_ROLE, CLINICAL_ROLES } from '@/lib/roles'
+import { OWNER_ROLE, CLINICAL_ROLES, REHAB_ROLES } from '@/lib/roles'
 import type {
   AthleteProfileData,
   MedicalHistory,
@@ -97,7 +97,7 @@ function EmptyState({ label, cta, onClick }: { label: string; cta: string; onCli
 
 // ── Medication Row ────────────────────────────────────────────────────────────
 
-function MedicationRow({ m, onEdit }: { m: MedicationRecord; onEdit: () => void }) {
+function MedicationRow({ m, onEdit }: { m: MedicationRecord; onEdit?: () => void }) {
   const isActive = !m.end_date || new Date(m.end_date) > new Date()
   return (
     <div className="rounded-lg border px-3 py-3 space-y-1.5" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
@@ -118,9 +118,11 @@ function MedicationRow({ m, onEdit }: { m: MedicationRecord; onEdit: () => void 
           >
             {isActive ? 'Ativa' : 'Concluída'}
           </span>
-          <button type="button" onClick={onEdit} className="p-1 rounded hover:bg-white/10">
-            <Edit2 size={11} style={{ color: 'var(--aura-text3)' }} />
-          </button>
+          {onEdit && (
+            <button type="button" onClick={onEdit} className="p-1 rounded hover:bg-white/10">
+              <Edit2 size={11} style={{ color: 'var(--aura-text3)' }} />
+            </button>
+          )}
         </div>
       </div>
       <div className="flex items-center gap-3 text-[10px]" style={{ color: 'var(--aura-text3)' }}>
@@ -139,7 +141,7 @@ function MedicationRow({ m, onEdit }: { m: MedicationRecord; onEdit: () => void 
 
 // ── Rehab Session Row ─────────────────────────────────────────────────────────
 
-function RehabRow({ s, onEdit }: { s: RehabSession; onEdit: () => void }) {
+function RehabRow({ s, onEdit }: { s: RehabSession; onEdit?: () => void }) {
   return (
     <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg border" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
       <div className="flex-1 min-w-0">
@@ -161,16 +163,18 @@ function RehabRow({ s, onEdit }: { s: RehabSession; onEdit: () => void }) {
           <p className="text-[10px] mt-0.5" style={{ color: 'var(--aura-text3)' }}>{s.clinician_name}</p>
         )}
       </div>
-      <button type="button" onClick={onEdit} className="p-1 rounded hover:bg-white/10 shrink-0">
-        <Edit2 size={11} style={{ color: 'var(--aura-text3)' }} />
-      </button>
+      {onEdit && (
+        <button type="button" onClick={onEdit} className="p-1 rounded hover:bg-white/10 shrink-0">
+          <Edit2 size={11} style={{ color: 'var(--aura-text3)' }} />
+        </button>
+      )}
     </div>
   )
 }
 
 // ── Orthotic Row ──────────────────────────────────────────────────────────────
 
-function OrthoticRow({ o, onEdit }: { o: OrthoticRecord; onEdit: () => void }) {
+function OrthoticRow({ o, onEdit }: { o: OrthoticRecord; onEdit?: () => void }) {
   return (
     <div className="flex items-start gap-3 px-3 py-2.5 rounded-lg border" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
       <div className="flex-1 min-w-0">
@@ -184,9 +188,11 @@ function OrthoticRow({ o, onEdit }: { o: OrthoticRecord; onEdit: () => void }) {
           <p className="text-[10px] mt-0.5 italic" style={{ color: 'var(--aura-text3)' }}>{o.notes}</p>
         )}
       </div>
-      <button type="button" onClick={onEdit} className="p-1 rounded hover:bg-white/10 shrink-0">
-        <Edit2 size={11} style={{ color: 'var(--aura-text3)' }} />
-      </button>
+      {onEdit && (
+        <button type="button" onClick={onEdit} className="p-1 rounded hover:bg-white/10 shrink-0">
+          <Edit2 size={11} style={{ color: 'var(--aura-text3)' }} />
+        </button>
+      )}
     </div>
   )
 }
@@ -416,7 +422,11 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
 
   // Clinical write actions mirror the RLS insert policies (owner/doctor/physio/
   // masseur) — other roles get a read-only view instead of an RLS error on save.
+  // Medication + orthotics (on athletes_medical_history) use this clinical set.
   const canClinical = profile.viewerRole === OWNER_ROLE || CLINICAL_ROLES.includes(profile.viewerRole)
+  // Rehab sessions have a narrower writer set (018 rehab_clinical_write: owner +
+  // doctor/physio only — masseurs are excluded).
+  const canRehab = profile.viewerRole === OWNER_ROLE || REHAB_ROLES.includes(profile.viewerRole)
 
   // ── Local state ────────────────────────────────────────────────────────────
   const [medHistory, setMedHistory] = useState<MedicalHistory | null>(profile.medicalHistory)
@@ -582,7 +592,7 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
         <Section
           icon={Activity}
           title={`Fisioterapia & Reabilitação${sessions.length > 0 ? ` (${sessions.length})` : ''}`}
-          action={
+          action={canRehab ? (
             <button
               type="button"
               onClick={() => { setEditingRehab(null); setShowRehabModal(true) }}
@@ -591,25 +601,29 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
             >
               <Plus size={10} /> Nova
             </button>
-          }
+          ) : undefined}
         >
           {loadingS ? (
             <div className="flex justify-center py-4">
               <Loader2 size={16} className="animate-spin" style={{ color: 'var(--aura-text3)' }} />
             </div>
           ) : sessions.length === 0 ? (
-            <EmptyState
-              label="Sem sessões de fisioterapia registadas"
-              cta="Nova Sessão"
-              onClick={() => { setEditingRehab(null); setShowRehabModal(true) }}
-            />
+            canRehab ? (
+              <EmptyState
+                label="Sem sessões de fisioterapia registadas"
+                cta="Nova Sessão"
+                onClick={() => { setEditingRehab(null); setShowRehabModal(true) }}
+              />
+            ) : (
+              <p className="py-6 text-center text-xs" style={{ color: 'var(--aura-text3)' }}>Sem sessões de fisioterapia registadas</p>
+            )
           ) : (
             <div className="space-y-2">
               {sessions.map((s) => (
                 <RehabRow
                   key={s.id}
                   s={s}
-                  onEdit={() => { setEditingRehab(s); setShowRehabModal(true) }}
+                  onEdit={canRehab ? () => { setEditingRehab(s); setShowRehabModal(true) } : undefined}
                 />
               ))}
             </div>
@@ -620,7 +634,7 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
         <Section
           icon={Pill}
           title={`Medicação Ativa${activeMeds.length > 0 ? ` (${activeMeds.length})` : ''}`}
-          action={
+          action={canClinical ? (
             <button
               type="button"
               onClick={openNewMed}
@@ -629,17 +643,21 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
             >
               <Plus size={10} /> Adicionar
             </button>
-          }
+          ) : undefined}
         >
           {activeMeds.length === 0 ? (
-            <EmptyState label="Sem medicação ativa" cta="Registar Medicação" onClick={openNewMed} />
+            canClinical ? (
+              <EmptyState label="Sem medicação ativa" cta="Registar Medicação" onClick={openNewMed} />
+            ) : (
+              <p className="py-6 text-center text-xs" style={{ color: 'var(--aura-text3)' }}>Sem medicação ativa</p>
+            )
           ) : (
             <div className="space-y-2">
               {activeMeds.map((m, i) => (
                 <MedicationRow
                   key={i}
                   m={m}
-                  onEdit={() => openEditMed(m, medications.indexOf(m))}
+                  onEdit={canClinical ? () => openEditMed(m, medications.indexOf(m)) : undefined}
                 />
               ))}
             </div>
@@ -654,7 +672,7 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
                 <MedicationRow
                   key={i}
                   m={m}
-                  onEdit={() => openEditMed(m, medications.indexOf(m))}
+                  onEdit={canClinical ? () => openEditMed(m, medications.indexOf(m)) : undefined}
                 />
               ))}
             </div>
@@ -665,7 +683,7 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
         <Section
           icon={Wrench}
           title={`Ortóteses & Auxiliares${orthotics.length > 0 ? ` (${orthotics.length})` : ''}`}
-          action={
+          action={canClinical ? (
             <button
               type="button"
               onClick={openNewOrtho}
@@ -674,14 +692,18 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
             >
               <Plus size={10} /> Adicionar
             </button>
-          }
+          ) : undefined}
         >
           {orthotics.length === 0 ? (
-            <EmptyState label="Sem ortóteses ou auxiliares registados" cta="Registar" onClick={openNewOrtho} />
+            canClinical ? (
+              <EmptyState label="Sem ortóteses ou auxiliares registados" cta="Registar" onClick={openNewOrtho} />
+            ) : (
+              <p className="py-6 text-center text-xs" style={{ color: 'var(--aura-text3)' }}>Sem ortóteses ou auxiliares registados</p>
+            )
           ) : (
             <div className="space-y-2">
               {orthotics.map((o, i) => (
-                <OrthoticRow key={i} o={o} onEdit={() => openEditOrtho(o, i)} />
+                <OrthoticRow key={i} o={o} onEdit={canClinical ? () => openEditOrtho(o, i) : undefined} />
               ))}
             </div>
           )}

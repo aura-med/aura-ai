@@ -139,7 +139,14 @@ export function DiagnosisModal({ athleteId, occurrences, onClose, onSaved }: Dia
                       key={r.code}
                       type="button"
                       className="w-full text-left px-3 py-2 text-xs hover:bg-[var(--aura-bg3)] flex items-center gap-2"
-                      onClick={() => { setSelectedOsiics(r); setOsiicsQuery('') }}
+                      onClick={() => {
+                        setSelectedOsiics(r)
+                        setOsiicsQuery('')
+                        // The OSIICS entry's own category is authoritative — align
+                        // diagnosisType to it so a disease code isn't saved as an
+                        // injury (or vice versa), which would corrupt reporting.
+                        if (r.category === 'injury' || r.category === 'disease') setDiagnosisType(r.category)
+                      }}
                     >
                       <span className="font-mono text-[10px] shrink-0" style={{ color: 'var(--aura-text3)' }}>
                         {r.code}

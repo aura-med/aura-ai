@@ -62,3 +62,39 @@ DROP TRIGGER IF EXISTS trg_set_orthosis_registrar ON orthosis_records;
 CREATE TRIGGER trg_set_orthosis_registrar
   BEFORE INSERT ON orthosis_records
   FOR EACH ROW EXECUTE FUNCTION set_orthosis_registrar();
+
+-- The INSERT triggers above only bind the author on creation, but the UPDATE
+-- policies still permit full-row writes, so a direct-API caller could edit an
+-- existing record and reattribute it. Freeze the derived audit identities on
+-- UPDATE (administered_at / applied_by_name stay editable — they are real
+-- clinical facts, not the acting user's identity).
+CREATE OR REPLACE FUNCTION freeze_medication_admin_author()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.administered_by := OLD.administered_by;
+  NEW.administered_by_name := OLD.administered_by_name;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_freeze_medication_admin_author ON medication_administrations;
+CREATE TRIGGER trg_freeze_medication_admin_author
+  BEFORE UPDATE ON medication_administrations
+  FOR EACH ROW EXECUTE FUNCTION freeze_medication_admin_author();
+
+CREATE OR REPLACE FUNCTION freeze_orthosis_registrar()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.registered_by_name := OLD.registered_by_name;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_freeze_orthosis_registrar ON orthosis_records;
+CREATE TRIGGER trg_freeze_orthosis_registrar
+  BEFORE UPDATE ON orthosis_records
+  FOR EACH ROW EXECUTE FUNCTION freeze_orthosis_registrar();

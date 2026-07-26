@@ -23,6 +23,15 @@ BEGIN
     IF TG_TABLE_NAME = 'occurrences' THEN
       NEW.clinician_name := v_name;
       NEW.clinician_role := v_role;
+      -- Resolution audit must be derived, not client-supplied: a row inserted
+      -- already resolved is attributed to the caller now; otherwise cleared.
+      IF NEW.is_resolved THEN
+        NEW.resolved_by := auth.uid();
+        NEW.resolved_at := now();
+      ELSE
+        NEW.resolved_by := NULL;
+        NEW.resolved_at := NULL;
+      END IF;
     ELSIF TG_TABLE_NAME = 'occurrence_records' THEN
       NEW.clinician_name := v_name;
     END IF;
@@ -33,6 +42,19 @@ BEGIN
     IF TG_TABLE_NAME = 'occurrences' THEN
       NEW.clinician_name := OLD.clinician_name;
       NEW.clinician_role := OLD.clinician_role;
+      -- Derive the resolution audit on the unresolved→resolved transition and
+      -- freeze it once set, so the resolver identity/time can't be forged or
+      -- reattributed through a direct Data API update.
+      IF NEW.is_resolved AND NOT COALESCE(OLD.is_resolved, false) THEN
+        NEW.resolved_by := auth.uid();
+        NEW.resolved_at := now();
+      ELSIF COALESCE(OLD.is_resolved, false) THEN
+        NEW.resolved_by := OLD.resolved_by;
+        NEW.resolved_at := OLD.resolved_at;
+      ELSE
+        NEW.resolved_by := NULL;
+        NEW.resolved_at := NULL;
+      END IF;
     ELSIF TG_TABLE_NAME = 'occurrence_records' THEN
       NEW.clinician_name := OLD.clinician_name;
     END IF;

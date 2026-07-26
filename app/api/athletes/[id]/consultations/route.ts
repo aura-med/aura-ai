@@ -25,7 +25,7 @@ export async function GET(
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  void logAudit({
+  await logAudit({
     userId:       user.id,
     userEmail:    user.email ?? '',
     orgId:        profile?.org_id ?? '',
@@ -71,7 +71,7 @@ export async function POST(
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  void logAudit({
+  await logAudit({
     userId:       user.id,
     userEmail:    user.email ?? '',
     orgId:        profile?.org_id ?? '',

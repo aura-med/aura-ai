@@ -38,7 +38,7 @@ export async function POST(
   const response = await recalculateAthleteScore(id, apiClient ?? undefined, apiViewer ?? undefined)
 
   if (response.status === 200 && apiViewer) {
-    void logAudit({
+    await logAudit({
       userId:       apiViewer.userId,
       userEmail:    apiViewer.email,
       orgId:        apiViewer.orgId,

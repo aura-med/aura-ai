@@ -14,7 +14,7 @@ export async function GET(
     const athlete = await getAthlete(id, viewer)
     if (!athlete) throw new ApiError('Athlete not found', 404)
 
-    void logAudit({
+    await logAudit({
       userId:       viewer.userId,
       userEmail:    viewer.email,
       orgId:        viewer.orgId,

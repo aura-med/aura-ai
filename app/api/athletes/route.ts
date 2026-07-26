@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const data   = await listAthletes(request, viewer)
     if (!data) throw new ApiError('Not found', 404)
 
-    void logAudit({
+    await logAudit({
       userId:       viewer.userId,
       userEmail:    viewer.email,
       orgId:        viewer.orgId,

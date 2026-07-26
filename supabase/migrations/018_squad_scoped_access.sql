@@ -239,6 +239,16 @@ CREATE POLICY wellness_update ON wellness_checkins FOR UPDATE
 
 -- ─── 9. rehab_sessions ─────────────────────────────────────────────────────────
 
+-- 008_treatments.sql created wide-open rehab_sessions policies (auth.role() =
+-- 'authenticated') for every command. Postgres ORs permissive policies, so the
+-- scoped replacements below are ineffective until these are dropped — otherwise
+-- any authenticated user still reads/writes/deletes rehab sessions across squads
+-- and tenants.
+DROP POLICY IF EXISTS "auth_read_rehab_sessions" ON rehab_sessions;
+DROP POLICY IF EXISTS "auth_insert_rehab_sessions" ON rehab_sessions;
+DROP POLICY IF EXISTS "auth_update_rehab_sessions" ON rehab_sessions;
+DROP POLICY IF EXISTS "auth_delete_rehab_sessions" ON rehab_sessions;
+
 DROP POLICY IF EXISTS rehab_clinical_write ON rehab_sessions;
 CREATE POLICY rehab_clinical_write ON rehab_sessions FOR ALL
   USING (

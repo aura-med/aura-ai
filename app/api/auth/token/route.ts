@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     })
     const expiresAt = new Date(Date.now() + API_TOKEN_TTL_SECONDS * 1000).toISOString()
 
-    void logAudit({
+    await logAudit({
       userId:       data.user.id,
       userEmail:    data.user.email ?? body.email,
       orgId:        profile.org_id,

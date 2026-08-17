@@ -61,6 +61,7 @@
       "readiness": "Readiness",
       "clinical": "Clinical Module",
       "rehab": "Rehabilitation",
+      "medication": "Medication",
       "clinical_file": "Clinical File",
       "my_profile": "My Profile",
       "occurrences": "Occurrences",

@@ -148,7 +148,10 @@ export async function administerMedication(input: AdministerMedicationInput) {
   }).select().single()
   if (error) throw new Error(error.message)
 
+  // Both the athlete clinical file and the team-wide /medication view read the
+  // same medication_administrations rows, so revalidate both to keep them synced.
   revalidatePath(`/athletes/${input.athleteId}`)
+  revalidatePath('/medication')
   return data
 }
 

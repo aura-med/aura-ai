@@ -10,7 +10,7 @@ import { OWNER_ROLE, CLINICAL_ROLES, REHAB_ROLES, SQUAD_ROLES } from '@/lib/role
 import {
   LayoutDashboard, Activity, Calendar,
   Heart, Gauge, BookOpen, Settings,
-  ClipboardList, TrendingUp, FileText, AlertCircle, UserCircle,
+  ClipboardList, TrendingUp, FileText, AlertCircle, UserCircle, Pill,
 } from 'lucide-react'
 
 // Rehab protocols / RTP are physio & doctor work; rehab_sessions RLS and the
@@ -36,6 +36,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/clinical',      labelKey: 'clinical_file',     icon: FileText,        roles: CLINICAL_ROLES,   sectionKey: 'clinical' },
   { href: '/occurrences',   labelKey: 'occurrences',       icon: AlertCircle,     roles: CLINICAL_ROLES,   sectionKey: 'clinical' },
   { href: '/rehab',         labelKey: 'rehab',             icon: Activity,        roles: REHAB_ROLES,      sectionKey: 'clinical' },
+  { href: '/medication',    labelKey: 'medication',        icon: Pill,            roles: CLINICAL_ROLES,   sectionKey: 'clinical' },
   // Performance — visible to all, marked as in development
   { href: '/load',          labelKey: 'load',              icon: Gauge,           roles: PERFORMANCE_ROLES, inDevelopment: true, sectionKey: 'performance' },
   { href: '/performance',   labelKey: 'performance',       icon: TrendingUp,      roles: PERFORMANCE_ROLES, inDevelopment: true, sectionKey: 'performance' },

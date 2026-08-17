@@ -155,6 +155,54 @@ export async function administerMedication(input: AdministerMedicationInput) {
   return data
 }
 
+export interface UpdateMedicationAdministrationInput {
+  id: string
+  medicationName: string
+  dose: string | null
+  route: string
+  notes: string | null
+  administeredAt: string // ISO
+}
+
+// Edit an existing administration. The administrator identity and the subject
+// (athlete/org) are frozen by the 020/025 trigger, so only the clinical fields
+// change; RLS (025) restricts this to owner + doctor/physio/masseur in scope.
+export async function updateMedicationAdministration(input: UpdateMedicationAdministrationInput) {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('medication_administrations')
+    .update({
+      medication_name: input.medicationName,
+      dose:            input.dose,
+      route:           input.route,
+      notes:           input.notes,
+      administered_at: input.administeredAt,
+    })
+    .eq('id', input.id)
+    .select('athlete_id')
+    .single()
+  if (error) throw new Error(error.message)
+
+  revalidatePath('/medication')
+  if (data?.athlete_id) revalidatePath(`/athletes/${data.athlete_id}`)
+  return data
+}
+
+// Delete an administration. RLS (025) restricts this to the same writer roles.
+export async function deleteMedicationAdministration(id: string) {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('medication_administrations')
+    .delete()
+    .eq('id', id)
+    .select('athlete_id')
+    .maybeSingle()
+  if (error) throw new Error(error.message)
+
+  revalidatePath('/medication')
+  if (data?.athlete_id) revalidatePath(`/athletes/${data.athlete_id}`)
+}
+
 export interface RegisterOrthosisInput {
   athleteId: string
   orthosisType: string

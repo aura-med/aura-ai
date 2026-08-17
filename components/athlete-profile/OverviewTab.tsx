@@ -53,18 +53,6 @@ const DIAG_STATUS_CONFIG: Record<string, { label: string; color: string; bg: str
   rtp:         { label: 'Em RTP',        color: 'var(--aura-purple)', bg: 'rgba(180,141,252,0.12)' },
 }
 
-const VAR_LABELS: Record<string, string> = {
-  history: 'Historial Lesões',
-  acwr:    'ACWR GPS',
-  hrv:     'HRV Δ Baseline',
-  fatigue: 'Fadiga (Hooper)',
-  sleep:   'Sono (horas)',
-  tqr:     'TQR',
-  stress:  'Stress',
-  decel:   'Dec. Alta Int.',
-  md:      'MD+n',
-}
-
 type InjuryTimelinePoint = { label: string; injuries: number; severity: number }
 
 function InjuryTimelineChart({ data }: { data: InjuryTimelinePoint[] }) {
@@ -198,49 +186,6 @@ function InjuryTimeline({ injuries }: { injuries: InjuryEventSummary[] }) {
       ) : (
         <InjuryTimelineChart data={months} />
       )}
-    </div>
-  )
-}
-
-function RiskBreakdown({ partials, dominantVariable }: { partials: Record<string, number | null>; dominantVariable: string | null }) {
-  const vars = Object.entries(VAR_LABELS)
-
-  function barColor(v: number | null) {
-    if (v === null) return 'var(--aura-bg4)'
-    if (v < 0.4)  return 'var(--aura-green)'
-    if (v < 0.65) return 'var(--aura-warn)'
-    if (v < 0.85) return '#ff9330'
-    return 'var(--aura-danger)'
-  }
-
-  return (
-    <div className="rounded-xl border p-4 space-y-3" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
-        Risk Breakdown — 9 Variáveis
-      </p>
-      <div className="space-y-2">
-        {vars.map(([key, label]) => {
-          const val = partials[key] ?? null
-          const pct = val !== null ? Math.round(val * 100) : null
-          const isDominant = key === dominantVariable
-          return (
-            <div key={key} className="flex items-center gap-2">
-              <div className="w-28 shrink-0 flex items-center gap-1">
-                <p className="text-[10px] truncate" style={{ color: isDominant ? 'var(--aura-text)' : 'var(--aura-text3)' }}>{label}</p>
-                {isDominant && (
-                  <span className="text-[8px] font-bold px-1 rounded" style={{ background: 'var(--aura-warn-bg)', color: 'var(--aura-warn)' }}>↑</span>
-                )}
-              </div>
-              <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--aura-bg4)' }}>
-                <div className="h-full rounded-full transition-all" style={{ width: `${pct ?? 0}%`, background: barColor(val) }} />
-              </div>
-              <p className="w-8 text-right text-[10px] font-mono" style={{ color: val !== null ? 'var(--aura-text2)' : 'var(--aura-text3)' }}>
-                {pct !== null ? `${pct}%` : '—'}
-              </p>
-            </div>
-          )
-        })}
-      </div>
     </div>
   )
 }
@@ -429,9 +374,6 @@ export function OverviewTab({ profile }: { profile: AthleteProfileData }) {
 
       {/* Injury timeline */}
       <InjuryTimeline injuries={profile.injuryEvents} />
-
-      {/* Risk breakdown */}
-      <RiskBreakdown partials={profile.partials} dominantVariable={profile.dominantVariable} />
     </div>
   )
 }

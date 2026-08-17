@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
+import { DiagnosisModal } from '@/components/athlete-profile/DiagnosisModal'
 import { ChevronDown, ChevronUp, Plus, X, Check } from 'lucide-react'
 import { registerOccurrence, resolveOccurrence, addOccurrenceRecord } from './actions'
 import { calculateMDStatus, todayStr, type MicrocycleStatus } from '@/lib/utils/microcycle'
@@ -89,9 +90,10 @@ function StatusBadge({ status }: { status: AthleteAvailabilityStatus }) {
   )
 }
 
-function OccurrenceRow({ occ, onRevalidate }: { occ: Occurrence; onRevalidate: () => void }) {
+function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurrence; canCreateDiagnosis: boolean; onRevalidate: () => void }) {
   const [expanded, setExpanded] = useState(false)
   const [showReeval, setShowReeval] = useState(false)
+  const [showDiagnosisModal, setShowDiagnosisModal] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [reevalData, setReevalData] = useState({
     subjective: '', objective: '', assessment: '', plan: '',
@@ -265,6 +267,15 @@ function OccurrenceRow({ occ, onRevalidate }: { occ: Occurrence; onRevalidate: (
                 <Check size={11} />
                 Resolver
               </button>
+              {canCreateDiagnosis && (
+                <button
+                  onClick={() => setShowDiagnosisModal(true)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid var(--aura-border)', background: 'transparent', color: 'var(--aura-text2)', cursor: 'pointer' }}
+                >
+                  <Plus size={11} />
+                  Adicionar Diagnóstico
+                </button>
+              )}
             </div>
           )}
 
@@ -272,6 +283,15 @@ function OccurrenceRow({ occ, onRevalidate }: { occ: Occurrence; onRevalidate: (
             Registado por {occ.clinician_name ?? '—'} {occ.clinician_role ? `· ${occ.clinician_role}` : ''}
           </div>
         </div>
+      )}
+
+      {showDiagnosisModal && (
+        <DiagnosisModal
+          athleteId={occ.athlete_id}
+          occurrences={[occ]}
+          onClose={() => setShowDiagnosisModal(false)}
+          onSaved={() => { setShowDiagnosisModal(false); onRevalidate() }}
+        />
       )}
     </div>
   )
@@ -299,10 +319,7 @@ function RegisterModal({
     athleteId: athletes[0]?.id ?? '',
     occurrenceDate: todayStr(),
     occurrenceType: 'complaint' as 'complaint' | 'trauma' | 'disease' | 'other',
-    subjective: '',
-    objective: '',
-    assessment: '',
-    plan: '',
+    observations: '',
     availabilityStatus: 'evaluation' as AthleteAvailabilityStatus,
   })
 
@@ -318,10 +335,10 @@ function RegisterModal({
         microcycleNumber,
         occurrenceDate: form.occurrenceDate,
         occurrenceType: form.occurrenceType,
-        subjective: form.subjective,
-        objective: form.objective,
-        assessment: form.assessment,
-        plan: form.plan,
+        subjective: '',
+        objective: '',
+        assessment: form.observations,
+        plan: '',
         availabilityStatus: form.availabilityStatus,
         clinicianName,
         clinicianRole,
@@ -406,37 +423,33 @@ function RegisterModal({
               onChange={(e) => setForm((f) => ({ ...f, availabilityStatus: e.target.value as AthleteAvailabilityStatus }))}
               style={{ width: '100%', borderRadius: 6, padding: '7px 10px', fontSize: 12, background: 'var(--aura-bg3)', border: '1px solid var(--aura-border)', color: 'var(--aura-text)' }}
             >
-              {Object.entries(STATUS_CONFIG).map(([v, cfg]) => (
-                <option key={v} value={v}>{cfg.label}</option>
-              ))}
+              {/* RTP não é um estado que se regista aqui — é atribuído pelo protocolo de reabilitação */}
+              {Object.entries(STATUS_CONFIG)
+                .filter(([v]) => v !== 'rtp')
+                .map(([v, cfg]) => (
+                  <option key={v} value={v}>{cfg.label}</option>
+                ))}
             </select>
           </div>
         </div>
 
-        {/* SOAP */}
-        {[
-          { key: 'subjective', label: 'S — Subjetivo', placeholder: 'Queixa do atleta, sintomas referidos...' },
-          { key: 'objective', label: 'O — Objetivo', placeholder: 'Exame físico, testes, observações clínicas...' },
-          { key: 'assessment', label: 'A — Avaliação', placeholder: 'Impressão clínica, hipótese diagnóstica...' },
-          { key: 'plan', label: 'P — Plano', placeholder: 'Tratamento, restrições, follow-up...' },
-        ].map(({ key, label, placeholder }) => (
-          <div key={key} style={{ marginBottom: 10 }}>
-            <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
-              {label}
-            </label>
-            <textarea
-              value={form[key as keyof typeof form] as string}
-              onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-              placeholder={placeholder}
-              rows={2}
-              style={{
-                width: '100%', borderRadius: 6, padding: '7px 10px', fontSize: 12,
-                background: 'var(--aura-bg3)', border: '1px solid var(--aura-border)',
-                color: 'var(--aura-text)', resize: 'vertical', fontFamily: 'inherit',
-              }}
-            />
-          </div>
-        ))}
+        {/* Observações */}
+        <div style={{ marginBottom: 10 }}>
+          <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
+            Observações
+          </label>
+          <textarea
+            value={form.observations}
+            onChange={(e) => setForm((f) => ({ ...f, observations: e.target.value }))}
+            placeholder="Queixa, exame físico, impressão clínica, plano..."
+            rows={4}
+            style={{
+              width: '100%', borderRadius: 6, padding: '7px 10px', fontSize: 12,
+              background: 'var(--aura-bg3)', border: '1px solid var(--aura-border)',
+              color: 'var(--aura-text)', resize: 'vertical', fontFamily: 'inherit',
+            }}
+          />
+        </div>
 
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
           <button
@@ -499,6 +512,7 @@ export function OccurrencesClient({
   }
 
   const activeCount = occurrences.filter((o) => !o.is_resolved).length
+  const canCreateDiagnosis = clinicianRole === 'doctor' || clinicianRole === 'owner'
 
   return (
     <div>
@@ -571,7 +585,7 @@ export function OccurrencesClient({
           </div>
         ) : (
           filtered.map((occ) => (
-            <OccurrenceRow key={occ.id} occ={occ} onRevalidate={refresh} />
+            <OccurrenceRow key={occ.id} occ={occ} canCreateDiagnosis={canCreateDiagnosis} onRevalidate={refresh} />
           ))
         )}
       </div>

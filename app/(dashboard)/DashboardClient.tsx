@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, Download } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Hourglass } from 'lucide-react'
 import { AthleteCard } from '@/components/ui/AthleteCard'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { withSquadParam } from '@/lib/squad-url'
@@ -52,6 +52,11 @@ const STATUS_CONFIG: Record<AthleteAvailabilityStatus, {
 }
 
 const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 'rtp', 'available']
+
+// "Em Avaliação" isn't a semáforo colour — it's a to-do (athlete pending a clinical
+// decision), so it gets its own action band instead of a slot in the traffic light.
+// The remaining three read as severity: available < rtp < unavailable.
+const TRAFFIC_LIGHT_ORDER: AthleteAvailabilityStatus[] = ['available', 'rtp', 'unavailable']
 
 export function DashboardClient({ athletes, squadId, currentDate, microcycle, isToday, calendarEvents }: DashboardClientProps) {
   const [tab, setTab] = useState<'overview' | 'squad' | 'calendar'>('overview')
@@ -208,12 +213,56 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
       {/* ── Tab: Visão Geral ─────────────────────────────────────────── */}
       {tab === 'overview' && (
         <div>
-          {/* 4 status groups — priority order: unavailable first */}
+          {/* Faixa de ação: atletas "em avaliação" ainda não têm cor — precisam de decisão clínica */}
+          {byStatus.evaluation.length > 0 && (
+            <div style={{
+              marginBottom: 16,
+              borderRadius: 12,
+              border: '1px solid rgba(246,173,85,0.35)',
+              background: 'linear-gradient(180deg, rgba(246,173,85,0.10), rgba(246,173,85,0.03))',
+              padding: '14px 16px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <Hourglass size={15} color="var(--aura-warn)" className="animate-pulse" />
+                <span style={{ fontFamily: 'var(--font-syne)', fontSize: 13, fontWeight: 700, color: 'var(--aura-warn)' }}>
+                  A Reavaliar
+                </span>
+                <span style={{
+                  fontFamily: 'var(--font-dm-mono)', fontSize: 11, fontWeight: 700, color: 'var(--aura-warn)',
+                  background: 'rgba(246,173,85,0.18)', borderRadius: 999, padding: '1px 8px',
+                }}>
+                  {byStatus.evaluation.length}
+                </span>
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--aura-text3)' }}>
+                  Aguardam decisão clínica
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {byStatus.evaluation.map((a) => (
+                  <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      background: 'var(--aura-bg2)', border: '1px solid rgba(246,173,85,0.25)',
+                      borderRadius: 999, padding: '4px 12px 4px 4px',
+                    }}>
+                      <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={26} />
+                      <span style={{ fontSize: 12, color: 'var(--aura-text)', fontWeight: 500 }}>{a.name}</span>
+                      <span style={{ fontSize: 10, color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+                        {a.position}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Semáforo: disponível → RTP → indisponível, por ordem crescente de restrição */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
-            {STATUS_ORDER.map((status) => {
+            {TRAFFIC_LIGHT_ORDER.map((status) => {
               const cfg = STATUS_CONFIG[status]
               const group = byStatus[status]
-              const isPriority = status === 'unavailable' || status === 'evaluation'
+              const isPriority = status === 'unavailable' || status === 'rtp'
               return (
                 <div key={status} style={{
                   background: 'var(--aura-bg2)',

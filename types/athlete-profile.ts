@@ -4,7 +4,7 @@
 
 import type { RecommendationSet, UserRole } from '@/types'
 
-export type TabId = 'overview' | 'medical' | 'injuries' | 'treatments' | 'documents' | 'recommendations'
+export type TabId = 'overview' | 'medical' | 'injuries' | 'treatments' | 'documents'
 
 export type LatestRecommendations = RecommendationSet & {
   logId: string

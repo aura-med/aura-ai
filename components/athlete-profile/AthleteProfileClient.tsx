@@ -37,9 +37,6 @@ const TreatmentsTab = dynamic(() => import('./TreatmentsTab').then((mod) => mod.
 const DocumentsTab = dynamic(() => import('./DocumentsTab').then((mod) => mod.DocumentsTab), {
   loading: () => <TabSkeleton />,
 })
-const RecommendationsTab = dynamic(() => import('./RecommendationsTab').then((mod) => mod.RecommendationsTab), {
-  loading: () => <TabSkeleton />,
-})
 
 // ── Athlete header with photo upload ─────────────────────────────────────────
 
@@ -183,7 +180,6 @@ function TabContent({ tab, profile }: { tab: TabId; profile: AthleteProfileData 
     case 'injuries':         return <InjuriesTab        profile={profile} />
     case 'treatments':       return <TreatmentsTab      profile={profile} />
     case 'documents':        return <DocumentsTab       profile={profile} />
-    case 'recommendations':  return <RecommendationsTab profile={profile} />
     default:                 return <OverviewTab        profile={profile} />
   }
 }

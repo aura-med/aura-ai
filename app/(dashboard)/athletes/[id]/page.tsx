@@ -12,7 +12,7 @@ import { getViewerContext } from '@/lib/data/auth'
 import type { UserRole } from '@/types'
 import type { AthleteProfileData, TabId, InjuryEventSummary, ActiveDiagnosis, ActiveOccurrence } from '@/types/athlete-profile'
 
-const VALID_TABS: TabId[] = ['overview', 'medical', 'injuries', 'treatments', 'documents', 'recommendations']
+const VALID_TABS: TabId[] = ['overview', 'medical', 'injuries', 'treatments', 'documents']
 
 function parseTab(raw: string | string[] | undefined): TabId {
   const s = Array.isArray(raw) ? raw[0] : raw

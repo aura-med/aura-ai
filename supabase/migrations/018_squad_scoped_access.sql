@@ -20,18 +20,19 @@
 
 -- ─── 1. staff_squads ───────────────────────────────────────────────────────────
 
-CREATE TABLE staff_squads (
+CREATE TABLE IF NOT EXISTS staff_squads (
   profile_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   squad_id   UUID NOT NULL REFERENCES squads(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (profile_id, squad_id)
 );
 
-CREATE INDEX idx_staff_squads_profile ON staff_squads(profile_id);
-CREATE INDEX idx_staff_squads_squad   ON staff_squads(squad_id);
+CREATE INDEX IF NOT EXISTS idx_staff_squads_profile ON staff_squads(profile_id);
+CREATE INDEX IF NOT EXISTS idx_staff_squads_squad   ON staff_squads(squad_id);
 
 ALTER TABLE staff_squads ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS staff_squads_owner_manage ON staff_squads;
 CREATE POLICY staff_squads_owner_manage ON staff_squads FOR ALL
   USING (
     get_user_role() = 'owner'
@@ -42,6 +43,7 @@ CREATE POLICY staff_squads_owner_manage ON staff_squads FOR ALL
     AND squad_id IN (SELECT id FROM squads WHERE org_id = get_user_org_id())
   );
 
+DROP POLICY IF EXISTS staff_squads_self_read ON staff_squads;
 CREATE POLICY staff_squads_self_read ON staff_squads FOR SELECT
   USING (profile_id = auth.uid());
 
@@ -54,8 +56,8 @@ $$ LANGUAGE sql STABLE SECURITY DEFINER;
 
 -- ─── 3. athletes.user_id — real self-link for the athlete role ────────────────
 
-ALTER TABLE athletes ADD COLUMN user_id UUID REFERENCES auth.users(id);
-CREATE UNIQUE INDEX idx_athletes_user_id ON athletes(user_id) WHERE user_id IS NOT NULL;
+ALTER TABLE athletes ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_athletes_user_id ON athletes(user_id) WHERE user_id IS NOT NULL;
 
 -- ─── 4. Backfill: every existing non-owner/non-athlete profile keeps access to
 --        every squad in its org until the owner curates real assignments ──────

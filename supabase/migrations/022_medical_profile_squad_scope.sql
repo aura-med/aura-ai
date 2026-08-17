@@ -17,6 +17,7 @@ DROP POLICY IF EXISTS "auth_read_medical_history"   ON athletes_medical_history;
 DROP POLICY IF EXISTS "auth_insert_medical_history" ON athletes_medical_history;
 DROP POLICY IF EXISTS "auth_update_medical_history" ON athletes_medical_history;
 
+DROP POLICY IF EXISTS "medical_history_read" ON athletes_medical_history;
 CREATE POLICY "medical_history_read" ON athletes_medical_history FOR SELECT
   USING (
     (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
@@ -25,6 +26,7 @@ CREATE POLICY "medical_history_read" ON athletes_medical_history FOR SELECT
       AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id() AND squad_id IN (SELECT get_user_squad_ids()))
     )
   );
+DROP POLICY IF EXISTS "medical_history_insert" ON athletes_medical_history;
 CREATE POLICY "medical_history_insert" ON athletes_medical_history FOR INSERT
   WITH CHECK (
     (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
@@ -33,6 +35,7 @@ CREATE POLICY "medical_history_insert" ON athletes_medical_history FOR INSERT
       AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id() AND squad_id IN (SELECT get_user_squad_ids()))
     )
   );
+DROP POLICY IF EXISTS "medical_history_update" ON athletes_medical_history;
 CREATE POLICY "medical_history_update" ON athletes_medical_history FOR UPDATE
   USING (
     (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
@@ -46,6 +49,7 @@ CREATE POLICY "medical_history_update" ON athletes_medical_history FOR UPDATE
 DROP POLICY IF EXISTS "auth_read_documents"   ON medical_documents;
 DROP POLICY IF EXISTS "auth_insert_documents" ON medical_documents;
 
+DROP POLICY IF EXISTS "documents_read" ON medical_documents;
 CREATE POLICY "documents_read" ON medical_documents FOR SELECT
   USING (
     (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
@@ -54,6 +58,7 @@ CREATE POLICY "documents_read" ON medical_documents FOR SELECT
       AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id() AND squad_id IN (SELECT get_user_squad_ids()))
     )
   );
+DROP POLICY IF EXISTS "documents_insert" ON medical_documents;
 CREATE POLICY "documents_insert" ON medical_documents FOR INSERT
   WITH CHECK (
     (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
@@ -68,6 +73,7 @@ DROP POLICY IF EXISTS "auth_read_consultations"   ON medical_consultations;
 DROP POLICY IF EXISTS "auth_insert_consultations" ON medical_consultations;
 DROP POLICY IF EXISTS "auth_update_consultations" ON medical_consultations;
 
+DROP POLICY IF EXISTS "consultations_read" ON medical_consultations;
 CREATE POLICY "consultations_read" ON medical_consultations FOR SELECT
   USING (
     (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
@@ -76,6 +82,7 @@ CREATE POLICY "consultations_read" ON medical_consultations FOR SELECT
       AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id() AND squad_id IN (SELECT get_user_squad_ids()))
     )
   );
+DROP POLICY IF EXISTS "consultations_insert" ON medical_consultations;
 CREATE POLICY "consultations_insert" ON medical_consultations FOR INSERT
   WITH CHECK (
     (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
@@ -84,6 +91,7 @@ CREATE POLICY "consultations_insert" ON medical_consultations FOR INSERT
       AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id() AND squad_id IN (SELECT get_user_squad_ids()))
     )
   );
+DROP POLICY IF EXISTS "consultations_update" ON medical_consultations;
 CREATE POLICY "consultations_update" ON medical_consultations FOR UPDATE
   USING (
     (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
@@ -97,6 +105,7 @@ CREATE POLICY "consultations_update" ON medical_consultations FOR UPDATE
 DROP POLICY IF EXISTS "auth_read_emd"   ON emd_submissions;
 DROP POLICY IF EXISTS "auth_insert_emd" ON emd_submissions;
 
+DROP POLICY IF EXISTS "emd_read" ON emd_submissions;
 CREATE POLICY "emd_read" ON emd_submissions FOR SELECT
   USING (
     (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
@@ -105,6 +114,7 @@ CREATE POLICY "emd_read" ON emd_submissions FOR SELECT
       AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id() AND squad_id IN (SELECT get_user_squad_ids()))
     )
   );
+DROP POLICY IF EXISTS "emd_insert" ON emd_submissions;
 CREATE POLICY "emd_insert" ON emd_submissions FOR INSERT
   WITH CHECK (
     (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
@@ -119,6 +129,7 @@ DROP POLICY IF EXISTS "auth_read_scat6"   ON scat6_assessments;
 DROP POLICY IF EXISTS "auth_insert_scat6" ON scat6_assessments;
 DROP POLICY IF EXISTS "auth_update_scat6" ON scat6_assessments;
 
+DROP POLICY IF EXISTS "scat6_read" ON scat6_assessments;
 CREATE POLICY "scat6_read" ON scat6_assessments FOR SELECT
   USING (
     (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
@@ -127,6 +138,7 @@ CREATE POLICY "scat6_read" ON scat6_assessments FOR SELECT
       AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id() AND squad_id IN (SELECT get_user_squad_ids()))
     )
   );
+DROP POLICY IF EXISTS "scat6_insert" ON scat6_assessments;
 CREATE POLICY "scat6_insert" ON scat6_assessments FOR INSERT
   WITH CHECK (
     (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
@@ -135,6 +147,7 @@ CREATE POLICY "scat6_insert" ON scat6_assessments FOR INSERT
       AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id() AND squad_id IN (SELECT get_user_squad_ids()))
     )
   );
+DROP POLICY IF EXISTS "scat6_update" ON scat6_assessments;
 CREATE POLICY "scat6_update" ON scat6_assessments FOR UPDATE
   USING (
     (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
@@ -149,6 +162,7 @@ DROP POLICY IF EXISTS "auth_read_rtp"   ON rtp_protocol_tracking;
 DROP POLICY IF EXISTS "auth_insert_rtp" ON rtp_protocol_tracking;
 DROP POLICY IF EXISTS "auth_update_rtp" ON rtp_protocol_tracking;
 
+DROP POLICY IF EXISTS "rtp_read" ON rtp_protocol_tracking;
 CREATE POLICY "rtp_read" ON rtp_protocol_tracking FOR SELECT
   USING (
     (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
@@ -157,6 +171,7 @@ CREATE POLICY "rtp_read" ON rtp_protocol_tracking FOR SELECT
       AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id() AND squad_id IN (SELECT get_user_squad_ids()))
     )
   );
+DROP POLICY IF EXISTS "rtp_insert" ON rtp_protocol_tracking;
 CREATE POLICY "rtp_insert" ON rtp_protocol_tracking FOR INSERT
   WITH CHECK (
     (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))
@@ -165,6 +180,7 @@ CREATE POLICY "rtp_insert" ON rtp_protocol_tracking FOR INSERT
       AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id() AND squad_id IN (SELECT get_user_squad_ids()))
     )
   );
+DROP POLICY IF EXISTS "rtp_update" ON rtp_protocol_tracking;
 CREATE POLICY "rtp_update" ON rtp_protocol_tracking FOR UPDATE
   USING (
     (get_user_role() = 'owner' AND athlete_id IN (SELECT id FROM athletes WHERE org_id = get_user_org_id()))

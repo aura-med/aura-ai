@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { Activity, Pill, Wrench, Plus, Clock, Edit2, Loader2, Syringe, Bandage } from 'lucide-react'
+import { Activity, Wrench, Plus, Clock, Edit2, Loader2, Syringe, Bandage } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { administerMedication, registerOrthosis } from '@/lib/actions/clinical'
@@ -10,14 +10,12 @@ import { OWNER_ROLE, CLINICAL_ROLES, REHAB_ROLES } from '@/lib/roles'
 import type {
   AthleteProfileData,
   MedicalHistory,
-  MedicationRecord,
   OrthoticRecord,
   RehabSession,
   MedicationAdministration,
   OrthosisRecord,
 } from '@/types/athlete-profile'
 
-const MedicationModal = dynamic(() => import('./MedicationModal').then((mod) => mod.MedicationModal))
 const RehabSessionModal = dynamic(() => import('./RehabSessionModal').then((mod) => mod.RehabSessionModal))
 const OrthoticModal = dynamic(() => import('./OrthoticModal').then((mod) => mod.OrthoticModal))
 
@@ -91,50 +89,6 @@ function EmptyState({ label, cta, onClick }: { label: string; cta: string; onCli
         <Plus size={11} />
         {cta}
       </button>
-    </div>
-  )
-}
-
-// ── Medication Row ────────────────────────────────────────────────────────────
-
-function MedicationRow({ m, onEdit }: { m: MedicationRecord; onEdit?: () => void }) {
-  const isActive = !m.end_date || new Date(m.end_date) > new Date()
-  return (
-    <div className="rounded-lg border px-3 py-3 space-y-1.5" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="text-sm font-semibold" style={{ color: 'var(--aura-text)' }}>{m.name}</p>
-          <p className="text-[11px] mt-0.5" style={{ color: 'var(--aura-text3)' }}>
-            {m.dosage} · {m.frequency}
-          </p>
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span
-            className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-            style={{
-              background: isActive ? 'var(--aura-green-bg)' : 'var(--aura-bg4)',
-              color: isActive ? 'var(--aura-green)' : 'var(--aura-text3)',
-            }}
-          >
-            {isActive ? 'Ativa' : 'Concluída'}
-          </span>
-          {onEdit && (
-            <button type="button" onClick={onEdit} className="p-1 rounded hover:bg-white/10">
-              <Edit2 size={11} style={{ color: 'var(--aura-text3)' }} />
-            </button>
-          )}
-        </div>
-      </div>
-      <div className="flex items-center gap-3 text-[10px]" style={{ color: 'var(--aura-text3)' }}>
-        {m.start_date && (
-          <span className="flex items-center gap-1">
-            <Clock size={9} />
-            {formatDate(m.start_date)}
-            {m.end_date ? ` → ${formatDate(m.end_date)}` : ''}
-          </span>
-        )}
-        {m.prescriber && <span>· {m.prescriber}</span>}
-      </div>
     </div>
   )
 }
@@ -436,9 +390,6 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
   const [loadingS,   setLoadingS]   = useState(true)
 
   // Medication modal
-  const [showMedModal,    setShowMedModal]    = useState(false)
-  const [editingMed,      setEditingMed]      = useState<MedicationRecord | null>(null)
-  const [editingMedIdx,   setEditingMedIdx]   = useState<number | null>(null)
 
   // Rehab session modal
   const [showRehabModal,  setShowRehabModal]  = useState(false)
@@ -520,20 +471,9 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
   }, [profile.id])
 
   // ── Derived ────────────────────────────────────────────────────────────────
-  const medications = medHistory?.medications ?? []
-  const activeMeds  = medications.filter((m) => !m.end_date || new Date(m.end_date) > new Date())
-  const pastMeds    = medications.filter((m) => m.end_date && new Date(m.end_date) <= new Date())
   const orthotics   = medHistory?.orthotics ?? []
 
   // ── Handlers ───────────────────────────────────────────────────────────────
-  function handleMedSaved(updated: MedicalHistory) {
-    setMedHistory(updated)
-    setShowMedModal(false)
-    setEditingMed(null)
-    setEditingMedIdx(null)
-    router.refresh()
-  }
-
   function handleRehabSaved(s: RehabSession) {
     setSessions((prev) => {
       const idx = prev.findIndex((x) => x.id === s.id)
@@ -558,18 +498,6 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
     setEditingOrtho(null)
     setEditingOrthoIdx(null)
     router.refresh()
-  }
-
-  function openNewMed() {
-    setEditingMed(null)
-    setEditingMedIdx(null)
-    setShowMedModal(true)
-  }
-
-  function openEditMed(m: MedicationRecord, i: number) {
-    setEditingMed(m)
-    setEditingMedIdx(i)
-    setShowMedModal(true)
   }
 
   function openNewOrtho() {
@@ -630,55 +558,6 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
           )}
         </Section>
 
-        {/* Active medication */}
-        <Section
-          icon={Pill}
-          title={`Medicação Ativa${activeMeds.length > 0 ? ` (${activeMeds.length})` : ''}`}
-          action={canClinical ? (
-            <button
-              type="button"
-              onClick={openNewMed}
-              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg transition-colors hover:bg-[var(--aura-green-bg)]"
-              style={{ color: 'var(--aura-green)' }}
-            >
-              <Plus size={10} /> Adicionar
-            </button>
-          ) : undefined}
-        >
-          {activeMeds.length === 0 ? (
-            canClinical ? (
-              <EmptyState label="Sem medicação ativa" cta="Registar Medicação" onClick={openNewMed} />
-            ) : (
-              <p className="py-6 text-center text-xs" style={{ color: 'var(--aura-text3)' }}>Sem medicação ativa</p>
-            )
-          ) : (
-            <div className="space-y-2">
-              {activeMeds.map((m, i) => (
-                <MedicationRow
-                  key={i}
-                  m={m}
-                  onEdit={canClinical ? () => openEditMed(m, medications.indexOf(m)) : undefined}
-                />
-              ))}
-            </div>
-          )}
-        </Section>
-
-        {/* Past medication */}
-        {pastMeds.length > 0 && (
-          <Section icon={Pill} title={`Medicação Anterior (${pastMeds.length})`}>
-            <div className="space-y-2">
-              {pastMeds.map((m, i) => (
-                <MedicationRow
-                  key={i}
-                  m={m}
-                  onEdit={canClinical ? () => openEditMed(m, medications.indexOf(m)) : undefined}
-                />
-              ))}
-            </div>
-          </Section>
-        )}
-
         {/* Orthotics (JSONB legacy) */}
         <Section
           icon={Wrench}
@@ -712,7 +591,7 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
         {/* Medication administrations (antidoping log) */}
         <Section
           icon={Syringe}
-          title={`Administração de Medicamentos${medAdminRecords.length > 0 ? ` (${medAdminRecords.length})` : ''}`}
+          title={`Medicação${medAdminRecords.length > 0 ? ` (${medAdminRecords.length})` : ''}`}
           action={canClinical ? (
             <button
               type="button"
@@ -817,16 +696,6 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
       </div>
 
       {/* Modals */}
-      {showMedModal && (
-        <MedicationModal
-          athleteId={profile.id}
-          medHistory={medHistory}
-          editing={editingMed}
-          editingIndex={editingMedIdx}
-          onClose={() => { setShowMedModal(false); setEditingMed(null); setEditingMedIdx(null) }}
-          onSaved={handleMedSaved}
-        />
-      )}
       {showRehabModal && (
         <RehabSessionModal
           athleteId={profile.id}

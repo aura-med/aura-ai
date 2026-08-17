@@ -103,13 +103,24 @@ function formatDate(ts: number): string {
   return `${y}-${m}-${day}`
 }
 
+// Weekday tables (Sunday-first, matching Date.getUTCDay()) for deterministic
+// formatting. toLocaleDateString's weekday rendering differs between the server
+// (Node ICU renders pt 'short' as the full "segunda") and browsers (Safari
+// renders "seg."), which causes an SSR hydration mismatch. Build the string
+// ourselves so the server and client always produce identical output.
+const WEEKDAYS_SHORT: Record<string, string[]> = {
+  pt: ['dom.', 'seg.', 'ter.', 'qua.', 'qui.', 'sex.', 'sáb.'],
+  en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  es: ['dom.', 'lun.', 'mar.', 'mié.', 'jue.', 'vie.', 'sáb.'],
+}
+
 export function formatDisplayDate(dateStr: string, locale = 'pt-PT'): string {
-  return new Date(dateStr + 'T12:00:00').toLocaleDateString(locale, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
+  const [y, m, d] = dateStr.split('-').map(Number)
+  if (!y || !m || !d) return dateStr
+  // UTC noon so the weekday is timezone-independent and identical on both sides.
+  const weekday = new Date(Date.UTC(y, m - 1, d, 12)).getUTCDay()
+  const table = WEEKDAYS_SHORT[locale.slice(0, 2)] ?? WEEKDAYS_SHORT.pt
+  return `${table[weekday]}, ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`
 }
 
 export function addDays(dateStr: string, days: number): string {

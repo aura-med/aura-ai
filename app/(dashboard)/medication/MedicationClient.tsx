@@ -35,8 +35,11 @@ function isoToLocalInput(iso: string): string {
 }
 
 function formatDateTime(dt: string) {
+  // Numeric fields only + explicit timeZone → deterministic across server (Node)
+  // and browser (Safari) so the SSR'd list doesn't cause a hydration mismatch.
   return new Date(dt).toLocaleString('pt-PT', {
-    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Lisbon',
   })
 }
 

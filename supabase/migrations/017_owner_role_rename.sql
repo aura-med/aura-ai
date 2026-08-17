@@ -52,6 +52,7 @@ CREATE POLICY profiles_select ON profiles FOR SELECT
   );
 
 DROP POLICY IF EXISTS "profiles_admin_update" ON profiles;
+DROP POLICY IF EXISTS "profiles_owner_update" ON profiles;
 CREATE POLICY "profiles_owner_update" ON profiles FOR UPDATE
   USING (
     get_user_role() = 'owner'
@@ -290,6 +291,7 @@ CREATE POLICY "coach staff acknowledge recs" ON recommendation_log FOR UPDATE
 -- ─── 14. audit_logs ────────────────────────────────────────────────────────────
 
 DROP POLICY IF EXISTS audit_logs_admin_select ON audit_logs;
+DROP POLICY IF EXISTS audit_logs_owner_select ON audit_logs;
 CREATE POLICY audit_logs_owner_select ON audit_logs FOR SELECT
   USING (org_id = get_user_org_id() AND get_user_role() = 'owner');
 

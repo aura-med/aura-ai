@@ -1,3 +1,4 @@
+import { connection } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSquadIdParam } from '@/lib/squad-url'
 import { calcScore, riskColor, riskLabel } from '@/lib/scoring'
@@ -55,6 +56,10 @@ export default async function Dashboard({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
+  // Opt out of the cached/prerendered shell (Next.js Cache Components) so
+  // availability_status writes from occurrences/diagnoses show up immediately
+  // instead of a stale snapshot — mirrors /rehab/page.tsx's same fix.
+  await connection()
   const params = searchParams ? await searchParams : {}
   const squadId = getSquadIdParam(params)
   const today = todayStr()

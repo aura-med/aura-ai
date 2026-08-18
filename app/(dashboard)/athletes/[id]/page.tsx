@@ -1,3 +1,4 @@
+import { connection } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
@@ -39,6 +40,10 @@ async function AthleteDetailContent({
   id: string
   searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
+  // Opt out of the cached/prerendered shell (Next.js Cache Components) so
+  // occurrence/diagnosis/medication writes show up immediately here, not a
+  // stale snapshot.
+  await connection()
   const resolvedSearch = searchParams ? await searchParams : {}
   const squadId   = getSquadIdParam(resolvedSearch)
   const activeTab = parseTab(resolvedSearch.tab)

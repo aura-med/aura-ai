@@ -1,3 +1,4 @@
+import { connection } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSquadIdParam } from '@/lib/squad-url'
 import { MedicationClient } from './MedicationClient'
@@ -77,6 +78,9 @@ export default async function MedicationPage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
+  // Opt out of the cached/prerendered shell (Next.js Cache Components) so
+  // medication administrations show up immediately, not a stale snapshot.
+  await connection()
   const squadId = getSquadIdParam(searchParams ? await searchParams : null)
   const { role, athletes, records } = await getData(squadId)
   return <MedicationClient role={role} athletes={athletes} records={records} />

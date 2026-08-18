@@ -1,3 +1,4 @@
+import { connection } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSquadIdParam } from '@/lib/squad-url'
 import { calculateMDStatus, todayStr } from '@/lib/utils/microcycle'
@@ -93,6 +94,9 @@ export default async function OccurrencesPage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
+  // Opt out of the cached/prerendered shell (Next.js Cache Components) so
+  // occurrence/diagnosis writes show up immediately, not a stale snapshot.
+  await connection()
   const params = searchParams ? await searchParams : {}
   const squadId = getSquadIdParam(params)
   const today = todayStr()

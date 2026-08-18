@@ -1,3 +1,4 @@
+import { connection } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
@@ -30,6 +31,9 @@ export default async function ClinicalFilePage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
+  // Opt out of the cached/prerendered shell (Next.js Cache Components) so
+  // occurrence/diagnosis writes show up immediately, not a stale snapshot.
+  await connection()
   const params = searchParams ? await searchParams : {}
   const squadId = getSquadIdParam(params)
   const athletes = await getData(squadId)

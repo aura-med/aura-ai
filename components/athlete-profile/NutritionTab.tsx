@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Apple, Plus, Loader2, Edit2, Scale } from 'lucide-react'
+import { Apple, Plus, Loader2, Edit2, Scale, Pill, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { OWNER_ROLE } from '@/lib/roles'
@@ -9,7 +9,7 @@ import {
   SKINFOLD_FIELDS, PERIMETER_FIELDS,
 } from '@/types/athlete-profile'
 import type {
-  AthleteProfileData, AthleteDailyWeight, NutritionAssessment,
+  AthleteProfileData, AthleteDailyWeight, NutritionAssessment, AthleteSupplement,
 } from '@/types/athlete-profile'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -246,6 +246,93 @@ function AssessmentModal({
   )
 }
 
+// ── Supplement modal ──────────────────────────────────────────────────────────
+
+function SupplementModal({
+  athleteId, onClose, onSaved,
+}: { athleteId: string; onClose: () => void; onSaved: (s: AthleteSupplement) => void }) {
+  const [name,       setName]       = useState('')
+  const [dosage,     setDosage]     = useState('')
+  const [frequency,  setFrequency]  = useState('')
+  const [startDate,  setStartDate]  = useState(todayStr)
+  const [endDate,    setEndDate]    = useState('')
+  const [notes,      setNotes]      = useState('')
+  const [saving,     setSaving]     = useState(false)
+  const [error,      setError]      = useState<string | null>(null)
+
+  async function handleSave() {
+    if (!name.trim()) { setError('Nome do suplemento obrigatório'); return }
+    setSaving(true)
+    setError(null)
+    try {
+      const supabase = createClient()
+      const { data, error: insertError } = await supabase
+        .from('athlete_supplements')
+        .insert({
+          athlete_id: athleteId,
+          name: name.trim(),
+          dosage: dosage.trim() || null,
+          frequency: frequency.trim() || null,
+          start_date: startDate,
+          end_date: endDate || null,
+          notes: notes.trim() || null,
+        })
+        .select('*')
+        .single()
+      if (insertError || !data) { setError('Não foi possível guardar. Sem permissão ou erro de ligação.'); return }
+      onSaved(data as AthleteSupplement)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="w-full max-w-sm rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>Novo Suplemento</h3>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Nome</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="ex: Creatina" className={inputCls} style={inputStyle} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Dose</label>
+              <input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="ex: 5g" className={inputCls} style={inputStyle} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Frequência</label>
+              <input value={frequency} onChange={(e) => setFrequency(e.target.value)} placeholder="ex: 1x/dia" className={inputCls} style={inputStyle} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Início</label>
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputCls} style={inputStyle} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Fim (opcional)</label>
+              <input type="date" value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)} className={inputCls} style={inputStyle} />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Notas (opcional)</label>
+            <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notas adicionais" className={inputCls} style={inputStyle} />
+          </div>
+        </div>
+        {error && <p className="text-xs" style={{ color: 'var(--aura-danger)' }}>{error}</p>}
+        <div className="flex gap-3">
+          <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--aura-bg3)]" style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }}>Cancelar</button>
+          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--aura-green)', color: '#000' }}>
+            {saving && <Loader2 size={12} className="animate-spin" />} Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
@@ -255,9 +342,12 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
 
   const [weights,     setWeights]     = useState<AthleteDailyWeight[]>([])
   const [assessments, setAssessments] = useState<NutritionAssessment[]>([])
+  const [supplements, setSupplements] = useState<AthleteSupplement[]>([])
   const [loading,      setLoading]      = useState(true)
   const [showWeightModal,     setShowWeightModal]     = useState(false)
   const [showAssessmentModal, setShowAssessmentModal] = useState(false)
+  const [showSupplementModal, setShowSupplementModal] = useState(false)
+  const [deletingSupplementId, setDeletingSupplementId] = useState<string | null>(null)
   const [limitDraft,   setLimitDraft]   = useState(profile.medicalHistory?.skinfold_limit_mm?.toString() ?? '')
   const [editingLimit, setEditingLimit] = useState(false)
   const [savingLimit,  setSavingLimit]  = useState(false)
@@ -269,13 +359,15 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
       setLoading(true)
       try {
         const supabase = createClient()
-        const [{ data: w }, { data: a }] = await Promise.all([
+        const [{ data: w }, { data: a }, { data: s }] = await Promise.all([
           supabase.from('athlete_daily_weight').select('*').eq('athlete_id', profile.id).order('measurement_date', { ascending: false }).limit(15),
           supabase.from('nutrition_assessments').select('*').eq('athlete_id', profile.id).order('assessment_date', { ascending: false }).limit(10),
+          supabase.from('athlete_supplements').select('*').eq('athlete_id', profile.id).order('start_date', { ascending: false }),
         ])
         if (!cancelled) {
           setWeights((w ?? []) as AthleteDailyWeight[])
           setAssessments((a ?? []) as NutritionAssessment[])
+          setSupplements((s ?? []) as AthleteSupplement[])
         }
       } finally {
         if (!cancelled) setLoading(false)
@@ -488,6 +580,68 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
         </div>
       </div>
 
+      {/* Suplementos */}
+      <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
+        <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
+          <Pill size={13} style={{ color: 'var(--aura-green)' }} />
+          <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--aura-text2)' }}>
+            Suplementos{supplements.length ? ` (${supplements.length})` : ''}
+          </p>
+          {canAssessment && (
+            <button type="button" onClick={() => setShowSupplementModal(true)} className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--aura-green-bg)]" style={{ color: 'var(--aura-green)' }}>
+              <Plus size={10} /> Novo
+            </button>
+          )}
+        </div>
+        <div className="p-4">
+          {supplements.length === 0 ? (
+            <p className="text-xs text-center py-3" style={{ color: 'var(--aura-text3)' }}>Sem suplementos registados</p>
+          ) : (
+            <div className="space-y-2">
+              {supplements.map((s) => {
+                const active = !s.end_date || s.end_date >= todayStr()
+                return (
+                  <div key={s.id} className="flex items-start justify-between gap-3 rounded-lg border px-3 py-2.5" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-semibold" style={{ color: 'var(--aura-text)' }}>{s.name}</span>
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: active ? 'var(--aura-green-bg)' : 'var(--aura-bg4)', color: active ? 'var(--aura-green)' : 'var(--aura-text3)' }}>
+                          {active ? 'Ativo' : 'Terminado'}
+                        </span>
+                        {s.dosage && <span className="text-[10px]" style={{ color: 'var(--aura-text3)' }}>{s.dosage}</span>}
+                        {s.frequency && <span className="text-[10px]" style={{ color: 'var(--aura-text3)' }}>· {s.frequency}</span>}
+                      </div>
+                      <p className="text-[10px] mt-0.5" style={{ color: 'var(--aura-text3)' }}>
+                        {formatDate(s.start_date)}{s.end_date ? ` – ${formatDate(s.end_date)}` : ''}
+                        {s.recorded_by_name ? ` · ${s.recorded_by_name}` : ''}
+                      </p>
+                      {s.notes && <p className="text-[10px] italic mt-0.5" style={{ color: 'var(--aura-text3)' }}>{s.notes}</p>}
+                    </div>
+                    {canAssessment && (
+                      <button
+                        type="button"
+                        disabled={deletingSupplementId === s.id}
+                        onClick={async () => {
+                          setDeletingSupplementId(s.id)
+                          const supabase = createClient()
+                          const { error } = await supabase.from('athlete_supplements').delete().eq('id', s.id)
+                          if (!error) setSupplements((prev) => prev.filter((x) => x.id !== s.id))
+                          setDeletingSupplementId(null)
+                        }}
+                        className="p-1 rounded hover:bg-white/10 shrink-0"
+                        title="Remover"
+                      >
+                        {deletingSupplementId === s.id ? <Loader2 size={11} className="animate-spin" style={{ color: 'var(--aura-text3)' }} /> : <Trash2 size={11} style={{ color: 'var(--aura-danger)' }} />}
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
       {showWeightModal && (
         <DailyWeightModal
           athleteId={profile.id}
@@ -505,6 +659,16 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
           onSaved={(a) => {
             setAssessments((prev) => [a, ...prev].sort((x, y) => y.assessment_date.localeCompare(x.assessment_date)))
             setShowAssessmentModal(false)
+          }}
+        />
+      )}
+      {showSupplementModal && (
+        <SupplementModal
+          athleteId={profile.id}
+          onClose={() => setShowSupplementModal(false)}
+          onSaved={(s) => {
+            setSupplements((prev) => [s, ...prev].sort((x, y) => y.start_date.localeCompare(x.start_date)))
+            setShowSupplementModal(false)
           }}
         />
       )}

@@ -361,6 +361,19 @@ export const PERIMETER_FIELDS = [
   { key: 'perimeter_calf_cm',        label: 'Geminal' },
 ] as const
 
+export interface AthleteSupplement {
+  id: string
+  athlete_id: string
+  name: string
+  dosage: string | null
+  frequency: string | null
+  start_date: string
+  end_date: string | null
+  notes: string | null
+  recorded_by_name: string | null
+  created_at: string
+}
+
 // ── Training Plans ────────────────────────────────────────────────────────────
 
 export interface TrainingPlan {

@@ -10,13 +10,16 @@ import { OWNER_ROLE, CLINICAL_ROLES, REHAB_ROLES, SQUAD_ROLES } from '@/lib/role
 import {
   LayoutDashboard, Activity, Calendar,
   Heart, Gauge, BookOpen, Settings,
-  ClipboardList, TrendingUp, FileText, AlertCircle, UserCircle, Pill,
+  ClipboardList, TrendingUp, FileText, AlertCircle, UserCircle, Pill, Apple,
 } from 'lucide-react'
 
 // Rehab protocols / RTP are physio & doctor work; rehab_sessions RLS and the
 // RTP/score APIs exclude masseurs, so keep /rehab out of their nav.
 const PERFORMANCE_ROLES: UserRole[] = SQUAD_ROLES
 const ALL_ROLES: UserRole[] = [OWNER_ROLE, ...CLINICAL_ROLES, ...SQUAD_ROLES, 'athlete']
+// Nutrition data is read/writable by clinical staff + the nutritionist (RLS in
+// migration 026: athlete_daily_weight / nutrition_assessments).
+const NUTRITION_ROLES: UserRole[] = [...CLINICAL_ROLES, 'nutritionist']
 
 interface NavItem {
   href: string
@@ -37,6 +40,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/occurrences',   labelKey: 'occurrences',       icon: AlertCircle,     roles: CLINICAL_ROLES,   sectionKey: 'clinical' },
   { href: '/rehab',         labelKey: 'rehab',             icon: Activity,        roles: REHAB_ROLES,      sectionKey: 'clinical' },
   { href: '/medication',    labelKey: 'medication',        icon: Pill,            roles: CLINICAL_ROLES,   sectionKey: 'clinical' },
+  { href: '/nutrition',     labelKey: 'nutrition',         icon: Apple,           roles: NUTRITION_ROLES,  sectionKey: 'clinical' },
   // Performance — visible to all, marked as in development
   { href: '/load',          labelKey: 'load',              icon: Gauge,           roles: PERFORMANCE_ROLES, inDevelopment: true, sectionKey: 'performance' },
   { href: '/performance',   labelKey: 'performance',       icon: TrendingUp,      roles: PERFORMANCE_ROLES, inDevelopment: true, sectionKey: 'performance' },

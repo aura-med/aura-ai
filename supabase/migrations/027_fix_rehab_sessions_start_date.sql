@@ -1,0 +1,18 @@
+-- Migration 027 — Fix "Registar sessão de fisioterapia" failing with:
+--   null value in column "start_date" of relation "rehab_sessions" violates
+--   not-null constraint
+--
+-- `rehab_sessions` is shared, by name only, between two unrelated features:
+--   1. The RTP protocol tracker (001_initial_schema.sql) — start_date,
+--      protocol_id, current_day, rtp_criteria, clinical_data.
+--   2. The physio/rehab session log on the Treatments tab (008_treatments.sql)
+--      — session_date, session_type, duration_minutes, description,
+--      clinician_name, notes.
+-- 008 declared its columns via `CREATE TABLE IF NOT EXISTS`, so on a database
+-- where 001 already created the table, that declaration was silently skipped.
+-- The physio-log insert path (POST /api/athletes/[id]/rehab-sessions) never
+-- sets `start_date`, so every insert hits its NOT NULL constraint.
+-- start_date is meaningless to physio-log rows — relax it instead of
+-- backfilling a fake value, since the RTP protocol tracker still always
+-- supplies it explicitly when it creates its own rows.
+ALTER TABLE rehab_sessions ALTER COLUMN start_date DROP NOT NULL;

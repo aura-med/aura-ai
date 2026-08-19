@@ -8,14 +8,12 @@ import { createClient } from '@/lib/supabase/client'
 import type {
   AthleteProfileData,
   MedicalConsultation,
-  EmdSubmission,
   Scat6Assessment,
   MedicalHistory,
 } from '@/types/athlete-profile'
 
 const ConsultationModal = dynamic(() => import('./ConsultationModal').then((mod) => mod.ConsultationModal))
 const MedicalHistoryModal = dynamic(() => import('./MedicalHistoryModal').then((mod) => mod.MedicalHistoryModal))
-const EmdModal = dynamic(() => import('./EmdModal').then((mod) => mod.EmdModal))
 const Scat6Modal = dynamic(() => import('./Scat6Modal').then((mod) => mod.Scat6Modal))
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -25,14 +23,6 @@ function formatDate(dateStr: string | null | undefined) {
   return new Date(dateStr).toLocaleDateString('pt-PT', {
     day: '2-digit', month: 'short', year: 'numeric',
   })
-}
-
-function emdDecisionLabel(decision: string | null) {
-  if (!decision) return { label: 'Pendente', color: 'var(--aura-text3)', bg: 'var(--aura-bg4)' }
-  if (decision === 'apto')                return { label: 'Apto',                color: 'var(--aura-green)',  bg: 'var(--aura-green-bg)'  }
-  if (decision === 'apto_com_restricoes') return { label: 'Apto c/ Restrições', color: 'var(--aura-warn)',   bg: 'var(--aura-warn-bg)'   }
-  if (decision === 'inapto')              return { label: 'Inapto',              color: 'var(--aura-danger)', bg: 'var(--aura-danger-bg)' }
-  return { label: decision, color: 'var(--aura-text3)', bg: 'var(--aura-bg4)' }
 }
 
 // ── Section wrapper ───────────────────────────────────────────────────────────
@@ -61,66 +51,6 @@ function Section({
         {action}
       </div>
       <div className="p-4">{children}</div>
-    </div>
-  )
-}
-
-// ── EMD Card ─────────────────────────────────────────────────────────────────
-
-function EmdCard({ emd, onEdit, onCreate }: { emd: EmdSubmission | null; onEdit: (e: EmdSubmission) => void; onCreate: () => void }) {
-  const decision = emdDecisionLabel(emd?.decision ?? null)
-  return (
-    <div className="rounded-xl border p-4 space-y-3" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
-            Avaliação Pré-Época
-          </p>
-          <p className="text-sm font-bold mt-0.5" style={{ color: 'var(--aura-text)' }}>
-            {emd ? `Época ${emd.season}` : 'Sem EMD registado'}
-          </p>
-          {emd && (
-            <p className="text-xs mt-0.5" style={{ color: 'var(--aura-text3)' }}>
-              Submetido em {formatDate(emd.submission_date)}
-            </p>
-          )}
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: decision.bg, color: decision.color }}>
-            {decision.label}
-          </span>
-          {emd ? (
-            <button
-              type="button"
-              onClick={() => onEdit(emd)}
-              className="p-1 rounded hover:bg-white/10"
-              title="Editar EMD"
-            >
-              <Edit2 size={11} style={{ color: 'var(--aura-text3)' }} />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onCreate}
-              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--aura-green-bg)]"
-              style={{ color: 'var(--aura-green)' }}
-            >
-              <Plus size={10} /> Novo EMD
-            </button>
-          )}
-        </div>
-      </div>
-      {emd?.restrictions && (
-        <div className="rounded-lg p-3" style={{ background: 'var(--aura-warn-bg)', borderLeft: '3px solid var(--aura-warn)' }}>
-          <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: 'var(--aura-warn)' }}>Restrições</p>
-          <p className="text-xs" style={{ color: 'var(--aura-text2)' }}>{emd.restrictions}</p>
-        </div>
-      )}
-      {emd?.clinician_name && (
-        <p className="text-[10px]" style={{ color: 'var(--aura-text3)' }}>
-          Clínico: {emd.clinician_name}{emd.signature_date ? ` · Assinado em ${formatDate(emd.signature_date)}` : ''}
-        </p>
-      )}
     </div>
   )
 }
@@ -310,10 +240,6 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
   const [showSoapModal,   setShowSoapModal]   = useState(false)
   const [showHistModal,   setShowHistModal]   = useState(false)
   const [editConsultation, setEditConsultation] = useState<MedicalConsultation | null>(null)
-  // EMD
-  const [latestEmd,       setLatestEmd]       = useState<EmdSubmission | null>(profile.latestEmd)
-  const [showEmdModal,    setShowEmdModal]    = useState(false)
-  const [editEmd,         setEditEmd]         = useState<EmdSubmission | null>(null)
   // SCAT-6
   const [scat6,           setScat6]           = useState<Scat6Assessment | null>(profile.baselineScat6 ?? profile.activeConcussion)
   const [showScat6Modal,  setShowScat6Modal]  = useState(false)
@@ -357,13 +283,6 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
   function handleHistSaved(h: MedicalHistory) {
     setMedHistory(h)
     setShowHistModal(false)
-    router.refresh()
-  }
-
-  function handleEmdSaved(emd: EmdSubmission) {
-    setLatestEmd(emd)
-    setShowEmdModal(false)
-    setEditEmd(null)
     router.refresh()
   }
 
@@ -426,19 +345,12 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
   return (
     <>
       <div className="space-y-4">
-        {/* Row 1: EMD + SCAT-6 */}
-        <div className="grid gap-4 lg:grid-cols-2">
-          <EmdCard
-            emd={latestEmd}
-            onEdit={(e) => { setEditEmd(e); setShowEmdModal(true) }}
-            onCreate={() => { setEditEmd(null); setShowEmdModal(true) }}
-          />
-          <Scat6Banner
-            scat6={scat6}
-            onRegisterBaseline={() => { setEditScat6(null); setShowScat6Modal(true) }}
-            onEdit={(a) => { setEditScat6(a); setShowScat6Modal(true) }}
-          />
-        </div>
+        {/* SCAT-6 */}
+        <Scat6Banner
+          scat6={scat6}
+          onRegisterBaseline={() => { setEditScat6(null); setShowScat6Modal(true) }}
+          onEdit={(a) => { setEditScat6(a); setShowScat6Modal(true) }}
+        />
 
         {/* Bio */}
         <Section icon={Stethoscope} title="Dados Clínicos">
@@ -627,14 +539,6 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
           existing={medHistory}
           onClose={() => setShowHistModal(false)}
           onSaved={handleHistSaved}
-        />
-      )}
-      {showEmdModal && (
-        <EmdModal
-          athleteId={profile.id}
-          existing={editEmd}
-          onClose={() => { setShowEmdModal(false); setEditEmd(null) }}
-          onSaved={handleEmdSaved}
         />
       )}
       {showScat6Modal && (

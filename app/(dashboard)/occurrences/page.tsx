@@ -31,7 +31,7 @@ async function getData(squadId: string | null, date: string) {
   let occQuery = supabase
     .from('occurrences')
     .select(`
-      id, athlete_id, occurrence_date, occurrence_type,
+      id, athlete_id, title, occurrence_date, occurrence_type,
       subjective, objective, assessment, plan,
       availability_status, clinician_name, clinician_role,
       is_resolved, resolved_at, microcycle_number,

@@ -82,6 +82,7 @@ export interface RegisterOccurrenceInput {
   orgId: string
   squadId: string | null
   microcycleNumber: number | null
+  title: string
   occurrenceDate: string
   occurrenceType: 'complaint' | 'trauma' | 'disease' | 'other'
   subjective: string
@@ -114,6 +115,7 @@ export async function registerOccurrence(input: RegisterOccurrenceInput) {
     org_id: input.orgId,
     squad_id: input.squadId,
     microcycle_number: input.microcycleNumber,
+    title: input.title,
     occurrence_date: input.occurrenceDate,
     occurrence_type: input.occurrenceType,
     subjective: input.subjective,
@@ -136,6 +138,7 @@ export async function registerOccurrence(input: RegisterOccurrenceInput) {
 
   revalidatePath('/occurrences')
   revalidatePath('/')
+  revalidatePath(`/athletes/${input.athleteId}`)
 }
 
 export async function resolveOccurrence(
@@ -179,6 +182,7 @@ export async function resolveOccurrence(
 
   revalidatePath('/occurrences')
   revalidatePath('/')
+  revalidatePath(`/athletes/${targetAthleteId}`)
 }
 
 export async function addOccurrenceRecord(input: {
@@ -242,4 +246,5 @@ export async function addOccurrenceRecord(input: {
 
   revalidatePath('/occurrences')
   revalidatePath('/')
+  revalidatePath(`/athletes/${targetAthleteId}`)
 }

@@ -1,0 +1,513 @@
+'use client'
+
+import { useState, useEffect, useMemo } from 'react'
+import { Apple, Plus, Loader2, Edit2, Scale } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { OWNER_ROLE } from '@/lib/roles'
+import {
+  SKINFOLD_FIELDS, PERIMETER_FIELDS,
+} from '@/types/athlete-profile'
+import type {
+  AthleteProfileData, AthleteDailyWeight, NutritionAssessment,
+} from '@/types/athlete-profile'
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function formatDate(dateStr: string | null | undefined) {
+  if (!dateStr) return '—'
+  return new Date(dateStr).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' })
+}
+
+function skinfoldSum(a: NutritionAssessment): number | null {
+  const values = SKINFOLD_FIELDS.map((f) => a[f.key as keyof NutritionAssessment] as number | null)
+  if (values.some((v) => v == null)) return null
+  return (values as number[]).reduce((acc: number, v) => acc + v, 0)
+}
+
+function urineColor(sg: number | null): { label: string; color: string; bg: string } | null {
+  if (sg == null) return null
+  if (sg <= 1.020) return { label: 'Verde',   color: '#16a34a', bg: 'rgba(22,163,74,0.14)' }
+  if (sg <= 1.025) return { label: 'Amarelo', color: '#eab308', bg: 'rgba(234,179,8,0.14)' }
+  if (sg <= 1.030) return { label: 'Laranja', color: '#f97316', bg: 'rgba(249,115,22,0.14)' }
+  return { label: 'Vermelho', color: '#dc2626', bg: 'rgba(220,38,38,0.14)' }
+}
+
+function todayStr() {
+  const d = new Date()
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+}
+
+const inputCls = 'w-full px-2.5 py-1.5 rounded-lg text-xs border focus:outline-none'
+const inputStyle = { background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }
+
+// ── Skinfold sum chart ───────────────────────────────────────────────────────
+
+function SkinfoldChart({ assessments, limit }: { assessments: NutritionAssessment[]; limit: number | null }) {
+  const points = useMemo(() => {
+    return assessments
+      .map((a) => ({ date: a.assessment_date, sum: skinfoldSum(a) }))
+      .filter((p): p is { date: string; sum: number } => p.sum != null)
+      .sort((a, b) => a.date.localeCompare(b.date))
+  }, [assessments])
+
+  if (points.length === 0) return null
+
+  const width = 360
+  const height = 110
+  const chartTop = 8
+  const chartHeight = 70
+  const maxVal = Math.max(limit ?? 0, ...points.map((p) => p.sum)) * 1.1 || 1
+  const step = points.length > 1 ? width / (points.length - 1) : width
+  const xy = points.map((p, i) => ({
+    ...p,
+    x: i * step,
+    y: chartTop + chartHeight - (p.sum / maxVal) * chartHeight,
+  }))
+  const linePath = xy.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+  const limitY = limit != null ? chartTop + chartHeight - (limit / maxVal) * chartHeight : null
+
+  return (
+    <div className="h-[120px]">
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Evolução da soma das pregas cutâneas" className="h-full w-full overflow-visible">
+        {[0, 1, 2].map((l) => {
+          const y = chartTop + (chartHeight / 2) * l
+          return <line key={l} x1="0" x2={width} y1={y} y2={y} stroke="var(--aura-border)" strokeDasharray="3 3" />
+        })}
+        {limitY != null && (
+          <>
+            <line x1="0" x2={width} y1={limitY} y2={limitY} stroke="var(--aura-danger)" strokeWidth="1.5" strokeDasharray="4 3" />
+            <text x={width - 2} y={limitY - 3} textAnchor="end" fontSize="9" fill="var(--aura-danger)">limite {limit}mm</text>
+          </>
+        )}
+        <path d={linePath} fill="none" stroke="var(--aura-green)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+        {xy.map((p) => (
+          <g key={p.date}>
+            <circle cx={p.x} cy={p.y} r={3} fill="var(--aura-green)" />
+            <text x={p.x} y="100" textAnchor="middle" fontSize="9" fill="var(--aura-text3)">{formatDate(p.date)}</text>
+          </g>
+        ))}
+      </svg>
+    </div>
+  )
+}
+
+// ── Daily weight modal ───────────────────────────────────────────────────────
+
+function DailyWeightModal({
+  athleteId, onClose, onSaved,
+}: { athleteId: string; onClose: () => void; onSaved: (w: AthleteDailyWeight) => void }) {
+  const [date,   setDate]   = useState(todayStr)
+  const [weight, setWeight] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error,  setError]  = useState<string | null>(null)
+
+  async function handleSave() {
+    const kg = Number(weight)
+    if (!weight || Number.isNaN(kg) || kg <= 0) { setError('Peso inválido'); return }
+    setSaving(true)
+    setError(null)
+    try {
+      const supabase = createClient()
+      const { data, error: upsertError } = await supabase
+        .from('athlete_daily_weight')
+        .upsert({ athlete_id: athleteId, measurement_date: date, weight_kg: kg }, { onConflict: 'athlete_id,measurement_date' })
+        .select('*')
+        .single()
+      if (upsertError || !data) { setError('Não foi possível guardar. Sem permissão ou erro de ligação.'); return }
+      onSaved(data as AthleteDailyWeight)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="w-full max-w-xs rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>Registar Peso</h3>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Data</label>
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} style={inputStyle} />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Peso (kg)</label>
+            <input type="number" step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="ex: 78.4" className={inputCls} style={inputStyle} />
+          </div>
+        </div>
+        {error && <p className="text-xs" style={{ color: 'var(--aura-danger)' }}>{error}</p>}
+        <div className="flex gap-3">
+          <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--aura-bg3)]" style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }}>Cancelar</button>
+          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--aura-green)', color: '#000' }}>
+            {saving && <Loader2 size={12} className="animate-spin" />} Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Nutrition assessment modal ───────────────────────────────────────────────
+
+function AssessmentModal({
+  athleteId, onClose, onSaved,
+}: { athleteId: string; onClose: () => void; onSaved: (a: NutritionAssessment) => void }) {
+  const [date,   setDate]   = useState(todayStr)
+  const [values, setValues] = useState<Record<string, string>>({})
+  const [urine,  setUrine]  = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error,  setError]  = useState<string | null>(null)
+
+  async function handleSave() {
+    setSaving(true)
+    setError(null)
+    try {
+      const supabase = createClient()
+      const payload: Record<string, unknown> = { athlete_id: athleteId, assessment_date: date }
+      for (const f of [...SKINFOLD_FIELDS, ...PERIMETER_FIELDS]) {
+        const v = values[f.key]
+        payload[f.key] = v === undefined || v === '' ? null : Number(v)
+      }
+      payload.urine_specific_gravity = urine === '' ? null : Number(urine)
+
+      const { data, error: insertError } = await supabase
+        .from('nutrition_assessments')
+        .insert(payload)
+        .select('*')
+        .single()
+      if (insertError || !data) { setError('Não foi possível guardar. Sem permissão ou erro de ligação.'); return }
+      onSaved(data as NutritionAssessment)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>Nova Avaliação Nutricional</h3>
+
+        <div className="space-y-1.5">
+          <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Data</label>
+          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} style={inputStyle} />
+        </div>
+
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--aura-text3)' }}>Pregas Cutâneas (mm)</p>
+          <div className="grid grid-cols-2 gap-2.5">
+            {SKINFOLD_FIELDS.map((f) => (
+              <div key={f.key} className="space-y-1">
+                <label className="text-[10px]" style={{ color: 'var(--aura-text2)' }}>{f.label}</label>
+                <input
+                  type="number" step="0.1"
+                  value={values[f.key] ?? ''}
+                  onChange={(e) => setValues((p) => ({ ...p, [f.key]: e.target.value }))}
+                  className={inputCls} style={inputStyle}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--aura-text3)' }}>Perímetros (cm)</p>
+          <div className="grid grid-cols-2 gap-2.5">
+            {PERIMETER_FIELDS.map((f) => (
+              <div key={f.key} className="space-y-1">
+                <label className="text-[10px]" style={{ color: 'var(--aura-text2)' }}>{f.label}</label>
+                <input
+                  type="number" step="0.1"
+                  value={values[f.key] ?? ''}
+                  onChange={(e) => setValues((p) => ({ ...p, [f.key]: e.target.value }))}
+                  className={inputCls} style={inputStyle}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-[10px]" style={{ color: 'var(--aura-text2)' }}>Densidade específica da urina</label>
+          <input type="number" step="0.001" value={urine} onChange={(e) => setUrine(e.target.value)} placeholder="ex: 1.018" className={inputCls} style={inputStyle} />
+        </div>
+
+        {error && <p className="text-xs" style={{ color: 'var(--aura-danger)' }}>{error}</p>}
+        <div className="flex gap-3">
+          <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--aura-bg3)]" style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }}>Cancelar</button>
+          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--aura-green)', color: '#000' }}>
+            {saving && <Loader2 size={12} className="animate-spin" />} Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
+export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
+  const router = useRouter()
+  const canWeight     = profile.viewerRole === OWNER_ROLE || ['physio', 'masseur', 'nutritionist'].includes(profile.viewerRole)
+  const canAssessment = profile.viewerRole === OWNER_ROLE || profile.viewerRole === 'nutritionist'
+
+  const [weights,     setWeights]     = useState<AthleteDailyWeight[]>([])
+  const [assessments, setAssessments] = useState<NutritionAssessment[]>([])
+  const [loading,      setLoading]      = useState(true)
+  const [showWeightModal,     setShowWeightModal]     = useState(false)
+  const [showAssessmentModal, setShowAssessmentModal] = useState(false)
+  const [limitDraft,   setLimitDraft]   = useState(profile.medicalHistory?.skinfold_limit_mm?.toString() ?? '')
+  const [editingLimit, setEditingLimit] = useState(false)
+  const [savingLimit,  setSavingLimit]  = useState(false)
+  const [limit,        setLimit]        = useState(profile.medicalHistory?.skinfold_limit_mm ?? null)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      setLoading(true)
+      try {
+        const supabase = createClient()
+        const [{ data: w }, { data: a }] = await Promise.all([
+          supabase.from('athlete_daily_weight').select('*').eq('athlete_id', profile.id).order('measurement_date', { ascending: false }).limit(15),
+          supabase.from('nutrition_assessments').select('*').eq('athlete_id', profile.id).order('assessment_date', { ascending: false }).limit(10),
+        ])
+        if (!cancelled) {
+          setWeights((w ?? []) as AthleteDailyWeight[])
+          setAssessments((a ?? []) as NutritionAssessment[])
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [profile.id])
+
+  const weightByDate = useMemo(() => {
+    const m: Record<string, number> = {}
+    for (const w of weights) m[w.measurement_date] = w.weight_kg
+    return m
+  }, [weights])
+
+  async function saveLimit() {
+    setSavingLimit(true)
+    try {
+      const supabase = createClient()
+      const val = limitDraft === '' ? null : Number(limitDraft)
+      const { error } = profile.medicalHistory?.id
+        ? await supabase.from('athletes_medical_history').update({ skinfold_limit_mm: val }).eq('id', profile.medicalHistory.id)
+        : await supabase.from('athletes_medical_history').upsert({ athlete_id: profile.id, skinfold_limit_mm: val }, { onConflict: 'athlete_id' })
+      if (!error) {
+        setLimit(val)
+        setEditingLimit(false)
+        router.refresh()
+      }
+    } finally {
+      setSavingLimit(false)
+    }
+  }
+
+  const height = profile.medicalHistory?.height_cm
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 size={20} className="animate-spin" style={{ color: 'var(--aura-text3)' }} />
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+
+      {/* Peso diário */}
+      <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
+        <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
+          <Scale size={13} style={{ color: 'var(--aura-green)' }} />
+          <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--aura-text2)' }}>
+            Peso Diário{height ? ` · Altura ${height} cm` : ''}
+          </p>
+          {canWeight && (
+            <button type="button" onClick={() => setShowWeightModal(true)} className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--aura-green-bg)]" style={{ color: 'var(--aura-green)' }}>
+              <Plus size={10} /> Registar
+            </button>
+          )}
+        </div>
+        <div className="p-4">
+          {weights.length === 0 ? (
+            <p className="text-xs text-center py-3" style={{ color: 'var(--aura-text3)' }}>Sem pesagens registadas</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <div className="flex gap-2 min-w-max">
+                {weights.map((w) => (
+                  <div key={w.id} className="rounded-lg px-3 py-2 text-center min-w-[72px]" style={{ background: 'var(--aura-bg3)' }}>
+                    <p className="text-sm font-bold font-mono" style={{ color: 'var(--aura-text)' }}>{w.weight_kg}</p>
+                    <p className="text-[9px] mt-0.5" style={{ color: 'var(--aura-text3)' }}>{formatDate(w.measurement_date)}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Limite de soma de pregas */}
+      <div className="rounded-xl border p-3 flex items-center gap-3" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
+        <p className="text-[10px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--aura-text3)' }}>
+          Limite de referência (soma de 8 pregas)
+        </p>
+        {editingLimit ? (
+          <div className="flex items-center gap-2">
+            <input type="number" step="0.1" value={limitDraft} onChange={(e) => setLimitDraft(e.target.value)} className="w-20 px-2 py-1 rounded-lg text-xs border" style={inputStyle} />
+            <span className="text-xs" style={{ color: 'var(--aura-text3)' }}>mm</span>
+            <button type="button" onClick={saveLimit} disabled={savingLimit} className="text-[10px] font-bold px-2 py-1 rounded-lg" style={{ background: 'var(--aura-green)', color: '#000' }}>
+              {savingLimit ? <Loader2 size={10} className="animate-spin" /> : 'OK'}
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold font-mono" style={{ color: 'var(--aura-text)' }}>{limit != null ? `${limit} mm` : '—'}</span>
+            {canAssessment && (
+              <button type="button" onClick={() => { setLimitDraft(limit?.toString() ?? ''); setEditingLimit(true) }} className="p-1 rounded hover:bg-white/10">
+                <Edit2 size={11} style={{ color: 'var(--aura-text3)' }} />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Evolução */}
+      {assessments.length > 0 && (
+        <div className="rounded-xl border p-4" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
+          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--aura-text3)' }}>
+            Evolução — Soma das 8 Pregas
+          </p>
+          <SkinfoldChart assessments={assessments} limit={limit} />
+        </div>
+      )}
+
+      {/* Avaliações — tabela lado a lado por data */}
+      <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
+        <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
+          <Apple size={13} style={{ color: 'var(--aura-green)' }} />
+          <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--aura-text2)' }}>
+            Avaliações Antropométricas
+          </p>
+          {canAssessment && (
+            <button type="button" onClick={() => setShowAssessmentModal(true)} className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--aura-green-bg)]" style={{ color: 'var(--aura-green)' }}>
+              <Plus size={10} /> Nova avaliação
+            </button>
+          )}
+        </div>
+        <div className="p-4">
+          {assessments.length === 0 ? (
+            <p className="text-xs text-center py-3" style={{ color: 'var(--aura-text3)' }}>Sem avaliações registadas</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="text-xs border-collapse min-w-max">
+                <thead>
+                  <tr>
+                    <th className="text-left py-1.5 pr-4 sticky left-0" style={{ color: 'var(--aura-text3)', background: 'var(--aura-bg2)' }}>Data</th>
+                    {assessments.map((a) => (
+                      <th key={a.id} className="text-center px-3 py-1.5 font-semibold" style={{ color: 'var(--aura-text)' }}>{formatDate(a.assessment_date)}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="py-1 pr-4 sticky left-0" style={{ color: 'var(--aura-text3)', background: 'var(--aura-bg2)' }}>Peso (kg)</td>
+                    {assessments.map((a) => (
+                      <td key={a.id} className="text-center px-3 py-1" style={{ color: 'var(--aura-text2)' }}>
+                        {weightByDate[a.assessment_date] ?? '—'}
+                      </td>
+                    ))}
+                  </tr>
+                  {height != null && (
+                    <tr>
+                      <td className="py-1 pr-4 sticky left-0" style={{ color: 'var(--aura-text3)', background: 'var(--aura-bg2)' }}>Altura (cm)</td>
+                      {assessments.map((a) => (
+                        <td key={a.id} className="text-center px-3 py-1" style={{ color: 'var(--aura-text2)' }}>{height}</td>
+                      ))}
+                    </tr>
+                  )}
+                  {SKINFOLD_FIELDS.map((f) => (
+                    <tr key={f.key}>
+                      <td className="py-1 pr-4 sticky left-0" style={{ color: 'var(--aura-text3)', background: 'var(--aura-bg2)' }}>{f.label} (mm)</td>
+                      {assessments.map((a) => (
+                        <td key={a.id} className="text-center px-3 py-1" style={{ color: 'var(--aura-text2)' }}>
+                          {(a[f.key as keyof NutritionAssessment] as number | null) ?? '—'}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                  <tr>
+                    <td className="py-1.5 pr-4 sticky left-0 font-semibold" style={{ color: 'var(--aura-text)', background: 'var(--aura-bg2)' }}>Soma pregas (mm)</td>
+                    {assessments.map((a) => {
+                      const sum = skinfoldSum(a)
+                      const over = sum != null && limit != null && sum > limit
+                      return (
+                        <td key={a.id} className="text-center px-3 py-1.5 font-bold font-mono" style={{ color: sum == null ? 'var(--aura-text3)' : over ? 'var(--aura-danger)' : 'var(--aura-green)' }}>
+                          {sum ?? '—'}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                  {PERIMETER_FIELDS.map((f) => (
+                    <tr key={f.key}>
+                      <td className="py-1 pr-4 sticky left-0" style={{ color: 'var(--aura-text3)', background: 'var(--aura-bg2)' }}>{f.label} (cm)</td>
+                      {assessments.map((a) => (
+                        <td key={a.id} className="text-center px-3 py-1" style={{ color: 'var(--aura-text2)' }}>
+                          {(a[f.key as keyof NutritionAssessment] as number | null) ?? '—'}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                  <tr>
+                    <td className="py-1.5 pr-4 sticky left-0" style={{ color: 'var(--aura-text3)', background: 'var(--aura-bg2)' }}>Densidade urinária</td>
+                    {assessments.map((a) => {
+                      const cfg = urineColor(a.urine_specific_gravity)
+                      return (
+                        <td key={a.id} className="text-center px-3 py-1.5">
+                          {a.urine_specific_gravity == null ? (
+                            <span style={{ color: 'var(--aura-text3)' }}>—</span>
+                          ) : (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: cfg?.bg, color: cfg?.color }}>
+                              {a.urine_specific_gravity}
+                            </span>
+                          )}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {showWeightModal && (
+        <DailyWeightModal
+          athleteId={profile.id}
+          onClose={() => setShowWeightModal(false)}
+          onSaved={(w) => {
+            setWeights((prev) => [w, ...prev.filter((x) => x.measurement_date !== w.measurement_date)].sort((a, b) => b.measurement_date.localeCompare(a.measurement_date)))
+            setShowWeightModal(false)
+          }}
+        />
+      )}
+      {showAssessmentModal && (
+        <AssessmentModal
+          athleteId={profile.id}
+          onClose={() => setShowAssessmentModal(false)}
+          onSaved={(a) => {
+            setAssessments((prev) => [a, ...prev].sort((x, y) => y.assessment_date.localeCompare(x.assessment_date)))
+            setShowAssessmentModal(false)
+          }}
+        />
+      )}
+    </div>
+  )
+}

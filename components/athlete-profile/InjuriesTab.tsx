@@ -4,9 +4,8 @@ import { useState } from 'react'
 import { AlertTriangle, CheckCircle2, Clock, Brain, Shield, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import type { AthleteProfileData, InjuryEventSummary, Scat6Assessment, BodyRegion, BodyZoneInfo } from '@/types/athlete-profile'
+import type { AthleteProfileData, InjuryEventSummary, Scat6Assessment } from '@/types/athlete-profile'
 import { RTP_STAGES } from '@/types/athlete-profile'
-import { BodyMap } from './BodyMap'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -214,35 +213,6 @@ function ConcussionSection({ scat6 }: { scat6: Scat6Assessment }) {
   )
 }
 
-// ── Body Map helpers (moved from OverviewTab) ─────────────────────────────────
-
-function rankStatus(s: 'clear' | 'recent' | 'active') {
-  return s === 'active' ? 2 : s === 'recent' ? 1 : 0
-}
-
-function inferRegion(location: string | null): BodyRegion | null {
-  if (!location) return null
-  const l = location.toLowerCase()
-  if (l.includes('head') || l.includes('cabeça') || l.includes('cranio')) return 'head'
-  if (l.includes('neck') || l.includes('pescoço') || l.includes('cervical')) return 'neck'
-  if (l.includes('shoulder') || l.includes('ombro')) return 'shoulder'
-  if (l.includes('chest') || l.includes('tórax') || l.includes('peit')) return 'chest'
-  if (l.includes('abdomen') || l.includes('abdómen') || l.includes('abdominal')) return 'abdomen'
-  if (l.includes('hip') || l.includes('anca') || l.includes('inguinal')) return 'hip'
-  if (l.includes('hamstring') || l.includes('isquio') || l.includes('biceps fem')) return 'hamstring'
-  if (l.includes('thigh') || l.includes('coxa') || l.includes('quadric')) return 'thigh'
-  if (l.includes('knee') || l.includes('joelho') || l.includes('patel')) return 'knee'
-  if (l.includes('calf') || l.includes('gémeo') || l.includes('gastro') || l.includes('soleo')) return 'calf'
-  if (l.includes('ankle') || l.includes('tornozelo') || l.includes('talo')) return 'ankle'
-  if (l.includes('foot') || l.includes('pé') || l.includes('plantar')) return 'foot'
-  if (l.includes('lower back') || l.includes('lombar') || l.includes('coluna')) return 'lower_back'
-  if (l.includes('upper back') || l.includes('dorsal') || l.includes('costas')) return 'upper_back'
-  if (l.includes('glute') || l.includes('glúteo') || l.includes('piri')) return 'glute'
-  if (l.includes('elbow') || l.includes('cotovelo')) return 'elbow'
-  if (l.includes('wrist') || l.includes('pulso')) return 'wrist'
-  return null
-}
-
 // ── Empty state ───────────────────────────────────────────────────────────────
 
 function EmptyInjuries() {
@@ -261,39 +231,8 @@ export function InjuriesTab({ profile }: { profile: AthleteProfileData }) {
   const active   = profile.injuryEvents.filter((i) => i.is_active)
   const resolved = profile.injuryEvents.filter((i) => !i.is_active)
 
-  // Build zone map for body map
-  const zoneMap = new Map<BodyRegion, BodyZoneInfo>()
-  const now = new Date()
-  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate())
-  for (const inj of profile.injuryEvents) {
-    const region = inferRegion(inj.location)
-    if (!region) continue
-    const existing = zoneMap.get(region)
-    const injDate = new Date(inj.injury_date)
-    const isActive = inj.is_active
-    const isRecent = !isActive && injDate >= sixMonthsAgo
-    const status = isActive ? 'active' : isRecent ? 'recent' : 'clear'
-    if (!existing || rankStatus(status) > rankStatus(existing.status)) {
-      zoneMap.set(region, { region, status, injuries: [] })
-    }
-    zoneMap.get(region)!.injuries.push(inj)
-  }
-
   return (
     <div className="space-y-6">
-      {/* Body Map */}
-      {profile.injuryEvents.length > 0 && (
-        <div
-          className="rounded-xl border p-4"
-          style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
-        >
-          <p className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--aura-text3)' }}>
-            Mapa Corporal
-          </p>
-          <BodyMap zoneMap={zoneMap} />
-        </div>
-      )}
-
       {/* Active concussion */}
       {profile.activeConcussion && (
         <ConcussionSection scat6={profile.activeConcussion} />

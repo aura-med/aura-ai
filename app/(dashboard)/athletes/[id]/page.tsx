@@ -11,9 +11,12 @@ import { AthleteProfileClient } from '@/components/athlete-profile/AthleteProfil
 import { getLatestRecommendations } from '@/lib/actions/recommendations'
 import { getViewerContext } from '@/lib/data/auth'
 import type { UserRole } from '@/types'
-import type { AthleteProfileData, TabId, InjuryEventSummary, ActiveDiagnosis, ActiveOccurrence } from '@/types/athlete-profile'
+import type { AthleteProfileData, TabId, InjuryEventSummary, ActiveDiagnosis, ActiveOccurrence, AthleteAnamnesis } from '@/types/athlete-profile'
 
-const VALID_TABS: TabId[] = ['overview', 'medical', 'injuries', 'treatments', 'documents']
+const VALID_TABS: TabId[] = [
+  'overview', 'anamnesis', 'medical', 'injuries', 'treatments',
+  'nutrition', 'training', 'documents', 'recommendations',
+]
 
 function parseTab(raw: string | string[] | undefined): TabId {
   const s = Array.isArray(raw) ? raw[0] : raw
@@ -96,15 +99,6 @@ async function AthleteDetailContent({
     .eq('athlete_id', id)
     .maybeSingle()
 
-  // ── Latest EMD ─────────────────────────────────────────────────────────────
-  const { data: latestEmd } = await supabase
-    .from('emd_submissions')
-    .select('*')
-    .eq('athlete_id', id)
-    .order('submission_date', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-
   // ── Baseline SCAT-6 ────────────────────────────────────────────────────────
   const { data: baselineScat6 } = await supabase
     .from('scat6_assessments')
@@ -129,7 +123,11 @@ async function AthleteDetailContent({
     .maybeSingle()
 
   // ── Active diagnoses + occurrences (clinical module) ─────────────────────
-  const [{ data: activeDiagnoses }, { data: activeOccurrences }] = await Promise.all([
+  // Occurrences carry the full SOAP + title so the Overview tab can expand a
+  // row inline instead of navigating away; a short window of recently-resolved
+  // rows is fetched separately for the Overview's compact history.
+  const occurrenceColumns = 'id, title, occurrence_date, occurrence_type, availability_status, subjective, objective, assessment, plan, clinician_name, is_resolved, resolved_at'
+  const [{ data: activeDiagnoses }, { data: activeOccurrences }, { data: recentResolvedOccurrences }, { data: anamnesis }] = await Promise.all([
     supabase
       .from('diagnoses')
       .select('id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, diagnosed_at, is_resolved')
@@ -138,10 +136,24 @@ async function AthleteDetailContent({
       .order('diagnosed_at', { ascending: false }),
     supabase
       .from('occurrences')
-      .select('id, occurrence_date, occurrence_type, availability_status, subjective')
+      .select(occurrenceColumns)
       .eq('athlete_id', id)
       .eq('is_resolved', false)
       .order('occurrence_date', { ascending: false }),
+    supabase
+      .from('occurrences')
+      .select(occurrenceColumns)
+      .eq('athlete_id', id)
+      .eq('is_resolved', true)
+      .order('resolved_at', { ascending: false })
+      .limit(5),
+    supabase
+      .from('athlete_anamnesis')
+      .select('*')
+      .eq('athlete_id', id)
+      .order('season', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ])
 
   // ── Document + consultation counts ────────────────────────────────────────
@@ -259,12 +271,13 @@ async function AthleteDetailContent({
     age,
     bmi,
     medicalHistory:    medicalHistory ?? null,
-    latestEmd:         latestEmd ?? null,
+    anamnesis:         (anamnesis ?? null) as AthleteAnamnesis | null,
     baselineScat6:     baselineScat6 ?? null,
     activeConcussion:  activeConcussion ?? null,
     injuryEvents,
     activeDiagnoses:   (activeDiagnoses ?? []) as ActiveDiagnosis[],
     activeOccurrences: (activeOccurrences ?? []) as ActiveOccurrence[],
+    recentResolvedOccurrences: (recentResolvedOccurrences ?? []) as ActiveOccurrence[],
     documentCount:     documentCount ?? 0,
     consultationCount: consultationCount ?? 0,
     recommendations,

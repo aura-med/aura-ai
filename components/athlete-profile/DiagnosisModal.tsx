@@ -213,7 +213,7 @@ export function DiagnosisModal({ athleteId, occurrences, onClose, onSaved }: Dia
               <option value="">— Nenhuma —</option>
               {occurrences.map((o) => (
                 <option key={o.id} value={o.id}>
-                  {o.occurrence_date} · {(o.subjective ?? o.occurrence_type ?? '—').slice(0, 40)}
+                  {o.occurrence_date} · {(o.title ?? o.subjective ?? o.occurrence_type ?? '—').slice(0, 40)}
                 </option>
               ))}
             </select>

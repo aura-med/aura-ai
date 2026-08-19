@@ -41,6 +41,7 @@ interface OccurrenceRecord {
 interface Occurrence {
   id: string
   athlete_id: string
+  title: string | null
   occurrence_date: string
   occurrence_type: string
   subjective: string | null
@@ -141,9 +142,11 @@ function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurre
       >
         <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={36} />
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--aura-text)' }}>{a.name}</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--aura-text)' }}>
+            {occ.title || a.name}
+          </div>
           <div style={{ fontSize: 11, color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
-            {a.position ?? '—'} · {typeLabel} · {occ.occurrence_date}
+            {occ.title ? `${a.name} · ` : ''}{a.position ?? '—'} · {typeLabel} · {occ.occurrence_date}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
@@ -317,13 +320,17 @@ function RegisterModal({
   const [isPending, startTransition] = useTransition()
   const [form, setForm] = useState({
     athleteId: athletes[0]?.id ?? '',
+    title: '',
     occurrenceDate: todayStr(),
     occurrenceType: 'complaint' as 'complaint' | 'trauma' | 'disease' | 'other',
     observations: '',
     availabilityStatus: 'evaluation' as AthleteAvailabilityStatus,
   })
+  const [error, setError] = useState<string | null>(null)
 
   function handleSubmit() {
+    if (!form.title.trim()) { setError('Título obrigatório'); return }
+    setError(null)
     startTransition(async () => {
       // Derive the microcycle from the chosen occurrence date, not the page's
       // today value, so back/future-dated occurrences classify correctly.
@@ -333,6 +340,7 @@ function RegisterModal({
         orgId,
         squadId,
         microcycleNumber,
+        title: form.title.trim(),
         occurrenceDate: form.occurrenceDate,
         occurrenceType: form.occurrenceType,
         subjective: '',
@@ -433,6 +441,23 @@ function RegisterModal({
           </div>
         </div>
 
+        {/* Título */}
+        <div style={{ marginBottom: 10 }}>
+          <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
+            Título
+          </label>
+          <input
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+            placeholder="ex: Dor no gémeo direito"
+            style={{
+              width: '100%', borderRadius: 6, padding: '7px 10px', fontSize: 12,
+              background: 'var(--aura-bg3)', border: '1px solid var(--aura-border)',
+              color: 'var(--aura-text)', fontFamily: 'inherit',
+            }}
+          />
+        </div>
+
         {/* Observações */}
         <div style={{ marginBottom: 10 }}>
           <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
@@ -450,6 +475,8 @@ function RegisterModal({
             }}
           />
         </div>
+
+        {error && <p style={{ fontSize: 11, color: 'var(--aura-danger)', marginBottom: 8 }}>{error}</p>}
 
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
           <button

@@ -2,11 +2,11 @@
 
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
-import { AlertTriangle, Plus, CheckCircle2, Loader2 } from 'lucide-react'
+import { AlertTriangle, Plus, CheckCircle2, Loader2, ChevronDown, ChevronRight, Clock } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { resolveDiagnosis } from '@/lib/actions/clinical'
 import { useRouter } from 'next/navigation'
-import type { AthleteProfileData, InjuryEventSummary, ActiveDiagnosis } from '@/types/athlete-profile'
+import type { AthleteProfileData, InjuryEventSummary, ActiveDiagnosis, ActiveOccurrence } from '@/types/athlete-profile'
 
 const DiagnosisModal = dynamic(() => import('./DiagnosisModal').then((m) => m.DiagnosisModal))
 
@@ -134,17 +134,105 @@ function AllergiesHighlight({ allergies }: { allergies: string | null | undefine
   )
 }
 
-function ActiveOccurrencesAlert({ count }: { count: number }) {
-  if (count === 0) return null
+function formatDate(dateStr: string | null | undefined) {
+  if (!dateStr) return '—'
+  return new Date(dateStr).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+// ── Occurrences Summary (compact, inline-expandable) ──────────────────────────
+
+function OccurrenceSummaryRow({ occ }: { occ: ActiveOccurrence }) {
+  const [open, setOpen] = useState(false)
+  const cfg = DIAG_STATUS_CONFIG[occ.availability_status ?? 'evaluation'] ?? DIAG_STATUS_CONFIG.evaluation
+  const hasDetail = occ.subjective || occ.objective || occ.assessment || occ.plan
+  const title = occ.title || occ.occurrence_type || 'Ocorrência'
+
   return (
-    <div
-      className="rounded-xl border p-3 flex items-start gap-3"
-      style={{ background: 'var(--aura-warn-bg)', borderColor: 'var(--aura-warn)' }}
-    >
-      <AlertTriangle size={15} className="shrink-0 mt-0.5" style={{ color: 'var(--aura-warn)' }} />
-      <p className="text-xs font-semibold" style={{ color: 'var(--aura-warn)' }}>
-        {count} ocorrência{count > 1 ? 's' : ''} ativa{count > 1 ? 's' : ''} em acompanhamento
-      </p>
+    <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--aura-border)' }}>
+      <button
+        type="button"
+        className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-[var(--aura-bg3)]"
+        onClick={() => setOpen((p) => !p)}
+      >
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium truncate" style={{ color: 'var(--aura-text)' }}>{title}</p>
+          <p className="text-[10px] mt-0.5 flex items-center gap-1" style={{ color: 'var(--aura-text3)' }}>
+            <Clock size={9} />
+            {formatDate(occ.occurrence_date)}
+            {occ.is_resolved && occ.resolved_at ? ` → resolvida ${formatDate(occ.resolved_at)}` : ''}
+          </p>
+        </div>
+        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0" style={{ background: cfg.bg, color: cfg.color }}>
+          {cfg.label}
+        </span>
+        {hasDetail
+          ? open
+            ? <ChevronDown size={13} style={{ color: 'var(--aura-text3)' }} />
+            : <ChevronRight size={13} style={{ color: 'var(--aura-text3)' }} />
+          : null
+        }
+      </button>
+      {open && hasDetail && (
+        <div className="border-t px-3 py-3 space-y-2" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
+          {[
+            { label: 'S — Subjetivo', value: occ.subjective },
+            { label: 'O — Objetivo',  value: occ.objective  },
+            { label: 'A — Avaliação', value: occ.assessment },
+            { label: 'P — Plano',     value: occ.plan       },
+          ].map(({ label, value }) => value ? (
+            <div key={label}>
+              <p className="text-[9px] font-bold uppercase tracking-wider mb-0.5" style={{ color: 'var(--aura-text3)' }}>{label}</p>
+              <p className="text-xs whitespace-pre-wrap" style={{ color: 'var(--aura-text2)' }}>{value}</p>
+            </div>
+          ) : null)}
+          {occ.clinician_name && (
+            <p className="text-[10px]" style={{ color: 'var(--aura-text3)' }}>Registado por {occ.clinician_name}</p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function OccurrencesSummarySection({
+  active,
+  recentResolved,
+}: {
+  active: ActiveOccurrence[]
+  recentResolved: ActiveOccurrence[]
+}) {
+  if (active.length === 0 && recentResolved.length === 0) return null
+  return (
+    <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
+      <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
+        <AlertTriangle size={13} style={{ color: 'var(--aura-warn)' }} />
+        <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--aura-text2)' }}>
+          Ocorrências
+        </p>
+        {active.length > 0 && (
+          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--aura-warn-bg)', color: 'var(--aura-warn)' }}>
+            {active.length} ativa{active.length > 1 ? 's' : ''}
+          </span>
+        )}
+      </div>
+      <div className="p-4 space-y-3">
+        {active.length > 0 && (
+          <div className="space-y-2">
+            {active.map((occ) => <OccurrenceSummaryRow key={occ.id} occ={occ} />)}
+          </div>
+        )}
+        {recentResolved.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+              Histórico recente
+            </p>
+            {recentResolved.map((occ) => <OccurrenceSummaryRow key={occ.id} occ={occ} />)}
+          </div>
+        )}
+        {active.length === 0 && recentResolved.length === 0 && (
+          <p className="text-xs text-center py-2" style={{ color: 'var(--aura-text3)' }}>Sem ocorrências</p>
+        )}
+      </div>
     </div>
   )
 }
@@ -362,7 +450,10 @@ export function OverviewTab({ profile }: { profile: AthleteProfileData }) {
 
       {/* Alerts */}
       <AllergiesHighlight allergies={profile.medicalHistory?.allergies} />
-      <ActiveOccurrencesAlert count={profile.activeOccurrences.length} />
+      <OccurrencesSummarySection
+        active={profile.activeOccurrences}
+        recentResolved={profile.recentResolvedOccurrences}
+      />
 
       {/* Active diagnoses */}
       <ActiveDiagnosesSection

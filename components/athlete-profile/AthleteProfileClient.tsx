@@ -37,6 +37,18 @@ const TreatmentsTab = dynamic(() => import('./TreatmentsTab').then((mod) => mod.
 const DocumentsTab = dynamic(() => import('./DocumentsTab').then((mod) => mod.DocumentsTab), {
   loading: () => <TabSkeleton />,
 })
+const AnamnesisTab = dynamic(() => import('./AnamnesisTab').then((mod) => mod.AnamnesisTab), {
+  loading: () => <TabSkeleton />,
+})
+const NutritionTab = dynamic(() => import('./NutritionTab').then((mod) => mod.NutritionTab), {
+  loading: () => <TabSkeleton />,
+})
+const TrainingPlanTab = dynamic(() => import('./TrainingPlanTab').then((mod) => mod.TrainingPlanTab), {
+  loading: () => <TabSkeleton />,
+})
+const RecommendationsTab = dynamic(() => import('./RecommendationsTab').then((mod) => mod.RecommendationsTab), {
+  loading: () => <TabSkeleton />,
+})
 
 // ── Athlete header with photo upload ─────────────────────────────────────────
 
@@ -176,10 +188,14 @@ function AthleteHeader({ profile }: { profile: AthleteProfileData }) {
 function TabContent({ tab, profile }: { tab: TabId; profile: AthleteProfileData }) {
   switch (tab) {
     case 'overview':         return <OverviewTab        profile={profile} />
+    case 'anamnesis':        return <AnamnesisTab       profile={profile} />
     case 'medical':          return <MedicalTab         profile={profile} />
     case 'injuries':         return <InjuriesTab        profile={profile} />
     case 'treatments':       return <TreatmentsTab      profile={profile} />
+    case 'nutrition':        return <NutritionTab       profile={profile} />
+    case 'training':         return <TrainingPlanTab    profile={profile} />
     case 'documents':        return <DocumentsTab       profile={profile} />
+    case 'recommendations':  return <RecommendationsTab profile={profile} />
     default:                 return <OverviewTab        profile={profile} />
   }
 }

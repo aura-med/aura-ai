@@ -337,8 +337,8 @@ function SupplementModal({
 
 export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
   const router = useRouter()
-  const canWeight     = profile.viewerRole === OWNER_ROLE || ['physio', 'masseur', 'nutritionist'].includes(profile.viewerRole)
-  const canAssessment = profile.viewerRole === OWNER_ROLE || profile.viewerRole === 'nutritionist'
+  const canWeight     = profile.viewerRole === OWNER_ROLE || ['doctor', 'physio', 'masseur', 'nutritionist'].includes(profile.viewerRole)
+  const canAssessment = profile.viewerRole === OWNER_ROLE || ['doctor', 'nutritionist'].includes(profile.viewerRole)
 
   const [weights,     setWeights]     = useState<AthleteDailyWeight[]>([])
   const [assessments, setAssessments] = useState<NutritionAssessment[]>([])

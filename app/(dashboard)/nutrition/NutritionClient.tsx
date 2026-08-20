@@ -278,8 +278,8 @@ export function NutritionClient({
   assessments: TeamNutritionAssessment[]
 }) {
   const router = useRouter()
-  const canWeight     = isOwner(role as UserRole) || ['physio', 'masseur', 'nutritionist'].includes(role ?? '')
-  const canAssessment = isOwner(role as UserRole) || role === 'nutritionist'
+  const canWeight     = isOwner(role as UserRole) || ['doctor', 'physio', 'masseur', 'nutritionist'].includes(role ?? '')
+  const canAssessment = isOwner(role as UserRole) || ['doctor', 'nutritionist'].includes(role ?? '')
 
   const [weightItems,     setWeightItems]     = useState(weights)
   const [assessmentItems, setAssessmentItems] = useState(assessments)

@@ -22,7 +22,7 @@ function formatBytes(bytes: number | null) {
 
 export function TrainingPlanTab({ profile }: { profile: AthleteProfileData }) {
   const router = useRouter()
-  const canUpload = profile.viewerRole === OWNER_ROLE || ['coach', 'fitness_coach', 'physio'].includes(profile.viewerRole)
+  const canUpload = profile.viewerRole === OWNER_ROLE || ['coach', 'fitness_coach', 'physio', 'doctor'].includes(profile.viewerRole)
 
   const [plan,       setPlan]       = useState<TrainingPlan | null>(null)
   const [loading,    setLoading]    = useState(true)

@@ -258,8 +258,9 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
           )}
 
           {/* Semáforo: disponível → RTP → indisponível, por ordem crescente de restrição.
-              Full-width stacked bands, matching the "A Reavaliar" strip's width above. */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              Fixed 3-column row spanning the full page width (same width as the
+              "A Reavaliar" strip above), rather than auto-fill leaving slack. */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
             {TRAFFIC_LIGHT_ORDER.map((status) => {
               const cfg = STATUS_CONFIG[status]
               const group = byStatus[status]

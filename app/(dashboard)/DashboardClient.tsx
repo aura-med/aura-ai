@@ -48,7 +48,7 @@ const STATUS_CONFIG: Record<AthleteAvailabilityStatus, {
   available:   { label: 'Disponível',    color: 'var(--aura-green)',  bg: 'rgba(0,229,160,0.06)',   border: 'rgba(0,229,160,0.2)',   dot: '#00e5a0', priority: 4 },
   evaluation:  { label: 'Em Avaliação',  color: 'var(--aura-warn)',   bg: 'rgba(246,173,85,0.06)',  border: 'rgba(246,173,85,0.25)', dot: '#f6ad55', priority: 2 },
   unavailable: { label: 'Indisponível',  color: 'var(--aura-danger)', bg: 'rgba(255,77,109,0.06)',  border: 'rgba(255,77,109,0.2)',  dot: '#ff4d6d', priority: 1 },
-  rtp:         { label: 'Em RTP',        color: 'var(--aura-purple)', bg: 'rgba(180,141,252,0.06)', border: 'rgba(180,141,252,0.2)', dot: '#b48dfc', priority: 3 },
+  rtp:         { label: 'Return To Play', color: 'var(--aura-purple)', bg: 'rgba(180,141,252,0.06)', border: 'rgba(180,141,252,0.2)', dot: '#b48dfc', priority: 3 },
 }
 
 const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 'rtp', 'available']
@@ -257,8 +257,9 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
             </div>
           )}
 
-          {/* Semáforo: disponível → RTP → indisponível, por ordem crescente de restrição */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+          {/* Semáforo: disponível → RTP → indisponível, por ordem crescente de restrição.
+              Full-width stacked bands, matching the "A Reavaliar" strip's width above. */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {TRAFFIC_LIGHT_ORDER.map((status) => {
               const cfg = STATUS_CONFIG[status]
               const group = byStatus[status]

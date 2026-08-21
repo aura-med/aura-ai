@@ -29,11 +29,14 @@ DECLARE
   v_squad uuid := NULL;
 BEGIN
   IF v_squad IS NULL THEN
+    -- The org has more than one squad (e.g. "Equipa Principal" + "Sub23").
+    -- This fixture data is first-team only, so prefer a squad literally named
+    -- like "principal" over just picking whichever squad was created first.
     SELECT s.id INTO v_squad
     FROM squads s
     LEFT JOIN organizations o ON o.id = s.org_id
     WHERE s.name ILIKE '%estrela%' OR o.name ILIKE '%estrela%'
-    ORDER BY s.created_at
+    ORDER BY (s.name ILIKE '%principal%') DESC, s.created_at
     LIMIT 1;
   END IF;
 

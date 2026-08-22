@@ -139,7 +139,7 @@ export function PassportClient({ dto }: { dto: PassportPageDTO }) {
             <div className="ctitle">Simulacao - Novo clube recebe passaporte</div>
             <div style={{ background: 'var(--bg3)', borderRadius: 8, padding: 14, marginBottom: 12 }}>
               <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text3)', letterSpacing: 1.5, marginBottom: 10 }}>
-                CENARIO: TRANSFERENCIA PARA CLUBE CLIENTE AURA
+                CENARIO: TRANSFERENCIA PARA CLUBE CLIENTE SOPHI
               </div>
               <button
                 onClick={() => setShared((state) => ({ ...state, [athlete.id]: !isShared }))}
@@ -161,7 +161,7 @@ export function PassportClient({ dto }: { dto: PassportPageDTO }) {
                 </div>
               ) : (
                 <div style={{ background: 'var(--bg4)', borderRadius: 8, padding: 12, fontSize: 12, color: 'var(--text3)' }}>
-                  Sem Aura: o novo clube comeca do zero. Nenhum historial, nenhum baseline.
+                  Sem Sophi: o novo clube comeca do zero. Nenhum historial, nenhum baseline.
                 </div>
               )}
             </div>

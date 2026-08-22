@@ -67,7 +67,7 @@ export function OsiicsMultiSelect({
                 className="inline-flex items-center gap-1.5 pl-2 pr-1 py-0.5 rounded-full text-xs"
                 style={{
                   background: 'rgba(0,229,160,0.1)',
-                  color: 'var(--aura-green)',
+                  color: 'var(--sophi-green)',
                   border: '1px solid rgba(0,229,160,0.25)',
                 }}
               >
@@ -75,7 +75,7 @@ export function OsiicsMultiSelect({
                 {entry && (
                   <span
                     className="font-normal truncate max-w-[140px]"
-                    style={{ color: 'var(--aura-text2)' }}
+                    style={{ color: 'var(--sophi-text2)' }}
                   >
                     {entry.diagnosis}
                   </span>
@@ -96,9 +96,9 @@ export function OsiicsMultiSelect({
       {/* Search input */}
       <div
         className="flex items-center gap-2 rounded-lg border px-3 py-2"
-        style={{ borderColor: 'var(--aura-border2)', background: 'var(--aura-bg3)' }}
+        style={{ borderColor: 'var(--sophi-border2)', background: 'var(--sophi-bg3)' }}
       >
-        <Search size={13} style={{ color: 'var(--aura-text3)', flexShrink: 0 }} />
+        <Search size={13} style={{ color: 'var(--sophi-text3)', flexShrink: 0 }} />
         <input
           value={query}
           onChange={(e) => {
@@ -108,12 +108,12 @@ export function OsiicsMultiSelect({
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
           className="flex-1 bg-transparent text-sm outline-none"
-          style={{ color: 'var(--aura-text)' }}
+          style={{ color: 'var(--sophi-text)' }}
         />
         {selected.length > 0 && (
           <span
             className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0"
-            style={{ background: 'var(--aura-bg4)', color: 'var(--aura-text3)' }}
+            style={{ background: 'var(--sophi-bg4)', color: 'var(--sophi-text3)' }}
           >
             {selected.length} selecionado{selected.length !== 1 ? 's' : ''}
           </span>
@@ -125,13 +125,13 @@ export function OsiicsMultiSelect({
         <div
           className="absolute z-50 top-full mt-1 w-full rounded-lg border overflow-y-auto shadow-lg"
           style={{
-            background: 'var(--aura-bg2)',
-            borderColor: 'var(--aura-border)',
+            background: 'var(--sophi-bg2)',
+            borderColor: 'var(--sophi-border)',
             maxHeight: '220px',
           }}
         >
           {filtered.length === 0 ? (
-            <p className="px-3 py-3 text-xs" style={{ color: 'var(--aura-text3)' }}>
+            <p className="px-3 py-3 text-xs" style={{ color: 'var(--sophi-text3)' }}>
               Nenhum código encontrado.
             </p>
           ) : (
@@ -140,21 +140,21 @@ export function OsiicsMultiSelect({
                 key={c.code}
                 type="button"
                 onClick={() => add(c.code)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-[var(--aura-bg3)] transition-colors border-b last:border-b-0"
-                style={{ borderColor: 'var(--aura-border)' }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-[var(--sophi-bg3)] transition-colors border-b last:border-b-0"
+                style={{ borderColor: 'var(--sophi-border)' }}
               >
                 <span
                   className="font-mono font-bold text-xs shrink-0"
-                  style={{ color: 'var(--aura-green)' }}
+                  style={{ color: 'var(--sophi-green)' }}
                 >
                   {c.code}
                 </span>
-                <span className="flex-1 text-xs truncate" style={{ color: 'var(--aura-text2)' }}>
+                <span className="flex-1 text-xs truncate" style={{ color: 'var(--sophi-text2)' }}>
                   {c.diagnosis}
                 </span>
                 <span
                   className="text-[10px] shrink-0 px-1.5 py-0.5 rounded"
-                  style={{ background: 'var(--aura-bg4)', color: 'var(--aura-text3)' }}
+                  style={{ background: 'var(--sophi-bg4)', color: 'var(--sophi-text3)' }}
                 >
                   {c.body_region}
                 </span>

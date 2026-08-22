@@ -67,13 +67,13 @@ export function getNotificationIcon(type: NotificationType): string {
 
 export function getNotificationColor(type: NotificationType): string {
   const colors: Record<NotificationType, string> = {
-    score_critical: 'var(--aura-danger)',
-    score_high: 'var(--aura-warn)',
-    injury_new: 'var(--aura-danger)',
-    rehab_update: 'var(--aura-blue)',
-    checkin_missing: 'var(--aura-warn)',
-    rtp_ready: 'var(--aura-green)',
-    readiness_drop: 'var(--aura-warn)',
+    score_critical: 'var(--sophi-danger)',
+    score_high: 'var(--sophi-warn)',
+    injury_new: 'var(--sophi-danger)',
+    rehab_update: 'var(--sophi-blue)',
+    checkin_missing: 'var(--sophi-warn)',
+    rtp_ready: 'var(--sophi-green)',
+    readiness_drop: 'var(--sophi-warn)',
   }
   return colors[type]
 }

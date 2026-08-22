@@ -157,19 +157,19 @@ export default function CalendarSettingsPage() {
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--aura-text)', fontFamily: 'var(--font-syne)', marginBottom: 4 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)', marginBottom: 4 }}>
           Calendário da Temporada
         </h2>
-        <p style={{ fontSize: 13, color: 'var(--aura-text3)' }}>
+        <p style={{ fontSize: 13, color: 'var(--sophi-text3)' }}>
           Gere os jogos e treinos. Os dias de jogo são usados para calcular o microciclo e a posição MD no dashboard.
         </p>
         {!loading && !canManage && (
-          <p style={{ fontSize: 12, color: 'var(--aura-text3)', marginTop: 8, fontStyle: 'italic' }}>
+          <p style={{ fontSize: 12, color: 'var(--sophi-text3)', marginTop: 8, fontStyle: 'italic' }}>
             Só administradores e treinadores podem gerir o calendário. Tens acesso só de leitura.
           </p>
         )}
         {error && (
-          <div style={{ marginTop: 10, fontSize: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(255,77,109,0.1)', color: 'var(--aura-danger)' }}>
+          <div style={{ marginTop: 10, fontSize: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(255,77,109,0.1)', color: 'var(--sophi-danger)' }}>
             {error}
           </div>
         )}
@@ -179,14 +179,14 @@ export default function CalendarSettingsPage() {
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Trophy size={15} style={{ color: 'var(--aura-warn)' }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+            <Trophy size={15} style={{ color: 'var(--sophi-warn)' }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
               Dias de Jogo
             </span>
             <span style={{
               fontSize: 10, fontFamily: 'var(--font-dm-mono)', fontWeight: 700,
               padding: '1px 7px', borderRadius: 999,
-              background: 'rgba(246,173,85,0.12)', color: 'var(--aura-warn)',
+              background: 'rgba(246,173,85,0.12)', color: 'var(--sophi-warn)',
             }}>
               {matchDays.length}
             </span>
@@ -198,7 +198,7 @@ export default function CalendarSettingsPage() {
                 display: 'flex', alignItems: 'center', gap: 5,
                 fontSize: 11, padding: '5px 10px', borderRadius: 6,
                 border: '1px solid rgba(246,173,85,0.3)', background: 'rgba(246,173,85,0.06)',
-                color: 'var(--aura-warn)', cursor: 'pointer', fontWeight: 600,
+                color: 'var(--sophi-warn)', cursor: 'pointer', fontWeight: 600,
               }}
             >
               <Plus size={11} />
@@ -209,33 +209,33 @@ export default function CalendarSettingsPage() {
 
         {/* Add match form */}
         {showAddMatch && (
-          <div style={{ background: 'var(--aura-bg3)', border: '1px solid var(--aura-border)', borderRadius: 10, padding: 16, marginBottom: 12 }}>
+          <div style={{ background: 'var(--sophi-bg3)', border: '1px solid var(--sophi-border)', borderRadius: 10, padding: 16, marginBottom: 12 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
               <div>
-                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Data do Jogo</label>
+                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Data do Jogo</label>
                 <input
                   type="date"
                   value={matchForm.event_date}
                   onChange={(e) => setMatchForm((f) => ({ ...f, event_date: e.target.value }))}
-                  style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--aura-bg2)', border: '1px solid var(--aura-border)', color: 'var(--aura-text)' }}
+                  style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)' }}
                 />
               </div>
               <div>
-                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Adversário</label>
+                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Adversário</label>
                 <input
                   type="text"
                   placeholder="Ex: Benfica"
                   value={matchForm.opponent}
                   onChange={(e) => setMatchForm((f) => ({ ...f, opponent: e.target.value }))}
-                  style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--aura-bg2)', border: '1px solid var(--aura-border)', color: 'var(--aura-text)' }}
+                  style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)' }}
                 />
               </div>
               <div>
-                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Local</label>
+                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Local</label>
                 <select
                   value={matchForm.venue}
                   onChange={(e) => setMatchForm((f) => ({ ...f, venue: e.target.value as typeof matchForm.venue }))}
-                  style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--aura-bg2)', border: '1px solid var(--aura-border)', color: 'var(--aura-text)' }}
+                  style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)' }}
                 >
                   <option value="home">Casa</option>
                   <option value="away">Fora</option>
@@ -247,13 +247,13 @@ export default function CalendarSettingsPage() {
               <button
                 onClick={handleAddMatch}
                 disabled={isPending || !matchForm.event_date}
-                style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: 'none', background: 'var(--aura-warn)', color: '#000', fontWeight: 700, cursor: 'pointer', opacity: isPending ? 0.7 : 1 }}
+                style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: 'none', background: 'var(--sophi-warn)', color: '#000', fontWeight: 700, cursor: 'pointer', opacity: isPending ? 0.7 : 1 }}
               >
                 {isPending ? 'A guardar...' : 'Guardar Jogo'}
               </button>
               <button
                 onClick={() => setShowAddMatch(false)}
-                style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: '1px solid var(--aura-border)', background: 'transparent', color: 'var(--aura-text2)', cursor: 'pointer' }}
+                style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
               >
                 Cancelar
               </button>
@@ -262,29 +262,29 @@ export default function CalendarSettingsPage() {
         )}
 
         {loading ? (
-          <div style={{ fontSize: 12, color: 'var(--aura-text3)', padding: '12px 0' }}>A carregar...</div>
+          <div style={{ fontSize: 12, color: 'var(--sophi-text3)', padding: '12px 0' }}>A carregar...</div>
         ) : matchDays.length === 0 ? (
-          <div style={{ fontSize: 12, color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)', padding: '16px 0', textAlign: 'center' }}>
+          <div style={{ fontSize: 12, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)', padding: '16px 0', textAlign: 'center' }}>
             Nenhum jogo registado. Adiciona o primeiro jogo para activar os microciclos no dashboard.
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {matchDays.map((e) => (
-              <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 8, background: 'var(--aura-bg2)', border: '1px solid var(--aura-border)' }}>
-                <Trophy size={13} style={{ color: 'var(--aura-warn)', flexShrink: 0 }} />
-                <span style={{ fontSize: 13, color: 'var(--aura-text)', fontFamily: 'var(--font-dm-mono)', flexShrink: 0 }}>
+              <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 8, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)' }}>
+                <Trophy size={13} style={{ color: 'var(--sophi-warn)', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: 'var(--sophi-text)', fontFamily: 'var(--font-dm-mono)', flexShrink: 0 }}>
                   {e.event_date}
                 </span>
-                <span style={{ fontSize: 11, color: 'var(--aura-text2)' }}>
+                <span style={{ fontSize: 11, color: 'var(--sophi-text2)' }}>
                   {formatDisplayDate(e.event_date)}
                 </span>
                 {e.opponent && (
-                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--aura-text)' }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sophi-text)' }}>
                     vs {e.opponent}
                   </span>
                 )}
                 {e.venue && (
-                  <span style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', background: 'var(--aura-bg3)', padding: '1px 6px', borderRadius: 4 }}>
+                  <span style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', background: 'var(--sophi-bg3)', padding: '1px 6px', borderRadius: 4 }}>
                     {VENUE_LABELS[e.venue] ?? e.venue}
                   </span>
                 )}
@@ -292,7 +292,7 @@ export default function CalendarSettingsPage() {
                   <button
                     onClick={() => handleDelete(e.id)}
                     disabled={isPending}
-                    style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--aura-text3)', display: 'flex', alignItems: 'center' }}
+                    style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sophi-text3)', display: 'flex', alignItems: 'center' }}
                     aria-label="Eliminar"
                   >
                     <Trash2 size={13} />
@@ -308,14 +308,14 @@ export default function CalendarSettingsPage() {
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Dumbbell size={15} style={{ color: 'var(--aura-blue)' }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+            <Dumbbell size={15} style={{ color: 'var(--sophi-blue)' }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
               Sessões de Treino
             </span>
             <span style={{
               fontSize: 10, fontFamily: 'var(--font-dm-mono)', fontWeight: 700,
               padding: '1px 7px', borderRadius: 999,
-              background: 'rgba(77,154,255,0.12)', color: 'var(--aura-blue)',
+              background: 'rgba(77,154,255,0.12)', color: 'var(--sophi-blue)',
             }}>
               {trainings.length}
             </span>
@@ -327,7 +327,7 @@ export default function CalendarSettingsPage() {
                 display: 'flex', alignItems: 'center', gap: 5,
                 fontSize: 11, padding: '5px 10px', borderRadius: 6,
                 border: '1px solid rgba(77,154,255,0.3)', background: 'rgba(77,154,255,0.06)',
-                color: 'var(--aura-blue)', cursor: 'pointer', fontWeight: 600,
+                color: 'var(--sophi-blue)', cursor: 'pointer', fontWeight: 600,
               }}
             >
               <Plus size={11} />
@@ -338,23 +338,23 @@ export default function CalendarSettingsPage() {
 
         {/* Add training form */}
         {showAddTraining && (
-          <div style={{ background: 'var(--aura-bg3)', border: '1px solid var(--aura-border)', borderRadius: 10, padding: 16, marginBottom: 12 }}>
+          <div style={{ background: 'var(--sophi-bg3)', border: '1px solid var(--sophi-border)', borderRadius: 10, padding: 16, marginBottom: 12 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
               <div>
-                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Data</label>
+                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Data</label>
                 <input
                   type="date"
                   value={trainingForm.event_date}
                   onChange={(e) => setTrainingForm((f) => ({ ...f, event_date: e.target.value }))}
-                  style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--aura-bg2)', border: '1px solid var(--aura-border)', color: 'var(--aura-text)' }}
+                  style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)' }}
                 />
               </div>
               <div>
-                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Tipo</label>
+                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Tipo</label>
                 <select
                   value={trainingForm.event_type}
                   onChange={(e) => setTrainingForm((f) => ({ ...f, event_type: e.target.value as typeof trainingForm.event_type }))}
-                  style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--aura-bg2)', border: '1px solid var(--aura-border)', color: 'var(--aura-text)' }}
+                  style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)' }}
                 >
                   <option value="training">Unidade de Treino (UT)</option>
                   <option value="recovery">Recovery</option>
@@ -363,13 +363,13 @@ export default function CalendarSettingsPage() {
                 </select>
               </div>
               <div>
-                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Etiqueta (opcional)</label>
+                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Etiqueta (opcional)</label>
                 <input
                   type="text"
                   placeholder="Ex: Ativação pré-jogo"
                   value={trainingForm.label}
                   onChange={(e) => setTrainingForm((f) => ({ ...f, label: e.target.value }))}
-                  style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--aura-bg2)', border: '1px solid var(--aura-border)', color: 'var(--aura-text)' }}
+                  style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)' }}
                 />
               </div>
             </div>
@@ -377,13 +377,13 @@ export default function CalendarSettingsPage() {
               <button
                 onClick={handleAddTraining}
                 disabled={isPending || !trainingForm.event_date}
-                style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: 'none', background: 'var(--aura-blue)', color: '#fff', fontWeight: 700, cursor: 'pointer', opacity: isPending ? 0.7 : 1 }}
+                style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: 'none', background: 'var(--sophi-blue)', color: '#fff', fontWeight: 700, cursor: 'pointer', opacity: isPending ? 0.7 : 1 }}
               >
                 {isPending ? 'A guardar...' : 'Guardar Sessão'}
               </button>
               <button
                 onClick={() => setShowAddTraining(false)}
-                style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: '1px solid var(--aura-border)', background: 'transparent', color: 'var(--aura-text2)', cursor: 'pointer' }}
+                style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
               >
                 Cancelar
               </button>
@@ -392,7 +392,7 @@ export default function CalendarSettingsPage() {
         )}
 
         {!loading && trainings.length === 0 && (
-          <div style={{ fontSize: 12, color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)', padding: '16px 0', textAlign: 'center' }}>
+          <div style={{ fontSize: 12, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)', padding: '16px 0', textAlign: 'center' }}>
             Nenhuma sessão de treino registada.
           </div>
         )}
@@ -400,22 +400,22 @@ export default function CalendarSettingsPage() {
         {trainings.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {trainings.slice(0, 20).map((e) => (
-              <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 8, background: 'var(--aura-bg2)', border: '1px solid var(--aura-border)' }}>
-                <Calendar size={13} style={{ color: 'var(--aura-text3)', flexShrink: 0 }} />
-                <span style={{ fontSize: 13, color: 'var(--aura-text)', fontFamily: 'var(--font-dm-mono)', flexShrink: 0 }}>
+              <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 8, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)' }}>
+                <Calendar size={13} style={{ color: 'var(--sophi-text3)', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: 'var(--sophi-text)', fontFamily: 'var(--font-dm-mono)', flexShrink: 0 }}>
                   {e.event_date}
                 </span>
-                <span style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', background: 'var(--aura-bg3)', padding: '1px 6px', borderRadius: 4, textTransform: 'uppercase' }}>
+                <span style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', background: 'var(--sophi-bg3)', padding: '1px 6px', borderRadius: 4, textTransform: 'uppercase' }}>
                   {e.event_type}
                 </span>
                 {e.label && (
-                  <span style={{ fontSize: 12, color: 'var(--aura-text2)' }}>{e.label}</span>
+                  <span style={{ fontSize: 12, color: 'var(--sophi-text2)' }}>{e.label}</span>
                 )}
                 {canManage && (
                   <button
                     onClick={() => handleDelete(e.id)}
                     disabled={isPending}
-                    style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--aura-text3)', display: 'flex', alignItems: 'center' }}
+                    style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sophi-text3)', display: 'flex', alignItems: 'center' }}
                     aria-label="Eliminar"
                   >
                     <Trash2 size={13} />
@@ -428,10 +428,10 @@ export default function CalendarSettingsPage() {
       </div>
 
       <div style={{ marginTop: 24, padding: '12px 16px', borderRadius: 8, background: 'rgba(0,229,160,0.04)', border: '1px solid rgba(0,229,160,0.15)' }}>
-        <div style={{ fontSize: 11, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-green)', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <div style={{ fontSize: 11, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-green)', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Como funciona o cálculo do Microciclo
         </div>
-        <div style={{ fontSize: 12, color: 'var(--aura-text2)', lineHeight: 1.5 }}>
+        <div style={{ fontSize: 12, color: 'var(--sophi-text2)', lineHeight: 1.5 }}>
           O dashboard calcula automaticamente a posição MD (Match Day) para cada dia.
           Se o próximo jogo é daqui a 3 dias → <strong>MD-3</strong>.
           Se o último jogo foi há 1 dia → <strong>MD+1</strong>.

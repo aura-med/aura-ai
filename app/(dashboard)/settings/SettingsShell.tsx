@@ -40,7 +40,7 @@ export function SettingsShell({ children }: { children: React.ReactNode }) {
       {/* Mobile: horizontal scrollable nav */}
       <nav
         className="flex md:hidden overflow-x-auto border-b gap-1 px-3 py-2 shrink-0"
-        style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg)' }}
+        style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg)' }}
       >
         {SETTINGS_NAV.map(({ href, icon: Icon, key }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`)
@@ -53,7 +53,7 @@ export function SettingsShell({ children }: { children: React.ReactNode }) {
                 active ? 'font-medium' : 'hover:bg-white/5'
               )}
               style={{
-                color: active ? 'var(--aura-green)' : 'var(--aura-text2)',
+                color: active ? 'var(--sophi-green)' : 'var(--sophi-text2)',
                 background: active ? 'rgba(0,229,160,0.10)' : undefined,
               }}
             >
@@ -65,7 +65,7 @@ export function SettingsShell({ children }: { children: React.ReactNode }) {
         <button
           onClick={handleSignOut}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap shrink-0 transition-colors hover:bg-white/5"
-          style={{ color: 'var(--aura-text2)' }}
+          style={{ color: 'var(--sophi-text2)' }}
         >
           <LogOut size={13} />
           {t('nav.signOut')}
@@ -75,12 +75,12 @@ export function SettingsShell({ children }: { children: React.ReactNode }) {
       {/* Desktop: vertical sidebar */}
       <aside
         className="hidden md:flex w-56 shrink-0 border-r flex-col"
-        style={{ background: 'var(--aura-bg)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg)', borderColor: 'var(--sophi-border)' }}
       >
-        <div className="px-4 py-4 border-b" style={{ borderColor: 'var(--aura-border)' }}>
+        <div className="px-4 py-4 border-b" style={{ borderColor: 'var(--sophi-border)' }}>
           <h2
             className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}
+            style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-mono)' }}
           >
             {t('title')}
           </h2>
@@ -98,13 +98,13 @@ export function SettingsShell({ children }: { children: React.ReactNode }) {
                   active ? 'font-medium' : 'hover:bg-white/5'
                 )}
                 style={{
-                  color: active ? 'var(--aura-green)' : 'var(--aura-text2)',
+                  color: active ? 'var(--sophi-green)' : 'var(--sophi-text2)',
                   background: active ? 'rgba(0,229,160,0.06)' : undefined,
                 }}
               >
                 <Icon size={15} />
                 <span>{t(`nav.${key}`)}</span>
-                {active && <ChevronRight size={12} className="ml-auto" style={{ color: 'var(--aura-green)' }} />}
+                {active && <ChevronRight size={12} className="ml-auto" style={{ color: 'var(--sophi-green)' }} />}
               </Link>
             )
           })}
@@ -113,7 +113,7 @@ export function SettingsShell({ children }: { children: React.ReactNode }) {
         <button
           onClick={handleSignOut}
           className="m-3 flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-white/5"
-          style={{ color: 'var(--aura-text2)' }}
+          style={{ color: 'var(--sophi-text2)' }}
         >
           <LogOut size={15} />
           {t('nav.signOut')}

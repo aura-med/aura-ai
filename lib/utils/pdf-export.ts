@@ -17,12 +17,12 @@ const OCCURRENCE_TYPE_LABELS: Record<string, string> = {
   other: 'Outro',
 }
 
-// Aura brand header + footer with page numbers. Returns the y-offset to start content.
+// Sophi brand header + footer with page numbers. Returns the y-offset to start content.
 function brandHeader(doc: jsPDF, title: string, subtitle: string): number {
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(18)
   doc.setTextColor(0, 229, 160)
-  doc.text('AURA', 14, 18)
+  doc.text('SOPHI', 14, 18)
 
   doc.setFontSize(13)
   doc.setTextColor(30, 30, 30)

@@ -24,11 +24,11 @@ export interface MonthCalendarEvent {
 }
 
 const TYPE_STYLES: Record<string, { bg: string; color: string; border: string }> = {
-  match:    { bg: 'rgba(246,173,85,0.14)', color: 'var(--aura-warn)',   border: 'rgba(246,173,85,0.35)' },
-  training: { bg: 'rgba(77,154,255,0.12)', color: 'var(--aura-blue)',   border: 'rgba(77,154,255,0.30)' },
-  recovery: { bg: 'rgba(0,229,160,0.10)',  color: 'var(--aura-green)',  border: 'rgba(0,229,160,0.28)' },
-  travel:   { bg: 'rgba(180,141,252,0.12)', color: 'var(--aura-purple)', border: 'rgba(180,141,252,0.30)' },
-  rest:     { bg: 'rgba(255,255,255,0.05)', color: 'var(--aura-text3)', border: 'var(--aura-border)' },
+  match:    { bg: 'rgba(246,173,85,0.14)', color: 'var(--sophi-warn)',   border: 'rgba(246,173,85,0.35)' },
+  training: { bg: 'rgba(77,154,255,0.12)', color: 'var(--sophi-blue)',   border: 'rgba(77,154,255,0.30)' },
+  recovery: { bg: 'rgba(0,229,160,0.10)',  color: 'var(--sophi-green)',  border: 'rgba(0,229,160,0.28)' },
+  travel:   { bg: 'rgba(180,141,252,0.12)', color: 'var(--sophi-purple)', border: 'rgba(180,141,252,0.30)' },
+  rest:     { bg: 'rgba(255,255,255,0.05)', color: 'var(--sophi-text3)', border: 'var(--sophi-border)' },
 }
 
 const TYPE_OPTIONS: Array<{ value: string; label: string }> = [
@@ -124,7 +124,7 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
     <div style={{ marginTop: 4 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
           Calendário
         </span>
         {canManage && (
@@ -133,7 +133,7 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
             style={{
               display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600,
               padding: '4px 10px', borderRadius: 6, cursor: 'pointer',
-              border: '1px solid var(--aura-border2)', background: 'var(--aura-bg3)', color: 'var(--aura-text2)',
+              border: '1px solid var(--sophi-border2)', background: 'var(--sophi-bg3)', color: 'var(--sophi-text2)',
             }}
           >
             <Plus size={12} /> Adicionar
@@ -143,17 +143,17 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
           <button
             onClick={() => navigate(-1)}
             aria-label="Mês anterior"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 6, border: '1px solid var(--aura-border2)', background: 'var(--aura-bg3)', color: 'var(--aura-text2)', cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 6, border: '1px solid var(--sophi-border2)', background: 'var(--sophi-bg3)', color: 'var(--sophi-text2)', cursor: 'pointer' }}
           >
             <ChevronLeft size={13} />
           </button>
-          <span style={{ fontSize: 12, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text)', minWidth: 120, textAlign: 'center' }}>
+          <span style={{ fontSize: 12, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text)', minWidth: 120, textAlign: 'center' }}>
             {MONTHS[month]} {year}
           </span>
           <button
             onClick={() => navigate(1)}
             aria-label="Próximo mês"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 6, border: '1px solid var(--aura-border2)', background: 'var(--aura-bg3)', color: 'var(--aura-text2)', cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 6, border: '1px solid var(--sophi-border2)', background: 'var(--sophi-bg3)', color: 'var(--sophi-text2)', cursor: 'pointer' }}
           >
             <ChevronRight size={13} />
           </button>
@@ -163,7 +163,7 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
       {/* Weekday header */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 4 }}>
         {WEEKDAYS.map((w) => (
-          <div key={w} style={{ fontSize: 9, fontFamily: 'var(--font-dm-mono)', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--aura-text3)', textAlign: 'center', padding: '2px 0' }}>
+          <div key={w} style={{ fontSize: 9, fontFamily: 'var(--font-dm-mono)', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sophi-text3)', textAlign: 'center', padding: '2px 0' }}>
             {w}
           </div>
         ))}
@@ -186,8 +186,8 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
                 minHeight: 84,
                 borderRadius: 8,
                 padding: '6px 6px 4px',
-                background: isToday ? 'rgba(0,229,160,0.07)' : isPast ? 'var(--aura-bg)' : 'var(--aura-bg2)',
-                border: isToday ? '1px solid var(--aura-green)' : '1px solid var(--aura-border)',
+                background: isToday ? 'rgba(0,229,160,0.07)' : isPast ? 'var(--sophi-bg)' : 'var(--sophi-bg2)',
+                border: isToday ? '1px solid var(--sophi-green)' : '1px solid var(--sophi-border)',
                 opacity: isPast ? 0.5 : 1,
                 display: 'flex',
                 flexDirection: 'column',
@@ -202,8 +202,8 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
                     fontSize: 10,
                     fontFamily: 'var(--font-dm-mono)',
                     fontWeight: isToday ? 700 : 400,
-                    color: isToday ? '#000' : 'var(--aura-text3)',
-                    background: isToday ? 'var(--aura-green)' : 'transparent',
+                    color: isToday ? '#000' : 'var(--sophi-text3)',
+                    background: isToday ? 'var(--sophi-green)' : 'transparent',
                     borderRadius: 999,
                     minWidth: 18,
                     height: 18,
@@ -245,7 +245,7 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
                 )
               })}
               {dayEvents.length > 3 && (
-                <div style={{ fontSize: 8, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', paddingLeft: 2 }}>
+                <div style={{ fontSize: 8, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', paddingLeft: 2 }}>
                   +{dayEvents.length - 3}
                 </div>
               )}
@@ -259,14 +259,14 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
         {TYPE_OPTIONS.map(({ value, label }) => {
           const s = TYPE_STYLES[value]
           return (
-            <span key={value} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)' }}>
+            <span key={value} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)' }}>
               <span style={{ width: 8, height: 8, borderRadius: 2, background: s.bg, border: `1px solid ${s.border}`, display: 'inline-block' }} />
               {label}
             </span>
           )
         })}
         {canManage && (
-          <span style={{ fontSize: 9, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', marginLeft: 'auto' }}>
+          <span style={{ fontSize: 9, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', marginLeft: 'auto' }}>
             Clica num dia para adicionar · num evento para editar
           </span>
         )}
@@ -348,10 +348,10 @@ function EventEditor({
 
   const inputStyle: React.CSSProperties = {
     width: '100%', borderRadius: 6, padding: '7px 9px', fontSize: 12,
-    background: 'var(--aura-bg3)', border: '1px solid var(--aura-border2)', color: 'var(--aura-text)',
+    background: 'var(--sophi-bg3)', border: '1px solid var(--sophi-border2)', color: 'var(--sophi-text)',
   }
   const labelStyle: React.CSSProperties = {
-    fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)',
+    fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)',
     textTransform: 'uppercase', display: 'block', marginBottom: 4, letterSpacing: '0.06em',
   }
 
@@ -360,12 +360,12 @@ function EventEditor({
       style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div style={{ background: 'var(--aura-bg2)', border: '1px solid var(--aura-border)', borderRadius: 14, padding: 20, width: '100%', maxWidth: 420 }}>
+      <div style={{ background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', borderRadius: 14, padding: 20, width: '100%', maxWidth: 420 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
             {event ? 'Editar evento' : 'Adicionar evento'}
           </span>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--aura-text3)' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sophi-text3)' }}>
             <X size={16} />
           </button>
         </div>
@@ -403,20 +403,20 @@ function EventEditor({
           </div>
 
           {error && (
-            <div style={{ fontSize: 12, color: 'var(--aura-danger)' }}>{error}</div>
+            <div style={{ fontSize: 12, color: 'var(--sophi-danger)' }}>{error}</div>
           )}
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
             <button
               onClick={handleSave}
               disabled={saving || !eventDate}
-              style={{ fontSize: 12, fontWeight: 700, padding: '7px 14px', borderRadius: 7, border: 'none', background: 'var(--aura-green)', color: '#000', cursor: 'pointer', opacity: saving ? 0.7 : 1 }}
+              style={{ fontSize: 12, fontWeight: 700, padding: '7px 14px', borderRadius: 7, border: 'none', background: 'var(--sophi-green)', color: '#000', cursor: 'pointer', opacity: saving ? 0.7 : 1 }}
             >
               {saving ? 'A guardar…' : 'Guardar'}
             </button>
             <button
               onClick={onClose}
-              style={{ fontSize: 12, padding: '7px 14px', borderRadius: 7, border: '1px solid var(--aura-border)', background: 'transparent', color: 'var(--aura-text2)', cursor: 'pointer' }}
+              style={{ fontSize: 12, padding: '7px 14px', borderRadius: 7, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
             >
               Cancelar
             </button>
@@ -424,7 +424,7 @@ function EventEditor({
               <button
                 onClick={handleDelete}
                 disabled={saving}
-                style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '7px 12px', borderRadius: 7, border: '1px solid rgba(255,77,109,0.3)', background: 'rgba(255,77,109,0.06)', color: 'var(--aura-danger)', cursor: 'pointer' }}
+                style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '7px 12px', borderRadius: 7, border: '1px solid rgba(255,77,109,0.3)', background: 'rgba(255,77,109,0.06)', color: 'var(--sophi-danger)', cursor: 'pointer' }}
               >
                 <Trash2 size={12} /> Eliminar
               </button>

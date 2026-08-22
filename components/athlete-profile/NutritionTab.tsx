@@ -40,7 +40,7 @@ function todayStr() {
 }
 
 const inputCls = 'w-full px-2.5 py-1.5 rounded-lg text-xs border focus:outline-none'
-const inputStyle = { background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }
+const inputStyle = { background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }
 
 // ── Skinfold sum chart ───────────────────────────────────────────────────────
 
@@ -73,19 +73,19 @@ function SkinfoldChart({ assessments, limit }: { assessments: NutritionAssessmen
       <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Evolução da soma das pregas cutâneas" className="h-full w-full overflow-visible">
         {[0, 1, 2].map((l) => {
           const y = chartTop + (chartHeight / 2) * l
-          return <line key={l} x1="0" x2={width} y1={y} y2={y} stroke="var(--aura-border)" strokeDasharray="3 3" />
+          return <line key={l} x1="0" x2={width} y1={y} y2={y} stroke="var(--sophi-border)" strokeDasharray="3 3" />
         })}
         {limitY != null && (
           <>
-            <line x1="0" x2={width} y1={limitY} y2={limitY} stroke="var(--aura-danger)" strokeWidth="1.5" strokeDasharray="4 3" />
-            <text x={width - 2} y={limitY - 3} textAnchor="end" fontSize="9" fill="var(--aura-danger)">limite {limit}mm</text>
+            <line x1="0" x2={width} y1={limitY} y2={limitY} stroke="var(--sophi-danger)" strokeWidth="1.5" strokeDasharray="4 3" />
+            <text x={width - 2} y={limitY - 3} textAnchor="end" fontSize="9" fill="var(--sophi-danger)">limite {limit}mm</text>
           </>
         )}
-        <path d={linePath} fill="none" stroke="var(--aura-green)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+        <path d={linePath} fill="none" stroke="var(--sophi-green)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
         {xy.map((p) => (
           <g key={p.date}>
-            <circle cx={p.x} cy={p.y} r={3} fill="var(--aura-green)" />
-            <text x={p.x} y="100" textAnchor="middle" fontSize="9" fill="var(--aura-text3)">{formatDate(p.date)}</text>
+            <circle cx={p.x} cy={p.y} r={3} fill="var(--sophi-green)" />
+            <text x={p.x} y="100" textAnchor="middle" fontSize="9" fill="var(--sophi-text3)">{formatDate(p.date)}</text>
           </g>
         ))}
       </svg>
@@ -125,22 +125,22 @@ function DailyWeightModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="w-full max-w-xs rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-        <h3 className="font-semibold text-sm" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>Registar Peso</h3>
+      <div className="w-full max-w-xs rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>Registar Peso</h3>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Data</label>
+            <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Data</label>
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} style={inputStyle} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Peso (kg)</label>
+            <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Peso (kg)</label>
             <input type="number" step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="ex: 78.4" className={inputCls} style={inputStyle} />
           </div>
         </div>
-        {error && <p className="text-xs" style={{ color: 'var(--aura-danger)' }}>{error}</p>}
+        {error && <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>}
         <div className="flex gap-3">
-          <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--aura-bg3)]" style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }}>Cancelar</button>
-          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--aura-green)', color: '#000' }}>
+          <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--sophi-bg3)]" style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}>Cancelar</button>
+          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--sophi-green)', color: '#000' }}>
             {saving && <Loader2 size={12} className="animate-spin" />} Guardar
           </button>
         </div>
@@ -187,20 +187,20 @@ function AssessmentModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-        <h3 className="font-semibold text-sm" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>Nova Avaliação Nutricional</h3>
+      <div className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>Nova Avaliação Nutricional</h3>
 
         <div className="space-y-1.5">
-          <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Data</label>
+          <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Data</label>
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} style={inputStyle} />
         </div>
 
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--aura-text3)' }}>Pregas Cutâneas (mm)</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--sophi-text3)' }}>Pregas Cutâneas (mm)</p>
           <div className="grid grid-cols-2 gap-2.5">
             {SKINFOLD_FIELDS.map((f) => (
               <div key={f.key} className="space-y-1">
-                <label className="text-[10px]" style={{ color: 'var(--aura-text2)' }}>{f.label}</label>
+                <label className="text-[10px]" style={{ color: 'var(--sophi-text2)' }}>{f.label}</label>
                 <input
                   type="number" step="0.1"
                   value={values[f.key] ?? ''}
@@ -213,11 +213,11 @@ function AssessmentModal({
         </div>
 
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--aura-text3)' }}>Perímetros (cm)</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--sophi-text3)' }}>Perímetros (cm)</p>
           <div className="grid grid-cols-2 gap-2.5">
             {PERIMETER_FIELDS.map((f) => (
               <div key={f.key} className="space-y-1">
-                <label className="text-[10px]" style={{ color: 'var(--aura-text2)' }}>{f.label}</label>
+                <label className="text-[10px]" style={{ color: 'var(--sophi-text2)' }}>{f.label}</label>
                 <input
                   type="number" step="0.1"
                   value={values[f.key] ?? ''}
@@ -230,14 +230,14 @@ function AssessmentModal({
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px]" style={{ color: 'var(--aura-text2)' }}>Densidade específica da urina</label>
+          <label className="text-[10px]" style={{ color: 'var(--sophi-text2)' }}>Densidade específica da urina</label>
           <input type="number" step="0.001" value={urine} onChange={(e) => setUrine(e.target.value)} placeholder="ex: 1.018" className={inputCls} style={inputStyle} />
         </div>
 
-        {error && <p className="text-xs" style={{ color: 'var(--aura-danger)' }}>{error}</p>}
+        {error && <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>}
         <div className="flex gap-3">
-          <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--aura-bg3)]" style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }}>Cancelar</button>
-          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--aura-green)', color: '#000' }}>
+          <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--sophi-bg3)]" style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}>Cancelar</button>
+          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--sophi-green)', color: '#000' }}>
             {saving && <Loader2 size={12} className="animate-spin" />} Guardar
           </button>
         </div>
@@ -289,42 +289,42 @@ function SupplementModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="w-full max-w-sm rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-        <h3 className="font-semibold text-sm" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>Novo Suplemento</h3>
+      <div className="w-full max-w-sm rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>Novo Suplemento</h3>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Nome</label>
+            <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Nome</label>
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="ex: Creatina" className={inputCls} style={inputStyle} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Dose</label>
+              <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Dose</label>
               <input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="ex: 5g" className={inputCls} style={inputStyle} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Frequência</label>
+              <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Frequência</label>
               <input value={frequency} onChange={(e) => setFrequency(e.target.value)} placeholder="ex: 1x/dia" className={inputCls} style={inputStyle} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Início</label>
+              <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Início</label>
               <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputCls} style={inputStyle} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Fim (opcional)</label>
+              <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Fim (opcional)</label>
               <input type="date" value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)} className={inputCls} style={inputStyle} />
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Notas (opcional)</label>
+            <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Notas (opcional)</label>
             <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notas adicionais" className={inputCls} style={inputStyle} />
           </div>
         </div>
-        {error && <p className="text-xs" style={{ color: 'var(--aura-danger)' }}>{error}</p>}
+        {error && <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>}
         <div className="flex gap-3">
-          <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--aura-bg3)]" style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }}>Cancelar</button>
-          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--aura-green)', color: '#000' }}>
+          <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--sophi-bg3)]" style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}>Cancelar</button>
+          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--sophi-green)', color: '#000' }}>
             {saving && <Loader2 size={12} className="animate-spin" />} Guardar
           </button>
         </div>
@@ -406,7 +406,7 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <Loader2 size={20} className="animate-spin" style={{ color: 'var(--aura-text3)' }} />
+        <Loader2 size={20} className="animate-spin" style={{ color: 'var(--sophi-text3)' }} />
       </div>
     )
   }
@@ -415,28 +415,28 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
     <div className="space-y-4">
 
       {/* Peso diário */}
-      <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-        <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
-          <Scale size={13} style={{ color: 'var(--aura-green)' }} />
-          <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--aura-text2)' }}>
+      <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+        <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
+          <Scale size={13} style={{ color: 'var(--sophi-green)' }} />
+          <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>
             Peso Diário{height ? ` · Altura ${height} cm` : ''}
           </p>
           {canWeight && (
-            <button type="button" onClick={() => setShowWeightModal(true)} className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--aura-green-bg)]" style={{ color: 'var(--aura-green)' }}>
+            <button type="button" onClick={() => setShowWeightModal(true)} className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]" style={{ color: 'var(--sophi-green)' }}>
               <Plus size={10} /> Registar
             </button>
           )}
         </div>
         <div className="p-4">
           {weights.length === 0 ? (
-            <p className="text-xs text-center py-3" style={{ color: 'var(--aura-text3)' }}>Sem pesagens registadas</p>
+            <p className="text-xs text-center py-3" style={{ color: 'var(--sophi-text3)' }}>Sem pesagens registadas</p>
           ) : (
             <div className="overflow-x-auto">
               <div className="flex gap-2 min-w-max">
                 {weights.map((w) => (
-                  <div key={w.id} className="rounded-lg px-3 py-2 text-center min-w-[72px]" style={{ background: 'var(--aura-bg3)' }}>
-                    <p className="text-sm font-bold font-mono" style={{ color: 'var(--aura-text)' }}>{w.weight_kg}</p>
-                    <p className="text-[9px] mt-0.5" style={{ color: 'var(--aura-text3)' }}>{formatDate(w.measurement_date)}</p>
+                  <div key={w.id} className="rounded-lg px-3 py-2 text-center min-w-[72px]" style={{ background: 'var(--sophi-bg3)' }}>
+                    <p className="text-sm font-bold font-mono" style={{ color: 'var(--sophi-text)' }}>{w.weight_kg}</p>
+                    <p className="text-[9px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>{formatDate(w.measurement_date)}</p>
                   </div>
                 ))}
               </div>
@@ -446,24 +446,24 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
       </div>
 
       {/* Limite de soma de pregas */}
-      <div className="rounded-xl border p-3 flex items-center gap-3" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-        <p className="text-[10px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--aura-text3)' }}>
+      <div className="rounded-xl border p-3 flex items-center gap-3" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+        <p className="text-[10px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text3)' }}>
           Limite de referência (soma de 8 pregas)
         </p>
         {editingLimit ? (
           <div className="flex items-center gap-2">
             <input type="number" step="0.1" value={limitDraft} onChange={(e) => setLimitDraft(e.target.value)} className="w-20 px-2 py-1 rounded-lg text-xs border" style={inputStyle} />
-            <span className="text-xs" style={{ color: 'var(--aura-text3)' }}>mm</span>
-            <button type="button" onClick={saveLimit} disabled={savingLimit} className="text-[10px] font-bold px-2 py-1 rounded-lg" style={{ background: 'var(--aura-green)', color: '#000' }}>
+            <span className="text-xs" style={{ color: 'var(--sophi-text3)' }}>mm</span>
+            <button type="button" onClick={saveLimit} disabled={savingLimit} className="text-[10px] font-bold px-2 py-1 rounded-lg" style={{ background: 'var(--sophi-green)', color: '#000' }}>
               {savingLimit ? <Loader2 size={10} className="animate-spin" /> : 'OK'}
             </button>
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="text-sm font-bold font-mono" style={{ color: 'var(--aura-text)' }}>{limit != null ? `${limit} mm` : '—'}</span>
+            <span className="text-sm font-bold font-mono" style={{ color: 'var(--sophi-text)' }}>{limit != null ? `${limit} mm` : '—'}</span>
             {canAssessment && (
               <button type="button" onClick={() => { setLimitDraft(limit?.toString() ?? ''); setEditingLimit(true) }} className="p-1 rounded hover:bg-white/10">
-                <Edit2 size={11} style={{ color: 'var(--aura-text3)' }} />
+                <Edit2 size={11} style={{ color: 'var(--sophi-text3)' }} />
               </button>
             )}
           </div>
@@ -472,8 +472,8 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
 
       {/* Evolução */}
       {assessments.length > 0 && (
-        <div className="rounded-xl border p-4" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--aura-text3)' }}>
+        <div className="rounded-xl border p-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--sophi-text3)' }}>
             Evolução — Soma das 8 Pregas
           </p>
           <SkinfoldChart assessments={assessments} limit={limit} />
@@ -481,66 +481,66 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
       )}
 
       {/* Avaliações — tabela lado a lado por data */}
-      <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-        <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
-          <Apple size={13} style={{ color: 'var(--aura-green)' }} />
-          <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--aura-text2)' }}>
+      <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+        <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
+          <Apple size={13} style={{ color: 'var(--sophi-green)' }} />
+          <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>
             Avaliações Antropométricas
           </p>
           {canAssessment && (
-            <button type="button" onClick={() => setShowAssessmentModal(true)} className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--aura-green-bg)]" style={{ color: 'var(--aura-green)' }}>
+            <button type="button" onClick={() => setShowAssessmentModal(true)} className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]" style={{ color: 'var(--sophi-green)' }}>
               <Plus size={10} /> Nova avaliação
             </button>
           )}
         </div>
         <div className="p-4">
           {assessments.length === 0 ? (
-            <p className="text-xs text-center py-3" style={{ color: 'var(--aura-text3)' }}>Sem avaliações registadas</p>
+            <p className="text-xs text-center py-3" style={{ color: 'var(--sophi-text3)' }}>Sem avaliações registadas</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="text-xs border-collapse min-w-max">
                 <thead>
                   <tr>
-                    <th className="text-left py-1.5 pr-4 sticky left-0" style={{ color: 'var(--aura-text3)', background: 'var(--aura-bg2)' }}>Data</th>
+                    <th className="text-left py-1.5 pr-4 sticky left-0" style={{ color: 'var(--sophi-text3)', background: 'var(--sophi-bg2)' }}>Data</th>
                     {assessments.map((a) => (
-                      <th key={a.id} className="text-center px-3 py-1.5 font-semibold" style={{ color: 'var(--aura-text)' }}>{formatDate(a.assessment_date)}</th>
+                      <th key={a.id} className="text-center px-3 py-1.5 font-semibold" style={{ color: 'var(--sophi-text)' }}>{formatDate(a.assessment_date)}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="py-1 pr-4 sticky left-0" style={{ color: 'var(--aura-text3)', background: 'var(--aura-bg2)' }}>Peso (kg)</td>
+                    <td className="py-1 pr-4 sticky left-0" style={{ color: 'var(--sophi-text3)', background: 'var(--sophi-bg2)' }}>Peso (kg)</td>
                     {assessments.map((a) => (
-                      <td key={a.id} className="text-center px-3 py-1" style={{ color: 'var(--aura-text2)' }}>
+                      <td key={a.id} className="text-center px-3 py-1" style={{ color: 'var(--sophi-text2)' }}>
                         {weightByDate[a.assessment_date] ?? '—'}
                       </td>
                     ))}
                   </tr>
                   {height != null && (
                     <tr>
-                      <td className="py-1 pr-4 sticky left-0" style={{ color: 'var(--aura-text3)', background: 'var(--aura-bg2)' }}>Altura (cm)</td>
+                      <td className="py-1 pr-4 sticky left-0" style={{ color: 'var(--sophi-text3)', background: 'var(--sophi-bg2)' }}>Altura (cm)</td>
                       {assessments.map((a) => (
-                        <td key={a.id} className="text-center px-3 py-1" style={{ color: 'var(--aura-text2)' }}>{height}</td>
+                        <td key={a.id} className="text-center px-3 py-1" style={{ color: 'var(--sophi-text2)' }}>{height}</td>
                       ))}
                     </tr>
                   )}
                   {SKINFOLD_FIELDS.map((f) => (
                     <tr key={f.key}>
-                      <td className="py-1 pr-4 sticky left-0" style={{ color: 'var(--aura-text3)', background: 'var(--aura-bg2)' }}>{f.label} (mm)</td>
+                      <td className="py-1 pr-4 sticky left-0" style={{ color: 'var(--sophi-text3)', background: 'var(--sophi-bg2)' }}>{f.label} (mm)</td>
                       {assessments.map((a) => (
-                        <td key={a.id} className="text-center px-3 py-1" style={{ color: 'var(--aura-text2)' }}>
+                        <td key={a.id} className="text-center px-3 py-1" style={{ color: 'var(--sophi-text2)' }}>
                           {(a[f.key as keyof NutritionAssessment] as number | null) ?? '—'}
                         </td>
                       ))}
                     </tr>
                   ))}
                   <tr>
-                    <td className="py-1.5 pr-4 sticky left-0 font-semibold" style={{ color: 'var(--aura-text)', background: 'var(--aura-bg2)' }}>Soma pregas (mm)</td>
+                    <td className="py-1.5 pr-4 sticky left-0 font-semibold" style={{ color: 'var(--sophi-text)', background: 'var(--sophi-bg2)' }}>Soma pregas (mm)</td>
                     {assessments.map((a) => {
                       const sum = skinfoldSum(a)
                       const over = sum != null && limit != null && sum > limit
                       return (
-                        <td key={a.id} className="text-center px-3 py-1.5 font-bold font-mono" style={{ color: sum == null ? 'var(--aura-text3)' : over ? 'var(--aura-danger)' : 'var(--aura-green)' }}>
+                        <td key={a.id} className="text-center px-3 py-1.5 font-bold font-mono" style={{ color: sum == null ? 'var(--sophi-text3)' : over ? 'var(--sophi-danger)' : 'var(--sophi-green)' }}>
                           {sum ?? '—'}
                         </td>
                       )
@@ -548,22 +548,22 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
                   </tr>
                   {PERIMETER_FIELDS.map((f) => (
                     <tr key={f.key}>
-                      <td className="py-1 pr-4 sticky left-0" style={{ color: 'var(--aura-text3)', background: 'var(--aura-bg2)' }}>{f.label} (cm)</td>
+                      <td className="py-1 pr-4 sticky left-0" style={{ color: 'var(--sophi-text3)', background: 'var(--sophi-bg2)' }}>{f.label} (cm)</td>
                       {assessments.map((a) => (
-                        <td key={a.id} className="text-center px-3 py-1" style={{ color: 'var(--aura-text2)' }}>
+                        <td key={a.id} className="text-center px-3 py-1" style={{ color: 'var(--sophi-text2)' }}>
                           {(a[f.key as keyof NutritionAssessment] as number | null) ?? '—'}
                         </td>
                       ))}
                     </tr>
                   ))}
                   <tr>
-                    <td className="py-1.5 pr-4 sticky left-0" style={{ color: 'var(--aura-text3)', background: 'var(--aura-bg2)' }}>Densidade urinária</td>
+                    <td className="py-1.5 pr-4 sticky left-0" style={{ color: 'var(--sophi-text3)', background: 'var(--sophi-bg2)' }}>Densidade urinária</td>
                     {assessments.map((a) => {
                       const cfg = urineColor(a.urine_specific_gravity)
                       return (
                         <td key={a.id} className="text-center px-3 py-1.5">
                           {a.urine_specific_gravity == null ? (
-                            <span style={{ color: 'var(--aura-text3)' }}>—</span>
+                            <span style={{ color: 'var(--sophi-text3)' }}>—</span>
                           ) : (
                             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: cfg?.bg, color: cfg?.color }}>
                               {a.urine_specific_gravity}
@@ -581,41 +581,41 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
       </div>
 
       {/* Suplementos */}
-      <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-        <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
-          <Pill size={13} style={{ color: 'var(--aura-green)' }} />
-          <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--aura-text2)' }}>
+      <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+        <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
+          <Pill size={13} style={{ color: 'var(--sophi-green)' }} />
+          <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>
             Suplementos{supplements.length ? ` (${supplements.length})` : ''}
           </p>
           {canAssessment && (
-            <button type="button" onClick={() => setShowSupplementModal(true)} className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--aura-green-bg)]" style={{ color: 'var(--aura-green)' }}>
+            <button type="button" onClick={() => setShowSupplementModal(true)} className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]" style={{ color: 'var(--sophi-green)' }}>
               <Plus size={10} /> Novo
             </button>
           )}
         </div>
         <div className="p-4">
           {supplements.length === 0 ? (
-            <p className="text-xs text-center py-3" style={{ color: 'var(--aura-text3)' }}>Sem suplementos registados</p>
+            <p className="text-xs text-center py-3" style={{ color: 'var(--sophi-text3)' }}>Sem suplementos registados</p>
           ) : (
             <div className="space-y-2">
               {supplements.map((s) => {
                 const active = !s.end_date || s.end_date >= todayStr()
                 return (
-                  <div key={s.id} className="flex items-start justify-between gap-3 rounded-lg border px-3 py-2.5" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
+                  <div key={s.id} className="flex items-start justify-between gap-3 rounded-lg border px-3 py-2.5" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-semibold" style={{ color: 'var(--aura-text)' }}>{s.name}</span>
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: active ? 'var(--aura-green-bg)' : 'var(--aura-bg4)', color: active ? 'var(--aura-green)' : 'var(--aura-text3)' }}>
+                        <span className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>{s.name}</span>
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: active ? 'var(--sophi-green-bg)' : 'var(--sophi-bg4)', color: active ? 'var(--sophi-green)' : 'var(--sophi-text3)' }}>
                           {active ? 'Ativo' : 'Terminado'}
                         </span>
-                        {s.dosage && <span className="text-[10px]" style={{ color: 'var(--aura-text3)' }}>{s.dosage}</span>}
-                        {s.frequency && <span className="text-[10px]" style={{ color: 'var(--aura-text3)' }}>· {s.frequency}</span>}
+                        {s.dosage && <span className="text-[10px]" style={{ color: 'var(--sophi-text3)' }}>{s.dosage}</span>}
+                        {s.frequency && <span className="text-[10px]" style={{ color: 'var(--sophi-text3)' }}>· {s.frequency}</span>}
                       </div>
-                      <p className="text-[10px] mt-0.5" style={{ color: 'var(--aura-text3)' }}>
+                      <p className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>
                         {formatDate(s.start_date)}{s.end_date ? ` – ${formatDate(s.end_date)}` : ''}
                         {s.recorded_by_name ? ` · ${s.recorded_by_name}` : ''}
                       </p>
-                      {s.notes && <p className="text-[10px] italic mt-0.5" style={{ color: 'var(--aura-text3)' }}>{s.notes}</p>}
+                      {s.notes && <p className="text-[10px] italic mt-0.5" style={{ color: 'var(--sophi-text3)' }}>{s.notes}</p>}
                     </div>
                     {canAssessment && (
                       <button
@@ -631,7 +631,7 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
                         className="p-1 rounded hover:bg-white/10 shrink-0"
                         title="Remover"
                       >
-                        {deletingSupplementId === s.id ? <Loader2 size={11} className="animate-spin" style={{ color: 'var(--aura-text3)' }} /> : <Trash2 size={11} style={{ color: 'var(--aura-danger)' }} />}
+                        {deletingSupplementId === s.id ? <Loader2 size={11} className="animate-spin" style={{ color: 'var(--sophi-text3)' }} /> : <Trash2 size={11} style={{ color: 'var(--sophi-danger)' }} />}
                       </button>
                     )}
                   </div>

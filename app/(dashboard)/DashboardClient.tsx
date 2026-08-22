@@ -45,10 +45,10 @@ const STATUS_CONFIG: Record<AthleteAvailabilityStatus, {
   dot: string
   priority: number
 }> = {
-  available:   { label: 'Disponível',    color: 'var(--aura-green)',  bg: 'rgba(0,229,160,0.06)',   border: 'rgba(0,229,160,0.2)',   dot: '#00e5a0', priority: 4 },
-  evaluation:  { label: 'Em Avaliação',  color: 'var(--aura-warn)',   bg: 'rgba(246,173,85,0.06)',  border: 'rgba(246,173,85,0.25)', dot: '#f6ad55', priority: 2 },
-  unavailable: { label: 'Indisponível',  color: 'var(--aura-danger)', bg: 'rgba(255,77,109,0.06)',  border: 'rgba(255,77,109,0.2)',  dot: '#ff4d6d', priority: 1 },
-  rtp:         { label: 'Return To Play', color: 'var(--aura-purple)', bg: 'rgba(180,141,252,0.06)', border: 'rgba(180,141,252,0.2)', dot: '#b48dfc', priority: 3 },
+  available:   { label: 'Disponível',    color: 'var(--sophi-green)',  bg: 'rgba(0,229,160,0.06)',   border: 'rgba(0,229,160,0.2)',   dot: '#00e5a0', priority: 4 },
+  evaluation:  { label: 'Em Avaliação',  color: 'var(--sophi-warn)',   bg: 'rgba(246,173,85,0.06)',  border: 'rgba(246,173,85,0.25)', dot: '#f6ad55', priority: 2 },
+  unavailable: { label: 'Indisponível',  color: 'var(--sophi-danger)', bg: 'rgba(255,77,109,0.06)',  border: 'rgba(255,77,109,0.2)',  dot: '#ff4d6d', priority: 1 },
+  rtp:         { label: 'Return To Play', color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.06)', border: 'rgba(180,141,252,0.2)', dot: '#b48dfc', priority: 3 },
 }
 
 const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 'rtp', 'available']
@@ -122,18 +122,18 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
           {microcycle.microcycleNumber !== null && (
             <div style={{
               display: 'flex', alignItems: 'center', gap: 8,
-              background: 'var(--aura-bg3)', border: '1px solid var(--aura-border2)',
+              background: 'var(--sophi-bg3)', border: '1px solid var(--sophi-border2)',
               borderRadius: 8, padding: '6px 12px',
             }}>
-              <span style={{ fontFamily: 'var(--font-dm-mono)', fontSize: 10, color: 'var(--aura-text3)', textTransform: 'uppercase', letterSpacing: 1 }}>
+              <span style={{ fontFamily: 'var(--font-dm-mono)', fontSize: 10, color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: 1 }}>
                 MC {microcycle.microcycleNumber}
               </span>
-              <span style={{ width: 1, height: 14, background: 'var(--aura-border2)' }} />
+              <span style={{ width: 1, height: 14, background: 'var(--sophi-border2)' }} />
               <span style={{
                 fontFamily: 'var(--font-syne)', fontSize: 13, fontWeight: 700,
-                color: microcycle.mdOffset === 0 ? 'var(--aura-danger)'
-                  : Math.abs(microcycle.mdOffset) <= 2 ? 'var(--aura-warn)'
-                  : 'var(--aura-text)',
+                color: microcycle.mdOffset === 0 ? 'var(--sophi-danger)'
+                  : Math.abs(microcycle.mdOffset) <= 2 ? 'var(--sophi-warn)'
+                  : 'var(--sophi-text)',
               }}>
                 {microcycle.label}
               </span>
@@ -146,8 +146,8 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
             style={{
               marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6,
               padding: '8px 12px', borderRadius: 8,
-              background: 'transparent', border: '1px solid var(--aura-border2)',
-              color: 'var(--aura-text2)', fontWeight: 600, fontSize: 12,
+              background: 'transparent', border: '1px solid var(--sophi-border2)',
+              color: 'var(--sophi-text2)', fontWeight: 600, fontSize: 12,
               cursor: athletes.length === 0 ? 'default' : 'pointer',
               opacity: athletes.length === 0 ? 0.5 : 1,
             }}
@@ -161,21 +161,21 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button
             onClick={() => navigateDate(-1)}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 6, border: '1px solid var(--aura-border2)', background: 'var(--aura-bg3)', color: 'var(--aura-text2)', cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 6, border: '1px solid var(--sophi-border2)', background: 'var(--sophi-bg3)', color: 'var(--sophi-text2)', cursor: 'pointer' }}
             aria-label="Dia anterior"
           >
             <ChevronLeft size={14} />
           </button>
           <div style={{
-            fontFamily: 'var(--font-dm-mono)', fontSize: 12, color: 'var(--aura-text)',
-            padding: '5px 12px', borderRadius: 6, border: '1px solid var(--aura-border2)',
-            background: 'var(--aura-bg3)', minWidth: 180, textAlign: 'center',
+            fontFamily: 'var(--font-dm-mono)', fontSize: 12, color: 'var(--sophi-text)',
+            padding: '5px 12px', borderRadius: 6, border: '1px solid var(--sophi-border2)',
+            background: 'var(--sophi-bg3)', minWidth: 180, textAlign: 'center',
           }}>
             {formatDisplayDate(currentDate)}
           </div>
           <button
             onClick={() => navigateDate(1)}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 6, border: '1px solid var(--aura-border2)', background: 'var(--aura-bg3)', color: 'var(--aura-text2)', cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 6, border: '1px solid var(--sophi-border2)', background: 'var(--sophi-bg3)', color: 'var(--sophi-text2)', cursor: 'pointer' }}
             aria-label="Próximo dia"
           >
             <ChevronRight size={14} />
@@ -183,7 +183,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
           {!isToday && (
             <button
               onClick={goToToday}
-              style={{ fontSize: 11, fontFamily: 'var(--font-dm-mono)', padding: '5px 10px', borderRadius: 6, border: '1px solid var(--aura-border)', background: 'transparent', color: 'var(--aura-green)', cursor: 'pointer' }}
+              style={{ fontSize: 11, fontFamily: 'var(--font-dm-mono)', padding: '5px 10px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-green)', cursor: 'pointer' }}
             >
               Hoje
             </button>
@@ -192,7 +192,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
       </div>
 
       {/* ── Tabs ──────────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid var(--aura-border)', paddingBottom: 0 }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid var(--sophi-border)', paddingBottom: 0 }}>
         {(['overview', 'squad', 'calendar'] as const).map((t) => (
           <button
             key={t}
@@ -200,8 +200,8 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
             style={{
               padding: '8px 16px', fontSize: 13, fontWeight: 500, cursor: 'pointer',
               background: 'transparent', border: 'none',
-              borderBottom: tab === t ? '2px solid var(--aura-green)' : '2px solid transparent',
-              color: tab === t ? 'var(--aura-green)' : 'var(--aura-text2)',
+              borderBottom: tab === t ? '2px solid var(--sophi-green)' : '2px solid transparent',
+              color: tab === t ? 'var(--sophi-green)' : 'var(--sophi-text2)',
               marginBottom: -1,
             }}
           >
@@ -223,17 +223,17 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
               padding: '14px 16px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <Hourglass size={15} color="var(--aura-warn)" className="animate-pulse" />
-                <span style={{ fontFamily: 'var(--font-syne)', fontSize: 13, fontWeight: 700, color: 'var(--aura-warn)' }}>
+                <Hourglass size={15} color="var(--sophi-warn)" className="animate-pulse" />
+                <span style={{ fontFamily: 'var(--font-syne)', fontSize: 13, fontWeight: 700, color: 'var(--sophi-warn)' }}>
                   A Reavaliar
                 </span>
                 <span style={{
-                  fontFamily: 'var(--font-dm-mono)', fontSize: 11, fontWeight: 700, color: 'var(--aura-warn)',
+                  fontFamily: 'var(--font-dm-mono)', fontSize: 11, fontWeight: 700, color: 'var(--sophi-warn)',
                   background: 'rgba(246,173,85,0.18)', borderRadius: 999, padding: '1px 8px',
                 }}>
                   {byStatus.evaluation.length}
                 </span>
-                <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--aura-text3)' }}>
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--sophi-text3)' }}>
                   Aguardam decisão clínica
                 </span>
               </div>
@@ -242,12 +242,12 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
                   <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
                     <div style={{
                       display: 'flex', alignItems: 'center', gap: 8,
-                      background: 'var(--aura-bg2)', border: '1px solid rgba(246,173,85,0.25)',
+                      background: 'var(--sophi-bg2)', border: '1px solid rgba(246,173,85,0.25)',
                       borderRadius: 999, padding: '4px 12px 4px 4px',
                     }}>
                       <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={26} />
-                      <span style={{ fontSize: 12, color: 'var(--aura-text)', fontWeight: 500 }}>{a.name}</span>
-                      <span style={{ fontSize: 10, color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+                      <span style={{ fontSize: 12, color: 'var(--sophi-text)', fontWeight: 500 }}>{a.name}</span>
+                      <span style={{ fontSize: 10, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
                         {a.position}
                       </span>
                     </div>
@@ -267,8 +267,8 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
               const isPriority = status === 'unavailable' || status === 'rtp'
               return (
                 <div key={status} style={{
-                  background: 'var(--aura-bg2)',
-                  border: `1px solid ${isPriority && group.length > 0 ? cfg.border : 'var(--aura-border)'}`,
+                  background: 'var(--sophi-bg2)',
+                  border: `1px solid ${isPriority && group.length > 0 ? cfg.border : 'var(--sophi-border)'}`,
                   borderRadius: 12,
                   overflow: 'hidden',
                 }}>
@@ -277,7 +277,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
                     display: 'flex', alignItems: 'center', gap: 8,
                     padding: '10px 14px',
                     background: group.length > 0 ? cfg.bg : 'transparent',
-                    borderBottom: '1px solid var(--aura-border)',
+                    borderBottom: '1px solid var(--sophi-border)',
                   }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: cfg.dot, flexShrink: 0 }} />
                     <span style={{ fontFamily: 'var(--font-syne)', fontSize: 12, fontWeight: 700, color: cfg.color }}>
@@ -295,7 +295,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
                   {/* Athletes */}
                   <div style={{ padding: '10px 14px', minHeight: 60 }}>
                     {group.length === 0 ? (
-                      <div style={{ fontSize: 11, color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)', textAlign: 'center', padding: '12px 0' }}>
+                      <div style={{ fontSize: 11, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)', textAlign: 'center', padding: '12px 0' }}>
                         —
                       </div>
                     ) : (
@@ -327,13 +327,13 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
 
                   {/* Athletes list (names) for unavailable/evaluation */}
                   {isPriority && group.length > 0 && (
-                    <div style={{ borderTop: '1px solid var(--aura-border)', padding: '8px 14px' }}>
+                    <div style={{ borderTop: '1px solid var(--sophi-border)', padding: '8px 14px' }}>
                       {group.map((a) => (
                         <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none', display: 'block' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
                             <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={24} />
-                            <span style={{ fontSize: 12, color: 'var(--aura-text)', fontWeight: 500 }}>{a.name}</span>
-                            <span style={{ fontSize: 10, color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+                            <span style={{ fontSize: 12, color: 'var(--sophi-text)', fontWeight: 500 }}>{a.name}</span>
+                            <span style={{ fontSize: 10, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
                               {a.position}
                             </span>
                           </div>
@@ -367,8 +367,8 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
               <div key={pos} style={{ marginBottom: 28 }}>
                 <div style={{
                   fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em',
-                  color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)',
-                  marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--aura-border)',
+                  color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)',
+                  marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--sophi-border)',
                 }}>
                   {posLabels[pos]}
                 </div>
@@ -379,7 +379,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
                       <div key={a.id} style={{
                         borderRadius: 16, overflow: 'hidden',
                         border: `2px solid ${cfg.dot}`,
-                        background: 'var(--aura-bg2)',
+                        background: 'var(--sophi-bg2)',
                       }}>
                         <AthleteCard
                           href={withSquadParam(`/athletes/${a.id}`, squadId)}

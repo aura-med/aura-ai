@@ -49,11 +49,11 @@ async function RehabContent({
       <div>
         <h1
           className="text-2xl font-bold"
-          style={{ fontFamily: 'var(--font-syne)', color: 'var(--aura-text)' }}
+          style={{ fontFamily: 'var(--font-syne)', color: 'var(--sophi-text)' }}
         >
           Reabilitação · {athlete.name}
         </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--aura-text2)' }}>
+        <p className="text-sm mt-1" style={{ color: 'var(--sophi-text2)' }}>
           #{athlete.shirt_number}
         </p>
       </div>
@@ -61,9 +61,9 @@ async function RehabContent({
       {!session ? (
         <div
           className="rounded-xl border p-8 text-center"
-          style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+          style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
         >
-          <p className="text-sm" style={{ color: 'var(--aura-text3)' }}>
+          <p className="text-sm" style={{ color: 'var(--sophi-text3)' }}>
             Sem protocolo de reabilitação activo.
           </p>
         </div>
@@ -72,28 +72,28 @@ async function RehabContent({
           {/* Progress bar */}
           <div
             className="rounded-xl border p-5"
-            style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+            style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
           >
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold" style={{ color: 'var(--aura-text)' }}>
+              <h2 className="text-sm font-semibold" style={{ color: 'var(--sophi-text)' }}>
                 {protocol?.name as string} · Dia {currentDay}/{totalDays}
               </h2>
               <span
                 className="text-xs font-mono"
-                style={{ color: 'var(--aura-text3)' }}
+                style={{ color: 'var(--sophi-text3)' }}
               >
                 {Math.round((currentDay / totalDays) * 100)}%
               </span>
             </div>
             <div
               className="h-2 rounded-full overflow-hidden"
-              style={{ background: 'var(--aura-bg4)' }}
+              style={{ background: 'var(--sophi-bg4)' }}
             >
               <div
                 className="h-full rounded-full transition-all"
                 style={{
                   width: `${Math.round((currentDay / totalDays) * 100)}%`,
-                  background: 'var(--aura-green)',
+                  background: 'var(--sophi-green)',
                 }}
               />
             </div>
@@ -102,9 +102,9 @@ async function RehabContent({
           {/* Phase timeline */}
           <div
             className="rounded-xl border p-5"
-            style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+            style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
           >
-            <h2 className="text-sm font-semibold mb-4" style={{ color: 'var(--aura-text)' }}>
+            <h2 className="text-sm font-semibold mb-4" style={{ color: 'var(--sophi-text)' }}>
               Fases do Protocolo
             </h2>
             <div className="space-y-4">
@@ -116,28 +116,28 @@ async function RehabContent({
                     key={phase.id}
                     className="rounded-lg border p-4"
                     style={{
-                      borderColor: isActive ? phase.color + '60' : 'var(--aura-border)',
-                      background: isActive ? phase.color + '08' : 'var(--aura-bg3)',
+                      borderColor: isActive ? phase.color + '60' : 'var(--sophi-border)',
+                      background: isActive ? phase.color + '08' : 'var(--sophi-bg3)',
                     }}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <div
                           className="w-2 h-2 rounded-full"
-                          style={{ background: isDone ? 'var(--aura-green)' : isActive ? phase.color : 'var(--aura-text3)' }}
+                          style={{ background: isDone ? 'var(--sophi-green)' : isActive ? phase.color : 'var(--sophi-text3)' }}
                         />
-                        <span className="text-sm font-medium" style={{ color: 'var(--aura-text)' }}>
+                        <span className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>
                           Fase {phase.id}: {phase.name}
                         </span>
                       </div>
-                      <span className="text-xs font-mono" style={{ color: 'var(--aura-text3)' }}>
+                      <span className="text-xs font-mono" style={{ color: 'var(--sophi-text3)' }}>
                         {phase.range}
                       </span>
                     </div>
                     {isActive && (
                       <ul className="mt-2 space-y-1">
                         {phase.exercises.map((ex, i) => (
-                          <li key={i} className="text-xs flex items-start gap-1.5" style={{ color: 'var(--aura-text2)' }}>
+                          <li key={i} className="text-xs flex items-start gap-1.5" style={{ color: 'var(--sophi-text2)' }}>
                             <span style={{ color: phase.color }}>·</span> {ex}
                           </li>
                         ))}
@@ -153,9 +153,9 @@ async function RehabContent({
           {session.rtp_criteria && (session.rtp_criteria as Array<{ label: string; done: boolean }>).length > 0 && (
             <div
               className="rounded-xl border p-5"
-              style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+              style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
             >
-              <h2 className="text-sm font-semibold mb-4" style={{ color: 'var(--aura-text)' }}>
+              <h2 className="text-sm font-semibold mb-4" style={{ color: 'var(--sophi-text)' }}>
                 Critérios RTP
               </h2>
               <ul className="space-y-2.5">
@@ -164,19 +164,19 @@ async function RehabContent({
                     <div
                       className="w-4 h-4 rounded-full border flex items-center justify-center shrink-0"
                       style={{
-                        borderColor: c.done ? 'var(--aura-green)' : 'var(--aura-border2)',
-                        background: c.done ? 'var(--aura-green-bg)' : 'transparent',
+                        borderColor: c.done ? 'var(--sophi-green)' : 'var(--sophi-border2)',
+                        background: c.done ? 'var(--sophi-green-bg)' : 'transparent',
                       }}
                     >
                       {c.done && (
                         <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                          <path d="M1 4l2 2 4-4" stroke="var(--aura-green)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M1 4l2 2 4-4" stroke="var(--sophi-green)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       )}
                     </div>
                     <span
                       className="text-sm"
-                      style={{ color: c.done ? 'var(--aura-text)' : 'var(--aura-text2)' }}
+                      style={{ color: c.done ? 'var(--sophi-text)' : 'var(--sophi-text2)' }}
                     >
                       {c.label}
                     </span>

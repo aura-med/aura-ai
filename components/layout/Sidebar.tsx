@@ -91,24 +91,24 @@ export function Sidebar() {
         'transition-transform duration-200 md:translate-x-0',
         mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full',
       )}
-      style={{ background: 'var(--aura-bg)', borderColor: 'var(--aura-border)' }}
+      style={{ background: 'var(--sophi-bg)', borderColor: 'var(--sophi-border)' }}
     >
       {/* Mobile-only org + squad header */}
       <div
         className="md:hidden border-b px-4 py-3"
-        style={{ borderColor: 'var(--aura-border)' }}
+        style={{ borderColor: 'var(--sophi-border)' }}
       >
         {selectedOrg && (
           <div className="mb-2">
             <div
               className="text-sm font-bold leading-tight"
-              style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}
+              style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}
             >
               {selectedOrg.name}
             </div>
             <div
               className="text-[10px] uppercase tracking-wide"
-              style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}
+              style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}
             >
               {selectedOrg.type}
             </div>
@@ -120,9 +120,9 @@ export function Sidebar() {
             onChange={(e) => handleSquad(e.target.value)}
             className="w-full rounded-md px-3 py-2 text-xs font-medium outline-none"
             style={{
-              background: 'var(--aura-bg3)',
-              border: '1px solid var(--aura-border)',
-              color: 'var(--aura-text)',
+              background: 'var(--sophi-bg3)',
+              border: '1px solid var(--sophi-border)',
+              color: 'var(--sophi-text)',
               fontFamily: 'var(--font-dm-mono)',
             }}
           >
@@ -144,14 +144,14 @@ export function Sidebar() {
                   className={cn(
                     'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors group',
                     pathname.startsWith('/athletes')
-                      ? 'text-[var(--aura-green)] font-medium'
-                      : 'text-[var(--aura-text2)] hover:text-[var(--aura-text)] hover:bg-[var(--aura-bg3)]'
+                      ? 'text-[var(--sophi-green)] font-medium'
+                      : 'text-[var(--sophi-text2)] hover:text-[var(--sophi-text)] hover:bg-[var(--sophi-bg3)]'
                   )}
                   style={pathname.startsWith('/athletes') ? { background: 'rgba(0,229,160,0.08)' } : undefined}
                 >
                   <UserCircle
                     size={15}
-                    className={cn('shrink-0', pathname.startsWith('/athletes') ? 'text-[var(--aura-green)]' : 'text-[var(--aura-text3)] group-hover:text-[var(--aura-text2)]')}
+                    className={cn('shrink-0', pathname.startsWith('/athletes') ? 'text-[var(--sophi-green)]' : 'text-[var(--sophi-text3)] group-hover:text-[var(--sophi-text2)]')}
                   />
                   <span className="flex-1 truncate">{t('nav.my_profile')}</span>
                 </Link>
@@ -165,7 +165,7 @@ export function Sidebar() {
             <div key={sectionKey}>
               <p
                 className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest"
-                style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}
+                style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-mono)' }}
               >
                 {t(`sections.${sectionKey}`)}
               </p>
@@ -185,8 +185,8 @@ export function Sidebar() {
                           item.inDevelopment
                             ? 'opacity-50 cursor-default pointer-events-none'
                             : isActive
-                              ? 'text-[var(--aura-green)] font-medium'
-                              : 'text-[var(--aura-text2)] hover:text-[var(--aura-text)] hover:bg-[var(--aura-bg3)]'
+                              ? 'text-[var(--sophi-green)] font-medium'
+                              : 'text-[var(--sophi-text2)] hover:text-[var(--sophi-text)] hover:bg-[var(--sophi-bg3)]'
                         )}
                         style={
                           isActive && !item.inDevelopment
@@ -201,8 +201,8 @@ export function Sidebar() {
                           className={cn(
                             'shrink-0',
                             isActive && !item.inDevelopment
-                              ? 'text-[var(--aura-green)]'
-                              : 'text-[var(--aura-text3)] group-hover:text-[var(--aura-text2)]'
+                              ? 'text-[var(--sophi-green)]'
+                              : 'text-[var(--sophi-text3)] group-hover:text-[var(--sophi-text2)]'
                           )}
                         />
                         <span className="flex-1 truncate">{label}</span>
@@ -210,9 +210,9 @@ export function Sidebar() {
                           <span
                             className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full"
                             style={{
-                              background: 'var(--aura-bg3)',
-                              color: 'var(--aura-text3)',
-                              border: '1px solid var(--aura-border)',
+                              background: 'var(--sophi-bg3)',
+                              color: 'var(--sophi-text3)',
+                              border: '1px solid var(--sophi-border)',
                             }}
                           >
                             Em dev.
@@ -222,8 +222,8 @@ export function Sidebar() {
                           <span
                             className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full"
                             style={{
-                              background: 'var(--aura-danger-bg)',
-                              color: 'var(--aura-danger)',
+                              background: 'var(--sophi-danger-bg)',
+                              color: 'var(--sophi-danger)',
                             }}
                           >
                             {item.badge}
@@ -242,7 +242,7 @@ export function Sidebar() {
       {/* Version tag */}
       <div
         className="px-6 py-3 text-[10px]"
-        style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}
+        style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-mono)' }}
       >
         {t('version')}
       </div>

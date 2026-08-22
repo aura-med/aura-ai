@@ -73,7 +73,7 @@
       "female_squad": "Selección Femenina",
       "settings": "Configuración"
     },
-    "version": "Aura v1.1 · FPF Pilot"
+    "version": "Sophi v1.1 · FPF Pilot"
   },
   "risk": {
     "low": "Bajo",
@@ -371,7 +371,7 @@
     "integrations": {
       "title": "Integraciones",
       "description": "Conecta dispositivos y plataformas externas.",
-      "note": "Las integraciones se irán habilitando progresivamente. Contacta al equipo Aura para acceso anticipado."
+      "note": "Las integraciones se irán habilitando progresivamente. Contacta al equipo Sophi para acceso anticipado."
     },
     "subscription": {
       "title": "Suscripción",
@@ -391,7 +391,7 @@
       "featureSupport": "Soporte técnico dedicado",
       "upgradeTitle": "¿Interesado en expandir?",
       "upgradeDescription": "Contáctanos para explorar opciones de plan completo, integraciones adicionales o implementación en otras organizaciones.",
-      "contactUpgrade": "Contactar equipo Aura"
+      "contactUpgrade": "Contactar equipo Sophi"
     },
     "privacy": {
       "title": "Privacidad & GDPR",

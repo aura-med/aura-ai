@@ -55,7 +55,7 @@ export const useUiStore = create<UiState>()(
       setAthleteId: (athleteId) => set({ athleteId }),
     }),
     {
-      name: 'aura-ui',
+      name: 'sophi-ui',
       partialize: (s) => ({
         role: s.role,
         sidebarCollapsed: s.sidebarCollapsed,

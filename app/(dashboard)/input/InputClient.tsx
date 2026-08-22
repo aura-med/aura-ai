@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from 'react'
 import { calcScore, riskColor, VAR_ICONS, VAR_LABELS } from '@/lib/scoring'
-import { DecompositionBars, ConfBadge } from '@/components/ui/aura'
+import { DecompositionBars, ConfBadge } from '@/components/ui/sophi'
 import { upsertWellnessCheckin } from '@/lib/data/actions'
 import { useUiStore } from '@/stores/uiStore'
 import { isOwner, REHAB_ROLES } from '@/lib/roles'

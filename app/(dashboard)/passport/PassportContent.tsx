@@ -120,14 +120,14 @@ export function PassportContent({ initialAthletes }: Props) {
               <div className="ctitle">Simulação — Novo clube recebe passaporte</div>
               <div style={{ background: 'var(--bg3)', borderRadius: 8, padding: 14, marginBottom: 12 }}>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text3)', letterSpacing: 1.5, marginBottom: 10 }}>
-                  CENÁRIO: TRANSFERÊNCIA PARA CLUBE CLIENTE AURA
+                  CENÁRIO: TRANSFERÊNCIA PARA CLUBE CLIENTE SOPHI
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                   <div style={{ fontSize: 24 }}>🏟️</div>
                   <div><div style={{ fontSize: 13, fontWeight: 600 }}>Clube actual</div><div style={{ fontSize: 11, color: 'var(--text2)' }}>Clube actual</div></div>
                   <div style={{ fontSize: 20, color: 'var(--text3)' }}>→</div>
                   <div style={{ fontSize: 24 }}>🏟️</div>
-                  <div><div style={{ fontSize: 13, fontWeight: 600 }}>Novo Clube</div><div style={{ fontSize: 11, color: 'var(--text2)' }}>Cliente Aura</div></div>
+                  <div><div style={{ fontSize: 13, fontWeight: 600 }}>Novo Clube</div><div style={{ fontSize: 11, color: 'var(--text2)' }}>Cliente Sophi</div></div>
                 </div>
                 <button onClick={() => setShared(s => ({ ...s, [selected]: !isShared }))}
                   style={{ width: '100%', padding: 10, borderRadius: 8, border: 'none', marginBottom: 10, cursor: 'pointer', fontWeight: 600, background: isShared ? 'var(--green2)' : 'var(--bg4)', color: isShared ? '#000' : 'var(--text2)', fontSize: 13 }}>
@@ -150,7 +150,7 @@ export function PassportContent({ initialAthletes }: Props) {
                   </div>
                 ) : (
                   <div style={{ background: 'var(--bg4)', borderRadius: 8, padding: 12, fontSize: 12, color: 'var(--text3)' }}>
-                    Sem Aura: o novo clube começa do zero. Nenhum historial, nenhum baseline.
+                    Sem Sophi: o novo clube começa do zero. Nenhum historial, nenhum baseline.
                   </div>
                 )}
               </div>

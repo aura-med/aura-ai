@@ -2,7 +2,7 @@
 
 // ─────────────────────────────────────────────────────────────────────────────
 // lib/actions/recommendations.ts
-// Aura — Recommendations Server Actions
+// Sophi — Recommendations Server Actions
 //
 // Flow:
 //   1. After calculateScore() → call generateAndPersistRecommendations()

@@ -6,10 +6,10 @@ import Link from 'next/link'
 import type { AthleteAvailabilityStatus } from '@/types'
 
 const STATUS_CONFIG: Record<AthleteAvailabilityStatus, { label: string; color: string; dot: string; bg: string }> = {
-  available:   { label: 'Disponível',   color: 'var(--aura-green)',  dot: '#00e5a0', bg: 'rgba(0,229,160,0.08)' },
-  evaluation:  { label: 'Em Avaliação', color: 'var(--aura-warn)',   dot: '#f6ad55', bg: 'rgba(246,173,85,0.08)' },
-  unavailable: { label: 'Indisponível', color: 'var(--aura-danger)', dot: '#ff4d6d', bg: 'rgba(255,77,109,0.08)' },
-  rtp:         { label: 'Em RTP',       color: 'var(--aura-purple)', dot: '#b48dfc', bg: 'rgba(180,141,252,0.08)' },
+  available:   { label: 'Disponível',   color: 'var(--sophi-green)',  dot: '#00e5a0', bg: 'rgba(0,229,160,0.08)' },
+  evaluation:  { label: 'Em Avaliação', color: 'var(--sophi-warn)',   dot: '#f6ad55', bg: 'rgba(246,173,85,0.08)' },
+  unavailable: { label: 'Indisponível', color: 'var(--sophi-danger)', dot: '#ff4d6d', bg: 'rgba(255,77,109,0.08)' },
+  rtp:         { label: 'Em RTP',       color: 'var(--sophi-purple)', dot: '#b48dfc', bg: 'rgba(180,141,252,0.08)' },
 }
 
 const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 'rtp', 'available']
@@ -59,7 +59,7 @@ export default async function ClinicalFilePage({
             background: 'rgba(255,77,109,0.06)', border: '1px solid rgba(255,77,109,0.2)',
             borderRadius: 10, padding: '10px 16px', marginBottom: 10,
           }}>
-            <div style={{ fontSize: 11, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-danger)', fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <div style={{ fontSize: 11, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-danger)', fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Atenção clínica necessária
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -78,7 +78,7 @@ export default async function ClinicalFilePage({
                           <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={22} />
                         </div>
                       </div>
-                      <span style={{ fontSize: 12, color: 'var(--aura-text)', fontWeight: 500 }}>{a.name}</span>
+                      <span style={{ fontSize: 12, color: 'var(--sophi-text)', fontWeight: 500 }}>{a.name}</span>
                       <span style={{ fontSize: 10, color: cfg.color, fontFamily: 'var(--font-dm-mono)' }}>{cfg.label}</span>
                     </div>
                   </Link>
@@ -98,13 +98,13 @@ export default async function ClinicalFilePage({
           <div key={status} style={{ marginBottom: 28 }}>
             <div style={{
               display: 'flex', alignItems: 'center', gap: 8,
-              marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--aura-border)',
+              marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--sophi-border)',
             }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: cfg.dot }} />
               <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: cfg.color, fontFamily: 'var(--font-dm-mono)' }}>
                 {cfg.label}
               </span>
-              <span style={{ fontSize: 11, color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+              <span style={{ fontSize: 11, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
                 ({group.length})
               </span>
             </div>
@@ -114,7 +114,7 @@ export default async function ClinicalFilePage({
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 10,
                     padding: '10px 14px', borderRadius: 10,
-                    background: 'var(--aura-bg2)', border: `1px solid var(--aura-border)`,
+                    background: 'var(--sophi-bg2)', border: `1px solid var(--sophi-border)`,
                   }}>
                     <div style={{ borderRadius: '50%', padding: 2, background: cfg.dot, flexShrink: 0 }}>
                       <div style={{ borderRadius: '50%', overflow: 'hidden', width: 36, height: 36 }}>
@@ -122,10 +122,10 @@ export default async function ClinicalFilePage({
                       </div>
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--aura-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--sophi-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {a.shirt_number != null ? `${a.shirt_number}. ` : ''}{a.name}
                       </div>
-                      <div style={{ fontSize: 11, color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+                      <div style={{ fontSize: 11, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
                         {a.position ?? '—'}
                       </div>
                     </div>

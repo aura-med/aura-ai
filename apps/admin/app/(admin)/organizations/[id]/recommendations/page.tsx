@@ -1,5 +1,5 @@
 // apps/admin/app/(admin)/organizations/[id]/recommendations/page.tsx
-// Aura Admin — Recommendation Model Configuration per Organisation
+// Sophi Admin — Recommendation Model Configuration per Organisation
 // NOT gated by Support Mode — this is platform config, not sensitive athlete data.
 
 import Link from 'next/link'
@@ -19,20 +19,20 @@ const DEFAULT_WEIGHTS     = {
 }
 
 const RISK_COLORS: Record<RiskLevel, string> = {
-  low:      'var(--aura-green)',
+  low:      'var(--sophi-green)',
   medium:   '#f59e0b',
   high:     '#f97316',
   critical: '#ef4444',
 }
 
 const EVIDENCE_LEVEL_COLORS: Record<string, string> = {
-  Ia:     'var(--aura-green)',
-  Ib:     'var(--aura-green)',
+  Ia:     'var(--sophi-green)',
+  Ib:     'var(--sophi-green)',
   IIa:    '#f59e0b',
   IIb:    '#f59e0b',
   III:    '#f97316',
-  IV:     'var(--aura-text3)',
-  Expert: 'var(--aura-text3)',
+  IV:     'var(--sophi-text3)',
+  Expert: 'var(--sophi-text3)',
 }
 
 function EvidenceBadge({ level }: { level: string }) {
@@ -55,7 +55,7 @@ function DirectionBadge({ direction }: { direction: string }) {
     reduce_load: '#f97316',
     rest:        '#ef4444',
     monitor:     '#f59e0b',
-    maintain:    'var(--aura-green)',
+    maintain:    'var(--sophi-green)',
     assess:      '#8b5cf6',
     communicate: '#3b82f6',
   }
@@ -63,8 +63,8 @@ function DirectionBadge({ direction }: { direction: string }) {
     <span
       className="inline-block rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider"
       style={{
-        background: `${colors[direction] ?? 'var(--aura-text3)'}18`,
-        color: colors[direction] ?? 'var(--aura-text3)',
+        background: `${colors[direction] ?? 'var(--sophi-text3)'}18`,
+        color: colors[direction] ?? 'var(--sophi-text3)',
         fontFamily: 'var(--font-dm-mono)',
       }}
     >
@@ -129,10 +129,10 @@ export default async function OrgRecommendationsPage({
       {/* EU AI Act notice */}
       <Card>
         <div className="flex items-start gap-3">
-          <Shield size={16} style={{ color: 'var(--aura-green)', flexShrink: 0, marginTop: 2 }} />
+          <Shield size={16} style={{ color: 'var(--sophi-green)', flexShrink: 0, marginTop: 2 }} />
           <div className="space-y-1">
             <p className="text-sm font-semibold">EU AI Act Compliance — Art. 13 &amp; 14</p>
-            <p className="text-xs" style={{ color: 'var(--aura-text2)' }}>
+            <p className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
               All base rules include bibliographic evidence references visible to clinicians (Art. 13 transparency).
               Clinical direction cannot be altered by any org override — human clinical judgement is always final (Art. 14).
               Rule deactivations require written justification logged to the audit trail.
@@ -144,31 +144,31 @@ export default async function OrgRecommendationsPage({
       {/* Config status */}
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
-          <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+          <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
             Configuration
           </p>
           <p className="mt-1 text-lg font-semibold">
             {config ? 'Custom' : 'Default'}
           </p>
-          <p className="text-xs" style={{ color: 'var(--aura-text2)' }}>
-            {config ? `Updated ${new Date(config.updated_at).toLocaleDateString('pt-PT')}` : 'Using Aura global defaults'}
+          <p className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
+            {config ? `Updated ${new Date(config.updated_at).toLocaleDateString('pt-PT')}` : 'Using Sophi global defaults'}
           </p>
         </Card>
         <Card>
-          <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+          <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
             Active Overrides
           </p>
           <p className="mt-1 text-lg font-semibold">{overrides.filter((o) => o.is_active).length}</p>
-          <p className="text-xs" style={{ color: 'var(--aura-text2)' }}>
+          <p className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
             {overrides.filter((o) => o.override_type === 'deactivate' && o.is_active).length} deactivations
           </p>
         </Card>
         <Card>
-          <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+          <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
             Context
           </p>
           <p className="mt-1 text-lg font-semibold capitalize">{config?.context_type ?? 'club'}</p>
-          <p className="text-xs" style={{ color: 'var(--aura-text2)' }}>
+          <p className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
             {config?.language?.toUpperCase() ?? 'PT'} · ACWR {config?.context_type === 'federation' ? 'condicionado' : 'canónico'}
           </p>
         </Card>
@@ -186,12 +186,12 @@ export default async function OrgRecommendationsPage({
 
       {/* Rules Library */}
       <Card className="overflow-x-auto p-0">
-        <div className="flex items-center justify-between border-b px-4 py-3" style={{ borderColor: 'var(--aura-border)' }}>
+        <div className="flex items-center justify-between border-b px-4 py-3" style={{ borderColor: 'var(--sophi-border)' }}>
           <div className="flex items-center gap-2">
-            <BookOpen size={14} style={{ color: 'var(--aura-green)' }} />
+            <BookOpen size={14} style={{ color: 'var(--sophi-green)' }} />
             <h2 className="text-sm font-semibold">Evidence-Based Rule Library</h2>
           </div>
-          <span className="text-xs" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+          <span className="text-xs" style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
             {ALL_VARIABLES.length} variables · {ALL_RISK_LEVELS.length} levels · {ALL_STAKEHOLDERS.length} stakeholders
           </span>
         </div>
@@ -206,11 +206,11 @@ export default async function OrgRecommendationsPage({
               {/* Variable header */}
               <div
                 className="flex items-center gap-3 border-b px-4 py-2.5"
-                style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border)' }}
+                style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border)' }}
               >
                 <span className="text-sm font-semibold">{meta.label}</span>
                 <EvidenceBadge level={meta.evidenceLevel} />
-                <span className="text-xs" style={{ color: 'var(--aura-text3)' }}>
+                <span className="text-xs" style={{ color: 'var(--sophi-text3)' }}>
                   {meta.evidence}
                 </span>
                 {varOverrides.length > 0 && (
@@ -274,11 +274,11 @@ export default async function OrgRecommendationsPage({
                           )}
                           <td>
                             <div className="space-y-1">
-                              <p className="text-xs leading-relaxed" style={{ color: 'var(--aura-text)' }}>
+                              <p className="text-xs leading-relaxed" style={{ color: 'var(--sophi-text)' }}>
                                 {rule.icon} {rule.text}
                               </p>
                               {activeOverride && activeOverride.override_type === 'text_only' && ruleIdx === 0 && (
-                                <p className="text-xs italic" style={{ color: 'var(--aura-green)' }}>
+                                <p className="text-xs italic" style={{ color: 'var(--sophi-green)' }}>
                                   → Override: {activeOverride.custom_text}
                                 </p>
                               )}
@@ -287,19 +287,19 @@ export default async function OrgRecommendationsPage({
                           <td>
                             <DirectionBadge direction={rule.clinical_direction} />
                           </td>
-                          <td className="text-xs" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+                          <td className="text-xs" style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
                             {rule.timing ?? '—'}
                           </td>
                           <td>
                             {!rule.overridable ? (
                               <div className="flex items-center gap-1">
-                                <Lock size={10} style={{ color: 'var(--aura-warn)' }} />
-                                <span className="text-[9px]" style={{ color: 'var(--aura-warn)', fontFamily: 'var(--font-dm-mono)' }}>
+                                <Lock size={10} style={{ color: 'var(--sophi-warn)' }} />
+                                <span className="text-[9px]" style={{ color: 'var(--sophi-warn)', fontFamily: 'var(--font-dm-mono)' }}>
                                   LOCKED
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-[9px]" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+                              <span className="text-[9px]" style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
                                 editable
                               </span>
                             )}
@@ -314,7 +314,7 @@ export default async function OrgRecommendationsPage({
                                   {/* Deactivate button rendered in client component */}
                                 </div>
                               ) : (
-                                <span className="text-xs" style={{ color: 'var(--aura-text3)' }}>—</span>
+                                <span className="text-xs" style={{ color: 'var(--sophi-text3)' }}>—</span>
                               )}
                             </td>
                           )}
@@ -332,7 +332,7 @@ export default async function OrgRecommendationsPage({
       {/* Active overrides summary */}
       {overrides.filter((o) => o.is_active).length > 0 && (
         <Card className="overflow-x-auto p-0">
-          <div className="border-b px-4 py-3" style={{ borderColor: 'var(--aura-border)' }}>
+          <div className="border-b px-4 py-3" style={{ borderColor: 'var(--sophi-border)' }}>
             <h2 className="text-sm font-semibold">Active Overrides for this Organisation</h2>
           </div>
           <table className="admin-table">
@@ -375,21 +375,21 @@ export default async function OrgRecommendationsPage({
                     </StatusBadge>
                   </td>
                   <td className="max-w-xs">
-                    <p className="truncate text-xs" style={{ color: 'var(--aura-text2)' }}>
+                    <p className="truncate text-xs" style={{ color: 'var(--sophi-text2)' }}>
                       {override.custom_text ?? '—'}
                     </p>
                   </td>
                   <td className="max-w-xs">
-                    <p className="truncate text-xs" style={{ color: 'var(--aura-text2)' }}>
+                    <p className="truncate text-xs" style={{ color: 'var(--sophi-text2)' }}>
                       {override.justification ?? '—'}
                     </p>
                   </td>
-                  <td className="text-xs" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+                  <td className="text-xs" style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
                     {new Date(override.created_at).toLocaleDateString('pt-PT')}
                   </td>
                   <td>
                     {/* Deactivate button — handled in client component */}
-                    <span className="text-xs" style={{ color: 'var(--aura-text3)' }}>via client</span>
+                    <span className="text-xs" style={{ color: 'var(--sophi-text3)' }}>via client</span>
                   </td>
                 </tr>
               ))}

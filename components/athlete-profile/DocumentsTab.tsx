@@ -12,13 +12,13 @@ const DocumentUploadModal = dynamic(() => import('./DocumentUploadModal').then((
 // ── Category config ───────────────────────────────────────────────────────────
 
 const CATEGORY_CONFIG: Record<DocumentCategory, { label: string; icon: React.ElementType; color: string }> = {
-  emd:     { label: 'EMD',          icon: FileText,    color: 'var(--aura-green)'  },
-  cardio:  { label: 'Cardiologia',  icon: Heart,       color: 'var(--aura-danger)' },
-  imaging: { label: 'Imagiologia',  icon: Image,       color: 'var(--aura-warn)'   },
+  emd:     { label: 'EMD',          icon: FileText,    color: 'var(--sophi-green)'  },
+  cardio:  { label: 'Cardiologia',  icon: Heart,       color: 'var(--sophi-danger)' },
+  imaging: { label: 'Imagiologia',  icon: Image,       color: 'var(--sophi-warn)'   },
   labs:    { label: 'Análises',     icon: FlaskConical, color: '#7c3aed'           },
   dental:  { label: 'Estomatologia', icon: Smile,      color: '#0891b2'            },
-  reports: { label: 'Relatórios',   icon: FileText,    color: 'var(--aura-text2)'  },
-  other:   { label: 'Outros',       icon: FolderOpen,  color: 'var(--aura-text3)'  },
+  reports: { label: 'Relatórios',   icon: FileText,    color: 'var(--sophi-text2)'  },
+  other:   { label: 'Outros',       icon: FolderOpen,  color: 'var(--sophi-text3)'  },
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -85,8 +85,8 @@ function DocumentRow({
 
   return (
     <div
-      className="flex items-center gap-3 rounded-lg border px-3 py-3 group transition-colors hover:border-[var(--aura-border2)]"
-      style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}
+      className="flex items-center gap-3 rounded-lg border px-3 py-3 group transition-colors hover:border-[var(--sophi-border2)]"
+      style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}
     >
       {/* Icon */}
       <div
@@ -98,8 +98,8 @@ function DocumentRow({
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-medium truncate" style={{ color: 'var(--aura-text)' }}>{doc.file_name}</p>
-        <p className="text-[10px] mt-0.5" style={{ color: 'var(--aura-text3)' }}>
+        <p className="text-xs font-medium truncate" style={{ color: 'var(--sophi-text)' }}>{doc.file_name}</p>
+        <p className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>
           {cfg.label}
           {doc.exam_type ? ` · ${doc.exam_type}` : ''}
           {doc.exam_date ? ` · ${formatDate(doc.exam_date)}` : ''}
@@ -117,20 +117,20 @@ function DocumentRow({
           title="Abrir documento"
         >
           {opening
-            ? <Loader2 size={12} className="animate-spin" style={{ color: 'var(--aura-text3)' }} />
-            : <ExternalLink size={12} style={{ color: 'var(--aura-text3)' }} />
+            ? <Loader2 size={12} className="animate-spin" style={{ color: 'var(--sophi-text3)' }} />
+            : <ExternalLink size={12} style={{ color: 'var(--sophi-text3)' }} />
           }
         </button>
         <button
           type="button"
           onClick={handleArchive}
           disabled={archiving}
-          className="p-1.5 rounded-lg transition-colors hover:bg-[var(--aura-danger-bg)]"
+          className="p-1.5 rounded-lg transition-colors hover:bg-[var(--sophi-danger-bg)]"
           title={confirmDel ? 'Confirmar arquivo' : 'Arquivar'}
         >
           {archiving
-            ? <Loader2 size={12} className="animate-spin" style={{ color: 'var(--aura-danger)' }} />
-            : <Trash2 size={12} style={{ color: confirmDel ? 'var(--aura-danger)' : 'var(--aura-text3)' }} />
+            ? <Loader2 size={12} className="animate-spin" style={{ color: 'var(--sophi-danger)' }} />
+            : <Trash2 size={12} style={{ color: confirmDel ? 'var(--sophi-danger)' : 'var(--sophi-text3)' }} />
           }
         </button>
       </div>
@@ -188,7 +188,7 @@ export function DocumentsTab({ profile }: { profile: AthleteProfileData }) {
       <div className="space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
             Arquivo Clínico
             {documents.length > 0 && (
               <span className="ml-2 font-mono">{documents.length} doc{documents.length !== 1 ? 's' : ''}</span>
@@ -197,8 +197,8 @@ export function DocumentsTab({ profile }: { profile: AthleteProfileData }) {
           <button
             type="button"
             onClick={() => setShowUpload(true)}
-            className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--aura-green)] hover:text-[var(--aura-green)]"
-            style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text3)' }}
+            className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
+            style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}
           >
             <Upload size={11} />
             Upload
@@ -212,9 +212,9 @@ export function DocumentsTab({ profile }: { profile: AthleteProfileData }) {
             onClick={() => setActiveCategory('all')}
             className="text-[10px] font-medium px-2.5 py-1 rounded-lg border transition-colors"
             style={{
-              borderColor: activeCategory === 'all' ? 'var(--aura-green)' : 'var(--aura-border)',
-              color:  activeCategory === 'all' ? 'var(--aura-green)' : 'var(--aura-text3)',
-              background: activeCategory === 'all' ? 'var(--aura-green-bg)' : 'var(--aura-bg2)',
+              borderColor: activeCategory === 'all' ? 'var(--sophi-green)' : 'var(--sophi-border)',
+              color:  activeCategory === 'all' ? 'var(--sophi-green)' : 'var(--sophi-text3)',
+              background: activeCategory === 'all' ? 'var(--sophi-green-bg)' : 'var(--sophi-bg2)',
             }}
           >
             Todos {documents.length > 0 && `(${documents.length})`}
@@ -232,9 +232,9 @@ export function DocumentsTab({ profile }: { profile: AthleteProfileData }) {
                 onClick={() => setActiveCategory(cat)}
                 className="flex items-center gap-1 text-[10px] font-medium px-2.5 py-1 rounded-lg border transition-colors"
                 style={{
-                  borderColor: isActive ? cfg.color : 'var(--aura-border)',
-                  color:  isActive ? cfg.color : 'var(--aura-text3)',
-                  background: isActive ? `${cfg.color}15` : 'var(--aura-bg2)',
+                  borderColor: isActive ? cfg.color : 'var(--sophi-border)',
+                  color:  isActive ? cfg.color : 'var(--sophi-text3)',
+                  background: isActive ? `${cfg.color}15` : 'var(--sophi-bg2)',
                 }}
               >
                 <Icon size={9} />
@@ -248,27 +248,27 @@ export function DocumentsTab({ profile }: { profile: AthleteProfileData }) {
         {/* Document list */}
         {loading ? (
           <div className="flex justify-center py-8">
-            <Loader2 size={20} className="animate-spin" style={{ color: 'var(--aura-text3)' }} />
+            <Loader2 size={20} className="animate-spin" style={{ color: 'var(--sophi-text3)' }} />
           </div>
         ) : documents.length === 0 ? (
           <div
             className="rounded-xl border border-dashed py-12 flex flex-col items-center gap-3"
-            style={{ borderColor: 'var(--aura-border2)' }}
+            style={{ borderColor: 'var(--sophi-border2)' }}
           >
-            <FolderOpen size={28} style={{ color: 'var(--aura-text3)', opacity: 0.5 }} />
+            <FolderOpen size={28} style={{ color: 'var(--sophi-text3)', opacity: 0.5 }} />
             <div className="text-center">
-              <p className="text-sm font-medium" style={{ color: 'var(--aura-text2)' }}>
+              <p className="text-sm font-medium" style={{ color: 'var(--sophi-text2)' }}>
                 {activeCategory === 'all' ? 'Sem documentos' : `Sem documentos em "${CATEGORY_CONFIG[activeCategory].label}"`}
               </p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--aura-text3)' }}>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--sophi-text3)' }}>
                 Faz upload de exames, relatórios ou EMDs
               </p>
             </div>
             <button
               type="button"
               onClick={() => setShowUpload(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--aura-green)] hover:text-[var(--aura-green)]"
-              style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text3)' }}
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
+              style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}
             >
               <Upload size={11} />
               Upload Documento

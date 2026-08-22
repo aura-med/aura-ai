@@ -30,21 +30,21 @@ export function PartialScoreBars({ partials, weights, missing }: Props) {
         const val = partials[key]
         const isMissing = missing.includes(key)
         const pct = val !== null ? Math.round(val * 100) : 0
-        const barColor = val !== null ? partialBarColor(val) : 'var(--aura-text3)'
+        const barColor = val !== null ? partialBarColor(val) : 'var(--sophi-text3)'
         const weight = Math.round(weights[key] * 100)
 
         return (
           <div key={key}>
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
-                <span className="text-xs" style={{ color: 'var(--aura-text2)' }}>
+                <span className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
                   {VARIABLE_LABELS[key] ?? key}
                 </span>
                 <span
                   className="text-[10px] font-mono px-1 rounded"
                   style={{
-                    background: 'var(--aura-bg3)',
-                    color: 'var(--aura-text3)',
+                    background: 'var(--sophi-bg3)',
+                    color: 'var(--sophi-text3)',
                   }}
                 >
                   w{weight}%
@@ -52,7 +52,7 @@ export function PartialScoreBars({ partials, weights, missing }: Props) {
                 {isMissing && (
                   <span
                     className="text-[10px] px-1 rounded"
-                    style={{ background: 'var(--aura-warn-bg)', color: 'var(--aura-warn)' }}
+                    style={{ background: 'var(--sophi-warn-bg)', color: 'var(--sophi-warn)' }}
                   >
                     sem dados
                   </span>
@@ -69,7 +69,7 @@ export function PartialScoreBars({ partials, weights, missing }: Props) {
             </div>
             <div
               className="h-1.5 rounded-full overflow-hidden"
-              style={{ background: 'var(--aura-bg4)' }}
+              style={{ background: 'var(--sophi-bg4)' }}
             >
               <div
                 className="h-full rounded-full transition-all duration-500"

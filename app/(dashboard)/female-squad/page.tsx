@@ -78,7 +78,7 @@ export default async function FemalePage({
           <div className="adot ad-b" />
           <div style={{ fontSize: 12 }}>
             <strong>Evidência:</strong> Risco de lesão LCA varia até 4x ao longo do ciclo menstrual
-            (Hewett et al. 2007; Renstrom et al. BJSM 2008). A Aura é a única plataforma que integra
+            (Hewett et al. 2007; Renstrom et al. BJSM 2008). A Sophi é a única plataforma que integra
             este factor no score de risco.
           </div>
         </div>

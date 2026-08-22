@@ -33,30 +33,30 @@ export function LoginForm() {
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <label className="block space-y-1.5">
-        <span className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>Email</span>
+        <span className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>Email</span>
         <input
           className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-1"
           onChange={(event) => setEmail(event.target.value)}
           required
-          style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }}
+          style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
           type="email"
           value={email}
         />
       </label>
       <label className="block space-y-1.5">
-        <span className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>Password</span>
+        <span className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>Password</span>
         <input
           className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-1"
           onChange={(event) => setPassword(event.target.value)}
           required
-          style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }}
+          style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
           type="password"
           value={password}
         />
       </label>
 
       {error ? (
-        <p className="rounded-lg px-3 py-2 text-xs" style={{ background: 'var(--aura-danger-bg)', color: 'var(--aura-danger)' }}>
+        <p className="rounded-lg px-3 py-2 text-xs" style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}>
           {error}
         </p>
       ) : null}
@@ -64,7 +64,7 @@ export function LoginForm() {
       <button
         className="w-full rounded-lg py-2.5 text-sm font-semibold transition-opacity disabled:opacity-50"
         disabled={loading}
-        style={{ background: 'var(--aura-green)', color: 'var(--aura-bg)', fontFamily: 'var(--font-syne)' }}
+        style={{ background: 'var(--sophi-green)', color: 'var(--sophi-bg)', fontFamily: 'var(--font-syne)' }}
         type="submit"
       >
         {loading ? 'Entering...' : 'Enter admin'}

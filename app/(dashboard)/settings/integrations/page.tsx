@@ -18,16 +18,16 @@ const INTEGRATIONS: Integration[] = [
 ]
 
 const CATEGORY_COLORS: Record<string, { bg: string; color: string }> = {
-  GPS:      { bg: 'rgba(0,229,160,0.1)',  color: 'var(--aura-green)' },
-  HRV:      { bg: 'rgba(77,154,255,0.1)', color: 'var(--aura-blue)' },
-  Wearable: { bg: 'rgba(255,211,0,0.1)',  color: 'var(--aura-warn)' },
+  GPS:      { bg: 'rgba(0,229,160,0.1)',  color: 'var(--sophi-green)' },
+  HRV:      { bg: 'rgba(77,154,255,0.1)', color: 'var(--sophi-blue)' },
+  Wearable: { bg: 'rgba(255,211,0,0.1)',  color: 'var(--sophi-warn)' },
   Sleep:    { bg: 'rgba(177,77,255,0.1)', color: '#b14dff' },
-  Recovery: { bg: 'rgba(255,77,109,0.1)', color: 'var(--aura-danger)' },
+  Recovery: { bg: 'rgba(255,77,109,0.1)', color: 'var(--sophi-danger)' },
 }
 
 export default function IntegrationsPage() {
   return (
-    <Suspense fallback={<div className="text-sm text-[var(--aura-text3)]">A carregar integracoes...</div>}>
+    <Suspense fallback={<div className="text-sm text-[var(--sophi-text3)]">A carregar integracoes...</div>}>
       <IntegrationsContent />
     </Suspense>
   )
@@ -40,10 +40,10 @@ function IntegrationsContent() {
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-lg font-semibold" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
           {t('title')}
         </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--aura-text3)' }}>{t('description')}</p>
+        <p className="text-sm mt-1" style={{ color: 'var(--sophi-text3)' }}>{t('description')}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -53,7 +53,7 @@ function IntegrationsContent() {
             <div
               key={integration.id}
               className="rounded-xl border p-4 flex flex-col gap-3"
-              style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+              style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -64,8 +64,8 @@ function IntegrationsContent() {
                     <Puzzle size={18} style={{ color: catStyle.color }} />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold" style={{ color: 'var(--aura-text)' }}>{integration.name}</div>
-                    <div className="text-xs" style={{ color: 'var(--aura-text3)' }}>{integration.description}</div>
+                    <div className="text-sm font-semibold" style={{ color: 'var(--sophi-text)' }}>{integration.name}</div>
+                    <div className="text-xs" style={{ color: 'var(--sophi-text3)' }}>{integration.description}</div>
                   </div>
                 </div>
               </div>
@@ -79,7 +79,7 @@ function IntegrationsContent() {
                 </span>
                 <span
                   className="px-2.5 py-1 rounded-md text-xs font-medium"
-                  style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--aura-text3)', border: '1px solid var(--aura-border2)' }}
+                  style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--sophi-text3)', border: '1px solid var(--sophi-border2)' }}
                 >
                   {tc('comingSoon')}
                 </span>
@@ -91,7 +91,7 @@ function IntegrationsContent() {
 
       <div
         className="rounded-xl border px-4 py-3 text-xs"
-        style={{ background: 'rgba(0,229,160,0.04)', borderColor: 'rgba(0,229,160,0.15)', color: 'var(--aura-text3)' }}
+        style={{ background: 'rgba(0,229,160,0.04)', borderColor: 'rgba(0,229,160,0.15)', color: 'var(--sophi-text3)' }}
       >
         {t('note')}
       </div>

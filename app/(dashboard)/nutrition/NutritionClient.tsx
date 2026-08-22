@@ -33,7 +33,7 @@ function skinfoldSum(a: TeamNutritionAssessment): number | null {
 }
 
 const inputCls = 'w-full px-3 py-2 rounded-lg text-xs border focus:outline-none'
-const inputStyle = { background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }
+const inputStyle = { background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }
 
 // ── Summary grid ─────────────────────────────────────────────────────────────
 
@@ -59,16 +59,16 @@ function SummaryGrid({ athletes, assessments }: { athletes: NutritionAthlete[]; 
   if (cards.length === 0) return null
 
   const STATUS_CFG: Record<SkinfoldStatus, { label: string; color: string; bg: string }> = {
-    above:   { label: 'Acima do limite', color: 'var(--aura-danger)', bg: 'var(--aura-danger-bg)' },
-    within:  { label: 'Dentro do limite', color: 'var(--aura-green)',  bg: 'var(--aura-green-bg)'  },
-    unknown: { label: 'Sem avaliação',    color: 'var(--aura-text3)',  bg: 'var(--aura-bg3)'        },
+    above:   { label: 'Acima do limite', color: 'var(--sophi-danger)', bg: 'var(--sophi-danger-bg)' },
+    within:  { label: 'Dentro do limite', color: 'var(--sophi-green)',  bg: 'var(--sophi-green-bg)'  },
+    unknown: { label: 'Sem avaliação',    color: 'var(--sophi-text3)',  bg: 'var(--sophi-bg3)'        },
   }
 
   return (
-    <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-      <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
-        <AlertTriangle size={13} style={{ color: 'var(--aura-green)' }} />
-        <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text2)' }}>
+    <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+      <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
+        <AlertTriangle size={13} style={{ color: 'var(--sophi-green)' }} />
+        <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text2)' }}>
           Soma de Pregas vs. Limite — Resumo da Equipa
         </p>
       </div>
@@ -81,15 +81,15 @@ function SummaryGrid({ athletes, assessments }: { athletes: NutritionAthlete[]; 
               className="rounded-lg border p-3 space-y-1.5"
               style={{ borderColor: cfg.color, background: cfg.bg }}
             >
-              <p className="text-xs font-semibold truncate" style={{ color: 'var(--aura-text)' }}>{athleteLabel(athlete)}</p>
+              <p className="text-xs font-semibold truncate" style={{ color: 'var(--sophi-text)' }}>{athleteLabel(athlete)}</p>
               <div className="flex items-baseline gap-1">
                 <span className="text-lg font-bold font-mono" style={{ color: cfg.color }}>{sum ?? '—'}</span>
                 {athlete.skinfold_limit_mm != null && (
-                  <span className="text-[10px]" style={{ color: 'var(--aura-text3)' }}>/ {athlete.skinfold_limit_mm}mm</span>
+                  <span className="text-[10px]" style={{ color: 'var(--sophi-text3)' }}>/ {athlete.skinfold_limit_mm}mm</span>
                 )}
               </div>
               <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: cfg.color }}>{cfg.label}</p>
-              {latestDate && <p className="text-[9px]" style={{ color: 'var(--aura-text3)' }}>{formatDate(latestDate)}</p>}
+              {latestDate && <p className="text-[9px]" style={{ color: 'var(--sophi-text3)' }}>{formatDate(latestDate)}</p>}
             </div>
           )
         })}
@@ -133,31 +133,31 @@ function DailyWeightModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="w-full max-w-xs rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
+      <div className="w-full max-w-xs rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-sm" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>Registar Peso</h3>
-          <button type="button" onClick={onClose}><X size={14} style={{ color: 'var(--aura-text3)' }} /></button>
+          <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>Registar Peso</h3>
+          <button type="button" onClick={onClose}><X size={14} style={{ color: 'var(--sophi-text3)' }} /></button>
         </div>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Atleta</label>
+            <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Atleta</label>
             <select value={athleteId} onChange={(e) => setAthleteId(e.target.value)} className={inputCls} style={inputStyle}>
               {athletes.map((a) => <option key={a.id} value={a.id}>{athleteLabel(a)}</option>)}
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Data</label>
+            <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Data</label>
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} style={inputStyle} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Peso (kg)</label>
+            <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Peso (kg)</label>
             <input type="number" step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="ex: 78.4" className={inputCls} style={inputStyle} />
           </div>
         </div>
-        {error && <p className="text-xs" style={{ color: 'var(--aura-danger)' }}>{error}</p>}
+        {error && <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>}
         <div className="flex gap-3">
-          <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--aura-bg3)]" style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }}>Cancelar</button>
-          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--aura-green)', color: '#000' }}>
+          <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--sophi-bg3)]" style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}>Cancelar</button>
+          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--sophi-green)', color: '#000' }}>
             {saving && <Loader2 size={12} className="animate-spin" />} Guardar
           </button>
         </div>
@@ -207,31 +207,31 @@ function AssessmentModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
+      <div className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-sm" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>Nova Avaliação Nutricional</h3>
-          <button type="button" onClick={onClose}><X size={14} style={{ color: 'var(--aura-text3)' }} /></button>
+          <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>Nova Avaliação Nutricional</h3>
+          <button type="button" onClick={onClose}><X size={14} style={{ color: 'var(--sophi-text3)' }} /></button>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Atleta</label>
+            <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Atleta</label>
             <select value={athleteId} onChange={(e) => setAthleteId(e.target.value)} className={inputCls} style={inputStyle}>
               {athletes.map((a) => <option key={a.id} value={a.id}>{athleteLabel(a)}</option>)}
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Data</label>
+            <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Data</label>
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} style={inputStyle} />
           </div>
         </div>
 
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--aura-text3)' }}>Pregas Cutâneas (mm)</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--sophi-text3)' }}>Pregas Cutâneas (mm)</p>
           <div className="grid grid-cols-2 gap-2.5">
             {SKINFOLD_FIELDS.map((f) => (
               <div key={f.key} className="space-y-1">
-                <label className="text-[10px]" style={{ color: 'var(--aura-text2)' }}>{f.label}</label>
+                <label className="text-[10px]" style={{ color: 'var(--sophi-text2)' }}>{f.label}</label>
                 <input type="number" step="0.1" value={values[f.key] ?? ''} onChange={(e) => setValues((p) => ({ ...p, [f.key]: e.target.value }))} className={inputCls} style={inputStyle} />
               </div>
             ))}
@@ -239,11 +239,11 @@ function AssessmentModal({
         </div>
 
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--aura-text3)' }}>Perímetros (cm)</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--sophi-text3)' }}>Perímetros (cm)</p>
           <div className="grid grid-cols-2 gap-2.5">
             {PERIMETER_FIELDS.map((f) => (
               <div key={f.key} className="space-y-1">
-                <label className="text-[10px]" style={{ color: 'var(--aura-text2)' }}>{f.label}</label>
+                <label className="text-[10px]" style={{ color: 'var(--sophi-text2)' }}>{f.label}</label>
                 <input type="number" step="0.1" value={values[f.key] ?? ''} onChange={(e) => setValues((p) => ({ ...p, [f.key]: e.target.value }))} className={inputCls} style={inputStyle} />
               </div>
             ))}
@@ -251,14 +251,14 @@ function AssessmentModal({
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px]" style={{ color: 'var(--aura-text2)' }}>Densidade específica da urina</label>
+          <label className="text-[10px]" style={{ color: 'var(--sophi-text2)' }}>Densidade específica da urina</label>
           <input type="number" step="0.001" value={urine} onChange={(e) => setUrine(e.target.value)} placeholder="ex: 1.018" className={inputCls} style={inputStyle} />
         </div>
 
-        {error && <p className="text-xs" style={{ color: 'var(--aura-danger)' }}>{error}</p>}
+        {error && <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>}
         <div className="flex gap-3">
-          <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--aura-bg3)]" style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }}>Cancelar</button>
-          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--aura-green)', color: '#000' }}>
+          <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--sophi-bg3)]" style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}>Cancelar</button>
+          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--sophi-green)', color: '#000' }}>
             {saving && <Loader2 size={12} className="animate-spin" />} Guardar
           </button>
         </div>
@@ -308,12 +308,12 @@ export function NutritionClient({
       {/* Header */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
-          <Apple size={18} style={{ color: 'var(--aura-green)' }} />
+          <Apple size={18} style={{ color: 'var(--sophi-green)' }} />
           <div>
-            <h1 className="text-lg font-bold" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+            <h1 className="text-lg font-bold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
               Nutrição
             </h1>
-            <p className="text-xs" style={{ color: 'var(--aura-text2)' }}>
+            <p className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
               Peso, avaliações antropométricas e hidratação da equipa
             </p>
           </div>
@@ -322,14 +322,14 @@ export function NutritionClient({
           {canWeight && (
             <button type="button" onClick={() => setShowWeightModal(true)} disabled={athletes.length === 0}
               className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg disabled:opacity-40 border"
-              style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text)' }}>
+              style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }}>
               <Scale size={13} /> Registar Peso
             </button>
           )}
           {canAssessment && (
             <button type="button" onClick={() => setShowAssessmentModal(true)} disabled={athletes.length === 0}
               className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg disabled:opacity-40"
-              style={{ background: 'var(--aura-green)', color: '#000' }}>
+              style={{ background: 'var(--sophi-green)', color: '#000' }}>
               <Plus size={13} /> Nova Avaliação
             </button>
           )}
@@ -340,34 +340,34 @@ export function NutritionClient({
 
       {/* Search */}
       <div className="relative max-w-xs">
-        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--aura-text3)' }} />
+        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--sophi-text3)' }} />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Procurar por atleta…"
           className="w-full pl-8 pr-3 py-2 rounded-lg text-xs border focus:outline-none"
-          style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }}
+          style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
         />
       </div>
 
       {/* Daily weights */}
-      <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-        <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
-          <Scale size={13} style={{ color: 'var(--aura-green)' }} />
-          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text2)' }}>
+      <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+        <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
+          <Scale size={13} style={{ color: 'var(--sophi-green)' }} />
+          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text2)' }}>
             Pesagens Recentes{filteredWeights.length ? ` (${filteredWeights.length})` : ''}
           </p>
         </div>
         <div className="p-4">
           {filteredWeights.length === 0 ? (
-            <p className="text-xs text-center py-3" style={{ color: 'var(--aura-text3)' }}>Sem pesagens registadas</p>
+            <p className="text-xs text-center py-3" style={{ color: 'var(--sophi-text3)' }}>Sem pesagens registadas</p>
           ) : (
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {filteredWeights.slice(0, 100).map((w) => (
-                <div key={w.id} className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-xs" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
-                  <span className="font-medium" style={{ color: 'var(--aura-text)' }}>{athleteLabel(w.athletes)}</span>
-                  <div className="flex items-center gap-3" style={{ color: 'var(--aura-text3)' }}>
-                    <span className="font-mono font-bold" style={{ color: 'var(--aura-text)' }}>{w.weight_kg} kg</span>
+                <div key={w.id} className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-xs" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
+                  <span className="font-medium" style={{ color: 'var(--sophi-text)' }}>{athleteLabel(w.athletes)}</span>
+                  <div className="flex items-center gap-3" style={{ color: 'var(--sophi-text3)' }}>
+                    <span className="font-mono font-bold" style={{ color: 'var(--sophi-text)' }}>{w.weight_kg} kg</span>
                     <span>{formatDate(w.measurement_date)}</span>
                     {w.recorded_by_name && <span>{w.recorded_by_name}</span>}
                   </div>
@@ -379,16 +379,16 @@ export function NutritionClient({
       </div>
 
       {/* Assessments */}
-      <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-        <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
-          <Apple size={13} style={{ color: 'var(--aura-green)' }} />
-          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text2)' }}>
+      <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+        <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
+          <Apple size={13} style={{ color: 'var(--sophi-green)' }} />
+          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text2)' }}>
             Avaliações Recentes{filteredAssessments.length ? ` (${filteredAssessments.length})` : ''}
           </p>
         </div>
         <div className="p-4">
           {filteredAssessments.length === 0 ? (
-            <p className="text-xs text-center py-3" style={{ color: 'var(--aura-text3)' }}>Sem avaliações registadas</p>
+            <p className="text-xs text-center py-3" style={{ color: 'var(--sophi-text3)' }}>Sem avaliações registadas</p>
           ) : (
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {filteredAssessments.slice(0, 100).map((a) => {
@@ -396,10 +396,10 @@ export function NutritionClient({
                 const athlete = athletes.find((x) => x.id === a.athlete_id)
                 const over = sum != null && athlete?.skinfold_limit_mm != null && sum > athlete.skinfold_limit_mm
                 return (
-                  <div key={a.id} className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-xs" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
-                    <span className="font-medium" style={{ color: 'var(--aura-text)' }}>{athleteLabel(a.athletes)}</span>
-                    <div className="flex items-center gap-3" style={{ color: 'var(--aura-text3)' }}>
-                      <span className="font-mono font-bold" style={{ color: sum == null ? 'var(--aura-text3)' : over ? 'var(--aura-danger)' : 'var(--aura-green)' }}>
+                  <div key={a.id} className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-xs" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
+                    <span className="font-medium" style={{ color: 'var(--sophi-text)' }}>{athleteLabel(a.athletes)}</span>
+                    <div className="flex items-center gap-3" style={{ color: 'var(--sophi-text3)' }}>
+                      <span className="font-mono font-bold" style={{ color: sum == null ? 'var(--sophi-text3)' : over ? 'var(--sophi-danger)' : 'var(--sophi-green)' }}>
                         {sum != null ? `${sum}mm` : '—'}
                       </span>
                       {a.urine_specific_gravity != null && <span>DEU {a.urine_specific_gravity}</span>}

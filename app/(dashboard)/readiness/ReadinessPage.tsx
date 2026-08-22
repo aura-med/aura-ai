@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { calcScore, getReadiness } from '@/lib/scoring'
-import { ScoreBadge } from '@/components/ui/aura'
+import { ScoreBadge } from '@/components/ui/sophi'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import type { ReadinessIndicator } from '@/types'
 import { getReadinessList, type ReadinessAthleteDTO } from '@/lib/dal/athletes'

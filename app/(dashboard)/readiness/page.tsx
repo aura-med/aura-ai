@@ -1,6 +1,6 @@
 import { connection } from 'next/server'
 import Link from 'next/link'
-import { ScoreBadge } from '@/components/ui/aura'
+import { ScoreBadge } from '@/components/ui/sophi'
 import { getReadinessPageDTO } from '@/lib/data/readiness'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 

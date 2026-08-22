@@ -91,22 +91,22 @@ export function DocumentUploadModal({ athleteId, onClose, onUploaded }: Props) {
     }
   }
 
-  const inputStyle = { background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)', color: 'var(--aura-text)' }
-  const inputClass = "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--aura-green)]"
+  const inputStyle = { background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }
+  const inputClass = "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)' }}>
       <div
         className="w-full max-w-lg rounded-2xl border shadow-2xl flex flex-col"
-        style={{ background: 'var(--aura-bg)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg)', borderColor: 'var(--sophi-border)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'var(--aura-border)' }}>
-          <p className="text-sm font-bold" style={{ color: 'var(--aura-text)' }}>
+        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'var(--sophi-border)' }}>
+          <p className="text-sm font-bold" style={{ color: 'var(--sophi-text)' }}>
             Upload Documento
           </p>
           <button type="button" onClick={onClose} className="rounded-lg p-1 hover:bg-white/10">
-            <X size={15} style={{ color: 'var(--aura-text3)' }} />
+            <X size={15} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
 
@@ -115,26 +115,26 @@ export function DocumentUploadModal({ athleteId, onClose, onUploaded }: Props) {
 
           {/* File drop zone */}
           <div
-            className="rounded-xl border-2 border-dashed p-6 flex flex-col items-center gap-3 cursor-pointer transition-colors hover:border-[var(--aura-green)]"
-            style={{ borderColor: file ? 'var(--aura-green)' : 'var(--aura-border2)' }}
+            className="rounded-xl border-2 border-dashed p-6 flex flex-col items-center gap-3 cursor-pointer transition-colors hover:border-[var(--sophi-green)]"
+            style={{ borderColor: file ? 'var(--sophi-green)' : 'var(--sophi-border2)' }}
             onClick={() => inputRef.current?.click()}
           >
             {file ? (
               <>
-                <File size={24} style={{ color: 'var(--aura-green)' }} />
+                <File size={24} style={{ color: 'var(--sophi-green)' }} />
                 <div className="text-center">
-                  <p className="text-sm font-medium" style={{ color: 'var(--aura-text)' }}>{file.name}</p>
-                  <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>
+                  <p className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>{file.name}</p>
+                  <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>
                     {(file.size / 1024).toFixed(0)} KB · {file.type}
                   </p>
                 </div>
               </>
             ) : (
               <>
-                <Upload size={24} style={{ color: 'var(--aura-text3)' }} />
+                <Upload size={24} style={{ color: 'var(--sophi-text3)' }} />
                 <div className="text-center">
-                  <p className="text-sm font-medium" style={{ color: 'var(--aura-text2)' }}>Clica para selecionar ficheiro</p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--aura-text3)' }}>PDF, JPG, PNG, DOCX — máx. 50 MB</p>
+                  <p className="text-sm font-medium" style={{ color: 'var(--sophi-text2)' }}>Clica para selecionar ficheiro</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--sophi-text3)' }}>PDF, JPG, PNG, DOCX — máx. 50 MB</p>
                 </div>
               </>
             )}
@@ -150,7 +150,7 @@ export function DocumentUploadModal({ athleteId, onClose, onUploaded }: Props) {
           {/* Category */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
                 Categoria *
               </label>
               <select
@@ -165,7 +165,7 @@ export function DocumentUploadModal({ athleteId, onClose, onUploaded }: Props) {
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
                 Tipo de Exame
               </label>
               <input
@@ -181,7 +181,7 @@ export function DocumentUploadModal({ athleteId, onClose, onUploaded }: Props) {
           {/* Exam date + notes */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
                 Data do Exame
               </label>
               <input
@@ -193,7 +193,7 @@ export function DocumentUploadModal({ athleteId, onClose, onUploaded }: Props) {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
                 Notas
               </label>
               <input
@@ -208,40 +208,40 @@ export function DocumentUploadModal({ athleteId, onClose, onUploaded }: Props) {
 
           {/* Progress bar */}
           {uploading && (
-            <div className="rounded-full overflow-hidden h-1.5" style={{ background: 'var(--aura-bg3)' }}>
+            <div className="rounded-full overflow-hidden h-1.5" style={{ background: 'var(--sophi-bg3)' }}>
               <div
                 className="h-full rounded-full transition-all duration-500"
-                style={{ width: `${progress}%`, background: 'var(--aura-green)' }}
+                style={{ width: `${progress}%`, background: 'var(--sophi-green)' }}
               />
             </div>
           )}
 
           {error && (
-            <p className="text-xs rounded-lg px-3 py-2" style={{ background: 'var(--aura-danger-bg)', color: 'var(--aura-danger)' }}>
+            <p className="text-xs rounded-lg px-3 py-2" style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}>
               {error}
             </p>
           )}
 
           {!error && (
-            <p className="text-[10px]" style={{ color: 'var(--aura-text3)' }}>
+            <p className="text-[10px]" style={{ color: 'var(--sophi-text3)' }}>
               ⚠️ Certifica-te de que o bucket <code className="font-mono">medical-documents</code> está criado no Supabase Storage com acesso público ou autenticado.
             </p>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 px-5 py-4 border-t" style={{ borderColor: 'var(--aura-border)' }}>
+        <div className="flex items-center justify-end gap-2 px-5 py-4 border-t" style={{ borderColor: 'var(--sophi-border)' }}>
           <button
             type="button" onClick={onClose}
             className="px-4 py-2 rounded-lg text-xs font-medium border hover:bg-white/5"
-            style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text2)' }}
+            style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)' }}
           >
             Cancelar
           </button>
           <button
             type="button" onClick={handleUpload} disabled={uploading || !file}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50"
-            style={{ background: 'var(--aura-green)', color: '#000' }}
+            style={{ background: 'var(--sophi-green)', color: '#000' }}
           >
             {uploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
             {uploading ? 'A carregar…' : 'Upload'}

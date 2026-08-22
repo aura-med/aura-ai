@@ -52,7 +52,7 @@ export default async function UsersPage({
 
       <Card>
         <div className="mb-4 flex items-center gap-2">
-          <MailPlus size={15} style={{ color: 'var(--aura-green)' }} />
+          <MailPlus size={15} style={{ color: 'var(--sophi-green)' }} />
           <h2 className="text-sm font-semibold">Invite user</h2>
         </div>
         <form action={inviteUser} className="grid gap-3 lg:grid-cols-[1fr_1fr_180px_160px_auto]">
@@ -110,10 +110,10 @@ export default async function UsersPage({
               return (
                 <tr key={user.id}>
                   <td>
-                    <div className="font-medium" style={{ color: 'var(--aura-text)' }}>
+                    <div className="font-medium" style={{ color: 'var(--sophi-text)' }}>
                       {user.full_name ?? user.email ?? 'Unnamed'}
                     </div>
-                    <div className="text-xs" style={{ color: 'var(--aura-text3)' }}>
+                    <div className="text-xs" style={{ color: 'var(--sophi-text3)' }}>
                       {user.email ?? user.id.slice(0, 8)}
                     </div>
                   </td>
@@ -132,7 +132,7 @@ export default async function UsersPage({
                       </select>
                       <button
                         className="min-h-7 rounded px-2 text-xs hover:bg-white/5"
-                        style={{ color: 'var(--aura-green)' }}
+                        style={{ color: 'var(--sophi-green)' }}
                         type="submit"
                         title="Save role"
                       >

@@ -16,7 +16,7 @@ function TabSkeleton() {
   return (
     <div className="space-y-4 animate-pulse">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="rounded-xl h-24" style={{ background: 'var(--aura-bg3)' }} />
+        <div key={i} className="rounded-xl h-24" style={{ background: 'var(--sophi-bg3)' }} />
       ))}
     </div>
   )
@@ -102,11 +102,11 @@ function AthleteHeader({ profile }: { profile: AthleteProfileData }) {
         {/* ── Photo rectangle — fills full row height ───────────────── */}
         <div
           className="relative group shrink-0 w-24 rounded-xl overflow-hidden"
-          style={{ border: '2px solid var(--aura-border)', background: 'var(--aura-bg3)' }}
+          style={{ border: '2px solid var(--sophi-border)', background: 'var(--sophi-bg3)' }}
         >
           {uploading ? (
             <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 size={18} className="animate-spin" style={{ color: 'var(--aura-text3)' }} />
+              <Loader2 size={18} className="animate-spin" style={{ color: 'var(--sophi-text3)' }} />
             </div>
           ) : photoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -118,7 +118,7 @@ function AthleteHeader({ profile }: { profile: AthleteProfileData }) {
           ) : (
             <div
               className="absolute inset-0 flex items-center justify-center text-2xl font-bold font-mono"
-              style={{ color: 'var(--aura-green)' }}
+              style={{ color: 'var(--sophi-green)' }}
             >
               {profile.shirt_number ?? '—'}
             </div>
@@ -147,11 +147,11 @@ function AthleteHeader({ profile }: { profile: AthleteProfileData }) {
         <div className="flex flex-col justify-center min-w-0">
           <h1
             className="text-xl font-bold tracking-tight truncate"
-            style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}
+            style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}
           >
             {profile.name}
           </h1>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--aura-text3)' }}>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--sophi-text3)' }}>
             {profile.position ?? 'Sem posição'}
             {profile.age ? ` · ${profile.age} anos` : ''}
             {profile.club ? ` · ${profile.club}` : ''}
@@ -169,11 +169,11 @@ function AthleteHeader({ profile }: { profile: AthleteProfileData }) {
           <div key={label} className="text-center">
             <p
               className="text-xl font-bold font-mono"
-              style={{ color: (highlight as boolean | undefined) ? 'var(--aura-green)' : 'var(--aura-text)' }}
+              style={{ color: (highlight as boolean | undefined) ? 'var(--sophi-green)' : 'var(--sophi-text)' }}
             >
               {value}
             </p>
-            <p className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+            <p className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
               {label}
             </p>
           </div>

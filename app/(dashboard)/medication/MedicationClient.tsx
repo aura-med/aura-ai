@@ -125,12 +125,12 @@ export function MedicationClient({
       {/* Header */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
-          <Pill size={18} style={{ color: 'var(--aura-green)' }} />
+          <Pill size={18} style={{ color: 'var(--sophi-green)' }} />
           <div>
-            <h1 className="text-lg font-bold" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+            <h1 className="text-lg font-bold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
               Medicação
             </h1>
-            <p className="text-xs" style={{ color: 'var(--aura-text2)' }}>
+            <p className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
               Histórico de administrações da equipa
             </p>
           </div>
@@ -141,7 +141,7 @@ export function MedicationClient({
             onClick={() => setModal({ mode: 'create' })}
             disabled={athletes.length === 0}
             className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg disabled:opacity-40"
-            style={{ background: 'var(--aura-green)', color: '#000' }}
+            style={{ background: 'var(--sophi-green)', color: '#000' }}
           >
             <Plus size={13} /> Registar Administração
           </button>
@@ -151,47 +151,47 @@ export function MedicationClient({
       {/* Filters */}
       <div className="flex items-end gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[180px]">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--aura-text3)' }} />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--sophi-text3)' }} />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Procurar por atleta ou medicamento…"
             className="w-full pl-8 pr-3 py-2 rounded-lg text-xs border focus:outline-none"
-            style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }}
+            style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
           />
         </div>
         <div className="space-y-1">
-          <label className="text-[10px] block" style={{ color: 'var(--aura-text3)' }}>De</label>
+          <label className="text-[10px] block" style={{ color: 'var(--sophi-text3)' }}>De</label>
           <input type="date" value={dateFrom} max={dateTo || undefined} onChange={(e) => setDateFrom(e.target.value)}
             className="px-2 py-2 rounded-lg text-xs border focus:outline-none"
-            style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }} />
+            style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }} />
         </div>
         <div className="space-y-1">
-          <label className="text-[10px] block" style={{ color: 'var(--aura-text3)' }}>Até</label>
+          <label className="text-[10px] block" style={{ color: 'var(--sophi-text3)' }}>Até</label>
           <input type="date" value={dateTo} min={dateFrom || undefined} onChange={(e) => setDateTo(e.target.value)}
             className="px-2 py-2 rounded-lg text-xs border focus:outline-none"
-            style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }} />
+            style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }} />
         </div>
         {(dateFrom || dateTo || query) && (
           <button type="button" onClick={() => { setQuery(''); setDateFrom(''); setDateTo('') }}
-            className="px-2 py-2 rounded-lg text-xs border" style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text3)' }}>
+            className="px-2 py-2 rounded-lg text-xs border" style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text3)' }}>
             Limpar
           </button>
         )}
         <button type="button" onClick={() => setGrouped((g) => !g)}
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs border"
-          style={{ borderColor: 'var(--aura-border)', color: grouped ? 'var(--aura-green)' : 'var(--aura-text2)', background: grouped ? 'rgba(0,229,160,0.08)' : 'transparent' }}>
+          style={{ borderColor: 'var(--sophi-border)', color: grouped ? 'var(--sophi-green)' : 'var(--sophi-text2)', background: grouped ? 'rgba(0,229,160,0.08)' : 'transparent' }}>
           {grouped ? <List size={13} /> : <Users size={13} />} {grouped ? 'Lista' : 'Agrupar por atleta'}
         </button>
       </div>
 
-      {deleteError && <p role="alert" className="text-xs" style={{ color: 'var(--aura-danger)' }}>{deleteError}</p>}
+      {deleteError && <p role="alert" className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{deleteError}</p>}
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div className="rounded-xl border p-8 text-center" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-          <Pill size={28} className="mx-auto mb-3" style={{ color: 'var(--aura-text3)' }} />
-          <p className="text-sm" style={{ color: 'var(--aura-text3)' }}>
+        <div className="rounded-xl border p-8 text-center" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+          <Pill size={28} className="mx-auto mb-3" style={{ color: 'var(--sophi-text3)' }} />
+          <p className="text-sm" style={{ color: 'var(--sophi-text3)' }}>
             {items.length === 0 ? 'Sem administrações registadas' : 'Sem resultados para os filtros'}
           </p>
         </div>
@@ -200,8 +200,8 @@ export function MedicationClient({
           {groups.map((g) => (
             <div key={g.athlete?.id ?? 'x'}>
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-bold" style={{ color: 'var(--aura-text)' }}>{athleteLabel(g.athlete)}</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--aura-bg4)', color: 'var(--aura-text3)' }}>{g.rows.length}</span>
+                <span className="text-xs font-bold" style={{ color: 'var(--sophi-text)' }}>{athleteLabel(g.athlete)}</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-bg4)', color: 'var(--sophi-text3)' }}>{g.rows.length}</span>
               </div>
               <div className="space-y-2">
                 {g.rows.map((r) => (
@@ -251,51 +251,51 @@ function Row({
 }) {
   const confirming = confirmDeleteId === r.id
   return (
-    <div className="rounded-lg border px-4 py-3" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg2)' }}>
+    <div className="rounded-lg border px-4 py-3" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg2)' }}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold" style={{ color: 'var(--aura-text)' }}>{r.medication_name}</span>
+            <span className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>{r.medication_name}</span>
             {r.route && (
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase" style={{ background: 'var(--aura-bg4)', color: 'var(--aura-text3)' }}>
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase" style={{ background: 'var(--sophi-bg4)', color: 'var(--sophi-text3)' }}>
                 {ROUTE_LABEL[r.route] ?? r.route}
               </span>
             )}
-            {r.dose && <span className="text-[10px]" style={{ color: 'var(--aura-text3)' }}>{r.dose}</span>}
+            {r.dose && <span className="text-[10px]" style={{ color: 'var(--sophi-text3)' }}>{r.dose}</span>}
           </div>
           {showAthlete && (
-            <div className="mt-1 flex items-center gap-2 text-[11px]" style={{ color: 'var(--aura-text2)' }}>
-              <span className="font-medium" style={{ color: 'var(--aura-text)' }}>{athleteLabel(r.athletes)}</span>
-              {r.athletes?.position && <span style={{ color: 'var(--aura-text3)' }}>· {r.athletes.position}</span>}
+            <div className="mt-1 flex items-center gap-2 text-[11px]" style={{ color: 'var(--sophi-text2)' }}>
+              <span className="font-medium" style={{ color: 'var(--sophi-text)' }}>{athleteLabel(r.athletes)}</span>
+              {r.athletes?.position && <span style={{ color: 'var(--sophi-text3)' }}>· {r.athletes.position}</span>}
             </div>
           )}
-          {r.notes && <p className="mt-1 text-[10px] italic" style={{ color: 'var(--aura-text3)' }}>{r.notes}</p>}
+          {r.notes && <p className="mt-1 text-[10px] italic" style={{ color: 'var(--sophi-text3)' }}>{r.notes}</p>}
         </div>
         <div className="flex items-start gap-2 shrink-0">
           <div className="text-right">
-            <div className="flex items-center gap-1 justify-end text-[10px]" style={{ color: 'var(--aura-text3)' }}>
+            <div className="flex items-center gap-1 justify-end text-[10px]" style={{ color: 'var(--sophi-text3)' }}>
               <Clock size={9} /> {formatDateTime(r.administered_at)}
             </div>
-            {r.administered_by_name && <div className="text-[10px] mt-0.5" style={{ color: 'var(--aura-text3)' }}>{r.administered_by_name}</div>}
+            {r.administered_by_name && <div className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>{r.administered_by_name}</div>}
           </div>
           {canWrite && !confirming && (
             <div className="flex items-center gap-1">
               <button type="button" onClick={onEdit} className="p-1 rounded hover:bg-white/10" title="Editar">
-                <Pencil size={12} style={{ color: 'var(--aura-text3)' }} />
+                <Pencil size={12} style={{ color: 'var(--sophi-text3)' }} />
               </button>
               <button type="button" onClick={() => setConfirmDeleteId(r.id)} className="p-1 rounded hover:bg-white/10" title="Apagar">
-                <Trash2 size={12} style={{ color: 'var(--aura-danger)' }} />
+                <Trash2 size={12} style={{ color: 'var(--sophi-danger)' }} />
               </button>
             </div>
           )}
           {canWrite && confirming && (
             <div className="flex items-center gap-1">
               <button type="button" onClick={() => onDelete(r.id)} disabled={deletingId === r.id}
-                className="text-[10px] font-bold px-2 py-1 rounded" style={{ background: 'var(--aura-danger)', color: '#fff' }}>
+                className="text-[10px] font-bold px-2 py-1 rounded" style={{ background: 'var(--sophi-danger)', color: '#fff' }}>
                 {deletingId === r.id ? '…' : 'Apagar'}
               </button>
               <button type="button" onClick={() => setConfirmDeleteId(null)}
-                className="text-[10px] px-2 py-1 rounded border" style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text3)' }}>
+                className="text-[10px] px-2 py-1 rounded border" style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text3)' }}>
                 Não
               </button>
             </div>
@@ -376,19 +376,19 @@ function MedicationModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="w-full max-w-sm rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
+      <div className="w-full max-w-sm rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-sm" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+          <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
             {isEdit ? 'Editar Administração' : 'Registar Administração'}
           </h3>
-          <button type="button" onClick={onClose}><X size={14} style={{ color: 'var(--aura-text3)' }} /></button>
+          <button type="button" onClick={onClose}><X size={14} style={{ color: 'var(--sophi-text3)' }} /></button>
         </div>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Atleta</label>
+            <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Atleta</label>
             <select value={athleteId} onChange={(e) => setAthleteId(e.target.value)} disabled={isEdit}
               className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none disabled:opacity-60"
-              style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }}>
+              style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}>
               {isEdit ? (
                 <option value={editing!.athlete_id}>{athleteLabel(editing!.athletes)}</option>
               ) : (
@@ -399,50 +399,50 @@ function MedicationModal({
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Medicamento</label>
+            <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Medicamento</label>
             <input value={medName} onChange={(e) => setMedName(e.target.value)} placeholder="Nome do medicamento"
               className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
-              style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }} />
+              style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Dose</label>
+              <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Dose</label>
               <input value={dose} onChange={(e) => setDose(e.target.value)} placeholder="ex: 500 mg"
                 className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
-                style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }} />
+                style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Via</label>
+              <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Via</label>
               <select value={route} onChange={(e) => setRoute(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
-                style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }}>
+                style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}>
                 {ROUTE_OPTIONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
               </select>
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Data e hora</label>
+            <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Data e hora</label>
             <input type="datetime-local" value={administeredAt} onChange={(e) => setAdministeredAt(e.target.value)}
               className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
-              style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }} />
+              style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs" style={{ color: 'var(--aura-text2)' }}>Notas (opcional)</label>
+            <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Notas (opcional)</label>
             <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notas adicionais"
               className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
-              style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }} />
+              style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }} />
           </div>
         </div>
-        {error && <p role="alert" className="text-xs" style={{ color: 'var(--aura-danger)' }}>{error}</p>}
+        {error && <p role="alert" className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>}
         <div className="flex gap-3">
           <button type="button" onClick={onClose}
-            className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--aura-bg3)]"
-            style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }}>
+            className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--sophi-bg3)]"
+            style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}>
             Cancelar
           </button>
           <button type="button" onClick={handleSave} disabled={saving}
             className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1"
-            style={{ background: 'var(--aura-green)', color: '#000' }}>
+            style={{ background: 'var(--sophi-green)', color: '#000' }}>
             {saving && <Loader2 size={12} className="animate-spin" />} Guardar
           </button>
         </div>

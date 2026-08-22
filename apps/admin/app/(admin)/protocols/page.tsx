@@ -96,11 +96,11 @@ export default function ProtocolsPage() {
         <div>
           <h1
             className="text-2xl font-bold"
-            style={{ fontFamily: 'var(--font-syne)', color: 'var(--aura-text)' }}
+            style={{ fontFamily: 'var(--font-syne)', color: 'var(--sophi-text)' }}
           >
             Protocolos de Reabilitação
           </h1>
-          <p className="text-sm mt-1 flex items-center gap-2" style={{ color: 'var(--aura-text3)' }}>
+          <p className="text-sm mt-1 flex items-center gap-2" style={{ color: 'var(--sophi-text3)' }}>
             <FileText size={13} />
             <span className="font-mono">{protocols.length}</span> protocolos registados
           </p>
@@ -122,11 +122,11 @@ export default function ProtocolsPage() {
         style={{
           borderColor: 'rgba(246,173,85,0.25)',
           background: 'rgba(246,173,85,0.06)',
-          color: 'var(--aura-text3)',
+          color: 'var(--sophi-text3)',
         }}
       >
-        <span style={{ color: 'var(--aura-warn)', fontWeight: 600 }}>Schema actual: </span>
-        <code className="font-mono" style={{ color: 'var(--aura-text2)' }}>
+        <span style={{ color: 'var(--sophi-warn)', fontWeight: 600 }}>Schema actual: </span>
+        <code className="font-mono" style={{ color: 'var(--sophi-text2)' }}>
           id, name, key, phases, total_days, evidence
         </code>
         {' — '}colunas <code className="font-mono">status</code>, <code className="font-mono">osiics_codes</code>,{' '}
@@ -137,28 +137,28 @@ export default function ProtocolsPage() {
       {/* ── Table ─────────────────────────────────────────────────────────── */}
       <div
         className="rounded-xl border overflow-hidden"
-        style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
       >
         {loading ? (
           <div className="flex items-center justify-center py-24 gap-3">
-            <RefreshCw size={18} className="animate-spin" style={{ color: 'var(--aura-text3)' }} />
-            <span className="text-sm" style={{ color: 'var(--aura-text3)' }}>A carregar…</span>
+            <RefreshCw size={18} className="animate-spin" style={{ color: 'var(--sophi-text3)' }} />
+            <span className="text-sm" style={{ color: 'var(--sophi-text3)' }}>A carregar…</span>
           </div>
 
         ) : fetchError ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4 px-6 text-center">
-            <AlertCircle size={24} style={{ color: 'var(--aura-danger)' }} />
+            <AlertCircle size={24} style={{ color: 'var(--sophi-danger)' }} />
             <div className="space-y-1">
-              <p className="text-sm font-medium" style={{ color: 'var(--aura-text)' }}>
+              <p className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>
                 Erro ao carregar protocolos
               </p>
               <code
                 className="text-xs font-mono block px-3 py-2 rounded-lg"
-                style={{ background: 'var(--aura-bg3)', color: 'var(--aura-danger)' }}
+                style={{ background: 'var(--sophi-bg3)', color: 'var(--sophi-danger)' }}
               >
                 {fetchError}
               </code>
-              <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>
+              <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>
                 Verifique a consola do browser para detalhes completos.
               </p>
             </div>
@@ -168,23 +168,23 @@ export default function ProtocolsPage() {
         ) : protocols.length === 0 ? (
           // Zero rows + no DB error = RLS silent block
           <div className="flex flex-col items-center justify-center py-20 gap-4 px-6 text-center">
-            <BookOpen size={28} style={{ color: 'var(--aura-text3)' }} />
+            <BookOpen size={28} style={{ color: 'var(--sophi-text3)' }} />
             <div className="space-y-1.5">
-              <p className="text-sm font-medium" style={{ color: 'var(--aura-text)' }}>
+              <p className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>
                 Nenhum protocolo encontrado
               </p>
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--aura-text3)' }}>
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--sophi-text3)' }}>
                 A tabela{' '}
                 <code
                   className="font-mono text-[10px] px-1 py-0.5 rounded"
-                  style={{ background: 'var(--aura-bg4)' }}
+                  style={{ background: 'var(--sophi-bg4)' }}
                 >
                   rehab_protocols
                 </code>{' '}
                 devolveu 0 linhas sem erro — isto é causado por{' '}
-                <strong style={{ color: 'var(--aura-warn)' }}>RLS sem política SELECT para o role anon</strong>.
+                <strong style={{ color: 'var(--sophi-warn)' }}>RLS sem política SELECT para o role anon</strong>.
               </p>
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--aura-text3)' }}>
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--sophi-text3)' }}>
                 Supabase → Authentication → Policies → <strong>rehab_protocols</strong> → Add Policy → Enable read for all.
               </p>
             </div>
@@ -198,12 +198,12 @@ export default function ProtocolsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--aura-border)' }}>
+                <tr style={{ borderBottom: '1px solid var(--sophi-border)' }}>
                   {['Nome', 'Chave', 'Fases', 'Duração', 'Evidência', 'Ações'].map((h) => (
                     <th
                       key={h}
                       className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap"
-                      style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}
+                      style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-mono)' }}
                     >
                       {h}
                     </th>
@@ -214,15 +214,15 @@ export default function ProtocolsPage() {
                 {protocols.map((p, i) => (
                   <tr
                     key={p.id}
-                    className="group transition-colors hover:bg-[var(--aura-bg3)]"
+                    className="group transition-colors hover:bg-[var(--sophi-bg3)]"
                     style={{
                       borderBottom:
-                        i < protocols.length - 1 ? '1px solid var(--aura-border)' : undefined,
+                        i < protocols.length - 1 ? '1px solid var(--sophi-border)' : undefined,
                     }}
                   >
                     {/* Name */}
                     <td className="px-4 py-3 max-w-[240px]">
-                      <p className="font-medium text-sm truncate" style={{ color: 'var(--aura-text)' }}>
+                      <p className="font-medium text-sm truncate" style={{ color: 'var(--sophi-text)' }}>
                         {p.name}
                       </p>
                     </td>
@@ -231,25 +231,25 @@ export default function ProtocolsPage() {
                     <td className="px-4 py-3">
                       <span
                         className="font-mono text-[10px] font-bold px-2 py-0.5 rounded"
-                        style={{ background: 'var(--aura-bg4)', color: 'var(--aura-text3)' }}
+                        style={{ background: 'var(--sophi-bg4)', color: 'var(--sophi-text3)' }}
                       >
                         {p.key ?? '—'}
                       </span>
                     </td>
 
                     {/* Phases count */}
-                    <td className="px-4 py-3 text-xs font-mono" style={{ color: 'var(--aura-text3)' }}>
+                    <td className="px-4 py-3 text-xs font-mono" style={{ color: 'var(--sophi-text3)' }}>
                       {Array.isArray(p.phases) ? p.phases.length : 0} fase
                       {Array.isArray(p.phases) && p.phases.length !== 1 ? 's' : ''}
                     </td>
 
                     {/* Total days */}
-                    <td className="px-4 py-3 text-xs font-mono" style={{ color: 'var(--aura-text2)' }}>
+                    <td className="px-4 py-3 text-xs font-mono" style={{ color: 'var(--sophi-text2)' }}>
                       {p.total_days != null ? `${p.total_days}d` : '—'}
                     </td>
 
                     {/* Evidence */}
-                    <td className="px-4 py-3 text-xs max-w-[200px]" style={{ color: 'var(--aura-text3)' }}>
+                    <td className="px-4 py-3 text-xs max-w-[200px]" style={{ color: 'var(--sophi-text3)' }}>
                       <span className="line-clamp-1">{p.evidence ?? '—'}</span>
                     </td>
 
@@ -259,21 +259,21 @@ export default function ProtocolsPage() {
                         <button
                           type="button"
                           onClick={() => openEdit(p)}
-                          className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs border transition-colors hover:bg-[var(--aura-bg4)]"
-                          style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text2)' }}
+                          className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs border transition-colors hover:bg-[var(--sophi-bg4)]"
+                          style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)' }}
                         >
                           <Edit2 size={11} />
                           Editar
                         </button>
                         <Button
                           aria-label={`Eliminar ${p.name}`}
-                          className="hover:bg-[var(--aura-danger-bg)]"
+                          className="hover:bg-[var(--sophi-danger-bg)]"
                           disabled={deletingId === p.id}
                           onClick={() => handleDelete(p)}
                           size="icon-sm"
                           title="Eliminar"
                           variant="ghost"
-                          style={{ color: 'var(--aura-danger)' }}
+                          style={{ color: 'var(--sophi-danger)' }}
                         >
                           {deletingId === p.id ? (
                             <RefreshCw size={12} className="animate-spin" />
@@ -293,7 +293,7 @@ export default function ProtocolsPage() {
 
       {/* ── Footer ────────────────────────────────────────────────────────── */}
       {!loading && !fetchError && protocols.length > 0 && (
-        <p className="text-xs text-right" style={{ color: 'var(--aura-text3)' }}>
+        <p className="text-xs text-right" style={{ color: 'var(--sophi-text3)' }}>
           {protocols.length} protocolo{protocols.length !== 1 ? 's' : ''}
         </p>
       )}

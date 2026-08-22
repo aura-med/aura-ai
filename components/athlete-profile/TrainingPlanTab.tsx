@@ -99,7 +99,7 @@ export function TrainingPlanTab({ profile }: { profile: AthleteProfileData }) {
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <Loader2 size={20} className="animate-spin" style={{ color: 'var(--aura-text3)' }} />
+        <Loader2 size={20} className="animate-spin" style={{ color: 'var(--sophi-text3)' }} />
       </div>
     )
   }
@@ -108,8 +108,8 @@ export function TrainingPlanTab({ profile }: { profile: AthleteProfileData }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <FileStack size={14} style={{ color: 'var(--aura-green)' }} />
-          <p className="text-sm font-semibold" style={{ color: 'var(--aura-text)' }}>Plano de Treino Individual</p>
+          <FileStack size={14} style={{ color: 'var(--sophi-green)' }} />
+          <p className="text-sm font-semibold" style={{ color: 'var(--sophi-text)' }}>Plano de Treino Individual</p>
         </div>
         {canUpload && (
           <>
@@ -117,8 +117,8 @@ export function TrainingPlanTab({ profile }: { profile: AthleteProfileData }) {
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--aura-green)] hover:text-[var(--aura-green)]"
-              style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text3)' }}
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
+              style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}
             >
               {uploading ? <Loader2 size={11} className="animate-spin" /> : <Upload size={11} />}
               {plan ? 'Substituir PDF' : 'Upload PDF'}
@@ -128,29 +128,29 @@ export function TrainingPlanTab({ profile }: { profile: AthleteProfileData }) {
         )}
       </div>
 
-      {error && <p className="text-xs" style={{ color: 'var(--aura-danger)' }}>{error}</p>}
+      {error && <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>}
 
       {!plan ? (
-        <div className="rounded-xl border border-dashed py-16 flex flex-col items-center gap-3" style={{ borderColor: 'var(--aura-border2)' }}>
-          <FileStack size={28} style={{ color: 'var(--aura-text3)', opacity: 0.5 }} />
-          <p className="text-sm" style={{ color: 'var(--aura-text2)' }}>Sem plano de treino carregado</p>
+        <div className="rounded-xl border border-dashed py-16 flex flex-col items-center gap-3" style={{ borderColor: 'var(--sophi-border2)' }}>
+          <FileStack size={28} style={{ color: 'var(--sophi-text3)', opacity: 0.5 }} />
+          <p className="text-sm" style={{ color: 'var(--sophi-text2)' }}>Sem plano de treino carregado</p>
           {canUpload && (
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--aura-green)] hover:text-[var(--aura-green)]"
-              style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text3)' }}
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
+              style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}
             >
               <Upload size={11} /> Upload PDF
             </button>
           )}
         </div>
       ) : (
-        <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-          <div className="flex items-center justify-between gap-3 px-4 py-3 border-b" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
+        <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+          <div className="flex items-center justify-between gap-3 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
             <div className="min-w-0">
-              <p className="text-xs font-medium truncate" style={{ color: 'var(--aura-text)' }}>{plan.file_name}</p>
-              <p className="text-[10px] mt-0.5" style={{ color: 'var(--aura-text3)' }}>
+              <p className="text-xs font-medium truncate" style={{ color: 'var(--sophi-text)' }}>{plan.file_name}</p>
+              <p className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>
                 {formatDate(plan.created_at)}
                 {plan.file_size ? ` · ${formatBytes(plan.file_size)}` : ''}
                 {plan.uploaded_by_name ? ` · ${plan.uploaded_by_name}` : ''}
@@ -162,7 +162,7 @@ export function TrainingPlanTab({ profile }: { profile: AthleteProfileData }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-white/10 shrink-0"
-                style={{ color: 'var(--aura-text3)' }}
+                style={{ color: 'var(--sophi-text3)' }}
               >
                 <ExternalLink size={11} /> Abrir
               </a>
@@ -177,7 +177,7 @@ export function TrainingPlanTab({ profile }: { profile: AthleteProfileData }) {
             />
           ) : (
             <div className="flex justify-center py-12">
-              <Loader2 size={20} className="animate-spin" style={{ color: 'var(--aura-text3)' }} />
+              <Loader2 size={20} className="animate-spin" style={{ color: 'var(--sophi-text3)' }} />
             </div>
           )}
         </div>

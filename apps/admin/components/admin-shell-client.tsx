@@ -32,14 +32,14 @@ export function AdminShellClient({ email, fullName, level, supportSession, child
     <>
       <header
         className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center justify-between border-b px-5"
-        style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
       >
         {/* Left — hamburger (mobile) + logo */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => setMobileSidebarOpen((v) => !v)}
             className="flex size-11 items-center justify-center rounded-md transition-colors hover:bg-white/5 md:hidden"
-            style={{ color: 'var(--aura-text2)' }}
+            style={{ color: 'var(--sophi-text2)' }}
             aria-label="Toggle menu"
             aria-expanded={mobileSidebarOpen}
             type="button"
@@ -48,17 +48,17 @@ export function AdminShellClient({ email, fullName, level, supportSession, child
           </button>
           <div
             className="flex h-8 w-8 items-center justify-center rounded-lg"
-            style={{ background: 'var(--aura-green-bg)', color: 'var(--aura-green)' }}
+            style={{ background: 'var(--sophi-green-bg)', color: 'var(--sophi-green)' }}
           >
             <ShieldCheck size={16} />
           </div>
           <div>
             <div className="text-lg font-bold leading-none" style={{ fontFamily: 'var(--font-syne)' }}>
-              Aura Admin
+              Sophi Admin
             </div>
             <div
               className="hidden text-[10px] sm:block"
-              style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}
+              style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}
             >
               PLATFORM CONTROL
             </div>
@@ -69,7 +69,7 @@ export function AdminShellClient({ email, fullName, level, supportSession, child
         <div className="flex items-center gap-2">
           <span
             className="hidden text-xs lg:block"
-            style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}
+            style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}
           >
             {formatDate(new Date())}
           </span>
@@ -87,15 +87,15 @@ export function AdminShellClient({ email, fullName, level, supportSession, child
         {supportSession ? (
           <div
             className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3"
-            style={{ background: 'var(--aura-warn-bg)', borderColor: 'rgba(246,173,85,0.28)' }}
+            style={{ background: 'var(--sophi-warn-bg)', borderColor: 'rgba(246,173,85,0.28)' }}
           >
             <div className="flex items-start gap-3">
-              <Timer size={18} style={{ color: 'var(--aura-warn)' }} />
+              <Timer size={18} style={{ color: 'var(--sophi-warn)' }} />
               <div>
-                <div className="text-sm font-semibold" style={{ color: 'var(--aura-text)' }}>
+                <div className="text-sm font-semibold" style={{ color: 'var(--sophi-text)' }}>
                   Support Mode active for {supportSession.org_name}
                 </div>
-                <div className="text-xs" style={{ color: 'var(--aura-text2)' }}>
+                <div className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
                   Ticket {supportSession.ticket_id} · expires {supportSession.expires_formatted}.
                   Sensitive reads are audited.
                 </div>

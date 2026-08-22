@@ -17,7 +17,7 @@ function Field({
 }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1">
-      <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+      <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
         {label}
       </label>
       {children}
@@ -34,8 +34,8 @@ function Input({ value, onChange, placeholder, type = 'text' }: {
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--aura-green)]"
-      style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)', color: 'var(--aura-text)' }}
+      className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+      style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }}
     />
   )
 }
@@ -120,22 +120,22 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
     }
   }
 
-  const inputClass = "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--aura-green)]"
-  const inputStyle = { background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)', color: 'var(--aura-text)' }
+  const inputClass = "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+  const inputStyle = { background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)' }}>
       <div
         className="w-full max-w-2xl rounded-2xl border shadow-2xl flex flex-col max-h-[90vh]"
-        style={{ background: 'var(--aura-bg)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg)', borderColor: 'var(--sophi-border)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b shrink-0" style={{ borderColor: 'var(--aura-border)' }}>
-          <p className="text-sm font-bold" style={{ color: 'var(--aura-text)' }}>
+        <div className="flex items-center justify-between px-5 py-4 border-b shrink-0" style={{ borderColor: 'var(--sophi-border)' }}>
+          <p className="text-sm font-bold" style={{ color: 'var(--sophi-text)' }}>
             Dados Clínicos
           </p>
           <button type="button" onClick={onClose} className="rounded-lg p-1 hover:bg-white/10">
-            <X size={15} style={{ color: 'var(--aura-text3)' }} />
+            <X size={15} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
 
@@ -144,7 +144,7 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
 
           {/* Biometrics */}
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--aura-text3)' }}>
+            <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--sophi-text3)' }}>
               Biometria
             </p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -181,10 +181,10 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
           {/* Medications */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+              <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
                 Medicação
               </p>
-              <button type="button" onClick={addMed} className="flex items-center gap-1 text-[10px] font-medium" style={{ color: 'var(--aura-green)' }}>
+              <button type="button" onClick={addMed} className="flex items-center gap-1 text-[10px] font-medium" style={{ color: 'var(--sophi-green)' }}>
                 <Plus size={10} /> Adicionar
               </button>
             </div>
@@ -218,13 +218,13 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
                       className={`${inputClass} col-span-1`} style={inputStyle}
                     />
                     <button type="button" onClick={() => removeMed(i)} className="p-1 rounded hover:bg-white/10 shrink-0">
-                      <Trash2 size={12} style={{ color: 'var(--aura-danger)' }} />
+                      <Trash2 size={12} style={{ color: 'var(--sophi-danger)' }} />
                     </button>
                   </div>
                 </div>
               ))}
               {medications.length === 0 && (
-                <p className="text-xs text-center py-2" style={{ color: 'var(--aura-text3)' }}>Sem medicação</p>
+                <p className="text-xs text-center py-2" style={{ color: 'var(--sophi-text3)' }}>Sem medicação</p>
               )}
             </div>
           </div>
@@ -232,10 +232,10 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
           {/* Surgical history */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+              <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
                 Histórico Cirúrgico
               </p>
-              <button type="button" onClick={addSurgery} className="flex items-center gap-1 text-[10px] font-medium" style={{ color: 'var(--aura-green)' }}>
+              <button type="button" onClick={addSurgery} className="flex items-center gap-1 text-[10px] font-medium" style={{ color: 'var(--sophi-green)' }}>
                 <Plus size={10} /> Adicionar
               </button>
             </div>
@@ -264,13 +264,13 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
                   </div>
                   <div className="col-span-1 flex items-center">
                     <button type="button" onClick={() => removeSurgery(i)} className="p-1 rounded hover:bg-white/10">
-                      <Trash2 size={12} style={{ color: 'var(--aura-danger)' }} />
+                      <Trash2 size={12} style={{ color: 'var(--sophi-danger)' }} />
                     </button>
                   </div>
                 </div>
               ))}
               {surgeries.length === 0 && (
-                <p className="text-xs text-center py-2" style={{ color: 'var(--aura-text3)' }}>Sem cirurgias</p>
+                <p className="text-xs text-center py-2" style={{ color: 'var(--sophi-text3)' }}>Sem cirurgias</p>
               )}
             </div>
           </div>
@@ -282,31 +282,31 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Observações adicionais…"
-              className="w-full rounded-lg border px-3 py-2 text-sm resize-none outline-none focus:ring-1 focus:ring-[var(--aura-green)]"
+              className="w-full rounded-lg border px-3 py-2 text-sm resize-none outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
               style={inputStyle}
             />
           </Field>
 
           {error && (
-            <p className="text-xs rounded-lg px-3 py-2" style={{ background: 'var(--aura-danger-bg)', color: 'var(--aura-danger)' }}>
+            <p className="text-xs rounded-lg px-3 py-2" style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}>
               {error}
             </p>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 px-5 py-4 border-t shrink-0" style={{ borderColor: 'var(--aura-border)' }}>
+        <div className="flex items-center justify-end gap-2 px-5 py-4 border-t shrink-0" style={{ borderColor: 'var(--sophi-border)' }}>
           <button
             type="button" onClick={onClose}
             className="px-4 py-2 rounded-lg text-xs font-medium border hover:bg-white/5"
-            style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text2)' }}
+            style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)' }}
           >
             Cancelar
           </button>
           <button
             type="button" onClick={handleSave} disabled={saving}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold"
-            style={{ background: 'var(--aura-green)', color: '#000' }}
+            style={{ background: 'var(--sophi-green)', color: '#000' }}
           >
             {saving && <Loader2 size={12} className="animate-spin" />}
             Guardar

@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────
-// AURA — Database Types (Supabase schema v1.1)
+// SOPHI — Database Types (Supabase schema v1.1)
 // Merge: ZIP types + tipos internos do projecto
 // ─────────────────────────────────────────────
 

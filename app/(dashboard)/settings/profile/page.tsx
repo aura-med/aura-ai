@@ -56,7 +56,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-48">
-        <div className="text-sm" style={{ color: 'var(--aura-text3)' }}>{tCommon('loading')}</div>
+        <div className="text-sm" style={{ color: 'var(--sophi-text3)' }}>{tCommon('loading')}</div>
       </div>
     )
   }
@@ -64,55 +64,55 @@ export default function ProfilePage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-lg font-semibold" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
           {t('title')}
         </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--aura-text3)' }}>{t('description')}</p>
+        <p className="text-sm mt-1" style={{ color: 'var(--sophi-text3)' }}>{t('description')}</p>
       </div>
 
       <div
         className="rounded-xl border p-5 space-y-4"
-        style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
       >
         <div className="space-y-1.5">
-          <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>{t('fullName')}</label>
+          <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>{t('fullName')}</label>
           <input
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             className="w-full px-3 py-2 rounded-md text-sm border focus:outline-none focus:ring-1"
             style={{
-              background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)',
-              color: 'var(--aura-text)', fontFamily: 'var(--font-mono)',
-              '--tw-ring-color': 'var(--aura-green)',
+              background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)',
+              color: 'var(--sophi-text)', fontFamily: 'var(--font-mono)',
+              '--tw-ring-color': 'var(--sophi-green)',
             } as React.CSSProperties}
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>{t('email')}</label>
+          <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>{t('email')}</label>
           <input
             value={email}
             disabled
             className="w-full px-3 py-2 rounded-md text-sm border opacity-50 cursor-not-allowed"
-            style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)', fontFamily: 'var(--font-mono)' }}
+            style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)', fontFamily: 'var(--font-mono)' }}
           />
-          <p className="text-[11px]" style={{ color: 'var(--aura-text3)' }}>{t('emailNote')}</p>
+          <p className="text-[11px]" style={{ color: 'var(--sophi-text3)' }}>{t('emailNote')}</p>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>{t('roleLabel')}</label>
+          <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>{t('roleLabel')}</label>
           <input
             value={role}
             disabled
             className="w-full px-3 py-2 rounded-md text-sm border opacity-50 cursor-not-allowed"
-            style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)', fontFamily: 'var(--font-mono)' }}
+            style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)', fontFamily: 'var(--font-mono)' }}
           />
-          <p className="text-[11px]" style={{ color: 'var(--aura-text3)' }}>{t('roleNote')}</p>
+          <p className="text-[11px]" style={{ color: 'var(--sophi-text3)' }}>{t('roleNote')}</p>
         </div>
       </div>
 
       {error && (
-        <div className="text-sm px-3 py-2 rounded-md" style={{ background: 'rgba(255,77,109,0.1)', color: 'var(--aura-danger)' }}>
+        <div className="text-sm px-3 py-2 rounded-md" style={{ background: 'rgba(255,77,109,0.1)', color: 'var(--sophi-danger)' }}>
           {error}
         </div>
       )}
@@ -121,7 +121,7 @@ export default function ProfilePage() {
         onClick={handleSave}
         disabled={saving}
         className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
-        style={{ background: 'var(--aura-green)', color: '#000' }}
+        style={{ background: 'var(--sophi-green)', color: '#000' }}
       >
         <Save size={14} />
         {saving ? t('saving') : saved ? t('saved') : t('save')}

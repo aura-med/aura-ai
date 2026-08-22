@@ -289,8 +289,8 @@ async function AthleteDetailContent({
       {/* Back link */}
       <Link
         href={withSquadParam('/athletes', squadId)}
-        className="inline-flex items-center gap-1.5 text-xs transition-colors hover:text-[var(--aura-text)]"
-        style={{ color: 'var(--aura-text3)' }}
+        className="inline-flex items-center gap-1.5 text-xs transition-colors hover:text-[var(--sophi-text)]"
+        style={{ color: 'var(--sophi-text3)' }}
       >
         <ArrowLeft size={13} />
         Plantel

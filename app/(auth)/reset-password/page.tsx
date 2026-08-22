@@ -68,11 +68,11 @@ export default function ResetPasswordPage() {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: 'var(--aura-bg)' }}
+      style={{ background: 'var(--sophi-bg)' }}
     >
       <div
         className="relative w-full max-w-sm rounded-2xl border p-8"
-        style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
       >
         <AuthControls />
         <div className="text-center mb-8">
@@ -80,14 +80,14 @@ export default function ResetPasswordPage() {
             className="text-3xl font-bold"
             style={{
               fontFamily: 'var(--font-syne)',
-              background: 'linear-gradient(135deg, var(--aura-green) 0%, var(--aura-blue) 100%)',
+              background: 'linear-gradient(135deg, var(--sophi-green) 0%, var(--sophi-blue) 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}
           >
-            Aura
+            Sophi
           </h1>
-          <p className="text-xs mt-1" style={{ color: 'var(--aura-text3)' }}>
+          <p className="text-xs mt-1" style={{ color: 'var(--sophi-text3)' }}>
             {t('brandSubtitle')}
           </p>
         </div>
@@ -95,7 +95,7 @@ export default function ResetPasswordPage() {
         {checking ? (
           <p
             className="text-xs px-3 py-2 rounded-lg"
-            style={{ background: 'var(--aura-bg3)', color: 'var(--aura-text3)' }}
+            style={{ background: 'var(--sophi-bg3)', color: 'var(--sophi-text3)' }}
           >
             {t('reset.checking')}
           </p>
@@ -103,14 +103,14 @@ export default function ResetPasswordPage() {
           <div className="space-y-4">
             <p
               className="text-xs px-3 py-2 rounded-lg"
-              style={{ background: 'var(--aura-danger-bg)', color: 'var(--aura-danger)' }}
+              style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}
             >
               {t('reset.invalid')}
             </p>
             <a
               href="/forgot-password"
               className="block text-center text-xs"
-              style={{ color: 'var(--aura-text3)' }}
+              style={{ color: 'var(--sophi-text3)' }}
             >
               {t('reset.requestNewLink')}
             </a>
@@ -118,7 +118,7 @@ export default function ResetPasswordPage() {
         ) : (
           <form onSubmit={handleUpdatePassword} className="space-y-4">
             <div>
-              <label htmlFor="rp-password" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--aura-text2)' }}>
+              <label htmlFor="rp-password" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--sophi-text2)' }}>
                 {t('reset.passwordLabel')}
               </label>
               <input
@@ -130,14 +130,14 @@ export default function ResetPasswordPage() {
                 minLength={6}
                 className="w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-1"
                 style={{
-                  background: 'var(--aura-bg3)',
-                  borderColor: 'var(--aura-border2)',
-                  color: 'var(--aura-text)',
+                  background: 'var(--sophi-bg3)',
+                  borderColor: 'var(--sophi-border2)',
+                  color: 'var(--sophi-text)',
                 }}
               />
             </div>
             <div>
-              <label htmlFor="rp-confirm" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--aura-text2)' }}>
+              <label htmlFor="rp-confirm" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--sophi-text2)' }}>
                 {t('reset.confirmPasswordLabel')}
               </label>
               <input
@@ -149,9 +149,9 @@ export default function ResetPasswordPage() {
                 minLength={6}
                 className="w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-1"
                 style={{
-                  background: 'var(--aura-bg3)',
-                  borderColor: 'var(--aura-border2)',
-                  color: 'var(--aura-text)',
+                  background: 'var(--sophi-bg3)',
+                  borderColor: 'var(--sophi-border2)',
+                  color: 'var(--sophi-text)',
                 }}
               />
             </div>
@@ -159,7 +159,7 @@ export default function ResetPasswordPage() {
             {error && (
               <p
                 className="text-xs px-3 py-2 rounded-lg"
-                style={{ background: 'var(--aura-danger-bg)', color: 'var(--aura-danger)' }}
+                style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}
               >
                 {error}
               </p>
@@ -170,8 +170,8 @@ export default function ResetPasswordPage() {
               disabled={loading}
               className="w-full py-2.5 rounded-lg text-sm font-semibold transition-opacity disabled:opacity-50"
               style={{
-                background: 'var(--aura-green)',
-                color: 'var(--aura-bg)',
+                background: 'var(--sophi-green)',
+                color: 'var(--sophi-bg)',
                 fontFamily: 'var(--font-syne)',
               }}
             >

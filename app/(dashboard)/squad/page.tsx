@@ -59,7 +59,7 @@ export default async function SquadPage({
             {/* Position group header */}
             <div
               className="text-[9px] font-semibold uppercase tracking-[0.18em] mb-3 pb-2 border-b"
-              style={{ color: 'var(--aura-text3)', borderColor: 'var(--aura-border)', fontFamily: 'var(--font-dm-mono)' }}
+              style={{ color: 'var(--sophi-text3)', borderColor: 'var(--sophi-border)', fontFamily: 'var(--font-dm-mono)' }}
             >
               {posLabels[pos]}
             </div>
@@ -89,7 +89,7 @@ export default async function SquadPage({
         <div className="mb-8">
           <div
             className="text-[9px] font-semibold uppercase tracking-[0.18em] mb-3 pb-2 border-b"
-            style={{ color: 'var(--aura-text3)', borderColor: 'var(--aura-border)', fontFamily: 'var(--font-dm-mono)' }}
+            style={{ color: 'var(--sophi-text3)', borderColor: 'var(--sophi-border)', fontFamily: 'var(--font-dm-mono)' }}
           >
             Reabilitação
           </div>

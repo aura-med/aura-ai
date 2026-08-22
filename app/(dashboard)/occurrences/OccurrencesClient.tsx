@@ -13,10 +13,10 @@ import { Download } from 'lucide-react'
 import type { AthleteAvailabilityStatus } from '@/types'
 
 const STATUS_CONFIG: Record<AthleteAvailabilityStatus, { label: string; color: string; bg: string; dot: string }> = {
-  available:   { label: 'Disponível',   color: 'var(--aura-green)',  bg: 'rgba(0,229,160,0.1)',   dot: '#00e5a0' },
-  evaluation:  { label: 'Em Avaliação', color: 'var(--aura-warn)',   bg: 'rgba(246,173,85,0.1)',  dot: '#f6ad55' },
-  unavailable: { label: 'Indisponível', color: 'var(--aura-danger)', bg: 'rgba(255,77,109,0.1)',  dot: '#ff4d6d' },
-  rtp:         { label: 'Em RTP',       color: 'var(--aura-purple)', bg: 'rgba(180,141,252,0.1)', dot: '#b48dfc' },
+  available:   { label: 'Disponível',   color: 'var(--sophi-green)',  bg: 'rgba(0,229,160,0.1)',   dot: '#00e5a0' },
+  evaluation:  { label: 'Em Avaliação', color: 'var(--sophi-warn)',   bg: 'rgba(246,173,85,0.1)',  dot: '#f6ad55' },
+  unavailable: { label: 'Indisponível', color: 'var(--sophi-danger)', bg: 'rgba(255,77,109,0.1)',  dot: '#ff4d6d' },
+  rtp:         { label: 'Em RTP',       color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.1)', dot: '#b48dfc' },
 }
 
 interface Athlete {
@@ -131,7 +131,7 @@ function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurre
 
   return (
     <div style={{
-      background: 'var(--aura-bg2)', border: '1px solid var(--aura-border)',
+      background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)',
       borderRadius: 10, overflow: 'hidden',
       opacity: occ.is_resolved ? 0.6 : 1,
     }}>
@@ -142,25 +142,25 @@ function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurre
       >
         <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={36} />
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--aura-text)' }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--sophi-text)' }}>
             {occ.title || a.name}
           </div>
-          <div style={{ fontSize: 11, color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+          <div style={{ fontSize: 11, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
             {occ.title ? `${a.name} · ` : ''}{a.position ?? '—'} · {typeLabel} · {occ.occurrence_date}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <StatusBadge status={occ.availability_status} />
           {occ.is_resolved && (
-            <span style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)' }}>Resolvida</span>
+            <span style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)' }}>Resolvida</span>
           )}
-          {expanded ? <ChevronUp size={14} color="var(--aura-text3)" /> : <ChevronDown size={14} color="var(--aura-text3)" />}
+          {expanded ? <ChevronUp size={14} color="var(--sophi-text3)" /> : <ChevronDown size={14} color="var(--sophi-text3)" />}
         </div>
       </div>
 
       {/* Expanded content */}
       {expanded && (
-        <div style={{ borderTop: '1px solid var(--aura-border)', padding: '12px 16px' }}>
+        <div style={{ borderTop: '1px solid var(--sophi-border)', padding: '12px 16px' }}>
           {/* SOAP */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
             {[
@@ -169,11 +169,11 @@ function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurre
               { key: 'A', label: 'Avaliação', value: occ.assessment },
               { key: 'P', label: 'Plano', value: occ.plan },
             ].map(({ key, label, value }) => value && (
-              <div key={key} style={{ background: 'var(--aura-bg3)', borderRadius: 6, padding: '8px 10px' }}>
-                <div style={{ fontSize: 9, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', fontWeight: 700, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              <div key={key} style={{ background: 'var(--sophi-bg3)', borderRadius: 6, padding: '8px 10px' }}>
+                <div style={{ fontSize: 9, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', fontWeight: 700, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                   {key} — {label}
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--aura-text)' }}>{value}</div>
+                <div style={{ fontSize: 12, color: 'var(--sophi-text)' }}>{value}</div>
               </div>
             ))}
           </div>
@@ -181,15 +181,15 @@ function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurre
           {/* Re-evaluations */}
           {occ.occurrence_records.length > 0 && (
             <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <div style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 Reavaliações ({occ.occurrence_records.length})
               </div>
               {occ.occurrence_records.map((r) => (
-                <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid var(--aura-border)' }}>
-                  <span style={{ fontSize: 11, color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)', flexShrink: 0 }}>{r.record_date}</span>
-                  <span style={{ fontSize: 11, color: 'var(--aura-text2)', flex: 1 }}>{r.assessment ?? r.subjective ?? '—'}</span>
+                <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid var(--sophi-border)' }}>
+                  <span style={{ fontSize: 11, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)', flexShrink: 0 }}>{r.record_date}</span>
+                  <span style={{ fontSize: 11, color: 'var(--sophi-text2)', flex: 1 }}>{r.assessment ?? r.subjective ?? '—'}</span>
                   {r.availability_status && <StatusBadge status={r.availability_status} />}
-                  <span style={{ fontSize: 10, color: 'var(--aura-text3)' }}>{r.clinician_name}</span>
+                  <span style={{ fontSize: 10, color: 'var(--sophi-text3)' }}>{r.clinician_name}</span>
                 </div>
               ))}
             </div>
@@ -197,11 +197,11 @@ function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurre
 
           {/* Re-evaluation form */}
           {showReeval && !occ.is_resolved && (
-            <div style={{ background: 'var(--aura-bg3)', borderRadius: 8, padding: 12, marginBottom: 10 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--aura-text2)', marginBottom: 8 }}>Nova Reavaliação</div>
+            <div style={{ background: 'var(--sophi-bg3)', borderRadius: 8, padding: 12, marginBottom: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--sophi-text2)', marginBottom: 8 }}>Nova Reavaliação</div>
               {(['subjective', 'objective', 'assessment', 'plan'] as const).map((field) => (
                 <div key={field} style={{ marginBottom: 6 }}>
-                  <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                  <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
                     {field === 'subjective' ? 'S — Subjetivo' : field === 'objective' ? 'O — Objetivo' : field === 'assessment' ? 'A — Avaliação' : 'P — Plano'}
                   </label>
                   <textarea
@@ -210,14 +210,14 @@ function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurre
                     rows={2}
                     style={{
                       width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12,
-                      background: 'var(--aura-bg2)', border: '1px solid var(--aura-border)',
-                      color: 'var(--aura-text)', resize: 'vertical', fontFamily: 'inherit',
+                      background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)',
+                      color: 'var(--sophi-text)', resize: 'vertical', fontFamily: 'inherit',
                     }}
                   />
                 </div>
               ))}
               <div style={{ marginBottom: 8 }}>
-                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
                   Estado de disponibilidade
                 </label>
                 <select
@@ -225,8 +225,8 @@ function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurre
                   onChange={(e) => setReevalData((d) => ({ ...d, availability_status: e.target.value as AthleteAvailabilityStatus }))}
                   style={{
                     borderRadius: 6, padding: '6px 8px', fontSize: 12,
-                    background: 'var(--aura-bg2)', border: '1px solid var(--aura-border)',
-                    color: 'var(--aura-text)', fontFamily: 'inherit',
+                    background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)',
+                    color: 'var(--sophi-text)', fontFamily: 'inherit',
                   }}
                 >
                   {Object.entries(STATUS_CONFIG).map(([v, cfg]) => (
@@ -238,13 +238,13 @@ function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurre
                 <button
                   onClick={handleAddRecord}
                   disabled={isPending}
-                  style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: 'none', background: 'var(--aura-green)', color: '#000', fontWeight: 700, cursor: 'pointer' }}
+                  style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: 'none', background: 'var(--sophi-green)', color: '#000', fontWeight: 700, cursor: 'pointer' }}
                 >
                   {isPending ? 'A guardar...' : 'Guardar'}
                 </button>
                 <button
                   onClick={() => setShowReeval(false)}
-                  style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: '1px solid var(--aura-border)', background: 'transparent', color: 'var(--aura-text2)', cursor: 'pointer' }}
+                  style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
                 >
                   Cancelar
                 </button>
@@ -257,7 +257,7 @@ function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurre
             <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
               <button
                 onClick={() => setShowReeval((v) => !v)}
-                style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid var(--aura-border)', background: 'transparent', color: 'var(--aura-text2)', cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
               >
                 <Plus size={11} />
                 Reavaliar
@@ -265,7 +265,7 @@ function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurre
               <button
                 onClick={handleResolve}
                 disabled={isPending}
-                style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(0,229,160,0.3)', background: 'rgba(0,229,160,0.06)', color: 'var(--aura-green)', cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(0,229,160,0.3)', background: 'rgba(0,229,160,0.06)', color: 'var(--sophi-green)', cursor: 'pointer' }}
               >
                 <Check size={11} />
                 Resolver
@@ -273,7 +273,7 @@ function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurre
               {canCreateDiagnosis && (
                 <button
                   onClick={() => setShowDiagnosisModal(true)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid var(--aura-border)', background: 'transparent', color: 'var(--aura-text2)', cursor: 'pointer' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
                 >
                   <Plus size={11} />
                   Adicionar Diagnóstico
@@ -282,7 +282,7 @@ function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurre
             </div>
           )}
 
-          <div style={{ marginTop: 8, fontSize: 10, color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+          <div style={{ marginTop: 8, fontSize: 10, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
             Registado por {occ.clinician_name ?? '—'} {occ.clinician_role ? `· ${occ.clinician_role}` : ''}
           </div>
         </div>
@@ -361,14 +361,14 @@ function RegisterModal({
       background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
     }}>
       <div style={{
-        background: 'var(--aura-bg2)', border: '1px solid var(--aura-border)',
+        background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)',
         borderRadius: 14, padding: 24, width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
             Registar Ocorrência
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--aura-text3)' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sophi-text3)' }}>
             <X size={18} />
           </button>
         </div>
@@ -376,13 +376,13 @@ function RegisterModal({
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
           {/* Athlete selector */}
           <div>
-            <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
+            <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
               Atleta
             </label>
             <select
               value={form.athleteId}
               onChange={(e) => setForm((f) => ({ ...f, athleteId: e.target.value }))}
-              style={{ width: '100%', borderRadius: 6, padding: '7px 10px', fontSize: 12, background: 'var(--aura-bg3)', border: '1px solid var(--aura-border)', color: 'var(--aura-text)' }}
+              style={{ width: '100%', borderRadius: 6, padding: '7px 10px', fontSize: 12, background: 'var(--sophi-bg3)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)' }}
             >
               {athletes.map((a) => (
                 <option key={a.id} value={a.id}>
@@ -394,26 +394,26 @@ function RegisterModal({
 
           {/* Date */}
           <div>
-            <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
+            <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
               Data
             </label>
             <input
               type="date"
               value={form.occurrenceDate}
               onChange={(e) => setForm((f) => ({ ...f, occurrenceDate: e.target.value }))}
-              style={{ width: '100%', borderRadius: 6, padding: '7px 10px', fontSize: 12, background: 'var(--aura-bg3)', border: '1px solid var(--aura-border)', color: 'var(--aura-text)' }}
+              style={{ width: '100%', borderRadius: 6, padding: '7px 10px', fontSize: 12, background: 'var(--sophi-bg3)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)' }}
             />
           </div>
 
           {/* Type */}
           <div>
-            <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
+            <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
               Tipo
             </label>
             <select
               value={form.occurrenceType}
               onChange={(e) => setForm((f) => ({ ...f, occurrenceType: e.target.value as typeof form.occurrenceType }))}
-              style={{ width: '100%', borderRadius: 6, padding: '7px 10px', fontSize: 12, background: 'var(--aura-bg3)', border: '1px solid var(--aura-border)', color: 'var(--aura-text)' }}
+              style={{ width: '100%', borderRadius: 6, padding: '7px 10px', fontSize: 12, background: 'var(--sophi-bg3)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)' }}
             >
               {OCCURRENCE_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -423,13 +423,13 @@ function RegisterModal({
 
           {/* Availability status */}
           <div>
-            <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
+            <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
               Estado de disponibilidade
             </label>
             <select
               value={form.availabilityStatus}
               onChange={(e) => setForm((f) => ({ ...f, availabilityStatus: e.target.value as AthleteAvailabilityStatus }))}
-              style={{ width: '100%', borderRadius: 6, padding: '7px 10px', fontSize: 12, background: 'var(--aura-bg3)', border: '1px solid var(--aura-border)', color: 'var(--aura-text)' }}
+              style={{ width: '100%', borderRadius: 6, padding: '7px 10px', fontSize: 12, background: 'var(--sophi-bg3)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)' }}
             >
               {/* RTP não é um estado que se regista aqui — é atribuído pelo protocolo de reabilitação */}
               {Object.entries(STATUS_CONFIG)
@@ -443,7 +443,7 @@ function RegisterModal({
 
         {/* Título */}
         <div style={{ marginBottom: 10 }}>
-          <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
+          <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
             Título
           </label>
           <input
@@ -452,15 +452,15 @@ function RegisterModal({
             placeholder="ex: Dor no gémeo direito"
             style={{
               width: '100%', borderRadius: 6, padding: '7px 10px', fontSize: 12,
-              background: 'var(--aura-bg3)', border: '1px solid var(--aura-border)',
-              color: 'var(--aura-text)', fontFamily: 'inherit',
+              background: 'var(--sophi-bg3)', border: '1px solid var(--sophi-border)',
+              color: 'var(--sophi-text)', fontFamily: 'inherit',
             }}
           />
         </div>
 
         {/* Observações */}
         <div style={{ marginBottom: 10 }}>
-          <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--aura-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
+          <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
             Observações
           </label>
           <textarea
@@ -470,25 +470,25 @@ function RegisterModal({
             rows={4}
             style={{
               width: '100%', borderRadius: 6, padding: '7px 10px', fontSize: 12,
-              background: 'var(--aura-bg3)', border: '1px solid var(--aura-border)',
-              color: 'var(--aura-text)', resize: 'vertical', fontFamily: 'inherit',
+              background: 'var(--sophi-bg3)', border: '1px solid var(--sophi-border)',
+              color: 'var(--sophi-text)', resize: 'vertical', fontFamily: 'inherit',
             }}
           />
         </div>
 
-        {error && <p style={{ fontSize: 11, color: 'var(--aura-danger)', marginBottom: 8 }}>{error}</p>}
+        {error && <p style={{ fontSize: 11, color: 'var(--sophi-danger)', marginBottom: 8 }}>{error}</p>}
 
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
           <button
             onClick={onClose}
-            style={{ fontSize: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid var(--aura-border)', background: 'transparent', color: 'var(--aura-text2)', cursor: 'pointer' }}
+            style={{ fontSize: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
           >
             Cancelar
           </button>
           <button
             onClick={handleSubmit}
             disabled={isPending || !form.athleteId}
-            style={{ fontSize: 12, padding: '8px 16px', borderRadius: 8, border: 'none', background: 'var(--aura-green)', color: '#000', fontWeight: 700, cursor: 'pointer', opacity: isPending ? 0.7 : 1 }}
+            style={{ fontSize: 12, padding: '8px 16px', borderRadius: 8, border: 'none', background: 'var(--sophi-green)', color: '#000', fontWeight: 700, cursor: 'pointer', opacity: isPending ? 0.7 : 1 }}
           >
             {isPending ? 'A registar...' : 'Registar Ocorrência'}
           </button>
@@ -560,8 +560,8 @@ export function OccurrencesClient({
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '8px 12px', borderRadius: 8,
-              background: 'transparent', border: '1px solid var(--aura-border)',
-              color: 'var(--aura-text2)', fontWeight: 600, fontSize: 12,
+              background: 'transparent', border: '1px solid var(--sophi-border)',
+              color: 'var(--sophi-text2)', fontWeight: 600, fontSize: 12,
               cursor: filtered.length === 0 ? 'default' : 'pointer',
               opacity: filtered.length === 0 ? 0.5 : 1,
             }}
@@ -574,7 +574,7 @@ export function OccurrencesClient({
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '8px 14px', borderRadius: 8,
-              background: 'var(--aura-green)', border: 'none',
+              background: 'var(--sophi-green)', border: 'none',
               color: '#000', fontWeight: 700, fontSize: 12, cursor: 'pointer',
             }}
           >
@@ -593,9 +593,9 @@ export function OccurrencesClient({
             style={{
               fontSize: 11, padding: '5px 12px', borderRadius: 6, cursor: 'pointer',
               fontFamily: 'var(--font-dm-mono)',
-              background: filter === v ? 'var(--aura-green)' : 'var(--aura-bg3)',
-              border: filter === v ? 'none' : '1px solid var(--aura-border)',
-              color: filter === v ? '#000' : 'var(--aura-text2)',
+              background: filter === v ? 'var(--sophi-green)' : 'var(--sophi-bg3)',
+              border: filter === v ? 'none' : '1px solid var(--sophi-border)',
+              color: filter === v ? '#000' : 'var(--sophi-text2)',
               fontWeight: filter === v ? 700 : 400,
             }}
           >
@@ -607,7 +607,7 @@ export function OccurrencesClient({
       {/* Occurrences list */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)', fontSize: 12 }}>
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)', fontSize: 12 }}>
             {filter === 'active' ? 'Sem ocorrências ativas' : filter === 'resolved' ? 'Sem ocorrências resolvidas' : 'Sem ocorrências registadas'}
           </div>
         ) : (

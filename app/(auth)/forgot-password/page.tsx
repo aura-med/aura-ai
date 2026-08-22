@@ -34,11 +34,11 @@ export default function ForgotPasswordPage() {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: 'var(--aura-bg)' }}
+      style={{ background: 'var(--sophi-bg)' }}
     >
       <div
         className="relative w-full max-w-sm rounded-2xl border p-8"
-        style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
       >
         <AuthControls />
         <div className="text-center mb-8">
@@ -46,14 +46,14 @@ export default function ForgotPasswordPage() {
             className="text-3xl font-bold"
             style={{
               fontFamily: 'var(--font-syne)',
-              background: 'linear-gradient(135deg, var(--aura-green) 0%, var(--aura-blue) 100%)',
+              background: 'linear-gradient(135deg, var(--sophi-green) 0%, var(--sophi-blue) 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}
           >
-            Aura
+            Sophi
           </h1>
-          <p className="text-xs mt-1" style={{ color: 'var(--aura-text3)' }}>
+          <p className="text-xs mt-1" style={{ color: 'var(--sophi-text3)' }}>
             {t('brandSubtitle')}
           </p>
         </div>
@@ -62,14 +62,14 @@ export default function ForgotPasswordPage() {
           <div className="space-y-4">
             <p
               className="text-xs px-3 py-2 rounded-lg"
-              style={{ background: 'var(--aura-green-bg)', color: 'var(--aura-green)' }}
+              style={{ background: 'var(--sophi-green-bg)', color: 'var(--sophi-green)' }}
             >
               {t('forgot.success')}
             </p>
             <a
               href="/login"
               className="block text-center text-xs"
-              style={{ color: 'var(--aura-text3)' }}
+              style={{ color: 'var(--sophi-text3)' }}
             >
               {t('forgot.backToLogin')}
             </a>
@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="fp-email" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--aura-text2)' }}>
+              <label htmlFor="fp-email" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--sophi-text2)' }}>
                 {t('emailLabel')}
               </label>
               <input
@@ -88,9 +88,9 @@ export default function ForgotPasswordPage() {
                 required
                 className="w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-1"
                 style={{
-                  background: 'var(--aura-bg3)',
-                  borderColor: 'var(--aura-border2)',
-                  color: 'var(--aura-text)',
+                  background: 'var(--sophi-bg3)',
+                  borderColor: 'var(--sophi-border2)',
+                  color: 'var(--sophi-text)',
                 }}
                 placeholder="medico@fpf.pt"
               />
@@ -99,7 +99,7 @@ export default function ForgotPasswordPage() {
             {error && (
               <p
                 className="text-xs px-3 py-2 rounded-lg"
-                style={{ background: 'var(--aura-danger-bg)', color: 'var(--aura-danger)' }}
+                style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}
               >
                 {error}
               </p>
@@ -110,8 +110,8 @@ export default function ForgotPasswordPage() {
               disabled={loading}
               className="w-full py-2.5 rounded-lg text-sm font-semibold transition-opacity disabled:opacity-50"
               style={{
-                background: 'var(--aura-green)',
-                color: 'var(--aura-bg)',
+                background: 'var(--sophi-green)',
+                color: 'var(--sophi-bg)',
                 fontFamily: 'var(--font-syne)',
               }}
             >
@@ -121,7 +121,7 @@ export default function ForgotPasswordPage() {
             <a
               href="/login"
               className="block text-center text-xs mt-2"
-              style={{ color: 'var(--aura-text3)' }}
+              style={{ color: 'var(--sophi-text3)' }}
             >
               {t('forgot.backToLogin')}
             </a>

@@ -13,15 +13,15 @@ export function GpsSection({ sessions }: { sessions: GpsSessionRow[] }) {
   return (
     <div
       className="rounded-xl border p-5"
-      style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+      style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
     >
-      <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+      <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
         GPS Recente
       </h3>
       <div className="overflow-x-auto">
         <table className="w-full text-xs font-mono">
           <thead>
-            <tr style={{ color: 'var(--aura-text3)' }}>
+            <tr style={{ color: 'var(--sophi-text3)' }}>
               <th className="text-left py-1.5 pr-4">Data</th>
               <th className="text-left py-1.5 pr-4">Tipo</th>
               <th className="text-right py-1.5 pr-4">Distancia</th>
@@ -35,7 +35,7 @@ export function GpsSection({ sessions }: { sessions: GpsSessionRow[] }) {
               <tr
                 key={`${g.session_date}-${i}`}
                 className="border-t"
-                style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text)' }}
+                style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }}
               >
                 <td className="py-2 pr-4">
                   {new Date(g.session_date).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' })}

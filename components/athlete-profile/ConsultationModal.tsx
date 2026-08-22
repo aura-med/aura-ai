@@ -97,15 +97,15 @@ export function ConsultationModal({ athleteId, consultation, onClose, onSaved, o
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)' }}>
       <div
         className="w-full max-w-2xl rounded-2xl border shadow-2xl flex flex-col max-h-[90vh]"
-        style={{ background: 'var(--aura-bg)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg)', borderColor: 'var(--sophi-border)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b shrink-0" style={{ borderColor: 'var(--aura-border)' }}>
-          <p className="text-sm font-bold" style={{ color: 'var(--aura-text)' }}>
+        <div className="flex items-center justify-between px-5 py-4 border-b shrink-0" style={{ borderColor: 'var(--sophi-border)' }}>
+          <p className="text-sm font-bold" style={{ color: 'var(--sophi-text)' }}>
             {isEdit ? 'Editar Consulta' : 'Nova Consulta SOAP'}
           </p>
           <button type="button" onClick={onClose} className="rounded-lg p-1 hover:bg-white/10 transition-colors">
-            <X size={15} style={{ color: 'var(--aura-text3)' }} />
+            <X size={15} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
 
@@ -114,31 +114,31 @@ export function ConsultationModal({ athleteId, consultation, onClose, onSaved, o
           {/* Date / time / clinician */}
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-1 space-y-1">
-              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
                 Data *
               </label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--aura-green)]"
-                style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)', color: 'var(--aura-text)' }}
+                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+                style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }}
               />
             </div>
             <div className="col-span-1 space-y-1">
-              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
                 Hora
               </label>
               <input
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--aura-green)]"
-                style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)', color: 'var(--aura-text)' }}
+                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+                style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }}
               />
             </div>
             <div className="col-span-1 space-y-1">
-              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
                 Clínico
               </label>
               <input
@@ -146,8 +146,8 @@ export function ConsultationModal({ athleteId, consultation, onClose, onSaved, o
                 value={clinician}
                 onChange={(e) => setClinician(e.target.value)}
                 placeholder="Nome do clínico"
-                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--aura-green)]"
-                style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)', color: 'var(--aura-text)' }}
+                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+                style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }}
               />
             </div>
           </div>
@@ -155,7 +155,7 @@ export function ConsultationModal({ athleteId, consultation, onClose, onSaved, o
           {/* SOAP fields */}
           {SOAP_FIELDS.map(({ key, label, placeholder }) => (
             <div key={key} className="space-y-1">
-              <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+              <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
                 {label}
               </label>
               <textarea
@@ -163,21 +163,21 @@ export function ConsultationModal({ athleteId, consultation, onClose, onSaved, o
                 value={soap[key]}
                 onChange={(e) => setSoap((prev) => ({ ...prev, [key]: e.target.value }))}
                 placeholder={placeholder}
-                className="w-full rounded-lg border px-3 py-2 text-sm resize-none outline-none focus:ring-1 focus:ring-[var(--aura-green)]"
-                style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)', color: 'var(--aura-text)' }}
+                className="w-full rounded-lg border px-3 py-2 text-sm resize-none outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+                style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }}
               />
             </div>
           ))}
 
           {error && (
-            <p className="text-xs rounded-lg px-3 py-2" style={{ background: 'var(--aura-danger-bg)', color: 'var(--aura-danger)' }}>
+            <p className="text-xs rounded-lg px-3 py-2" style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}>
               {error}
             </p>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-3 px-5 py-4 border-t shrink-0" style={{ borderColor: 'var(--aura-border)' }}>
+        <div className="flex items-center justify-between gap-3 px-5 py-4 border-t shrink-0" style={{ borderColor: 'var(--sophi-border)' }}>
           {/* Delete */}
           {isEdit && onDeleted && (
             <button
@@ -186,8 +186,8 @@ export function ConsultationModal({ athleteId, consultation, onClose, onSaved, o
               disabled={deleting}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
               style={{
-                background: confirmDel ? 'var(--aura-danger)' : 'var(--aura-danger-bg)',
-                color: confirmDel ? '#fff' : 'var(--aura-danger)',
+                background: confirmDel ? 'var(--sophi-danger)' : 'var(--sophi-danger-bg)',
+                color: confirmDel ? '#fff' : 'var(--sophi-danger)',
               }}
             >
               {deleting ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
@@ -201,7 +201,7 @@ export function ConsultationModal({ athleteId, consultation, onClose, onSaved, o
               type="button"
               onClick={onClose}
               className="px-4 py-2 rounded-lg text-xs font-medium border transition-colors hover:bg-white/5"
-              style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text2)' }}
+              style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)' }}
             >
               Cancelar
             </button>
@@ -210,7 +210,7 @@ export function ConsultationModal({ athleteId, consultation, onClose, onSaved, o
               onClick={handleSave}
               disabled={saving}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-colors"
-              style={{ background: 'var(--aura-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-green)', color: '#000' }}
             >
               {saving && <Loader2 size={12} className="animate-spin" />}
               {isEdit ? 'Guardar' : 'Criar Consulta'}

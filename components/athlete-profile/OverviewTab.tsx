@@ -13,19 +13,19 @@ const DiagnosisModal = dynamic(() => import('./DiagnosisModal').then((m) => m.Di
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function scoreColor(score: number | null) {
-  if (score === null) return 'var(--aura-text3)'
-  if (score < 40)  return 'var(--aura-green)'
-  if (score < 65)  return 'var(--aura-warn)'
+  if (score === null) return 'var(--sophi-text3)'
+  if (score < 40)  return 'var(--sophi-green)'
+  if (score < 65)  return 'var(--sophi-warn)'
   if (score < 85)  return '#ff9330'
-  return 'var(--aura-danger)'
+  return 'var(--sophi-danger)'
 }
 
 function scoreBg(score: number | null) {
-  if (score === null) return 'var(--aura-bg3)'
-  if (score < 40)  return 'var(--aura-green-bg)'
-  if (score < 65)  return 'var(--aura-warn-bg)'
+  if (score === null) return 'var(--sophi-bg3)'
+  if (score < 40)  return 'var(--sophi-green-bg)'
+  if (score < 65)  return 'var(--sophi-warn-bg)'
   if (score < 85)  return 'rgba(255,147,48,0.12)'
-  return 'var(--aura-danger-bg)'
+  return 'var(--sophi-danger-bg)'
 }
 
 function scoreLabel(score: number | null) {
@@ -37,20 +37,20 @@ function scoreLabel(score: number | null) {
 }
 
 const STATUS_CONFIG = {
-  available:   { label: '🟢 Disponível',   color: 'var(--aura-green)',  bg: 'var(--aura-green-bg)'           },
-  evaluation:  { label: '🟡 Em Avaliação', color: 'var(--aura-warn)',   bg: 'var(--aura-warn-bg)'            },
-  unavailable: { label: '🔴 Indisponível', color: 'var(--aura-danger)', bg: 'var(--aura-danger-bg)'          },
-  rtp:         { label: '🟣 Em RTP',        color: 'var(--aura-purple)', bg: 'rgba(180,141,252,0.12)'         },
+  available:   { label: '🟢 Disponível',   color: 'var(--sophi-green)',  bg: 'var(--sophi-green-bg)'           },
+  evaluation:  { label: '🟡 Em Avaliação', color: 'var(--sophi-warn)',   bg: 'var(--sophi-warn-bg)'            },
+  unavailable: { label: '🔴 Indisponível', color: 'var(--sophi-danger)', bg: 'var(--sophi-danger-bg)'          },
+  rtp:         { label: '🟣 Em RTP',        color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.12)'         },
   // Legacy values — fallback
-  modified:    { label: '🟡 Treino Modificado', color: 'var(--aura-warn)',   bg: 'var(--aura-warn-bg)'        },
-  rehab:       { label: '🟣 Em Reabilitação',   color: 'var(--aura-purple)', bg: 'rgba(180,141,252,0.12)'    },
+  modified:    { label: '🟡 Treino Modificado', color: 'var(--sophi-warn)',   bg: 'var(--sophi-warn-bg)'        },
+  rehab:       { label: '🟣 Em Reabilitação',   color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.12)'    },
 }
 
 const DIAG_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  available:   { label: 'Disponível',   color: 'var(--aura-green)',  bg: 'var(--aura-green-bg)' },
-  evaluation:  { label: 'Em Avaliação', color: 'var(--aura-warn)',   bg: 'var(--aura-warn-bg)'  },
-  unavailable: { label: 'Indisponível', color: 'var(--aura-danger)', bg: 'var(--aura-danger-bg)' },
-  rtp:         { label: 'Em RTP',        color: 'var(--aura-purple)', bg: 'rgba(180,141,252,0.12)' },
+  available:   { label: 'Disponível',   color: 'var(--sophi-green)',  bg: 'var(--sophi-green-bg)' },
+  evaluation:  { label: 'Em Avaliação', color: 'var(--sophi-warn)',   bg: 'var(--sophi-warn-bg)'  },
+  unavailable: { label: 'Indisponível', color: 'var(--sophi-danger)', bg: 'var(--sophi-danger-bg)' },
+  rtp:         { label: 'Em RTP',        color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.12)' },
 }
 
 type InjuryTimelinePoint = { label: string; injuries: number; severity: number }
@@ -77,14 +77,14 @@ function InjuryTimelineChart({ data }: { data: InjuryTimelinePoint[] }) {
       <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Evolucao mensal de lesoes" className="h-full w-full overflow-visible">
         {[0, 1, 2].map((l) => {
           const y = chartTop + (chartHeight / 2) * l
-          return <line key={l} x1="0" x2={width} y1={y} y2={y} stroke="var(--aura-border)" strokeDasharray="3 3" />
+          return <line key={l} x1="0" x2={width} y1={y} y2={y} stroke="var(--sophi-border)" strokeDasharray="3 3" />
         })}
-        <path d={areaPath} fill="var(--aura-danger-bg)" />
-        <path d={linePath} fill="none" stroke="var(--aura-danger)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+        <path d={areaPath} fill="var(--sophi-danger-bg)" />
+        <path d={linePath} fill="none" stroke="var(--sophi-danger)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
         {points.map((p) => (
           <g key={`${p.label}-${p.x}`}>
-            <circle cx={p.x} cy={p.y} r={p.injuries > 0 ? 3 : 2} fill="var(--aura-danger)" />
-            <text x={p.x} y="88" textAnchor="middle" fontSize="9" fill="var(--aura-text3)">{p.label}</text>
+            <circle cx={p.x} cy={p.y} r={p.injuries > 0 ? 3 : 2} fill="var(--sophi-danger)" />
+            <text x={p.x} y="88" textAnchor="middle" fontSize="9" fill="var(--sophi-text3)">{p.label}</text>
           </g>
         ))}
       </svg>
@@ -97,10 +97,10 @@ function StatusCard({ availabilityStatus, score }: { availabilityStatus: string;
   return (
     <div
       className="rounded-xl border p-4 flex items-center justify-between gap-4"
-      style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+      style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
     >
       <div className="space-y-0.5">
-        <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+        <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
           Disponibilidade
         </p>
         <p className="text-sm font-bold" style={{ color: cfg.color }}>{cfg.label}</p>
@@ -123,12 +123,12 @@ function AllergiesHighlight({ allergies }: { allergies: string | null | undefine
   return (
     <div
       className="rounded-xl border p-3 flex items-start gap-3"
-      style={{ background: 'var(--aura-danger-bg)', borderColor: 'var(--aura-danger)' }}
+      style={{ background: 'var(--sophi-danger-bg)', borderColor: 'var(--sophi-danger)' }}
     >
-      <AlertTriangle size={15} className="shrink-0 mt-0.5" style={{ color: 'var(--aura-danger)' }} />
+      <AlertTriangle size={15} className="shrink-0 mt-0.5" style={{ color: 'var(--sophi-danger)' }} />
       <div>
-        <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--aura-danger)' }}>⚠️ Alergias</p>
-        <p className="text-sm font-bold mt-0.5" style={{ color: 'var(--aura-danger)' }}>{allergies}</p>
+        <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--sophi-danger)' }}>⚠️ Alergias</p>
+        <p className="text-sm font-bold mt-0.5" style={{ color: 'var(--sophi-danger)' }}>{allergies}</p>
       </div>
     </div>
   )
@@ -148,15 +148,15 @@ function OccurrenceSummaryRow({ occ }: { occ: ActiveOccurrence }) {
   const title = occ.title || occ.occurrence_type || 'Ocorrência'
 
   return (
-    <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--aura-border)' }}>
+    <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--sophi-border)' }}>
       <button
         type="button"
-        className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-[var(--aura-bg3)]"
+        className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-[var(--sophi-bg3)]"
         onClick={() => setOpen((p) => !p)}
       >
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium truncate" style={{ color: 'var(--aura-text)' }}>{title}</p>
-          <p className="text-[10px] mt-0.5 flex items-center gap-1" style={{ color: 'var(--aura-text3)' }}>
+          <p className="text-xs font-medium truncate" style={{ color: 'var(--sophi-text)' }}>{title}</p>
+          <p className="text-[10px] mt-0.5 flex items-center gap-1" style={{ color: 'var(--sophi-text3)' }}>
             <Clock size={9} />
             {formatDate(occ.occurrence_date)}
             {occ.is_resolved && occ.resolved_at ? ` → resolvida ${formatDate(occ.resolved_at)}` : ''}
@@ -167,13 +167,13 @@ function OccurrenceSummaryRow({ occ }: { occ: ActiveOccurrence }) {
         </span>
         {hasDetail
           ? open
-            ? <ChevronDown size={13} style={{ color: 'var(--aura-text3)' }} />
-            : <ChevronRight size={13} style={{ color: 'var(--aura-text3)' }} />
+            ? <ChevronDown size={13} style={{ color: 'var(--sophi-text3)' }} />
+            : <ChevronRight size={13} style={{ color: 'var(--sophi-text3)' }} />
           : null
         }
       </button>
       {open && hasDetail && (
-        <div className="border-t px-3 py-3 space-y-2" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
+        <div className="border-t px-3 py-3 space-y-2" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
           {[
             { label: 'S — Subjetivo', value: occ.subjective },
             { label: 'O — Objetivo',  value: occ.objective  },
@@ -181,12 +181,12 @@ function OccurrenceSummaryRow({ occ }: { occ: ActiveOccurrence }) {
             { label: 'P — Plano',     value: occ.plan       },
           ].map(({ label, value }) => value ? (
             <div key={label}>
-              <p className="text-[9px] font-bold uppercase tracking-wider mb-0.5" style={{ color: 'var(--aura-text3)' }}>{label}</p>
-              <p className="text-xs whitespace-pre-wrap" style={{ color: 'var(--aura-text2)' }}>{value}</p>
+              <p className="text-[9px] font-bold uppercase tracking-wider mb-0.5" style={{ color: 'var(--sophi-text3)' }}>{label}</p>
+              <p className="text-xs whitespace-pre-wrap" style={{ color: 'var(--sophi-text2)' }}>{value}</p>
             </div>
           ) : null)}
           {occ.clinician_name && (
-            <p className="text-[10px]" style={{ color: 'var(--aura-text3)' }}>Registado por {occ.clinician_name}</p>
+            <p className="text-[10px]" style={{ color: 'var(--sophi-text3)' }}>Registado por {occ.clinician_name}</p>
           )}
         </div>
       )}
@@ -203,14 +203,14 @@ function OccurrencesSummarySection({
 }) {
   if (active.length === 0 && recentResolved.length === 0) return null
   return (
-    <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-      <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
-        <AlertTriangle size={13} style={{ color: 'var(--aura-warn)' }} />
-        <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--aura-text2)' }}>
+    <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+      <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
+        <AlertTriangle size={13} style={{ color: 'var(--sophi-warn)' }} />
+        <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>
           Ocorrências
         </p>
         {active.length > 0 && (
-          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--aura-warn-bg)', color: 'var(--aura-warn)' }}>
+          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-warn-bg)', color: 'var(--sophi-warn)' }}>
             {active.length} ativa{active.length > 1 ? 's' : ''}
           </span>
         )}
@@ -223,14 +223,14 @@ function OccurrencesSummarySection({
         )}
         {recentResolved.length > 0 && (
           <div className="space-y-2">
-            <p className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+            <p className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
               Histórico recente
             </p>
             {recentResolved.map((occ) => <OccurrenceSummaryRow key={occ.id} occ={occ} />)}
           </div>
         )}
         {active.length === 0 && recentResolved.length === 0 && (
-          <p className="text-xs text-center py-2" style={{ color: 'var(--aura-text3)' }}>Sem ocorrências</p>
+          <p className="text-xs text-center py-2" style={{ color: 'var(--sophi-text3)' }}>Sem ocorrências</p>
         )}
       </div>
     </div>
@@ -262,15 +262,15 @@ function InjuryTimeline({ injuries }: { injuries: InjuryEventSummary[] }) {
   const hasData = months.some((m) => m.injuries > 0)
 
   return (
-    <div className="rounded-xl border p-4 space-y-3" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
+    <div className="rounded-xl border p-4 space-y-3" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+        <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
           Injury Timeline — Época Desportiva
         </p>
-        <p className="text-[10px] font-mono" style={{ color: 'var(--aura-text3)' }}>Jul – Jun</p>
+        <p className="text-[10px] font-mono" style={{ color: 'var(--sophi-text3)' }}>Jul – Jun</p>
       </div>
       {!hasData ? (
-        <p className="text-xs text-center py-4" style={{ color: 'var(--aura-text3)' }}>Sem lesões registadas esta época</p>
+        <p className="text-xs text-center py-4" style={{ color: 'var(--sophi-text3)' }}>Sem lesões registadas esta época</p>
       ) : (
         <InjuryTimelineChart data={months} />
       )}
@@ -311,18 +311,18 @@ function DiagnosisCard({
   return (
     <div
       className="rounded-lg border p-3 space-y-2"
-      style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border)' }}
+      style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border)' }}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           {diag.osiics_code && (
-            <span className="text-[10px] font-mono mr-1.5" style={{ color: 'var(--aura-text3)' }}>
+            <span className="text-[10px] font-mono mr-1.5" style={{ color: 'var(--sophi-text3)' }}>
               {diag.osiics_code}
             </span>
           )}
-          <span className="text-xs font-semibold" style={{ color: 'var(--aura-text)' }}>{title}</span>
+          <span className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>{title}</span>
           {diag.custom_description && diag.osiics_description && (
-            <p className="text-[10px] mt-0.5" style={{ color: 'var(--aura-text3)' }}>{diag.custom_description}</p>
+            <p className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>{diag.custom_description}</p>
           )}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
@@ -332,7 +332,7 @@ function DiagnosisCard({
           >
             {statusCfg.label}
           </span>
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--aura-bg4)', color: 'var(--aura-text3)' }}>
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-bg4)', color: 'var(--sophi-text3)' }}>
             {diag.diagnosis_type === 'injury' ? 'Lesão' : diag.diagnosis_type === 'disease' ? 'Doença' : '—'}
           </span>
         </div>
@@ -343,7 +343,7 @@ function DiagnosisCard({
           onClick={handleResolve}
           disabled={resolving}
           className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80"
-          style={{ color: 'var(--aura-green)' }}
+          style={{ color: 'var(--sophi-green)' }}
         >
           {resolving ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle2 size={10} />}
           Resolver diagnóstico
@@ -373,13 +373,13 @@ function ActiveDiagnosesSection({
   }
 
   return (
-    <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-      <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
-        <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--aura-text2)' }}>
+    <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+      <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
+        <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>
           Diagnósticos Ativos
         </p>
         {diagnoses.length > 0 && (
-          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--aura-danger-bg)', color: 'var(--aura-danger)' }}>
+          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}>
             {diagnoses.length}
           </span>
         )}
@@ -387,8 +387,8 @@ function ActiveDiagnosesSection({
           <button
             type="button"
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--aura-green-bg)]"
-            style={{ color: 'var(--aura-green)' }}
+            className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]"
+            style={{ color: 'var(--sophi-green)' }}
           >
             <Plus size={10} /> Novo
           </button>
@@ -396,7 +396,7 @@ function ActiveDiagnosesSection({
       </div>
       <div className="p-4">
         {diagnoses.length === 0 ? (
-          <p className="text-xs text-center py-4" style={{ color: 'var(--aura-text3)' }}>
+          <p className="text-xs text-center py-4" style={{ color: 'var(--sophi-text3)' }}>
             Sem diagnósticos ativos
           </p>
         ) : (

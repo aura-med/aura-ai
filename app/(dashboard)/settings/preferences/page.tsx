@@ -83,7 +83,7 @@ export default function PreferencesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-48">
-        <div className="text-sm" style={{ color: 'var(--aura-text3)' }}>A carregar…</div>
+        <div className="text-sm" style={{ color: 'var(--sophi-text3)' }}>A carregar…</div>
       </div>
     )
   }
@@ -91,19 +91,19 @@ export default function PreferencesPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-lg font-semibold" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
           {t('title')}
         </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--aura-text3)' }}>{t('description')}</p>
+        <p className="text-sm mt-1" style={{ color: 'var(--sophi-text3)' }}>{t('description')}</p>
       </div>
 
       <div
         className="rounded-xl border p-5 space-y-5"
-        style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
       >
         {/* Theme */}
         <div className="space-y-2">
-          <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>{t('theme')}</label>
+          <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>{t('theme')}</label>
           <div className="flex gap-2">
             {(['dark', 'light'] as const).map((th) => (
               <button
@@ -111,9 +111,9 @@ export default function PreferencesPage() {
                 onClick={() => setPrefs(p => ({ ...p, theme: th }))}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-colors flex-1 justify-center"
                 style={{
-                  background: prefs.theme === th ? 'rgba(0,229,160,0.08)' : 'var(--aura-bg3)',
-                  borderColor: prefs.theme === th ? 'var(--aura-green)' : 'var(--aura-border2)',
-                  color: prefs.theme === th ? 'var(--aura-green)' : 'var(--aura-text2)',
+                  background: prefs.theme === th ? 'rgba(0,229,160,0.08)' : 'var(--sophi-bg3)',
+                  borderColor: prefs.theme === th ? 'var(--sophi-green)' : 'var(--sophi-border2)',
+                  color: prefs.theme === th ? 'var(--sophi-green)' : 'var(--sophi-text2)',
                 }}
               >
                 {th === 'dark' ? <Moon size={14} /> : <Sun size={14} />}
@@ -125,7 +125,7 @@ export default function PreferencesPage() {
 
         {/* Language */}
         <div className="space-y-2">
-          <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>{t('language')}</label>
+          <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>{t('language')}</label>
           <div className="flex gap-2">
             {LOCALE_OPTIONS.map(({ value, label }) => (
               <button
@@ -133,9 +133,9 @@ export default function PreferencesPage() {
                 onClick={() => setPrefs(p => ({ ...p, locale: value as 'pt' | 'en' | 'es' }))}
                 className="flex-1 py-2 rounded-lg text-sm font-medium border transition-colors"
                 style={{
-                  background: prefs.locale === value ? 'rgba(0,229,160,0.08)' : 'var(--aura-bg3)',
-                  borderColor: prefs.locale === value ? 'var(--aura-green)' : 'var(--aura-border2)',
-                  color: prefs.locale === value ? 'var(--aura-green)' : 'var(--aura-text2)',
+                  background: prefs.locale === value ? 'rgba(0,229,160,0.08)' : 'var(--sophi-bg3)',
+                  borderColor: prefs.locale === value ? 'var(--sophi-green)' : 'var(--sophi-border2)',
+                  color: prefs.locale === value ? 'var(--sophi-green)' : 'var(--sophi-text2)',
                 }}
               >
                 {label}
@@ -146,7 +146,7 @@ export default function PreferencesPage() {
       </div>
 
       {error && (
-        <div className="text-sm px-3 py-2 rounded-md" style={{ background: 'rgba(255,77,109,0.1)', color: 'var(--aura-danger)' }}>
+        <div className="text-sm px-3 py-2 rounded-md" style={{ background: 'rgba(255,77,109,0.1)', color: 'var(--sophi-danger)' }}>
           {error}
         </div>
       )}
@@ -155,7 +155,7 @@ export default function PreferencesPage() {
         onClick={handleSave}
         disabled={saving}
         className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
-        style={{ background: 'var(--aura-green)', color: '#000' }}
+        style={{ background: 'var(--sophi-green)', color: '#000' }}
       >
         <Save size={14} />
         {saving ? tc('saving') : saved ? tc('saved') : tc('save')}

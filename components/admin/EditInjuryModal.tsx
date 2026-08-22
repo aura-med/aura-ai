@@ -168,29 +168,29 @@ export function EditInjuryModal({
     >
       <div
         className="w-full max-w-md rounded-2xl border shadow-2xl"
-        style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
       >
         {/* Header */}
         <div
           className="flex items-center justify-between px-6 py-4 border-b"
-          style={{ borderColor: 'var(--aura-border)' }}
+          style={{ borderColor: 'var(--sophi-border)' }}
         >
           <div>
             <h2
               className="text-base font-bold"
-              style={{ fontFamily: 'var(--font-syne)', color: 'var(--aura-text)' }}
+              style={{ fontFamily: 'var(--font-syne)', color: 'var(--sophi-text)' }}
             >
               Editar Sessão
             </h2>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--aura-text3)' }}>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--sophi-text3)' }}>
               {athleteName}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 transition-colors hover:bg-[var(--aura-bg3)]"
+            className="rounded-lg p-1.5 transition-colors hover:bg-[var(--sophi-bg3)]"
           >
-            <X size={15} style={{ color: 'var(--aura-text3)' }} />
+            <X size={15} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
 
@@ -200,7 +200,7 @@ export function EditInjuryModal({
           <div className="space-y-1.5">
             <label
               className="block text-[10px] font-semibold uppercase tracking-wider"
-              style={{ color: 'var(--aura-text3)' }}
+              style={{ color: 'var(--sophi-text3)' }}
             >
               Data da Lesão
             </label>
@@ -210,9 +210,9 @@ export function EditInjuryModal({
               onChange={(e) => setInjuryDate(e.target.value)}
               className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
               style={{
-                background: 'var(--aura-bg3)',
-                borderColor: 'var(--aura-border)',
-                color: 'var(--aura-text)',
+                background: 'var(--sophi-bg3)',
+                borderColor: 'var(--sophi-border)',
+                color: 'var(--sophi-text)',
               }}
             />
           </div>
@@ -221,7 +221,7 @@ export function EditInjuryModal({
           <div className="space-y-1.5">
             <label
               className="block text-[10px] font-semibold uppercase tracking-wider"
-              style={{ color: 'var(--aura-text3)' }}
+              style={{ color: 'var(--sophi-text3)' }}
             >
               Início de Reabilitação
             </label>
@@ -231,9 +231,9 @@ export function EditInjuryModal({
               onChange={(e) => setStartDate(e.target.value)}
               className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
               style={{
-                background: 'var(--aura-bg3)',
-                borderColor: 'var(--aura-border)',
-                color: 'var(--aura-text)',
+                background: 'var(--sophi-bg3)',
+                borderColor: 'var(--sophi-border)',
+                color: 'var(--sophi-text)',
               }}
             />
           </div>
@@ -242,7 +242,7 @@ export function EditInjuryModal({
           <div className="space-y-1.5">
             <label
               className="block text-[10px] font-semibold uppercase tracking-wider"
-              style={{ color: 'var(--aura-text3)' }}
+              style={{ color: 'var(--sophi-text3)' }}
             >
               Protocolo de Reabilitação
             </label>
@@ -251,14 +251,14 @@ export function EditInjuryModal({
               onChange={(e) => setProtocolId(e.target.value)}
               className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
               style={{
-                background: 'var(--aura-bg3)',
-                borderColor: 'var(--aura-border)',
-                color: 'var(--aura-text)',
+                background: 'var(--sophi-bg3)',
+                borderColor: 'var(--sophi-border)',
+                color: 'var(--sophi-text)',
               }}
             >
               <option value="">— Sem protocolo —</option>
               {protocols.map((p) => (
-                <option key={p.id} value={p.id} style={{ background: 'var(--aura-bg2)' }}>
+                <option key={p.id} value={p.id} style={{ background: 'var(--sophi-bg2)' }}>
                   {p.name}{p.total_days ? ` (${p.total_days}d)` : ''}
                 </option>
               ))}
@@ -270,9 +270,9 @@ export function EditInjuryModal({
             <div
               className="flex items-start gap-2 rounded-lg p-3 border text-xs"
               style={{
-                background: 'var(--aura-danger-bg)',
-                borderColor: 'var(--aura-danger)',
-                color: 'var(--aura-danger)',
+                background: 'var(--sophi-danger-bg)',
+                borderColor: 'var(--sophi-danger)',
+                color: 'var(--sophi-danger)',
               }}
             >
               <AlertTriangle size={13} className="shrink-0 mt-0.5" />
@@ -285,9 +285,9 @@ export function EditInjuryModal({
             <div
               className="flex items-start gap-2 rounded-lg p-3 border text-xs"
               style={{
-                background: 'color-mix(in srgb, var(--aura-danger) 10%, transparent)',
-                borderColor: 'var(--aura-danger)',
-                color: 'var(--aura-danger)',
+                background: 'color-mix(in srgb, var(--sophi-danger) 10%, transparent)',
+                borderColor: 'var(--sophi-danger)',
+                color: 'var(--sophi-danger)',
               }}
             >
               <AlertTriangle size={13} className="shrink-0 mt-0.5" />
@@ -303,7 +303,7 @@ export function EditInjuryModal({
         {/* Footer */}
         <div
           className="flex items-center justify-between px-6 py-4 border-t gap-3"
-          style={{ borderColor: 'var(--aura-border)' }}
+          style={{ borderColor: 'var(--sophi-border)' }}
         >
           {/* Left: delete button */}
           <button
@@ -312,10 +312,10 @@ export function EditInjuryModal({
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-40"
             style={{
               background: confirmDelete
-                ? 'var(--aura-danger)'
-                : 'color-mix(in srgb, var(--aura-danger) 15%, transparent)',
-              color: confirmDelete ? '#fff' : 'var(--aura-danger)',
-              border: `1px solid var(--aura-danger)`,
+                ? 'var(--sophi-danger)'
+                : 'color-mix(in srgb, var(--sophi-danger) 15%, transparent)',
+              color: confirmDelete ? '#fff' : 'var(--sophi-danger)',
+              border: `1px solid var(--sophi-danger)`,
             }}
           >
             <Trash2 size={12} />
@@ -329,8 +329,8 @@ export function EditInjuryModal({
                 setConfirmDelete(false)
                 onClose()
               }}
-              className="px-4 py-2 rounded-lg text-sm transition-colors hover:bg-[var(--aura-bg3)]"
-              style={{ color: 'var(--aura-text2)' }}
+              className="px-4 py-2 rounded-lg text-sm transition-colors hover:bg-[var(--sophi-bg3)]"
+              style={{ color: 'var(--sophi-text2)' }}
             >
               Cancelar
             </button>
@@ -338,7 +338,7 @@ export function EditInjuryModal({
               onClick={handleSave}
               disabled={saving || deleting || !isDirty || !injuryDate || !startDate}
               className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-40"
-              style={{ background: 'var(--aura-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-green)', color: '#000' }}
             >
               <Save size={13} />
               {saving ? 'A guardar…' : 'Guardar Alterações'}

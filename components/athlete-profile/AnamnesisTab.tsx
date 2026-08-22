@@ -91,7 +91,7 @@ function fieldInputClass() {
   return 'w-full px-3 py-2 rounded-lg text-xs border focus:outline-none'
 }
 
-const fieldInputStyle = { background: 'var(--aura-bg3)', borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }
+const fieldInputStyle = { background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }
 
 export function AnamnesisTab({ profile }: { profile: AthleteProfileData }) {
   const router = useRouter()
@@ -160,31 +160,31 @@ export function AnamnesisTab({ profile }: { profile: AthleteProfileData }) {
     <div className="space-y-4 max-w-3xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <ClipboardList size={14} style={{ color: 'var(--aura-green)' }} />
-          <p className="text-sm font-semibold" style={{ color: 'var(--aura-text)' }}>
+          <ClipboardList size={14} style={{ color: 'var(--sophi-green)' }} />
+          <p className="text-sm font-semibold" style={{ color: 'var(--sophi-text)' }}>
             Anamnese — Avaliação Pré-Época
           </p>
         </div>
-        <span className="text-[10px] font-mono" style={{ color: 'var(--aura-text3)' }}>
+        <span className="text-[10px] font-mono" style={{ color: 'var(--sophi-text3)' }}>
           Época {anamnesis?.season ?? currentSeason()}
         </span>
       </div>
 
       {!canEdit && isEmpty && (
-        <p className="text-xs text-center py-8" style={{ color: 'var(--aura-text3)' }}>Sem anamnese registada</p>
+        <p className="text-xs text-center py-8" style={{ color: 'var(--sophi-text3)' }}>Sem anamnese registada</p>
       )}
 
       {!editing ? (
         <>
           {isEmpty && canEdit ? (
-            <div className="rounded-xl border border-dashed py-10 flex flex-col items-center gap-3" style={{ borderColor: 'var(--aura-border2)' }}>
-              <ClipboardList size={24} style={{ color: 'var(--aura-text3)', opacity: 0.5 }} />
-              <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>Sem anamnese registada para esta época</p>
+            <div className="rounded-xl border border-dashed py-10 flex flex-col items-center gap-3" style={{ borderColor: 'var(--sophi-border2)' }}>
+              <ClipboardList size={24} style={{ color: 'var(--sophi-text3)', opacity: 0.5 }} />
+              <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>Sem anamnese registada para esta época</p>
               <button
                 type="button"
                 onClick={startEdit}
-                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--aura-green)] hover:text-[var(--aura-green)]"
-                style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text3)' }}
+                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
+                style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}
               >
                 <Edit2 size={11} /> Preencher anamnese
               </button>
@@ -197,7 +197,7 @@ export function AnamnesisTab({ profile }: { profile: AthleteProfileData }) {
                     type="button"
                     onClick={startEdit}
                     className="flex items-center gap-1 text-[10px] font-medium hover:opacity-70"
-                    style={{ color: 'var(--aura-green)' }}
+                    style={{ color: 'var(--sophi-green)' }}
                   >
                     <Edit2 size={10} /> Editar
                   </button>
@@ -207,9 +207,9 @@ export function AnamnesisTab({ profile }: { profile: AthleteProfileData }) {
                 const hasContent = section.fields.some((f) => anamnesis?.[f.key])
                 if (!hasContent) return null
                 return (
-                  <div key={section.title} className="rounded-xl border overflow-hidden" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-                    <div className="px-4 py-2.5 border-b" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
-                      <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text2)' }}>{section.title}</p>
+                  <div key={section.title} className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+                    <div className="px-4 py-2.5 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text2)' }}>{section.title}</p>
                     </div>
                     <div className="p-4 space-y-3">
                       {section.fields.map((f) => {
@@ -217,8 +217,8 @@ export function AnamnesisTab({ profile }: { profile: AthleteProfileData }) {
                         if (!value) return null
                         return (
                           <div key={String(f.key)}>
-                            <p className="text-[9px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--aura-text3)' }}>{f.label}</p>
-                            <p className="text-xs whitespace-pre-wrap" style={{ color: 'var(--aura-text)' }}>{String(value)}</p>
+                            <p className="text-[9px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--sophi-text3)' }}>{f.label}</p>
+                            <p className="text-xs whitespace-pre-wrap" style={{ color: 'var(--sophi-text)' }}>{String(value)}</p>
                           </div>
                         )
                       })}
@@ -227,7 +227,7 @@ export function AnamnesisTab({ profile }: { profile: AthleteProfileData }) {
                 )
               })}
               {anamnesis?.clinician_name && (
-                <p className="text-[10px]" style={{ color: 'var(--aura-text3)' }}>
+                <p className="text-[10px]" style={{ color: 'var(--sophi-text3)' }}>
                   Registado por {anamnesis.clinician_name}
                 </p>
               )}
@@ -237,14 +237,14 @@ export function AnamnesisTab({ profile }: { profile: AthleteProfileData }) {
       ) : (
         <div className="space-y-4">
           {SECTIONS.map((section) => (
-            <div key={section.title} className="rounded-xl border overflow-hidden" style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}>
-              <div className="px-4 py-2.5 border-b" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}>
-                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text2)' }}>{section.title}</p>
+            <div key={section.title} className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+              <div className="px-4 py-2.5 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
+                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text2)' }}>{section.title}</p>
               </div>
               <div className="p-4 space-y-3">
                 {section.fields.map((f) => (
                   <div key={String(f.key)} className="space-y-1">
-                    <label className="text-[10px] font-medium" style={{ color: 'var(--aura-text2)' }}>{f.label}</label>
+                    <label className="text-[10px] font-medium" style={{ color: 'var(--sophi-text2)' }}>{f.label}</label>
                     {f.type === 'textarea' ? (
                       <textarea
                         rows={3}
@@ -268,14 +268,14 @@ export function AnamnesisTab({ profile }: { profile: AthleteProfileData }) {
             </div>
           ))}
 
-          {error && <p className="text-xs" style={{ color: 'var(--aura-danger)' }}>{error}</p>}
+          {error && <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>}
 
           <div className="flex gap-3">
             <button
               type="button"
               onClick={() => { setEditing(false); setError(null) }}
-              className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--aura-bg3)]"
-              style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }}
+              className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--sophi-bg3)]"
+              style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}
             >
               Cancelar
             </button>
@@ -284,7 +284,7 @@ export function AnamnesisTab({ profile }: { profile: AthleteProfileData }) {
               onClick={handleSave}
               disabled={saving}
               className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
-              style={{ background: 'var(--aura-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-green)', color: '#000' }}
             >
               {saving && <Loader2 size={13} className="animate-spin" />}
               Guardar

@@ -29,7 +29,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
     <button
       onClick={() => onChange(!checked)}
       className="relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors"
-      style={{ background: checked ? 'var(--aura-green)' : 'var(--aura-border2)' }}
+      style={{ background: checked ? 'var(--sophi-green)' : 'var(--sophi-border2)' }}
       role="switch"
       aria-checked={checked}
     >
@@ -106,7 +106,7 @@ export default function NotificationsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-48">
-        <div className="text-sm" style={{ color: 'var(--aura-text3)' }}>A carregar…</div>
+        <div className="text-sm" style={{ color: 'var(--sophi-text3)' }}>A carregar…</div>
       </div>
     )
   }
@@ -114,21 +114,21 @@ export default function NotificationsPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-lg font-semibold" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
           {t('title')}
         </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--aura-text3)' }}>{t('description')}</p>
+        <p className="text-sm mt-1" style={{ color: 'var(--sophi-text3)' }}>{t('description')}</p>
       </div>
 
       <div
         className="rounded-xl border overflow-hidden"
-        style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
       >
         {NOTIF_ITEMS.map(({ key, labelKey, descKey }, i) => (
-          <div key={key} className="flex items-center justify-between px-4 py-3.5" style={{ borderTop: i > 0 ? '1px solid var(--aura-border)' : 'none' }}>
+          <div key={key} className="flex items-center justify-between px-4 py-3.5" style={{ borderTop: i > 0 ? '1px solid var(--sophi-border)' : 'none' }}>
             <div className="flex-1 pr-4">
-              <div className="text-sm font-medium" style={{ color: 'var(--aura-text)' }}>{t(labelKey)}</div>
-              <div className="text-xs mt-0.5" style={{ color: 'var(--aura-text3)' }}>{t(descKey)}</div>
+              <div className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>{t(labelKey)}</div>
+              <div className="text-xs mt-0.5" style={{ color: 'var(--sophi-text3)' }}>{t(descKey)}</div>
             </div>
             <Toggle checked={notifs[key]} onChange={(v) => toggleNotif(key, v)} />
           </div>
@@ -136,7 +136,7 @@ export default function NotificationsPage() {
       </div>
 
       {error && (
-        <div className="text-sm px-3 py-2 rounded-md" style={{ background: 'rgba(255,77,109,0.1)', color: 'var(--aura-danger)' }}>
+        <div className="text-sm px-3 py-2 rounded-md" style={{ background: 'rgba(255,77,109,0.1)', color: 'var(--sophi-danger)' }}>
           {error}
         </div>
       )}
@@ -145,7 +145,7 @@ export default function NotificationsPage() {
         onClick={handleSave}
         disabled={saving}
         className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
-        style={{ background: 'var(--aura-green)', color: '#000' }}
+        style={{ background: 'var(--sophi-green)', color: '#000' }}
       >
         <Save size={14} />
         {saving ? tc('saving') : saved ? tc('saved') : tc('save')}

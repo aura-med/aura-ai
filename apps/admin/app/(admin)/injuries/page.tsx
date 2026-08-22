@@ -14,10 +14,10 @@ import type { OsiicsCode } from '@/types'
 
 // ── Severity colour map ───────────────────────────────────────────────────────
 const SEVERITY_COLOR: Record<string, string> = {
-  Minor:    'var(--aura-green)',
-  Moderate: 'var(--aura-warn)',
+  Minor:    'var(--sophi-green)',
+  Moderate: 'var(--sophi-warn)',
   Major:    '#ff9330',
-  Severe:   'var(--aura-danger)',
+  Severe:   'var(--sophi-danger)',
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -126,11 +126,11 @@ export default function InjuriesPage() {
         <div>
           <h1
             className="text-2xl font-bold"
-            style={{ fontFamily: 'var(--font-syne)', color: 'var(--aura-text)' }}
+            style={{ fontFamily: 'var(--font-syne)', color: 'var(--sophi-text)' }}
           >
             Gestão de Lesões
           </h1>
-          <p className="text-sm mt-1 flex items-center gap-2" style={{ color: 'var(--aura-text3)' }}>
+          <p className="text-sm mt-1 flex items-center gap-2" style={{ color: 'var(--sophi-text3)' }}>
             <Stethoscope size={13} />
             Codificação OSIICS ·{' '}
             <span className="font-mono">{codes.length}</span> entradas
@@ -150,39 +150,39 @@ export default function InjuriesPage() {
       {/* ── Filter bar ────────────────────────────────────────────────────── */}
       <div
         className="rounded-xl border p-4 flex flex-wrap gap-3 items-center"
-        style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
       >
         {/* Search */}
         <div
           className="flex items-center gap-2 rounded-lg border px-3 py-1.5 flex-1 min-w-[200px]"
-          style={{ borderColor: 'var(--aura-border2)', background: 'var(--aura-bg3)' }}
+          style={{ borderColor: 'var(--sophi-border2)', background: 'var(--sophi-bg3)' }}
         >
-          <Search size={13} style={{ color: 'var(--aura-text3)' }} />
+          <Search size={13} style={{ color: 'var(--sophi-text3)' }} />
           <input
             value={searchQuery}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Pesquisar código, diagnóstico ou região…"
             className="flex-1 bg-transparent text-sm outline-none"
-            style={{ color: 'var(--aura-text)' }}
+            style={{ color: 'var(--sophi-text)' }}
           />
         </div>
 
         {/* Region filter */}
         <div className="flex items-center gap-2">
-          <Filter size={12} style={{ color: 'var(--aura-text3)' }} />
+          <Filter size={12} style={{ color: 'var(--sophi-text3)' }} />
           <select
             value={filterRegion}
             onChange={(e) => setRegion(e.target.value)}
             className="rounded-lg border px-3 py-1.5 text-sm outline-none cursor-pointer"
             style={{
-              borderColor: 'var(--aura-border2)',
-              color: filterRegion === 'all' ? 'var(--aura-text2)' : 'var(--aura-text)',
-              background: 'var(--aura-bg3)',
+              borderColor: 'var(--sophi-border2)',
+              color: filterRegion === 'all' ? 'var(--sophi-text2)' : 'var(--sophi-text)',
+              background: 'var(--sophi-bg3)',
             }}
           >
             <option value="all">Todas as regiões</option>
             {regions.map((r) => (
-              <option key={r} value={r} style={{ background: 'var(--aura-bg2)' }}>{r}</option>
+              <option key={r} value={r} style={{ background: 'var(--sophi-bg2)' }}>{r}</option>
             ))}
           </select>
 
@@ -192,14 +192,14 @@ export default function InjuriesPage() {
             onChange={(e) => setType(e.target.value)}
             className="rounded-lg border px-3 py-1.5 text-sm outline-none cursor-pointer"
             style={{
-              borderColor: 'var(--aura-border2)',
-              color: filterType === 'all' ? 'var(--aura-text2)' : 'var(--aura-text)',
-              background: 'var(--aura-bg3)',
+              borderColor: 'var(--sophi-border2)',
+              color: filterType === 'all' ? 'var(--sophi-text2)' : 'var(--sophi-text)',
+              background: 'var(--sophi-bg3)',
             }}
           >
             <option value="all">Todos os tipos</option>
             {types.map((t) => (
-              <option key={t} value={t} style={{ background: 'var(--aura-bg2)' }}>{t}</option>
+              <option key={t} value={t} style={{ background: 'var(--sophi-bg2)' }}>{t}</option>
             ))}
           </select>
         </div>
@@ -209,7 +209,7 @@ export default function InjuriesPage() {
           <button
             onClick={() => { setRegion('all'); setType('all'); setSearch('') }}
             className="text-xs px-2.5 py-1 rounded-lg transition-colors"
-            style={{ color: 'var(--aura-danger)', background: 'var(--aura-danger-bg)' }}
+            style={{ color: 'var(--sophi-danger)', background: 'var(--sophi-danger-bg)' }}
           >
             Limpar filtros
           </button>
@@ -219,17 +219,17 @@ export default function InjuriesPage() {
       {/* ── Table ─────────────────────────────────────────────────────────── */}
       <div
         className="rounded-xl border overflow-hidden"
-        style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
       >
         {loading ? (
           <div className="flex items-center justify-center py-24 gap-3">
-            <RefreshCw size={18} className="animate-spin" style={{ color: 'var(--aura-text3)' }} />
-            <span className="text-sm" style={{ color: 'var(--aura-text3)' }}>A carregar…</span>
+            <RefreshCw size={18} className="animate-spin" style={{ color: 'var(--sophi-text3)' }} />
+            <span className="text-sm" style={{ color: 'var(--sophi-text3)' }}>A carregar…</span>
           </div>
         ) : fetchError ? (
           <div className="flex flex-col items-center justify-center py-24 gap-3">
-            <AlertCircle size={24} style={{ color: 'var(--aura-danger)' }} />
-            <p className="text-sm" style={{ color: 'var(--aura-text3)' }}>
+            <AlertCircle size={24} style={{ color: 'var(--sophi-danger)' }} />
+            <p className="text-sm" style={{ color: 'var(--sophi-text3)' }}>
               Erro: {fetchError}
             </p>
             <Button variant="outline" size="sm" onClick={fetchCodes}>Tentar novamente</Button>
@@ -237,16 +237,16 @@ export default function InjuriesPage() {
         ) : filtered.length === 0 && codes.length === 0 ? (
           // Zero rows + no DB error = RLS silent block
           <div className="flex flex-col items-center justify-center py-20 gap-4 px-6 text-center">
-            <Stethoscope size={28} style={{ color: 'var(--aura-text3)' }} />
+            <Stethoscope size={28} style={{ color: 'var(--sophi-text3)' }} />
             <div className="space-y-1">
-              <p className="text-sm font-medium" style={{ color: 'var(--aura-text)' }}>
+              <p className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>
                 Nenhuma lesão encontrada
               </p>
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--aura-text3)' }}>
-                A tabela <code className="font-mono text-[10px] px-1 py-0.5 rounded" style={{ background: 'var(--aura-bg4)' }}>dim_osiics_codes</code> devolveu
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--sophi-text3)' }}>
+                A tabela <code className="font-mono text-[10px] px-1 py-0.5 rounded" style={{ background: 'var(--sophi-bg4)' }}>dim_osiics_codes</code> devolveu
                 0 linhas sem erro — isto é normalmente causado por <strong>RLS (Row Level Security)</strong> sem política de leitura para o role <code className="font-mono text-[10px]">anon</code>.
               </p>
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--aura-text3)' }}>
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--sophi-text3)' }}>
                 Supabase → Authentication → Policies → <strong>dim_osiics_codes</strong> → Add Policy → Enable read for all.
                 Verifique também a consola do browser para logs de diagnóstico.
               </p>
@@ -258,8 +258,8 @@ export default function InjuriesPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-3">
-            <Stethoscope size={28} style={{ color: 'var(--aura-text3)' }} />
-            <p className="text-sm" style={{ color: 'var(--aura-text3)' }}>
+            <Stethoscope size={28} style={{ color: 'var(--sophi-text3)' }} />
+            <p className="text-sm" style={{ color: 'var(--sophi-text3)' }}>
               Nenhuma lesão corresponde aos filtros activos.
             </p>
           </div>
@@ -267,7 +267,7 @@ export default function InjuriesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--aura-border)' }}>
+                <tr style={{ borderBottom: '1px solid var(--sophi-border)' }}>
                   {[
                     'Código', 'Região Corporal', 'Tipo', 'Diagnóstico',
                     'Severidade', 'Rec. Mín.', 'Rec. Máx.', 'Ações',
@@ -275,7 +275,7 @@ export default function InjuriesPage() {
                     <th
                       key={h}
                       className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap"
-                      style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}
+                      style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-mono)' }}
                     >
                       {h}
                     </th>
@@ -286,17 +286,17 @@ export default function InjuriesPage() {
                 {filtered.map((c, i) => (
                   <tr
                     key={c.code}
-                    className="group transition-colors hover:bg-[var(--aura-bg3)]"
+                    className="group transition-colors hover:bg-[var(--sophi-bg3)]"
                     style={{
                       borderBottom:
-                        i < filtered.length - 1 ? '1px solid var(--aura-border)' : undefined,
+                        i < filtered.length - 1 ? '1px solid var(--sophi-border)' : undefined,
                     }}
                   >
                     {/* Code */}
                     <td className="px-4 py-3">
                       <span
                         className="font-mono font-bold text-xs px-2 py-1 rounded"
-                        style={{ background: 'rgba(0,229,160,0.08)', color: 'var(--aura-green)' }}
+                        style={{ background: 'rgba(0,229,160,0.08)', color: 'var(--sophi-green)' }}
                       >
                         {c.code}
                       </span>
@@ -305,7 +305,7 @@ export default function InjuriesPage() {
                     {/* Body Region */}
                     <td
                       className="px-4 py-3 text-xs whitespace-nowrap"
-                      style={{ color: 'var(--aura-text2)' }}
+                      style={{ color: 'var(--sophi-text2)' }}
                     >
                       {c.body_region}
                     </td>
@@ -314,7 +314,7 @@ export default function InjuriesPage() {
                     <td className="px-4 py-3">
                       <span
                         className="text-xs px-2 py-0.5 rounded-full whitespace-nowrap"
-                        style={{ background: 'var(--aura-blue-bg)', color: 'var(--aura-blue)' }}
+                        style={{ background: 'var(--sophi-blue-bg)', color: 'var(--sophi-blue)' }}
                       >
                         {c.injury_type}
                       </span>
@@ -323,7 +323,7 @@ export default function InjuriesPage() {
                     {/* Diagnosis */}
                     <td
                       className="px-4 py-3 text-xs max-w-xs"
-                      style={{ color: 'var(--aura-text)' }}
+                      style={{ color: 'var(--sophi-text)' }}
                     >
                       <span className="line-clamp-2">{c.diagnosis}</span>
                     </td>
@@ -333,22 +333,22 @@ export default function InjuriesPage() {
                       {c.severity_label ? (
                         <span
                           className="font-semibold"
-                          style={{ color: SEVERITY_COLOR[c.severity_label] ?? 'var(--aura-text3)' }}
+                          style={{ color: SEVERITY_COLOR[c.severity_label] ?? 'var(--sophi-text3)' }}
                         >
                           {c.severity_label}
                         </span>
                       ) : (
-                        <span style={{ color: 'var(--aura-text3)' }}>—</span>
+                        <span style={{ color: 'var(--sophi-text3)' }}>—</span>
                       )}
                     </td>
 
                     {/* Rec. Min */}
-                    <td className="px-4 py-3 text-xs font-mono" style={{ color: 'var(--aura-text3)' }}>
+                    <td className="px-4 py-3 text-xs font-mono" style={{ color: 'var(--sophi-text3)' }}>
                       {c.expected_recovery_min != null ? `${c.expected_recovery_min}d` : '—'}
                     </td>
 
                     {/* Rec. Max */}
-                    <td className="px-4 py-3 text-xs font-mono" style={{ color: 'var(--aura-text3)' }}>
+                    <td className="px-4 py-3 text-xs font-mono" style={{ color: 'var(--sophi-text3)' }}>
                       {c.expected_recovery_max != null ? `${c.expected_recovery_max}d` : '—'}
                     </td>
 
@@ -356,13 +356,13 @@ export default function InjuriesPage() {
                     <td className="px-4 py-3">
                       <Button
                         aria-label={`Eliminar ${c.code}`}
-                        className="hover:bg-[var(--aura-danger-bg)]"
+                        className="hover:bg-[var(--sophi-danger-bg)]"
                         disabled={deletingCode === c.code}
                         onClick={() => handleDelete(c)}
                         size="icon-sm"
                         title="Eliminar"
                         variant="ghost"
-                        style={{ color: 'var(--aura-danger)' }}
+                        style={{ color: 'var(--sophi-danger)' }}
                       >
                         {deletingCode === c.code ? (
                           <RefreshCw size={12} className="animate-spin" />
@@ -381,13 +381,13 @@ export default function InjuriesPage() {
 
       {/* ── Footer count ──────────────────────────────────────────────────── */}
       {!loading && !fetchError && codes.length > 0 && (
-        <p className="text-xs text-right" style={{ color: 'var(--aura-text3)' }}>
+        <p className="text-xs text-right" style={{ color: 'var(--sophi-text3)' }}>
           A mostrar{' '}
-          <span className="font-mono font-bold" style={{ color: 'var(--aura-text2)' }}>
+          <span className="font-mono font-bold" style={{ color: 'var(--sophi-text2)' }}>
             {filtered.length}
           </span>{' '}
           de{' '}
-          <span className="font-mono font-bold" style={{ color: 'var(--aura-text2)' }}>
+          <span className="font-mono font-bold" style={{ color: 'var(--sophi-text2)' }}>
             {codes.length}
           </span>{' '}
           lesões

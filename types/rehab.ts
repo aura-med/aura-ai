@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────
-// AURA — Rehab Domain Types
+// SOPHI — Rehab Domain Types
 // Issue #20: protocol engine with phase gates and audit trail
 // ─────────────────────────────────────────────────────────────────
 

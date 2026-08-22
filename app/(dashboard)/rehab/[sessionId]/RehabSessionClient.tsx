@@ -118,13 +118,13 @@ export default function RehabSessionClient({
             width: 48,
             height: 48,
             borderRadius: 10,
-            background: 'var(--aura-bg3)',
+            background: 'var(--sophi-bg3)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontFamily: 'var(--font-dm-mono)',
             fontSize: 16,
-            color: 'var(--aura-text2)',
+            color: 'var(--sophi-text2)',
             flexShrink: 0,
           }}
         >
@@ -136,13 +136,13 @@ export default function RehabSessionClient({
               fontFamily: 'var(--font-syne)',
               fontSize: '1.25rem',
               fontWeight: 800,
-              color: 'var(--aura-text)',
+              color: 'var(--sophi-text)',
               margin: 0,
             }}
           >
             {athlete?.name}
           </h1>
-          <div style={{ fontSize: '12px', color: 'var(--aura-text2)', fontFamily: 'var(--font-dm-mono)' }}>
+          <div style={{ fontSize: '12px', color: 'var(--sophi-text2)', fontFamily: 'var(--font-dm-mono)' }}>
             {athlete?.position} · {athlete?.club} · {protocol.name} · Dia {session.current_day}/{protocol.total_days}
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function RehabSessionClient({
                   padding: '8px 16px',
                   borderRadius: '8px',
                   border: 'none',
-                  background: 'var(--aura-green)',
+                  background: 'var(--sophi-green)',
                   color: '#000',
                   fontWeight: 600,
                   fontSize: '13px',
@@ -174,9 +174,9 @@ export default function RehabSessionClient({
                 style={{
                   padding: '8px 16px',
                   borderRadius: '8px',
-                  border: '1px solid var(--aura-warn)',
+                  border: '1px solid var(--sophi-warn)',
                   background: 'rgba(255,179,71,0.1)',
-                  color: 'var(--aura-warn)',
+                  color: 'var(--sophi-warn)',
                   fontWeight: 500,
                   fontSize: '12px',
                   cursor: 'pointer',
@@ -190,12 +190,12 @@ export default function RehabSessionClient({
       </div>
 
       {/* Progress bar */}
-      <div style={{ height: 5, background: 'var(--aura-bg4)', borderRadius: 3, overflow: 'hidden', marginBottom: '20px' }}>
+      <div style={{ height: 5, background: 'var(--sophi-bg4)', borderRadius: 3, overflow: 'hidden', marginBottom: '20px' }}>
         <div
           style={{
             width: `${progressPct}%`,
             height: 5,
-            background: currentPhase?.color ?? 'var(--aura-green)',
+            background: currentPhase?.color ?? 'var(--sophi-green)',
             borderRadius: 3,
             transition: 'width .3s',
           }}
@@ -216,9 +216,9 @@ export default function RehabSessionClient({
               fontSize: '10px',
               letterSpacing: '1px',
               textTransform: 'uppercase',
-              border: `1px solid ${activeTab === tab ? currentPhase?.color ?? 'var(--aura-green)' : 'var(--aura-border)'}`,
+              border: `1px solid ${activeTab === tab ? currentPhase?.color ?? 'var(--sophi-green)' : 'var(--sophi-border)'}`,
               background: activeTab === tab ? `${currentPhase?.color ?? '#00e5a0'}15` : 'transparent',
-              color: activeTab === tab ? currentPhase?.color ?? 'var(--aura-green)' : 'var(--aura-text2)',
+              color: activeTab === tab ? currentPhase?.color ?? 'var(--sophi-green)' : 'var(--sophi-text2)',
               transition: 'all .15s',
             }}
           >
@@ -233,8 +233,8 @@ export default function RehabSessionClient({
           {/* Assessment fields */}
           <div
             style={{
-              background: 'var(--aura-bg2)',
-              border: '1px solid var(--aura-border)',
+              background: 'var(--sophi-bg2)',
+              border: '1px solid var(--sophi-border)',
               borderRadius: '12px',
               padding: '18px 20px',
             }}
@@ -245,7 +245,7 @@ export default function RehabSessionClient({
                 fontSize: '9px',
                 letterSpacing: '2px',
                 textTransform: 'uppercase',
-                color: 'var(--aura-text3)',
+                color: 'var(--sophi-text3)',
                 marginBottom: '14px',
               }}
             >
@@ -266,12 +266,12 @@ export default function RehabSessionClient({
                       alignItems: 'center',
                     }}
                   >
-                    <span style={{ fontSize: '12px', color: 'var(--aura-text2)' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--sophi-text2)' }}>
                       {field.label}
                     </span>
                     <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                       {isSaved && (
-                        <span style={{ fontSize: '10px', color: 'var(--aura-green)', fontFamily: 'var(--font-dm-mono)' }}>
+                        <span style={{ fontSize: '10px', color: 'var(--sophi-green)', fontFamily: 'var(--font-dm-mono)' }}>
                           ✓
                         </span>
                       )}
@@ -279,7 +279,7 @@ export default function RehabSessionClient({
                         <span
                           style={{
                             fontSize: '9px',
-                            color: 'var(--aura-text3)',
+                            color: 'var(--sophi-text3)',
                             fontFamily: 'var(--font-dm-mono)',
                           }}
                           title={field.evidence_ref}
@@ -293,7 +293,7 @@ export default function RehabSessionClient({
                   {field.type === 'vas_slider' && (
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '10px', color: 'var(--aura-text3)' }}>0</span>
+                        <span style={{ fontSize: '10px', color: 'var(--sophi-text3)' }}>0</span>
                         <span
                           style={{
                             fontFamily: 'var(--font-dm-mono)',
@@ -301,15 +301,15 @@ export default function RehabSessionClient({
                             fontWeight: 600,
                             color:
                               (currentVal as number) <= 2
-                                ? 'var(--aura-green)'
+                                ? 'var(--sophi-green)'
                                 : (currentVal as number) <= 5
-                                ? 'var(--aura-warn)'
-                                : 'var(--aura-danger)',
+                                ? 'var(--sophi-warn)'
+                                : 'var(--sophi-danger)',
                           }}
                         >
                           {currentVal !== undefined && currentVal !== null ? `${currentVal}${field.unit ?? ''}` : '—'}
                         </span>
-                        <span style={{ fontSize: '10px', color: 'var(--aura-text3)' }}>10</span>
+                        <span style={{ fontSize: '10px', color: 'var(--sophi-text3)' }}>10</span>
                       </div>
                       <input
                         type="range"
@@ -318,7 +318,7 @@ export default function RehabSessionClient({
                         step={field.step ?? 1}
                         value={(currentVal as number) ?? 5}
                         onChange={e => updateAssessment(field.key, parseFloat(e.target.value))}
-                        style={{ width: '100%', accentColor: 'var(--aura-green)', cursor: 'pointer' }}
+                        style={{ width: '100%', accentColor: 'var(--sophi-green)', cursor: 'pointer' }}
                       />
                     </div>
                   )}
@@ -338,9 +338,9 @@ export default function RehabSessionClient({
                               fontSize: '11px',
                               cursor: 'pointer',
                               transition: 'all .15s',
-                              border: `1px solid ${isActive ? 'var(--aura-green)' : 'var(--aura-border)'}`,
-                              background: isActive ? 'rgba(0,229,160,0.12)' : 'var(--aura-bg3)',
-                              color: isActive ? 'var(--aura-green)' : 'var(--aura-text2)',
+                              border: `1px solid ${isActive ? 'var(--sophi-green)' : 'var(--sophi-border)'}`,
+                              background: isActive ? 'rgba(0,229,160,0.12)' : 'var(--sophi-bg3)',
+                              color: isActive ? 'var(--sophi-green)' : 'var(--sophi-text2)',
                             }}
                           >
                             {opt.label}
@@ -365,9 +365,9 @@ export default function RehabSessionClient({
                               borderRadius: '8px',
                               fontSize: '12px',
                               cursor: 'pointer',
-                              border: `1px solid ${isActive ? (isNeg ? 'var(--aura-green)' : 'var(--aura-danger)') : 'var(--aura-border)'}`,
-                              background: isActive ? (isNeg ? 'rgba(0,229,160,0.1)' : 'rgba(255,77,109,0.1)') : 'var(--aura-bg3)',
-                              color: isActive ? (isNeg ? 'var(--aura-green)' : 'var(--aura-danger)') : 'var(--aura-text2)',
+                              border: `1px solid ${isActive ? (isNeg ? 'var(--sophi-green)' : 'var(--sophi-danger)') : 'var(--sophi-border)'}`,
+                              background: isActive ? (isNeg ? 'rgba(0,229,160,0.1)' : 'rgba(255,77,109,0.1)') : 'var(--sophi-bg3)',
+                              color: isActive ? (isNeg ? 'var(--sophi-green)' : 'var(--sophi-danger)') : 'var(--sophi-text2)',
                               transition: 'all .15s',
                             }}
                           >
@@ -385,8 +385,8 @@ export default function RehabSessionClient({
           {/* Gate status */}
           <div
             style={{
-              background: 'var(--aura-bg2)',
-              border: '1px solid var(--aura-border)',
+              background: 'var(--sophi-bg2)',
+              border: '1px solid var(--sophi-border)',
               borderRadius: '12px',
               padding: '18px 20px',
             }}
@@ -397,7 +397,7 @@ export default function RehabSessionClient({
                 fontSize: '9px',
                 letterSpacing: '2px',
                 textTransform: 'uppercase',
-                color: 'var(--aura-text3)',
+                color: 'var(--sophi-text3)',
                 marginBottom: '14px',
               }}
             >
@@ -425,7 +425,7 @@ export default function RehabSessionClient({
                       width: 18,
                       height: 18,
                       borderRadius: '50%',
-                      background: passed ? 'var(--aura-green)' : 'var(--aura-danger)',
+                      background: passed ? 'var(--sophi-green)' : 'var(--sophi-danger)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -437,22 +437,22 @@ export default function RehabSessionClient({
                     {passed ? '✓' : '✗'}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '12px', color: passed ? 'var(--aura-text)' : 'var(--aura-text2)' }}>
+                    <div style={{ fontSize: '12px', color: passed ? 'var(--sophi-text)' : 'var(--sophi-text2)' }}>
                       {gate.label}
                     </div>
-                    <div style={{ fontSize: '10px', color: 'var(--aura-text3)', marginTop: '2px', fontFamily: 'var(--font-dm-mono)' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--sophi-text3)', marginTop: '2px', fontFamily: 'var(--font-dm-mono)' }}>
                       {actual_value !== null && actual_value !== undefined
                         ? `Actual: ${actual_value}`
                         : 'Não avaliado'}
                       {gate.evidence_ref && ` · ${gate.evidence_ref}`}
                     </div>
                     {!passed && gate.overridable && (
-                      <div style={{ fontSize: '9px', color: 'var(--aura-warn)', marginTop: '2px', fontFamily: 'var(--font-dm-mono)' }}>
+                      <div style={{ fontSize: '9px', color: 'var(--sophi-warn)', marginTop: '2px', fontFamily: 'var(--font-dm-mono)' }}>
                         Overridable pelo clínico
                       </div>
                     )}
                     {!passed && !gate.overridable && (
-                      <div style={{ fontSize: '9px', color: 'var(--aura-danger)', marginTop: '2px', fontFamily: 'var(--font-dm-mono)' }}>
+                      <div style={{ fontSize: '9px', color: 'var(--sophi-danger)', marginTop: '2px', fontFamily: 'var(--font-dm-mono)' }}>
                         Mandatório — sem override possível
                       </div>
                     )}
@@ -467,7 +467,7 @@ export default function RehabSessionClient({
                 fontSize: '9px',
                 letterSpacing: '2px',
                 textTransform: 'uppercase',
-                color: 'var(--aura-text3)',
+                color: 'var(--sophi-text3)',
                 margin: '16px 0 10px',
               }}
             >
@@ -493,7 +493,7 @@ export default function RehabSessionClient({
                   alignItems: 'center',
                   gap: '10px',
                   padding: '7px 0',
-                  borderBottom: idx < rtp.length - 1 ? '1px solid var(--aura-border)' : 'none',
+                  borderBottom: idx < rtp.length - 1 ? '1px solid var(--sophi-border)' : 'none',
                   cursor: 'pointer',
                   fontSize: '12px',
                 }}
@@ -503,8 +503,8 @@ export default function RehabSessionClient({
                     width: 16,
                     height: 16,
                     borderRadius: '4px',
-                    border: `1px solid ${criterion.done ? 'var(--aura-green)' : 'var(--aura-border)'}`,
-                    background: criterion.done ? 'var(--aura-green)' : 'transparent',
+                    border: `1px solid ${criterion.done ? 'var(--sophi-green)' : 'var(--sophi-border)'}`,
+                    background: criterion.done ? 'var(--sophi-green)' : 'transparent',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -516,7 +516,7 @@ export default function RehabSessionClient({
                 >
                   ✓
                 </div>
-                <span style={{ color: criterion.done ? 'var(--aura-green)' : 'var(--aura-text2)' }}>
+                <span style={{ color: criterion.done ? 'var(--sophi-green)' : 'var(--sophi-text2)' }}>
                   {criterion.label}
                 </span>
               </div>
@@ -529,8 +529,8 @@ export default function RehabSessionClient({
       {activeTab === 'timeline' && (
         <div
           style={{
-            background: 'var(--aura-bg2)',
-            border: '1px solid var(--aura-border)',
+            background: 'var(--sophi-bg2)',
+            border: '1px solid var(--sophi-border)',
             borderRadius: '12px',
             padding: '18px 20px',
           }}
@@ -541,7 +541,7 @@ export default function RehabSessionClient({
               fontSize: '9px',
               letterSpacing: '2px',
               textTransform: 'uppercase',
-              color: 'var(--aura-text3)',
+              color: 'var(--sophi-text3)',
               marginBottom: '16px',
             }}
           >
@@ -559,15 +559,15 @@ export default function RehabSessionClient({
                     minWidth: 200,
                     padding: '14px 16px',
                     borderRadius: '10px',
-                    border: `1px solid ${isActive ? phase.color : isDone ? 'rgba(0,229,160,0.25)' : 'var(--aura-border)'}`,
-                    background: isActive ? `${phase.color}15` : isDone ? 'rgba(0,229,160,0.05)' : 'var(--aura-bg3)',
+                    border: `1px solid ${isActive ? phase.color : isDone ? 'rgba(0,229,160,0.25)' : 'var(--sophi-border)'}`,
+                    background: isActive ? `${phase.color}15` : isDone ? 'rgba(0,229,160,0.05)' : 'var(--sophi-bg3)',
                   }}
                 >
                   <div
                     style={{
                       fontFamily: 'var(--font-dm-mono)',
                       fontSize: '9px',
-                      color: 'var(--aura-text3)',
+                      color: 'var(--sophi-text3)',
                       marginBottom: '4px',
                     }}
                   >
@@ -577,7 +577,7 @@ export default function RehabSessionClient({
                     style={{
                       fontWeight: 600,
                       fontSize: '13px',
-                      color: isDone ? 'var(--aura-green)' : isActive ? phase.color : 'var(--aura-text3)',
+                      color: isDone ? 'var(--sophi-green)' : isActive ? phase.color : 'var(--sophi-text3)',
                       marginBottom: '10px',
                     }}
                   >
@@ -588,9 +588,9 @@ export default function RehabSessionClient({
                       key={i}
                       style={{
                         fontSize: '11px',
-                        color: 'var(--aura-text2)',
+                        color: 'var(--sophi-text2)',
                         padding: '3px 0',
-                        borderBottom: i < phase.exercises.length - 1 ? '1px solid var(--aura-border)' : 'none',
+                        borderBottom: i < phase.exercises.length - 1 ? '1px solid var(--sophi-border)' : 'none',
                       }}
                     >
                       {ex}
@@ -607,8 +607,8 @@ export default function RehabSessionClient({
       {activeTab === 'audit' && (
         <div
           style={{
-            background: 'var(--aura-bg2)',
-            border: '1px solid var(--aura-border)',
+            background: 'var(--sophi-bg2)',
+            border: '1px solid var(--sophi-border)',
             borderRadius: '12px',
             padding: '18px 20px',
           }}
@@ -619,14 +619,14 @@ export default function RehabSessionClient({
               fontSize: '9px',
               letterSpacing: '2px',
               textTransform: 'uppercase',
-              color: 'var(--aura-text3)',
+              color: 'var(--sophi-text3)',
               marginBottom: '14px',
             }}
           >
             Histórico de overrides ({overrideLog.length})
           </div>
           {overrideLog.length === 0 ? (
-            <div style={{ fontSize: '13px', color: 'var(--aura-text3)', padding: '1rem 0' }}>
+            <div style={{ fontSize: '13px', color: 'var(--sophi-text3)', padding: '1rem 0' }}>
               Sem overrides registados. Todas as progressões seguiram os critérios clínicos.
             </div>
           ) : (
@@ -643,10 +643,10 @@ export default function RehabSessionClient({
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ fontWeight: 600, color: 'var(--aura-warn)' }}>
+                  <span style={{ fontWeight: 600, color: 'var(--sophi-warn)' }}>
                     Fase {entry.from_phase} → Fase {entry.to_phase}
                   </span>
-                  <span style={{ fontFamily: 'var(--font-dm-mono)', fontSize: '10px', color: 'var(--aura-text3)' }}>
+                  <span style={{ fontFamily: 'var(--font-dm-mono)', fontSize: '10px', color: 'var(--sophi-text3)' }}>
                     {new Date(entry.overridden_at).toLocaleDateString('pt-PT', {
                       day: '2-digit',
                       month: 'short',
@@ -656,11 +656,11 @@ export default function RehabSessionClient({
                     })}
                   </span>
                 </div>
-                <div style={{ color: 'var(--aura-text2)' }}>
+                <div style={{ color: 'var(--sophi-text2)' }}>
                   Motivo: {OVERRIDE_REASONS.find(r => r.value === entry.reason)?.label ?? entry.reason}
                 </div>
                 {entry.notes && (
-                  <div style={{ color: 'var(--aura-text3)', marginTop: '4px', fontStyle: 'italic' }}>
+                  <div style={{ color: 'var(--sophi-text3)', marginTop: '4px', fontStyle: 'italic' }}>
                     &ldquo;{entry.notes}&rdquo;
                   </div>
                 )}
@@ -686,7 +686,7 @@ export default function RehabSessionClient({
         >
           <div
             style={{
-              background: 'var(--aura-bg2)',
+              background: 'var(--sophi-bg2)',
               border: '1px solid rgba(255,179,71,0.3)',
               borderRadius: '14px',
               padding: '24px',
@@ -699,13 +699,13 @@ export default function RehabSessionClient({
                 fontFamily: 'var(--font-syne)',
                 fontSize: '1rem',
                 fontWeight: 700,
-                color: 'var(--aura-warn)',
+                color: 'var(--sophi-warn)',
                 marginBottom: '6px',
               }}
             >
               Override de fase
             </h3>
-            <p style={{ fontSize: '12px', color: 'var(--aura-text2)', marginBottom: '16px' }}>
+            <p style={{ fontSize: '12px', color: 'var(--sophi-text2)', marginBottom: '16px' }}>
               Os seguintes critérios não estão cumpridos. O override ficará registado no histórico de auditoria.
             </p>
 
@@ -716,9 +716,9 @@ export default function RehabSessionClient({
                   key={g.id}
                   style={{
                     fontSize: '12px',
-                    color: 'var(--aura-danger)',
+                    color: 'var(--sophi-danger)',
                     padding: '5px 0',
-                    borderBottom: '1px solid var(--aura-border)',
+                    borderBottom: '1px solid var(--sophi-border)',
                     display: 'flex',
                     gap: '8px',
                   }}
@@ -731,7 +731,7 @@ export default function RehabSessionClient({
 
             {/* Reason select */}
             <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', fontSize: '11px', color: 'var(--aura-text2)', marginBottom: '6px', fontFamily: 'var(--font-dm-mono)' }}>
+              <label style={{ display: 'block', fontSize: '11px', color: 'var(--sophi-text2)', marginBottom: '6px', fontFamily: 'var(--font-dm-mono)' }}>
                 MOTIVO DO OVERRIDE
               </label>
               <select
@@ -740,10 +740,10 @@ export default function RehabSessionClient({
                 style={{
                   width: '100%',
                   padding: '8px 10px',
-                  background: 'var(--aura-bg3)',
-                  border: '1px solid var(--aura-border)',
+                  background: 'var(--sophi-bg3)',
+                  border: '1px solid var(--sophi-border)',
                   borderRadius: '8px',
-                  color: 'var(--aura-text)',
+                  color: 'var(--sophi-text)',
                   fontSize: '13px',
                   outline: 'none',
                   cursor: 'pointer',
@@ -757,7 +757,7 @@ export default function RehabSessionClient({
 
             {/* Notes */}
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '11px', color: 'var(--aura-text2)', marginBottom: '6px', fontFamily: 'var(--font-dm-mono)' }}>
+              <label style={{ display: 'block', fontSize: '11px', color: 'var(--sophi-text2)', marginBottom: '6px', fontFamily: 'var(--font-dm-mono)' }}>
                 NOTAS CLÍNICAS (opcional)
               </label>
               <textarea
@@ -768,10 +768,10 @@ export default function RehabSessionClient({
                 style={{
                   width: '100%',
                   padding: '8px 10px',
-                  background: 'var(--aura-bg3)',
-                  border: '1px solid var(--aura-border)',
+                  background: 'var(--sophi-bg3)',
+                  border: '1px solid var(--sophi-border)',
                   borderRadius: '8px',
-                  color: 'var(--aura-text)',
+                  color: 'var(--sophi-text)',
                   fontSize: '13px',
                   resize: 'vertical',
                   outline: 'none',
@@ -787,9 +787,9 @@ export default function RehabSessionClient({
                   flex: 1,
                   padding: '9px',
                   borderRadius: '8px',
-                  border: '1px solid var(--aura-border)',
+                  border: '1px solid var(--sophi-border)',
                   background: 'transparent',
-                  color: 'var(--aura-text2)',
+                  color: 'var(--sophi-text2)',
                   cursor: 'pointer',
                   fontSize: '13px',
                 }}
@@ -804,7 +804,7 @@ export default function RehabSessionClient({
                   padding: '9px',
                   borderRadius: '8px',
                   border: 'none',
-                  background: 'var(--aura-warn)',
+                  background: 'var(--sophi-warn)',
                   color: '#000',
                   fontWeight: 600,
                   cursor: 'pointer',

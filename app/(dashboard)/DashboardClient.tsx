@@ -292,11 +292,31 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
                     </span>
                   </div>
 
-                  {/* Athletes */}
+                  {/* Athletes — "Disponível" stays as compact avatar circles (many
+                      athletes); RTP/Indisponível use the same named-pill format as
+                      the "A Reavaliar" strip above, since there are fewer of them. */}
                   <div style={{ padding: '10px 14px', minHeight: 60 }}>
                     {group.length === 0 ? (
                       <div style={{ fontSize: 11, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)', textAlign: 'center', padding: '12px 0' }}>
                         —
+                      </div>
+                    ) : isPriority ? (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                        {group.map((a) => (
+                          <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
+                            <div style={{
+                              display: 'flex', alignItems: 'center', gap: 8,
+                              background: 'var(--sophi-bg3)', border: `1px solid ${cfg.border}`,
+                              borderRadius: 999, padding: '4px 12px 4px 4px',
+                            }}>
+                              <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={26} />
+                              <span style={{ fontSize: 12, color: 'var(--sophi-text)', fontWeight: 500 }}>{a.name}</span>
+                              <span style={{ fontSize: 10, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+                                {a.position}
+                              </span>
+                            </div>
+                          </Link>
+                        ))}
                       </div>
                     ) : (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -324,23 +344,6 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
                       </div>
                     )}
                   </div>
-
-                  {/* Athletes list (names) for unavailable/evaluation */}
-                  {isPriority && group.length > 0 && (
-                    <div style={{ borderTop: '1px solid var(--sophi-border)', padding: '8px 14px' }}>
-                      {group.map((a) => (
-                        <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none', display: 'block' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
-                            <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={24} />
-                            <span style={{ fontSize: 12, color: 'var(--sophi-text)', fontWeight: 500 }}>{a.name}</span>
-                            <span style={{ fontSize: 10, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
-                              {a.position}
-                            </span>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
                 </div>
               )
             })}

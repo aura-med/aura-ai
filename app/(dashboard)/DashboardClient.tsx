@@ -158,7 +158,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
         </div>
 
         {/* Date navigation */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <button
             onClick={() => navigateDate(-1)}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 6, border: '1px solid var(--sophi-border2)', background: 'var(--sophi-bg3)', color: 'var(--sophi-text2)', cursor: 'pointer' }}
@@ -166,11 +166,14 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
           >
             <ChevronLeft size={14} />
           </button>
-          <div style={{
-            fontFamily: 'var(--font-dm-mono)', fontSize: 12, color: 'var(--sophi-text)',
-            padding: '5px 12px', borderRadius: 6, border: '1px solid var(--sophi-border2)',
-            background: 'var(--sophi-bg3)', minWidth: 180, textAlign: 'center',
-          }}>
+          <div
+            className="min-w-[140px] sm:min-w-[180px]"
+            style={{
+              fontFamily: 'var(--font-dm-mono)', fontSize: 12, color: 'var(--sophi-text)',
+              padding: '5px 12px', borderRadius: 6, border: '1px solid var(--sophi-border2)',
+              background: 'var(--sophi-bg3)', textAlign: 'center',
+            }}
+          >
             {formatDisplayDate(currentDate)}
           </div>
           <button
@@ -258,9 +261,10 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
           )}
 
           {/* Semáforo: disponível → RTP → indisponível, por ordem crescente de restrição.
-              Fixed 3-column row spanning the full page width (same width as the
-              "A Reavaliar" strip above), rather than auto-fill leaving slack. */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+              Fixed 3-column row spanning the full page width on desktop/tablet (≥640px,
+              same as before); stacks to 1 column on phones so the named pills have room
+              to wrap instead of being squeezed into a ~110px-wide slot. */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {TRAFFIC_LIGHT_ORDER.map((status) => {
               const cfg = STATUS_CONFIG[status]
               const group = byStatus[status]

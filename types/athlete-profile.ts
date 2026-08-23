@@ -95,7 +95,7 @@ export interface MedicationRecord {
 
 // ── Rehab Sessions ────────────────────────────────────────────────────────────
 
-export type RehabSessionType = 'physio' | 'gym' | 'pool' | 'field' | 'other'
+export type RehabSessionType = 'physio' | 'gym' | 'massage' | 'field' | 'other'
 
 export interface RehabSession {
   id: string
@@ -106,6 +106,7 @@ export interface RehabSession {
   description: string | null
   clinician_name: string | null
   notes: string | null
+  occurrence_id: string | null
   created_at: string
   updated_at: string
 }

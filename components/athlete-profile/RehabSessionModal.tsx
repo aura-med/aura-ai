@@ -2,21 +2,22 @@
 
 import { useState } from 'react'
 import { X, Check, Loader2, Activity, Trash2 } from 'lucide-react'
-import type { RehabSession } from '@/types/athlete-profile'
+import type { RehabSession, ActiveOccurrence } from '@/types/athlete-profile'
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SESSION_TYPES: { value: RehabSession['session_type']; label: string }[] = [
-  { value: 'physio', label: 'Fisioterapia' },
-  { value: 'gym',    label: 'Ginásio / Força' },
-  { value: 'pool',   label: 'Piscina' },
-  { value: 'field',  label: 'Campo' },
-  { value: 'other',  label: 'Outro' },
+  { value: 'physio',  label: 'Fisioterapia' },
+  { value: 'gym',     label: 'Ginásio / Força' },
+  { value: 'massage', label: 'Massagem' },
+  { value: 'field',   label: 'Campo' },
+  { value: 'other',   label: 'Outro' },
 ]
 
 interface Props {
   athleteId: string
   existing?: RehabSession | null
+  occurrences?: ActiveOccurrence[]
   onClose:   () => void
   onSaved:   (s: RehabSession) => void
   onDeleted?: (id: string) => void
@@ -26,7 +27,7 @@ function todayISO() {
   return new Date().toISOString().split('T')[0]
 }
 
-export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDeleted }: Props) {
+export function RehabSessionModal({ athleteId, existing, occurrences, onClose, onSaved, onDeleted }: Props) {
   const isEdit = !!existing
 
   const [sessionDate,  setSessionDate]  = useState(existing?.session_date   ?? todayISO())
@@ -35,6 +36,7 @@ export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDel
   const [description,  setDescription]  = useState(existing?.description    ?? '')
   const [clinician,    setClinician]    = useState(existing?.clinician_name  ?? '')
   const [notes,        setNotes]        = useState(existing?.notes           ?? '')
+  const [occurrenceId, setOccurrenceId] = useState(existing?.occurrence_id   ?? '')
 
   const [saving,   setSaving]   = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -55,6 +57,7 @@ export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDel
         description:      description.trim() || null,
         clinician_name:   clinician.trim()   || null,
         notes:            notes.trim()       || null,
+        occurrence_id:    occurrenceId || null,
       }
 
       let res: Response
@@ -177,6 +180,28 @@ export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDel
               ))}
             </div>
           </div>
+
+          {/* Occurrence / diagnosis association */}
+          {occurrences && occurrences.length > 0 && (
+            <div className="space-y-1">
+              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
+                Ocorrência / Diagnóstico associado
+              </label>
+              <select
+                value={occurrenceId}
+                onChange={(e) => setOccurrenceId(e.target.value)}
+                className={inputClass}
+                style={inputStyle}
+              >
+                <option value="">Nenhuma</option>
+                {occurrences.map((occ) => (
+                  <option key={occ.id} value={occ.id}>
+                    {(occ.title || occ.occurrence_type || 'Ocorrência')} — {occ.occurrence_date}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Description */}
           <div className="space-y-1">

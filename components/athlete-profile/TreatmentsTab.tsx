@@ -33,11 +33,11 @@ function formatDate(dateStr: string | null | undefined) {
 }
 
 const SESSION_TYPE_LABEL: Record<string, string> = {
-  physio: 'Fisioterapia',
-  gym:    'Ginásio',
-  pool:   'Piscina',
-  field:  'Campo',
-  other:  'Outro',
+  physio:  'Fisioterapia',
+  gym:     'Ginásio',
+  massage: 'Massagem',
+  field:   'Campo',
+  other:   'Outro',
 }
 
 // ── Section wrapper ───────────────────────────────────────────────────────────
@@ -85,7 +85,7 @@ function EmptyState({ label, cta, onClick }: { label: string; cta: string; onCli
 
 // ── Rehab Session Row ─────────────────────────────────────────────────────────
 
-function RehabRow({ s, onEdit }: { s: RehabSession; onEdit?: () => void }) {
+function RehabRow({ s, occurrenceLabel, onEdit }: { s: RehabSession; occurrenceLabel?: string | null; onEdit?: () => void }) {
   return (
     <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg border" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
       <div className="flex-1 min-w-0">
@@ -102,6 +102,9 @@ function RehabRow({ s, onEdit }: { s: RehabSession; onEdit?: () => void }) {
         </div>
         {s.description && (
           <p className="text-[11px] truncate mt-0.5" style={{ color: 'var(--sophi-text3)' }}>{s.description}</p>
+        )}
+        {occurrenceLabel && (
+          <p className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-purple)' }}>↳ {occurrenceLabel}</p>
         )}
         {s.clinician_name && (
           <p className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>{s.clinician_name}</p>
@@ -251,6 +254,13 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
   const [sessions,   setSessions]   = useState<RehabSession[]>([])
   const [loadingS,   setLoadingS]   = useState(true)
 
+  // Occurrence titles for sessions associated with one — profile.activeOccurrences
+  // only covers open/recent ones, which is the same set offered when creating a
+  // new association, so an older resolved occurrence link just shows no label.
+  const occurrenceLabelById = new Map(
+    profile.activeOccurrences.map((occ) => [occ.id, occ.title || occ.occurrence_type || 'Ocorrência']),
+  )
+
   // Rehab session modal
   const [showRehabModal,  setShowRehabModal]  = useState(false)
   const [editingRehab,    setEditingRehab]    = useState<RehabSession | null>(null)
@@ -356,6 +366,7 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
                 <RehabRow
                   key={s.id}
                   s={s}
+                  occurrenceLabel={s.occurrence_id ? occurrenceLabelById.get(s.occurrence_id) : null}
                   onEdit={canRehab ? () => { setEditingRehab(s); setShowRehabModal(true) } : undefined}
                 />
               ))}
@@ -421,6 +432,7 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
         <RehabSessionModal
           athleteId={profile.id}
           existing={editingRehab}
+          occurrences={profile.activeOccurrences}
           onClose={() => { setShowRehabModal(false); setEditingRehab(null) }}
           onSaved={handleRehabSaved}
           onDeleted={handleRehabDeleted}

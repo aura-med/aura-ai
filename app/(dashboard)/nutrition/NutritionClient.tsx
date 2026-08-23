@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Apple, Plus, Loader2, X, Scale, Search, AlertTriangle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { isOwner } from '@/lib/roles'
@@ -76,10 +77,11 @@ function SummaryGrid({ athletes, assessments }: { athletes: NutritionAthlete[]; 
         {cards.map(({ athlete, sum, latestDate, status }) => {
           const cfg = STATUS_CFG[status]
           return (
-            <div
+            <Link
               key={athlete.id}
-              className="rounded-lg border p-3 space-y-1.5"
-              style={{ borderColor: cfg.color, background: cfg.bg }}
+              href={`/athletes/${athlete.id}`}
+              className="rounded-lg border p-3 space-y-1.5 block"
+              style={{ borderColor: cfg.color, background: cfg.bg, textDecoration: 'none' }}
             >
               <p className="text-xs font-semibold truncate" style={{ color: 'var(--sophi-text)' }}>{athleteLabel(athlete)}</p>
               <div className="flex items-baseline gap-1">
@@ -90,7 +92,7 @@ function SummaryGrid({ athletes, assessments }: { athletes: NutritionAthlete[]; 
               </div>
               <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: cfg.color }}>{cfg.label}</p>
               {latestDate && <p className="text-[9px]" style={{ color: 'var(--sophi-text3)' }}>{formatDate(latestDate)}</p>}
-            </div>
+            </Link>
           )
         })}
       </div>
@@ -364,14 +366,14 @@ export function NutritionClient({
           ) : (
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {filteredWeights.slice(0, 100).map((w) => (
-                <div key={w.id} className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-xs" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
+                <Link key={w.id} href={`/athletes/${w.athlete_id}`} className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-xs" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)', textDecoration: 'none' }}>
                   <span className="font-medium" style={{ color: 'var(--sophi-text)' }}>{athleteLabel(w.athletes)}</span>
                   <div className="flex items-center gap-3" style={{ color: 'var(--sophi-text3)' }}>
                     <span className="font-mono font-bold" style={{ color: 'var(--sophi-text)' }}>{w.weight_kg} kg</span>
                     <span>{formatDate(w.measurement_date)}</span>
                     {w.recorded_by_name && <span>{w.recorded_by_name}</span>}
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -396,7 +398,7 @@ export function NutritionClient({
                 const athlete = athletes.find((x) => x.id === a.athlete_id)
                 const over = sum != null && athlete?.skinfold_limit_mm != null && sum > athlete.skinfold_limit_mm
                 return (
-                  <div key={a.id} className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-xs" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
+                  <Link key={a.id} href={`/athletes/${a.athlete_id}`} className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-xs" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)', textDecoration: 'none' }}>
                     <span className="font-medium" style={{ color: 'var(--sophi-text)' }}>{athleteLabel(a.athletes)}</span>
                     <div className="flex items-center gap-3" style={{ color: 'var(--sophi-text3)' }}>
                       <span className="font-mono font-bold" style={{ color: sum == null ? 'var(--sophi-text3)' : over ? 'var(--sophi-danger)' : 'var(--sophi-green)' }}>
@@ -405,7 +407,7 @@ export function NutritionClient({
                       {a.urine_specific_gravity != null && <span>DEU {a.urine_specific_gravity}</span>}
                       <span>{formatDate(a.assessment_date)}</span>
                     </div>
-                  </div>
+                  </Link>
                 )
               })}
             </div>

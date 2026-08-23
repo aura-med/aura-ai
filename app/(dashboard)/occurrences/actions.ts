@@ -14,8 +14,10 @@ const STATUS_SEVERITY: Record<AvailabilityStatus, number> = {
   unavailable: 3,
 }
 
-// Derive an athlete's availability from all their still-open occurrences and
-// diagnoses. Falls back to `fallback` when nothing else is active.
+// Derive an athlete's availability from their still-open occurrences and
+// diagnoses: the MOST RECENTLY recorded one wins (not the most restrictive
+// one) — a newer clinical call supersedes an older one, even if it's less
+// restrictive. Falls back to `fallback` when nothing else is open.
 async function recomputeAthleteAvailability(
   supabase: Awaited<ReturnType<typeof createClient>>,
   athleteId: string,
@@ -24,12 +26,12 @@ async function recomputeAthleteAvailability(
   const [occResult, diagResult, rehabResult] = await Promise.all([
     supabase
       .from('occurrences')
-      .select('availability_status')
+      .select('availability_status, created_at, updated_at')
       .eq('athlete_id', athleteId)
       .eq('is_resolved', false),
     supabase
       .from('diagnoses')
-      .select('availability_status')
+      .select('availability_status, diagnosed_at')
       .eq('athlete_id', athleteId)
       .eq('is_resolved', false),
     // SECURITY DEFINER RPC — reads rehab_sessions/injury_events regardless of the
@@ -49,19 +51,31 @@ async function recomputeAthleteAvailability(
   const diag = diagResult.data
   const inActiveRehab = rehabResult.data
 
-  const statuses = [...(occ ?? []), ...(diag ?? [])]
-    .map((r) => r.availability_status as AvailabilityStatus | null)
-    .filter((s): s is AvailabilityStatus => s != null && s in STATUS_SEVERITY)
+  type TimedStatus = { status: AvailabilityStatus; at: string }
+  const events: TimedStatus[] = [
+    ...(occ ?? [])
+      .filter((r): r is { availability_status: AvailabilityStatus; created_at: string; updated_at: string | null } =>
+        r.availability_status != null && r.availability_status in STATUS_SEVERITY)
+      .map((r) => ({ status: r.availability_status, at: r.updated_at ?? r.created_at })),
+    ...(diag ?? [])
+      .filter((r): r is { availability_status: AvailabilityStatus; diagnosed_at: string } =>
+        r.availability_status != null && r.availability_status in STATUS_SEVERITY)
+      .map((r) => ({ status: r.availability_status, at: r.diagnosed_at })),
+  ]
 
-  // Active rehab keeps the athlete in RTP as a floor: resolving a less-restrictive
-  // issue must not pull an athlete out of rehab.
-  if (inActiveRehab === true) statuses.push('rtp')
+  // ISO 8601 timestamps compare correctly as strings.
+  let result: AvailabilityStatus = events.length
+    ? events.reduce((latest, e) => (e.at > latest.at ? e : latest)).status
+    : fallback
 
-  if (statuses.length === 0) return fallback
+  // Active rehab is a floor, not just another candidate event: an ongoing RTP
+  // protocol must not be silently overridden just because an unrelated
+  // occurrence happens to carry a more recent timestamp.
+  if (inActiveRehab === true && STATUS_SEVERITY.rtp > STATUS_SEVERITY[result]) {
+    result = 'rtp'
+  }
 
-  return statuses.reduce((worst, s) =>
-    STATUS_SEVERITY[s] > STATUS_SEVERITY[worst] ? s : worst
-  )
+  return result
 }
 
 // Persist the computed availability. The RPC resolves as { error } on a
@@ -232,7 +246,10 @@ export async function addOccurrenceRecord(input: {
   // recompute fallback (it would wrongly re-open the athlete).
   const { data: statusUpdated } = await supabase
     .from('occurrences')
-    .update({ availability_status: input.availabilityStatus })
+    // updated_at is set explicitly — nothing bumps it automatically — so
+    // recomputeAthleteAvailability's "most recent event wins" ranking sees
+    // this reassessment as newer than the occurrence's original creation.
+    .update({ availability_status: input.availabilityStatus, updated_at: new Date().toISOString() })
     .eq('id', input.occurrenceId)
     .eq('is_resolved', false)
     .select('id')

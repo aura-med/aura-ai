@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { DiagnosisModal } from '@/components/athlete-profile/DiagnosisModal'
 import { ChevronDown, ChevronUp, Plus, X, Check } from 'lucide-react'
@@ -37,6 +38,7 @@ interface OccurrenceRecord {
   plan: string | null
   availability_status: AthleteAvailabilityStatus | null
   clinician_name: string | null
+  created_at: string
 }
 
 interface OccurrenceDiagnosis {
@@ -114,6 +116,16 @@ function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurre
   const a = occ.athletes
   const typeLabel = OCCURRENCE_TYPES.find((t) => t.value === occ.occurrence_type)?.label ?? occ.occurrence_type
   const activeDiagnosis = occ.diagnoses?.find((d) => !d.is_resolved)
+  // What's shown first: the active diagnosis takes priority; otherwise the
+  // most recent reassessment's note; otherwise the occurrence's own title.
+  const latestRecord = occ.occurrence_records.length
+    ? [...occ.occurrence_records].sort((x, y) => y.created_at.localeCompare(x.created_at))[0]
+    : null
+  const primaryLabel =
+    (activeDiagnosis && (activeDiagnosis.osiics_description ?? activeDiagnosis.custom_description))
+    || latestRecord?.assessment
+    || occ.title
+    || a.name
 
   function handleResolve() {
     startTransition(async () => {
@@ -151,13 +163,18 @@ function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurre
         style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', cursor: 'pointer' }}
         onClick={() => setExpanded((e) => !e)}
       >
-        <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={36} />
+        <Link href={`/athletes/${occ.athlete_id}`} onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
+          <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={36} />
+        </Link>
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--sophi-text)' }}>
-            {occ.title || a.name}
+            {primaryLabel}
           </div>
           <div style={{ fontSize: 11, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
-            {occ.title ? `${a.name} · ` : ''}{a.position ?? '—'} · {typeLabel} · {occ.occurrence_date}
+            <Link href={`/athletes/${occ.athlete_id}`} onClick={(e) => e.stopPropagation()} style={{ color: 'inherit', textDecoration: 'none' }}>
+              {a.name}
+            </Link>
+            {' · '}{a.position ?? '—'} · {typeLabel} · {occ.occurrence_date}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>

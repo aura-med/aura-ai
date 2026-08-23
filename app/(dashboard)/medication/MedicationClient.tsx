@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Pill, Plus, Search, X, Clock, Loader2, Pencil, Trash2, Users, List } from 'lucide-react'
@@ -200,7 +201,7 @@ export function MedicationClient({
           {groups.map((g) => (
             <div key={g.athlete?.id ?? 'x'}>
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-bold" style={{ color: 'var(--sophi-text)' }}>{athleteLabel(g.athlete)}</span>
+                <Link href={`/athletes/${g.athlete?.id ?? ''}`} className="text-xs font-bold hover:underline" style={{ color: 'var(--sophi-text)' }}>{athleteLabel(g.athlete)}</Link>
                 <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-bg4)', color: 'var(--sophi-text3)' }}>{g.rows.length}</span>
               </div>
               <div className="space-y-2">
@@ -265,7 +266,7 @@ function Row({
           </div>
           {showAthlete && (
             <div className="mt-1 flex items-center gap-2 text-[11px]" style={{ color: 'var(--sophi-text2)' }}>
-              <span className="font-medium" style={{ color: 'var(--sophi-text)' }}>{athleteLabel(r.athletes)}</span>
+              <Link href={`/athletes/${r.athlete_id}`} className="font-medium hover:underline" style={{ color: 'var(--sophi-text)' }}>{athleteLabel(r.athletes)}</Link>
               {r.athletes?.position && <span style={{ color: 'var(--sophi-text3)' }}>· {r.athletes.position}</span>}
             </div>
           )}

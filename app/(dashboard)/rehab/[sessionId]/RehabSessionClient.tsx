@@ -2,6 +2,7 @@
 // app/(dashboard)/rehab/[sessionId]/RehabSessionClient.tsx
 // Issue #20: interactive clinical assessment + phase gate UI + override modal
 
+import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import type {
@@ -28,7 +29,7 @@ interface Props {
     id: string
     current_day: number
     rtp_criteria: Array<{ label: string; done: boolean }>
-    athletes: { name: string; shirt_number: number; position: string; club: string } | null
+    athletes: { id: string; name: string; shirt_number: number; position: string; club: string } | null
     rehab_protocols: { name: string; key: string } | null
   }
   protocol: RehabProtocolDef
@@ -113,35 +114,38 @@ export default function RehabSessionClient({
     <div>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        <div
-          style={{
-            width: 48,
-            height: 48,
-            borderRadius: 10,
-            background: 'var(--sophi-bg3)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: 'var(--font-dm-mono)',
-            fontSize: 16,
-            color: 'var(--sophi-text2)',
-            flexShrink: 0,
-          }}
-        >
-          {athlete?.shirt_number}
-        </div>
-        <div>
-          <h1
+        <Link href={athlete ? `/athletes/${athlete.id}` : '#'} style={{ textDecoration: 'none', flexShrink: 0 }}>
+          <div
             style={{
-              fontFamily: 'var(--font-syne)',
-              fontSize: '1.25rem',
-              fontWeight: 800,
-              color: 'var(--sophi-text)',
-              margin: 0,
+              width: 48,
+              height: 48,
+              borderRadius: 10,
+              background: 'var(--sophi-bg3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: 'var(--font-dm-mono)',
+              fontSize: 16,
+              color: 'var(--sophi-text2)',
             }}
           >
-            {athlete?.name}
-          </h1>
+            {athlete?.shirt_number}
+          </div>
+        </Link>
+        <div>
+          <Link href={athlete ? `/athletes/${athlete.id}` : '#'} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <h1
+              style={{
+                fontFamily: 'var(--font-syne)',
+                fontSize: '1.25rem',
+                fontWeight: 800,
+                color: 'var(--sophi-text)',
+                margin: 0,
+              }}
+            >
+              {athlete?.name}
+            </h1>
+          </Link>
           <div style={{ fontSize: '12px', color: 'var(--sophi-text2)', fontFamily: 'var(--font-dm-mono)' }}>
             {athlete?.position} · {athlete?.club} · {protocol.name} · Dia {session.current_day}/{protocol.total_days}
           </div>

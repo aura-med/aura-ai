@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useMemo, useState, useTransition } from 'react'
 import { updatePassportShare } from '@/lib/data/actions'
 import type { PassportPageDTO } from '@/lib/data/types'
@@ -64,7 +65,9 @@ export function PassportClient({ dto }: { dto: PassportPageDTO }) {
           <div className="card" style={{ marginBottom: 12, borderColor: isShareable ? 'rgba(0,229,160,0.3)' : 'var(--border)' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
               <div>
-                <div style={{ fontFamily: 'var(--display)', fontSize: 22, fontWeight: 900 }}>{athlete.name}</div>
+                <Link href={`/athletes/${athlete.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <div style={{ fontFamily: 'var(--display)', fontSize: 22, fontWeight: 900 }}>{athlete.name}</div>
+                </Link>
                 <div style={{ fontSize: 12, color: 'var(--text2)', fontFamily: 'var(--mono)' }}>
                   {athlete.position ?? '-'} · {athlete.club ?? '-'}
                 </div>

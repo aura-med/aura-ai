@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, Download, Hourglass } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Hourglass, Search, X } from 'lucide-react'
 import { AthleteCard } from '@/components/ui/AthleteCard'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { withSquadParam } from '@/lib/squad-url'
@@ -60,6 +60,7 @@ const TRAFFIC_LIGHT_ORDER: AthleteAvailabilityStatus[] = ['available', 'rtp', 'u
 
 export function DashboardClient({ athletes, squadId, currentDate, microcycle, isToday, calendarEvents }: DashboardClientProps) {
   const [tab, setTab] = useState<'overview' | 'squad' | 'calendar'>('overview')
+  const [squadQuery, setSquadQuery] = useState('')
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -82,8 +83,11 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
     { available: [], evaluation: [], unavailable: [], rtp: [] }
   )
 
+  const squadSearch = squadQuery.trim().toLowerCase()
+  const squadAthletes = squadSearch ? athletes.filter((a) => a.name.toLowerCase().includes(squadSearch)) : athletes
+
   const positionGroups: Record<string, DashboardAthlete[]> = { GK: [], DEF: [], MID: [], FWD: [], OTHER: [] }
-  athletes.forEach((a) => {
+  squadAthletes.forEach((a) => {
     // Athletes without a known position still belong in the roster — bucket them
     // under "Sem posição" instead of dropping them from the Plantel tab.
     if (a.position && positionGroups[a.position]) positionGroups[a.position].push(a)
@@ -367,6 +371,33 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
       {/* ── Tab: Plantel ─────────────────────────────────────────────── */}
       {tab === 'squad' && (
         <div>
+          <div className="relative max-w-xs mb-5">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--sophi-text3)' }} />
+            <input
+              value={squadQuery}
+              onChange={(e) => setSquadQuery(e.target.value)}
+              placeholder="Procurar jogador…"
+              className="w-full pl-8 pr-8 py-2 rounded-lg text-xs border focus:outline-none"
+              style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
+            />
+            {squadQuery && (
+              <button
+                type="button"
+                onClick={() => setSquadQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-white/10"
+                aria-label="Limpar pesquisa"
+              >
+                <X size={12} style={{ color: 'var(--sophi-text3)' }} />
+              </button>
+            )}
+          </div>
+
+          {squadQuery && squadAthletes.length === 0 && (
+            <div style={{ fontSize: 12, color: 'var(--sophi-text3)', textAlign: 'center', padding: '24px 0' }}>
+              Sem jogadores para &quot;{squadQuery}&quot;
+            </div>
+          )}
+
           {(['GK', 'DEF', 'MID', 'FWD', 'OTHER'] as const).map((pos) => {
             const group = positionGroups[pos]
             if (!group.length) return null

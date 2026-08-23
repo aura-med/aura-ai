@@ -70,6 +70,20 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
     .eq('id', user?.id ?? '')
     .single()
 
+  // An occurrence can only carry one active diagnosis — check before insert
+  // so a second click (or a stale UI that still shows the button) can't
+  // attach a duplicate.
+  if (input.occurrenceId) {
+    const { data: existing, error: existingError } = await supabase
+      .from('diagnoses')
+      .select('id')
+      .eq('occurrence_id', input.occurrenceId)
+      .eq('is_resolved', false)
+      .maybeSingle()
+    if (existingError) throw new Error(existingError.message)
+    if (existing) throw new Error('Esta ocorrência já tem um diagnóstico ativo.')
+  }
+
   const { error } = await supabase.from('diagnoses').insert({
     athlete_id:          input.athleteId,
     org_id:              prof?.org_id ?? null,
@@ -83,10 +97,23 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
   })
   if (error) throw new Error(error.message)
 
+  // The occurrence's own availability_status is a separate stored value from
+  // the diagnosis — without this, the occurrence keeps showing its pre-
+  // diagnosis status even though the athlete's overall status (recomputed
+  // below) is correct.
+  if (input.occurrenceId) {
+    const { error: occError } = await supabase
+      .from('occurrences')
+      .update({ availability_status: input.availabilityStatus })
+      .eq('id', input.occurrenceId)
+    if (occError) throw new Error(occError.message)
+  }
+
   const next = await recomputeAvailability(supabase, input.athleteId, input.availabilityStatus)
   await persistAvailability(supabase, input.athleteId, next)
 
   revalidatePath(`/athletes/${input.athleteId}`)
+  revalidatePath('/occurrences')
   revalidatePath('/')
 }
 

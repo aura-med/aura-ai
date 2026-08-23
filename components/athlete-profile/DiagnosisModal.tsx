@@ -28,7 +28,9 @@ export function DiagnosisModal({ athleteId, occurrences, onClose, onSaved }: Dia
   const [diagnosisType,   setDiagnosisType]   = useState<'injury' | 'disease'>('injury')
   const [customDesc,      setCustomDesc]      = useState('')
   const [status,          setStatus]          = useState('evaluation')
-  const [occurrenceId,    setOccurrenceId]    = useState('')
+  // Pre-select when there's exactly one candidate (e.g. opened from a specific
+  // occurrence row) so the link isn't silently dropped by an unclicked dropdown.
+  const [occurrenceId,    setOccurrenceId]    = useState(occurrences.length === 1 ? occurrences[0].id : '')
   const [saving,          setSaving]          = useState(false)
   const [error,           setError]           = useState<string | null>(null)
 

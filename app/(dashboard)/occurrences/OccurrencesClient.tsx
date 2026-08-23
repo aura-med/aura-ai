@@ -25,6 +25,7 @@ interface Athlete {
   shirt_number: number | null
   photo_url: string | null
   position: string | null
+  availability_status: AthleteAvailabilityStatus
 }
 
 interface OccurrenceRecord {
@@ -160,7 +161,12 @@ function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurre
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <StatusBadge status={occ.availability_status} />
+          {/* The athlete's own current status, not the occurrence's snapshot
+              field — the latter can only change when something explicitly
+              writes to this occurrence, so it drifted stale whenever a
+              diagnosis or another occurrence changed the athlete's real
+              state without touching this row. */}
+          <StatusBadge status={a.availability_status} />
           {occ.is_resolved && (
             <span style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)' }}>Resolvida</span>
           )}

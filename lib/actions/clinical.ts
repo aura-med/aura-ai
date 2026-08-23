@@ -151,7 +151,11 @@ export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
     .update({ is_resolved: true, resolved_at: new Date().toISOString(), resolved_by: user?.id ?? null })
     .eq('id', diagnosisId)
     .eq('is_resolved', false)
-    .select('athlete_id')
+    .select(`
+      athlete_id, diagnosis_type, osiics_code, osiics_description, custom_description,
+      diagnosed_at, resolved_at, occurrence_id,
+      occurrences ( occurrence_date )
+    `)
     .maybeSingle()
   if (error || !resolved?.athlete_id) throw new Error(error?.message ?? 'Diagnóstico já resolvido ou inexistente')
 
@@ -161,6 +165,42 @@ export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
   const targetAthleteId = resolved.athlete_id
   const next = await recomputeAvailability(supabase, targetAthleteId, 'available')
   await persistAvailability(supabase, targetAthleteId, next)
+
+  // A resolved diagnosis is never just discarded — it's preserved permanently
+  // in the athlete's injury history (histórico de lesões) so the clinical
+  // record is never lost. 'disease' diagnoses are excluded: injury_events'
+  // location/severity fields describe musculoskeletal injuries, not illness.
+  if (resolved.diagnosis_type === 'injury') {
+    const occurrence = Array.isArray(resolved.occurrences) ? resolved.occurrences[0] : resolved.occurrences
+    const injuryDate = occurrence?.occurrence_date ?? (resolved.diagnosed_at ?? new Date().toISOString()).slice(0, 10)
+    const returnDate = (resolved.resolved_at ?? new Date().toISOString()).slice(0, 10)
+    const daysAbsent = Math.max(0, Math.round(
+      (new Date(returnDate).getTime() - new Date(injuryDate).getTime()) / 86_400_000,
+    ))
+    // diagnoses carries no severity field — approximate it from days absent,
+    // the same signal clinicians use to classify injury severity in practice.
+    const severity: 'minor' | 'moderate' | 'major' | 'severe' =
+      daysAbsent > 84 ? 'severe' : daysAbsent > 28 ? 'major' : daysAbsent > 7 ? 'moderate' : 'minor'
+
+    const { data: clinician } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user?.id ?? '')
+      .maybeSingle()
+
+    const { error: injuryError } = await supabase.from('injury_events').insert({
+      athlete_id:    targetAthleteId,
+      injury_date:   injuryDate,
+      return_date:   returnDate,
+      diagnosis:     resolved.osiics_description ?? resolved.custom_description ?? 'Diagnóstico sem descrição',
+      osiics_code:   resolved.osiics_code,
+      severity,
+      days_absent:   daysAbsent,
+      is_recurrence: false,
+      confirmed_by:  clinician?.full_name ?? null,
+    })
+    if (injuryError) throw new Error(`Diagnóstico resolvido, mas falhou a migração para o histórico de lesões: ${injuryError.message}`)
+  }
 
   revalidatePath(`/athletes/${targetAthleteId}`)
   revalidatePath('/')

@@ -292,6 +292,7 @@ function DiagnosisCard({
   onResolved: (id: string) => void
 }) {
   const [resolving, setResolving] = useState(false)
+  const [confirming, setConfirming] = useState(false)
   const router = useRouter()
   const statusCfg = DIAG_STATUS_CONFIG[diag.availability_status ?? 'evaluation'] ?? DIAG_STATUS_CONFIG.evaluation
   const title = diag.osiics_description ?? diag.custom_description ?? 'Diagnóstico sem descrição'
@@ -305,6 +306,7 @@ function DiagnosisCard({
       router.refresh()
     } finally {
       setResolving(false)
+      setConfirming(false)
     }
   }
 
@@ -337,17 +339,46 @@ function DiagnosisCard({
           </span>
         </div>
       </div>
-      {canResolve && (
+      {canResolve && !confirming && (
         <button
           type="button"
-          onClick={handleResolve}
+          onClick={() => setConfirming(true)}
           disabled={resolving}
           className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80"
           style={{ color: 'var(--sophi-green)' }}
         >
-          {resolving ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle2 size={10} />}
+          <CheckCircle2 size={10} />
           Resolver diagnóstico
         </button>
+      )}
+      {canResolve && confirming && (
+        <div
+          className="flex items-center gap-2 rounded-lg border px-2 py-1.5"
+          style={{ background: 'var(--sophi-green-bg)', borderColor: 'var(--sophi-green)' }}
+        >
+          <p className="text-[10px] flex-1" style={{ color: 'var(--sophi-text2)' }}>
+            Confirma que o atleta fica <strong>Disponível</strong>, salvo outras ocorrências em aberto?
+          </p>
+          <button
+            type="button"
+            onClick={() => setConfirming(false)}
+            disabled={resolving}
+            className="text-[10px] font-medium hover:opacity-80 shrink-0"
+            style={{ color: 'var(--sophi-text3)' }}
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={handleResolve}
+            disabled={resolving}
+            className="flex items-center gap-1 text-[10px] font-bold hover:opacity-80 shrink-0"
+            style={{ color: 'var(--sophi-green)' }}
+          >
+            {resolving ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle2 size={10} />}
+            Confirmar
+          </button>
+        </div>
       )}
     </div>
   )

@@ -26,7 +26,7 @@ interface AthleteCardProps {
 
 export function AthleteCard({
   href, name, photoUrl, shirtNumber, position,
-  status, score, scoreColor, scoreLabel,
+  status,
 }: AthleteCardProps) {
   const st = STATUS_CFG[status] ?? STATUS_CFG.available
 
@@ -79,28 +79,8 @@ export function AthleteCard({
             </div>
           )}
 
-          {/* Score chip — top right corner */}
-          {score !== null && (
-            <div
-              className="absolute top-2 right-2 rounded-lg px-1.5 py-0.5"
-              style={{
-                background: 'rgba(10,13,18,0.72)',
-                backdropFilter: 'blur(6px)',
-                border: `1px solid ${scoreColor}44`,
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: 'var(--font-dm-mono)',
-                  fontSize:   '11px',
-                  fontWeight: 700,
-                  color:      scoreColor,
-                }}
-              >
-                {score}%
-              </span>
-            </div>
-          )}
+          {/* Score chip — hidden for now: phase-1 scoring isn't populated yet,
+              showing it here would misrepresent the athlete's actual state. */}
         </div>
 
         {/* ── Data zone (bottom ~35%) ────────────────────────────────── */}
@@ -144,14 +124,6 @@ export function AthleteCard({
             >
               {st.label}
             </span>
-            {score !== null && (
-              <span
-                className="ml-auto text-[10px] font-medium"
-                style={{ color: st.color, opacity: 0.7 }}
-              >
-                {scoreLabel}
-              </span>
-            )}
           </div>
         </div>
       </div>

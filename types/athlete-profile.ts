@@ -2,7 +2,7 @@
 // Athlete Profile — TypeScript types (migration 006)
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { RecommendationSet, UserRole } from '@/types'
+import type { RecommendationSet, UserRole, AthleteAvailabilityStatus } from '@/types'
 
 export type TabId =
   | 'overview' | 'medical' | 'injuries' | 'treatments'
@@ -50,20 +50,43 @@ export interface ActiveDiagnosis {
 }
 
 // Covers both active and recently-resolved occurrences — the Overview tab
-// shows a compact summary of both, expandable inline.
+// renders both through the same OccurrenceRow used on the Ocorrências page
+// (see components/occurrences/OccurrenceRow.tsx), so this mirrors that
+// component's field requirements (minus the nested `athletes`, which the
+// Overview tab supplies itself since every row belongs to the same athlete).
 export interface ActiveOccurrence {
   id: string
+  athlete_id: string
   title: string | null
   occurrence_date: string
   occurrence_type: string | null
-  availability_status: string | null
+  availability_status: AthleteAvailabilityStatus
   subjective: string | null
   objective: string | null
   assessment: string | null
   plan: string | null
   clinician_name: string | null
+  clinician_role: string | null
   is_resolved: boolean
   resolved_at: string | null
+  occurrence_records: {
+    id: string
+    record_date: string
+    subjective: string | null
+    objective: string | null
+    assessment: string | null
+    plan: string | null
+    availability_status: AthleteAvailabilityStatus | null
+    clinician_name: string | null
+    created_at: string
+  }[]
+  diagnoses: {
+    id: string
+    osiics_description: string | null
+    custom_description: string | null
+    availability_status: AthleteAvailabilityStatus | null
+    is_resolved: boolean
+  }[]
 }
 
 export interface MedicationAdministration {

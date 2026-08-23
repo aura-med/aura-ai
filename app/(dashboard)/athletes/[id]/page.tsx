@@ -126,7 +126,13 @@ async function AthleteDetailContent({
   // Occurrences carry the full SOAP + title so the Overview tab can expand a
   // row inline instead of navigating away; a short window of recently-resolved
   // rows is fetched separately for the Overview's compact history.
-  const occurrenceColumns = 'id, title, occurrence_date, occurrence_type, availability_status, subjective, objective, assessment, plan, clinician_name, is_resolved, resolved_at'
+  const occurrenceColumns = `
+    id, athlete_id, title, occurrence_date, occurrence_type, availability_status,
+    subjective, objective, assessment, plan, clinician_name, clinician_role,
+    is_resolved, resolved_at,
+    occurrence_records ( id, record_date, subjective, objective, assessment, plan, availability_status, clinician_name, created_at ),
+    diagnoses ( id, osiics_description, custom_description, availability_status, is_resolved )
+  `
   const [{ data: activeDiagnoses }, { data: activeOccurrences }, { data: recentResolvedOccurrences }, { data: anamnesis }] = await Promise.all([
     supabase
       .from('diagnoses')

@@ -5,7 +5,7 @@
 import type { RecommendationSet, UserRole, AthleteAvailabilityStatus } from '@/types'
 
 export type TabId =
-  | 'overview' | 'medical' | 'injuries' | 'treatments'
+  | 'overview' | 'medical' | 'injuries' | 'treatments' | 'rehab'
   | 'nutrition' | 'training' | 'documents' | 'recommendations'
 
 export type LatestRecommendations = RecommendationSet & {
@@ -133,6 +133,49 @@ export interface RehabSession {
   clinician_name: string | null
   notes: string | null
   occurrence_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+// ── Rehab Plan Calendar (migration 034) ───────────────────────────────────────
+// Day-by-day reabilitação calendar — distinct from RehabSession above (a flat
+// physio-visit log) and from the /rehab gate-based RTP protocol tracker.
+
+export type RehabPlanPeriod = 'morning' | 'afternoon'
+
+export interface RehabPlan {
+  id: string
+  athlete_id: string
+  occurrence_id: string | null
+  title: string
+  start_date: string
+  expected_end_date: string | null
+  is_active: boolean
+  is_completed: boolean
+  closed_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface RehabPlanPhase {
+  id: string
+  plan_id: string
+  phase_number: number
+  name: string
+  criteria: string | null
+  start_date: string
+  created_at: string
+  updated_at: string
+}
+
+export interface RehabPlanDay {
+  id: string
+  plan_id: string
+  phase_id: string | null
+  entry_date: string
+  period: RehabPlanPeriod
+  content: string | null
+  is_rest_day: boolean
   created_at: string
   updated_at: string
 }

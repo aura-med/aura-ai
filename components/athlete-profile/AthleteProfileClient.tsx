@@ -34,6 +34,9 @@ const InjuriesTab = dynamic(() => import('./InjuriesTab').then((mod) => mod.Inju
 const TreatmentsTab = dynamic(() => import('./TreatmentsTab').then((mod) => mod.TreatmentsTab), {
   loading: () => <TabSkeleton />,
 })
+const RehabPlanTab = dynamic(() => import('./RehabPlanTab').then((mod) => mod.RehabPlanTab), {
+  loading: () => <TabSkeleton />,
+})
 const DocumentsTab = dynamic(() => import('./DocumentsTab').then((mod) => mod.DocumentsTab), {
   loading: () => <TabSkeleton />,
 })
@@ -188,6 +191,7 @@ function TabContent({ tab, profile }: { tab: TabId; profile: AthleteProfileData 
     case 'medical':          return <MedicalTab         profile={profile} />
     case 'injuries':         return <InjuriesTab        profile={profile} />
     case 'treatments':       return <TreatmentsTab      profile={profile} />
+    case 'rehab':            return <RehabPlanTab       profile={profile} />
     case 'nutrition':        return <NutritionTab       profile={profile} />
     case 'training':         return <TrainingPlanTab    profile={profile} />
     case 'documents':        return <DocumentsTab       profile={profile} />

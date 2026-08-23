@@ -8,6 +8,20 @@ import { DashboardClient } from './DashboardClient'
 async function getData(squadId: string | null, date: string) {
   const supabase = await createClient()
 
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: viewerProfile } = await supabase
+    .from('profiles')
+    .select('org_id')
+    .eq('id', user?.id ?? '')
+    .single()
+  const orgId = viewerProfile?.org_id ?? null
+
+  let orgName: string | null = null
+  if (orgId) {
+    const { data: org } = await supabase.from('organizations').select('name').eq('id', orgId).single()
+    orgName = org?.name ?? null
+  }
+
   let athleteQuery = supabase
     .from('athletes')
     .select(`
@@ -48,7 +62,38 @@ async function getData(squadId: string | null, date: string) {
   if (squadId) eventsQuery = eventsQuery.eq('squad_id', squadId)
   const { data: calendarEvents } = await eventsQuery
 
-  return { athletes: athletes ?? [], microcycle, calendarEvents: calendarEvents ?? [] }
+  // Active occurrences — the "Registos Clínicos Diários" export lists one row
+  // per athlete with an open clinical issue, matching the club's own paper
+  // form (title/description + current decision), not the full roster.
+  const athleteIds = (athletes ?? []).map((a: { id: string }) => a.id)
+  let occurrences: { title: string | null; occurrence_type: string | null; subjective: string | null; availability_status: string | null; athletes: { name: string } | { name: string }[] | null }[] = []
+  if (athleteIds.length) {
+    const { data } = await supabase
+      .from('occurrences')
+      .select('title, occurrence_type, subjective, availability_status, athletes ( name )')
+      .in('athlete_id', athleteIds)
+      .eq('is_resolved', false)
+      .order('occurrence_date', { ascending: false })
+    occurrences = data ?? []
+  }
+
+  // Clinical staff roster ("D.Clínico:") for the export header — physios/
+  // masseurs before doctors, matching the club's own form.
+  const ROLE_ORDER: Record<string, number> = { physio: 0, masseur: 1, doctor: 2 }
+  let clinicalStaff: { name: string; role: string }[] = []
+  if (orgId) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('full_name, role')
+      .eq('org_id', orgId)
+      .in('role', ['physio', 'masseur', 'doctor'])
+    clinicalStaff = (data ?? [])
+      .filter((p): p is { full_name: string; role: string } => !!p.full_name)
+      .map((p) => ({ name: p.full_name, role: p.role }))
+      .sort((a, b) => (ROLE_ORDER[a.role] ?? 9) - (ROLE_ORDER[b.role] ?? 9))
+  }
+
+  return { athletes: athletes ?? [], microcycle, calendarEvents: calendarEvents ?? [], occurrences, clinicalStaff, orgName }
 }
 
 export default async function Dashboard({
@@ -74,7 +119,16 @@ export default async function Dashboard({
       : today
   const isToday = currentDate === today
 
-  const { athletes, microcycle, calendarEvents } = await getData(squadId, currentDate)
+  const { athletes, microcycle, calendarEvents, occurrences, clinicalStaff, orgName } = await getData(squadId, currentDate)
+
+  const clinicalOccurrences = occurrences.map((o) => {
+    const athlete = Array.isArray(o.athletes) ? o.athletes[0] : o.athletes
+    return {
+      athleteName: athlete?.name ?? '—',
+      description: o.title || o.subjective || o.occurrence_type || '—',
+      availabilityStatus: o.availability_status ?? 'evaluation',
+    }
+  })
 
   const withScores = athletes.map((a) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -148,6 +202,9 @@ export default async function Dashboard({
       microcycle={microcycle}
       isToday={isToday}
       calendarEvents={calendarEvents}
+      clinicalOccurrences={clinicalOccurrences}
+      clinicalStaff={clinicalStaff}
+      orgName={orgName}
     />
   )
 }

@@ -9,8 +9,7 @@ import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { withSquadParam } from '@/lib/squad-url'
 import { formatDisplayDate, addDays } from '@/lib/utils/microcycle'
 import type { MicrocycleStatus } from '@/lib/utils/microcycle'
-import { exportDashboardPDF } from '@/lib/utils/pdf-export'
-import { useUiStore } from '@/stores/uiStore'
+import { exportDashboardPDF, type DashboardOccurrenceRow, type ClinicalStaffMember } from '@/lib/utils/pdf-export'
 import { MonthCalendar, type MonthCalendarEvent } from '@/components/dashboard/MonthCalendar'
 import type { AthleteAvailabilityStatus } from '@/types'
 
@@ -35,6 +34,9 @@ interface DashboardClientProps {
   microcycle: MicrocycleStatus
   isToday: boolean
   calendarEvents: MonthCalendarEvent[]
+  clinicalOccurrences: DashboardOccurrenceRow[]
+  clinicalStaff: ClinicalStaffMember[]
+  orgName: string | null
 }
 
 const STATUS_CONFIG: Record<AthleteAvailabilityStatus, {
@@ -58,7 +60,7 @@ const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 
 // The remaining three read as severity: available < rtp < unavailable.
 const TRAFFIC_LIGHT_ORDER: AthleteAvailabilityStatus[] = ['available', 'rtp', 'unavailable']
 
-export function DashboardClient({ athletes, squadId, currentDate, microcycle, isToday, calendarEvents }: DashboardClientProps) {
+export function DashboardClient({ athletes, squadId, currentDate, microcycle, isToday, calendarEvents, clinicalOccurrences, clinicalStaff, orgName }: DashboardClientProps) {
   const [tab, setTab] = useState<'overview' | 'squad' | 'calendar'>('overview')
   const [squadQuery, setSquadQuery] = useState('')
   const router = useRouter()
@@ -96,20 +98,8 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
   const posLabels: Record<string, string> = { GK: 'Guarda-Redes', DEF: 'Defesas', MID: 'Médios', FWD: 'Avançados', OTHER: 'Sem posição' }
   const posCodes: Record<string, string> = { GK: 'GK', DEF: 'DEF', MID: 'MED', FWD: 'AVA', OTHER: '—' }
 
-  const squads = useUiStore((s) => s.squads)
-  const squadName = squads.find((s) => s.id === squadId)?.name
-
   function handleExport() {
-    exportDashboardPDF(
-      athletes.map((a) => ({
-        name: a.name,
-        position: a.position,
-        availabilityStatus: a.availability_status,
-        scoreLabel: a.scoreLabel,
-        score: a.score,
-      })),
-      { squadName, microcycleLabel: microcycle.microcycleNumber != null ? `MC ${microcycle.microcycleNumber} · ${microcycle.label}` : undefined, currentDate },
-    )
+    exportDashboardPDF(clinicalOccurrences, clinicalStaff, { orgName, currentDate })
   }
 
   return (

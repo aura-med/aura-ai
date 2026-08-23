@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
-import { AlertTriangle, Plus, CheckCircle2, Loader2 } from 'lucide-react'
+import { AlertTriangle, Plus, CheckCircle2, Loader2, Pencil } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { resolveDiagnosis } from '@/lib/actions/clinical'
 import { useRouter } from 'next/navigation'
@@ -240,11 +240,13 @@ function DiagnosisCard({
   athleteId,
   canResolve,
   onResolved,
+  onEdit,
 }: {
   diag: ActiveDiagnosis
   athleteId: string
   canResolve: boolean
   onResolved: (id: string) => void
+  onEdit: () => void
 }) {
   const [resolving, setResolving] = useState(false)
   const [confirming, setConfirming] = useState(false)
@@ -295,16 +297,27 @@ function DiagnosisCard({
         </div>
       </div>
       {canResolve && !confirming && (
-        <button
-          type="button"
-          onClick={() => setConfirming(true)}
-          disabled={resolving}
-          className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80"
-          style={{ color: 'var(--sophi-green)' }}
-        >
-          <CheckCircle2 size={10} />
-          Resolver diagnóstico
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onEdit}
+            className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80"
+            style={{ color: 'var(--sophi-text2)' }}
+          >
+            <Pencil size={10} />
+            Editar
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirming(true)}
+            disabled={resolving}
+            className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80"
+            style={{ color: 'var(--sophi-green)' }}
+          >
+            <CheckCircle2 size={10} />
+            Resolver diagnóstico
+          </button>
+        </div>
       )}
       {canResolve && confirming && (
         <div
@@ -352,10 +365,25 @@ function ActiveDiagnosesSection({
 }) {
   const [diagnoses, setDiagnoses] = useState(initialDiagnoses)
   const [showModal, setShowModal] = useState(false)
+  const [editingDiagnosis, setEditingDiagnosis] = useState<ActiveDiagnosis | null>(null)
   const router = useRouter()
 
   function handleResolved(id: string) {
     setDiagnoses((prev) => prev.filter((d) => d.id !== id))
+  }
+
+  async function refetchDiagnoses() {
+    // router.refresh() preserves this mounted component's state, so re-read
+    // the active diagnoses directly or the new/edited row won't show.
+    const supabase = createClient()
+    const { data } = await supabase
+      .from('diagnoses')
+      .select('id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, diagnosed_at, is_resolved, occurrence_id')
+      .eq('athlete_id', athleteId)
+      .eq('is_resolved', false)
+      .order('diagnosed_at', { ascending: false })
+    if (data) setDiagnoses(data as ActiveDiagnosis[])
+    router.refresh()
   }
 
   return (
@@ -394,30 +422,23 @@ function ActiveDiagnosesSection({
                 athleteId={athleteId}
                 canResolve={canCreate}
                 onResolved={handleResolved}
+                onEdit={() => setEditingDiagnosis(d)}
               />
             ))}
           </div>
         )}
       </div>
 
-      {showModal && (
+      {(showModal || editingDiagnosis) && (
         <DiagnosisModal
           athleteId={athleteId}
           occurrences={profile.activeOccurrences}
-          onClose={() => setShowModal(false)}
+          existing={editingDiagnosis}
+          onClose={() => { setShowModal(false); setEditingDiagnosis(null) }}
           onSaved={async () => {
             setShowModal(false)
-            // router.refresh() preserves this mounted component's state, so
-            // re-read the active diagnoses directly or the new row won't show.
-            const supabase = createClient()
-            const { data } = await supabase
-              .from('diagnoses')
-              .select('id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, diagnosed_at, is_resolved')
-              .eq('athlete_id', athleteId)
-              .eq('is_resolved', false)
-              .order('diagnosed_at', { ascending: false })
-            if (data) setDiagnoses(data as ActiveDiagnosis[])
-            router.refresh()
+            setEditingDiagnosis(null)
+            await refetchDiagnoses()
           }}
         />
       )}

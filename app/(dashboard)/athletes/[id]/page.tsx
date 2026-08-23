@@ -131,12 +131,12 @@ async function AthleteDetailContent({
     subjective, objective, assessment, plan, clinician_name, clinician_role,
     is_resolved, resolved_at,
     occurrence_records ( id, record_date, subjective, objective, assessment, plan, availability_status, clinician_name, created_at ),
-    diagnoses ( id, osiics_description, custom_description, availability_status, is_resolved )
+    diagnoses ( id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, is_resolved )
   `
   const [{ data: activeDiagnoses }, { data: activeOccurrences }, { data: recentResolvedOccurrences }, { data: anamnesis }] = await Promise.all([
     supabase
       .from('diagnoses')
-      .select('id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, diagnosed_at, is_resolved')
+      .select('id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, diagnosed_at, is_resolved, occurrence_id')
       .eq('athlete_id', id)
       .eq('is_resolved', false)
       .order('diagnosed_at', { ascending: false }),

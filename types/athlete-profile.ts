@@ -47,6 +47,7 @@ export interface ActiveDiagnosis {
   availability_status: string | null
   diagnosed_at: string
   is_resolved: boolean
+  occurrence_id: string | null
 }
 
 // Covers both active and recently-resolved occurrences — the Overview tab
@@ -82,7 +83,9 @@ export interface ActiveOccurrence {
   }[]
   diagnoses: {
     id: string
+    osiics_code: string | null
     osiics_description: string | null
+    diagnosis_type: string | null
     custom_description: string | null
     availability_status: AthleteAvailabilityStatus | null
     is_resolved: boolean

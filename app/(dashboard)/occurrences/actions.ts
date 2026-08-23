@@ -155,6 +155,53 @@ export async function registerOccurrence(input: RegisterOccurrenceInput) {
   revalidatePath(`/athletes/${input.athleteId}`)
 }
 
+export interface UpdateOccurrenceInput {
+  occurrenceId: string
+  title: string
+  occurrenceDate: string
+  occurrenceType: 'complaint' | 'trauma' | 'disease' | 'other'
+  observations: string
+  availabilityStatus: 'available' | 'evaluation' | 'unavailable' | 'rtp'
+}
+
+// Edits the occurrence's own record (title/date/type/observations/status) —
+// distinct from addOccurrenceRecord, which appends a new reassessment entry.
+// This corrects the original entry itself rather than logging a new event.
+export async function updateOccurrence(input: UpdateOccurrenceInput) {
+  const supabase = await createClient()
+
+  const { data: updated, error } = await supabase
+    .from('occurrences')
+    .update({
+      title: input.title,
+      occurrence_date: input.occurrenceDate,
+      occurrence_type: input.occurrenceType,
+      assessment: input.observations,
+      availability_status: input.availabilityStatus,
+      // updated_at is set explicitly — nothing bumps it automatically — so
+      // recomputeAthleteAvailability's "most recent event wins" ranking sees
+      // this edit as newer than the occurrence's original creation.
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', input.occurrenceId)
+    .select('athlete_id')
+    .maybeSingle()
+  if (error || !updated?.athlete_id) throw new Error(error?.message ?? 'Ocorrência não encontrada')
+
+  const targetAthleteId = updated.athlete_id
+
+  // Recompute from all active occurrences/diagnoses so editing this one's
+  // status doesn't wrongly override a still-active issue elsewhere (or, if
+  // this occurrence is already resolved, doesn't affect availability at all —
+  // recomputeAthleteAvailability only reads still-open rows).
+  const nextStatus = await recomputeAthleteAvailability(supabase, targetAthleteId, input.availabilityStatus)
+  await persistAvailability(supabase, targetAthleteId, nextStatus)
+
+  revalidatePath('/occurrences')
+  revalidatePath('/')
+  revalidatePath(`/athletes/${targetAthleteId}`)
+}
+
 export async function resolveOccurrence(
   occurrenceId: string,
   athleteId: string,

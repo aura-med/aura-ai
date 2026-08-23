@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from 'react'
 import { Search, X, Loader2 } from 'lucide-react'
-import { createDiagnosis } from '@/lib/actions/clinical'
-import { searchOsiics } from '@/lib/data/osiics'
+import { createDiagnosis, updateDiagnosis } from '@/lib/actions/clinical'
+import { searchOsiics, OSIICS_FOOTBALL } from '@/lib/data/osiics'
 import type { OsiicsEntry } from '@/lib/data/osiics'
 import type { ActiveOccurrence } from '@/types/athlete-profile'
 
@@ -14,23 +14,45 @@ const STATUS_OPTIONS = [
   { value: 'rtp',         label: '🟣 Em RTP',        color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.12)'         },
 ]
 
+export interface ExistingDiagnosis {
+  id: string
+  osiics_code: string | null
+  osiics_description: string | null
+  diagnosis_type: string | null
+  custom_description: string | null
+  availability_status: string | null
+  occurrence_id: string | null
+}
+
 interface DiagnosisModalProps {
   athleteId: string
   occurrences: ActiveOccurrence[]
+  existing?: ExistingDiagnosis | null
   onClose: () => void
   onSaved: () => void
 }
 
-export function DiagnosisModal({ athleteId, occurrences, onClose, onSaved }: DiagnosisModalProps) {
+export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSaved }: DiagnosisModalProps) {
+  const isEdit = !!existing
   const [osiicsQuery,     setOsiicsQuery]     = useState('')
-  const [selectedOsiics,  setSelectedOsiics]  = useState<OsiicsEntry | null>(null)
+  const [selectedOsiics,  setSelectedOsiics]  = useState<OsiicsEntry | null>(() => {
+    if (!existing?.osiics_code) return null
+    // The static OSIICS table may not contain a code saved before it changed —
+    // fall back to a synthetic entry so the saved code/description still shows.
+    return OSIICS_FOOTBALL.find((e) => e.code === existing.osiics_code) ?? {
+      code: existing.osiics_code,
+      description: existing.osiics_description ?? '',
+      bodyPart: '',
+      category: existing.diagnosis_type === 'disease' ? 'disease' : 'injury',
+    }
+  })
   const osiicsResults = useMemo(() => osiicsQuery.length < 2 ? [] : searchOsiics(osiicsQuery), [osiicsQuery])
-  const [diagnosisType,   setDiagnosisType]   = useState<'injury' | 'disease'>('injury')
-  const [customDesc,      setCustomDesc]      = useState('')
-  const [status,          setStatus]          = useState('evaluation')
+  const [diagnosisType,   setDiagnosisType]   = useState<'injury' | 'disease'>(existing?.diagnosis_type === 'disease' ? 'disease' : 'injury')
+  const [customDesc,      setCustomDesc]      = useState(existing?.custom_description ?? '')
+  const [status,          setStatus]          = useState(existing?.availability_status ?? 'evaluation')
   // Pre-select when there's exactly one candidate (e.g. opened from a specific
   // occurrence row) so the link isn't silently dropped by an unclicked dropdown.
-  const [occurrenceId,    setOccurrenceId]    = useState(occurrences.length === 1 ? occurrences[0].id : '')
+  const [occurrenceId,    setOccurrenceId]    = useState(existing?.occurrence_id ?? (occurrences.length === 1 ? occurrences[0].id : ''))
   const [saving,          setSaving]          = useState(false)
   const [error,           setError]           = useState<string | null>(null)
 
@@ -43,15 +65,27 @@ export function DiagnosisModal({ athleteId, occurrences, onClose, onSaved }: Dia
     setError(null)
     try {
       // Author/org derived server-side + availability recomputed there.
-      await createDiagnosis({
-        athleteId,
-        osiicsCode:         selectedOsiics?.code ?? null,
-        osiicsDescription:  selectedOsiics?.description ?? null,
-        diagnosisType,
-        customDescription:  customDesc.trim() || null,
-        availabilityStatus: status as 'available' | 'evaluation' | 'unavailable' | 'rtp',
-        occurrenceId:       occurrenceId || null,
-      })
+      if (isEdit && existing) {
+        await updateDiagnosis({
+          diagnosisId:        existing.id,
+          osiicsCode:         selectedOsiics?.code ?? null,
+          osiicsDescription:  selectedOsiics?.description ?? null,
+          diagnosisType,
+          customDescription:  customDesc.trim() || null,
+          availabilityStatus: status as 'available' | 'evaluation' | 'unavailable' | 'rtp',
+          occurrenceId:       occurrenceId || null,
+        })
+      } else {
+        await createDiagnosis({
+          athleteId,
+          osiicsCode:         selectedOsiics?.code ?? null,
+          osiicsDescription:  selectedOsiics?.description ?? null,
+          diagnosisType,
+          customDescription:  customDesc.trim() || null,
+          availabilityStatus: status as 'available' | 'evaluation' | 'unavailable' | 'rtp',
+          occurrenceId:       occurrenceId || null,
+        })
+      }
       onSaved()
     } catch (e) {
       setError((e as Error).message)
@@ -72,7 +106,7 @@ export function DiagnosisModal({ athleteId, occurrences, onClose, onSaved }: Dia
       >
         <div className="flex items-center justify-between">
           <h3 className="font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
-            Novo Diagnóstico
+            {isEdit ? 'Editar Diagnóstico' : 'Novo Diagnóstico'}
           </h3>
           <button type="button" onClick={onClose} className="p-1 rounded hover:bg-white/10">
             <X size={16} style={{ color: 'var(--sophi-text3)' }} />

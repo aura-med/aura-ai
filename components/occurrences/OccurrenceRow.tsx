@@ -4,8 +4,8 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { DiagnosisModal } from '@/components/athlete-profile/DiagnosisModal'
-import { ChevronDown, ChevronUp, Plus, Check } from 'lucide-react'
-import { resolveOccurrence, addOccurrenceRecord } from '@/app/(dashboard)/occurrences/actions'
+import { ChevronDown, ChevronUp, Plus, Check, Pencil } from 'lucide-react'
+import { resolveOccurrence, addOccurrenceRecord, updateOccurrence } from '@/app/(dashboard)/occurrences/actions'
 import { todayStr } from '@/lib/utils/microcycle'
 import type { AthleteAvailabilityStatus } from '@/types'
 
@@ -50,7 +50,9 @@ export interface OccurrenceRecord {
 
 export interface OccurrenceDiagnosis {
   id: string
+  osiics_code: string | null
   osiics_description: string | null
+  diagnosis_type: string | null
   custom_description: string | null
   availability_status: AthleteAvailabilityStatus | null
   is_resolved: boolean
@@ -94,10 +96,19 @@ export function StatusBadge({ status }: { status: AthleteAvailabilityStatus }) {
 export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: Occurrence; canCreateDiagnosis: boolean; onRevalidate: () => void }) {
   const [expanded, setExpanded] = useState(false)
   const [showReeval, setShowReeval] = useState(false)
+  const [showEdit, setShowEdit] = useState(false)
   const [showDiagnosisModal, setShowDiagnosisModal] = useState(false)
+  const [showEditDiagnosis, setShowEditDiagnosis] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [reevalData, setReevalData] = useState({
     observations: '',
+    availability_status: occ.availability_status as AthleteAvailabilityStatus,
+  })
+  const [editData, setEditData] = useState({
+    title: occ.title ?? '',
+    occurrenceDate: occ.occurrence_date,
+    occurrenceType: (occ.occurrence_type ?? 'complaint') as 'complaint' | 'trauma' | 'disease' | 'other',
+    observations: occ.assessment ?? '',
     availability_status: occ.availability_status as AthleteAvailabilityStatus,
   })
 
@@ -136,6 +147,21 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
       })
       setShowReeval(false)
       setReevalData({ observations: '', availability_status: occ.availability_status })
+      onRevalidate()
+    })
+  }
+
+  function handleUpdate() {
+    startTransition(async () => {
+      await updateOccurrence({
+        occurrenceId: occ.id,
+        title: editData.title,
+        occurrenceDate: editData.occurrenceDate,
+        occurrenceType: editData.occurrenceType,
+        observations: editData.observations,
+        availabilityStatus: editData.availability_status,
+      })
+      setShowEdit(false)
       onRevalidate()
     })
   }
@@ -210,6 +236,15 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                   {activeDiagnosis.osiics_description ?? activeDiagnosis.custom_description ?? '—'}
                 </span>
                 {activeDiagnosis.availability_status && <StatusBadge status={activeDiagnosis.availability_status} />}
+                {canCreateDiagnosis && (
+                  <button
+                    onClick={() => setShowEditDiagnosis(true)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, padding: '3px 7px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer', flexShrink: 0 }}
+                  >
+                    <Pencil size={9} />
+                    Editar
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -286,35 +321,150 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
             </div>
           )}
 
-          {/* Actions */}
-          {!occ.is_resolved && (
-            <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
-              <button
-                onClick={() => setShowReeval((v) => !v)}
-                style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
-              >
-                <Plus size={11} />
-                Reavaliar
-              </button>
-              <button
-                onClick={handleResolve}
-                disabled={isPending}
-                style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(0,229,160,0.3)', background: 'rgba(0,229,160,0.06)', color: 'var(--sophi-green)', cursor: 'pointer' }}
-              >
-                <Check size={11} />
-                Resolver
-              </button>
-              {canCreateDiagnosis && !activeDiagnosis && (
+          {/* Edit form — corrects the occurrence's own record, unlike
+              Reavaliar which appends a new dated entry. */}
+          {showEdit && (
+            <div style={{ background: 'var(--sophi-bg3)', borderRadius: 8, padding: 12, marginBottom: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--sophi-text2)', marginBottom: 8 }}>Editar Ocorrência</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+                <div>
+                  <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                    Data
+                  </label>
+                  <input
+                    type="date"
+                    value={editData.occurrenceDate}
+                    onChange={(e) => setEditData((d) => ({ ...d, occurrenceDate: e.target.value }))}
+                    style={{
+                      width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12,
+                      background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)',
+                      color: 'var(--sophi-text)', fontFamily: 'inherit',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                    Tipo
+                  </label>
+                  <select
+                    value={editData.occurrenceType}
+                    onChange={(e) => setEditData((d) => ({ ...d, occurrenceType: e.target.value as typeof editData.occurrenceType }))}
+                    style={{
+                      width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12,
+                      background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)',
+                      color: 'var(--sophi-text)', fontFamily: 'inherit',
+                    }}
+                  >
+                    {OCCURRENCE_TYPES.map((t) => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div style={{ marginBottom: 6 }}>
+                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                  Título
+                </label>
+                <input
+                  value={editData.title}
+                  onChange={(e) => setEditData((d) => ({ ...d, title: e.target.value }))}
+                  placeholder="ex: Dor no gémeo direito"
+                  style={{
+                    width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12,
+                    background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)',
+                    color: 'var(--sophi-text)', fontFamily: 'inherit',
+                  }}
+                />
+              </div>
+              <div style={{ marginBottom: 6 }}>
+                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                  Observações
+                </label>
+                <textarea
+                  value={editData.observations}
+                  onChange={(e) => setEditData((d) => ({ ...d, observations: e.target.value }))}
+                  rows={3}
+                  style={{
+                    width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12,
+                    background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)',
+                    color: 'var(--sophi-text)', resize: 'vertical', fontFamily: 'inherit',
+                  }}
+                />
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                  Estado de disponibilidade
+                </label>
+                <select
+                  value={editData.availability_status}
+                  onChange={(e) => setEditData((d) => ({ ...d, availability_status: e.target.value as AthleteAvailabilityStatus }))}
+                  style={{
+                    borderRadius: 6, padding: '6px 8px', fontSize: 12,
+                    background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)',
+                    color: 'var(--sophi-text)', fontFamily: 'inherit',
+                  }}
+                >
+                  {Object.entries(STATUS_CONFIG).map(([v, cfg]) => (
+                    <option key={v} value={v}>{cfg.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
                 <button
-                  onClick={() => setShowDiagnosisModal(true)}
+                  onClick={handleUpdate}
+                  disabled={isPending}
+                  style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: 'none', background: 'var(--sophi-green)', color: '#000', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  {isPending ? 'A guardar...' : 'Guardar'}
+                </button>
+                <button
+                  onClick={() => setShowEdit(false)}
+                  style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+            <button
+              onClick={() => { setShowEdit((v) => !v); setShowReeval(false) }}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
+            >
+              <Pencil size={11} />
+              Editar
+            </button>
+            {!occ.is_resolved && (
+              <>
+                <button
+                  onClick={() => { setShowReeval((v) => !v); setShowEdit(false) }}
                   style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
                 >
                   <Plus size={11} />
-                  Adicionar Diagnóstico
+                  Reavaliar
                 </button>
-              )}
-            </div>
-          )}
+                <button
+                  onClick={handleResolve}
+                  disabled={isPending}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(0,229,160,0.3)', background: 'rgba(0,229,160,0.06)', color: 'var(--sophi-green)', cursor: 'pointer' }}
+                >
+                  <Check size={11} />
+                  Resolver
+                </button>
+                {canCreateDiagnosis && !activeDiagnosis && (
+                  <button
+                    onClick={() => setShowDiagnosisModal(true)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
+                  >
+                    <Plus size={11} />
+                    Adicionar Diagnóstico
+                  </button>
+                )}
+              </>
+            )}
+          </div>
 
           <div style={{ marginTop: 8, fontSize: 10, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
             Registado por {occ.clinician_name ?? '—'} {occ.clinician_role ? `· ${occ.clinician_role}` : ''}
@@ -328,6 +478,24 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
           occurrences={[occ]}
           onClose={() => setShowDiagnosisModal(false)}
           onSaved={() => { setShowDiagnosisModal(false); onRevalidate() }}
+        />
+      )}
+
+      {showEditDiagnosis && activeDiagnosis && (
+        <DiagnosisModal
+          athleteId={occ.athlete_id}
+          occurrences={[occ]}
+          existing={{
+            id:                  activeDiagnosis.id,
+            osiics_code:         activeDiagnosis.osiics_code,
+            osiics_description:  activeDiagnosis.osiics_description,
+            diagnosis_type:      activeDiagnosis.diagnosis_type,
+            custom_description:  activeDiagnosis.custom_description,
+            availability_status: activeDiagnosis.availability_status,
+            occurrence_id:       occ.id,
+          }}
+          onClose={() => setShowEditDiagnosis(false)}
+          onSaved={() => { setShowEditDiagnosis(false); onRevalidate() }}
         />
       )}
     </div>

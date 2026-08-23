@@ -139,6 +139,71 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
   revalidatePath('/')
 }
 
+export interface UpdateDiagnosisInput {
+  diagnosisId: string
+  osiicsCode: string | null
+  osiicsDescription: string | null
+  diagnosisType: 'injury' | 'disease'
+  customDescription: string | null
+  availabilityStatus: Avail
+  occurrenceId: string | null
+}
+
+// Corrects an existing diagnosis's own fields — distinct from resolveDiagnosis,
+// which closes it out. Only reachable while unresolved: once resolved, the
+// diagnosis has already migrated into the athlete's injury history and the UI
+// never renders an edit affordance for it, but the guard is repeated here too.
+export async function updateDiagnosis(input: UpdateDiagnosisInput) {
+  const supabase = await createClient()
+
+  // Same one-active-diagnosis-per-occurrence guard as createDiagnosis, excluding
+  // this diagnosis itself so re-saving without changing the link doesn't self-conflict.
+  if (input.occurrenceId) {
+    const { data: existing, error: existingError } = await supabase
+      .from('diagnoses')
+      .select('id')
+      .eq('occurrence_id', input.occurrenceId)
+      .eq('is_resolved', false)
+      .neq('id', input.diagnosisId)
+      .maybeSingle()
+    if (existingError) throw new Error(existingError.message)
+    if (existing) throw new Error('Esta ocorrência já tem um diagnóstico ativo.')
+  }
+
+  const { data: updated, error } = await supabase
+    .from('diagnoses')
+    .update({
+      osiics_code:         input.osiicsCode,
+      osiics_description:  input.osiicsDescription,
+      diagnosis_type:      input.diagnosisType,
+      custom_description:  input.customDescription,
+      availability_status: input.availabilityStatus,
+      occurrence_id:       input.occurrenceId,
+    })
+    .eq('id', input.diagnosisId)
+    .eq('is_resolved', false)
+    .select('athlete_id')
+    .maybeSingle()
+  if (error || !updated?.athlete_id) throw new Error(error?.message ?? 'Diagnóstico já resolvido ou inexistente')
+
+  const targetAthleteId = updated.athlete_id
+
+  if (input.occurrenceId) {
+    const { error: occError } = await supabase
+      .from('occurrences')
+      .update({ availability_status: input.availabilityStatus, updated_at: new Date().toISOString() })
+      .eq('id', input.occurrenceId)
+    if (occError) throw new Error(occError.message)
+  }
+
+  const next = await recomputeAvailability(supabase, targetAthleteId, input.availabilityStatus)
+  await persistAvailability(supabase, targetAthleteId, next)
+
+  revalidatePath(`/athletes/${targetAthleteId}`)
+  revalidatePath('/occurrences')
+  revalidatePath('/')
+}
+
 export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

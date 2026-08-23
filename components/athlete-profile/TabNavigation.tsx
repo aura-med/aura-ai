@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import {
   LayoutGrid, Stethoscope, Activity, Syringe, FolderOpen, ChevronDown,
-  ClipboardList, Apple, FileStack, Brain,
+  Apple, FileStack, Brain,
 } from 'lucide-react'
 import type { TabId } from '@/types/athlete-profile'
 
@@ -18,7 +18,6 @@ interface Tab {
 
 const TABS: Tab[] = [
   { id: 'overview',         label: 'Overview',        icon: LayoutGrid    },
-  { id: 'anamnesis',        label: 'Anamnese',        icon: ClipboardList },
   { id: 'medical',          label: 'Ficha Clínica',   icon: Stethoscope   },
   { id: 'injuries',         label: 'Lesões',          icon: Activity      },
   { id: 'treatments',       label: 'Tratamentos',     icon: Syringe       },

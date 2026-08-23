@@ -14,7 +14,7 @@ import type { UserRole } from '@/types'
 import type { AthleteProfileData, TabId, InjuryEventSummary, ActiveDiagnosis, ActiveOccurrence, AthleteAnamnesis } from '@/types/athlete-profile'
 
 const VALID_TABS: TabId[] = [
-  'overview', 'anamnesis', 'medical', 'injuries', 'treatments',
+  'overview', 'medical', 'injuries', 'treatments',
   'nutrition', 'training', 'documents', 'recommendations',
 ]
 

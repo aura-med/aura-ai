@@ -15,6 +15,7 @@ import type {
 const ConsultationModal = dynamic(() => import('./ConsultationModal').then((mod) => mod.ConsultationModal))
 const MedicalHistoryModal = dynamic(() => import('./MedicalHistoryModal').then((mod) => mod.MedicalHistoryModal))
 const Scat6Modal = dynamic(() => import('./Scat6Modal').then((mod) => mod.Scat6Modal))
+const AnamnesisTab = dynamic(() => import('./AnamnesisTab').then((mod) => mod.AnamnesisTab))
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -521,6 +522,9 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
             </div>
           )}
         </Section>
+
+        {/* Anamnese — Avaliação Pré-Época */}
+        <AnamnesisTab profile={profile} />
       </div>
 
       {/* Modals */}

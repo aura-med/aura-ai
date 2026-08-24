@@ -5,7 +5,7 @@
 import type { RecommendationSet, UserRole, AthleteAvailabilityStatus } from '@/types'
 
 export type TabId =
-  | 'overview' | 'medical' | 'injuries' | 'treatments' | 'rehab'
+  | 'overview' | 'medical' | 'injuries' | 'treatments'
   | 'nutrition' | 'training' | 'documents' | 'recommendations'
 
 export type LatestRecommendations = RecommendationSet & {

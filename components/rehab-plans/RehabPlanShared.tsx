@@ -1,12 +1,17 @@
 'use client'
 
+// Shared rehab-plan calendar UI — reused both inside the athlete's clinical
+// file (Tratamentos tab, one athlete fixed) and on the squad-wide /rehab page
+// (many athletes, with an athlete picker on create), mirroring how
+// components/occurrences/OccurrenceRow.tsx is shared between /occurrences and
+// the athlete profile's Overview tab. Keeping one implementation means an
+// entry edited from either place behaves identically.
 import { useState, useEffect, useCallback } from 'react'
 import {
   Plus, X, Check, Pencil, Trash2, Loader2, ChevronRight, ChevronDown,
   CalendarClock, ArrowRightLeft, Sun, Sunset, Flag,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { OWNER_ROLE, REHAB_ROLES } from '@/lib/roles'
 import { addDays, todayStr, calculateMDStatus, formatDisplayDate } from '@/lib/utils/microcycle'
 import {
   createRehabPlan, updateRehabPlan, closeRehabPlan,
@@ -14,13 +19,11 @@ import {
   upsertRehabPlanDay, deleteRehabPlanDay, moveRehabPlanDay,
 } from '@/lib/actions/rehab-plan'
 import { REHAB_DAY_OCCUPIED_ERROR } from '@/lib/actions/rehab-plan-errors'
-import type {
-  AthleteProfileData, RehabPlan, RehabPlanPhase, RehabPlanDay, RehabPlanPeriod,
-} from '@/types/athlete-profile'
+import type { RehabPlan, RehabPlanPhase, RehabPlanDay, RehabPlanPeriod } from '@/types/athlete-profile'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const PERIODS: { value: RehabPlanPeriod; label: string; icon: React.ElementType }[] = [
+export const PERIODS: { value: RehabPlanPeriod; label: string; icon: React.ElementType }[] = [
   { value: 'morning',   label: 'Manhã', icon: Sun    },
   { value: 'afternoon', label: 'Tarde', icon: Sunset },
 ]
@@ -41,7 +44,7 @@ function dayKey(date: string, period: RehabPlanPeriod) {
   return `${date}__${period}`
 }
 
-function formatShort(dateStr: string | null) {
+export function formatShort(dateStr: string | null | undefined) {
   if (!dateStr) return '—'
   const [y, m, d] = dateStr.split('-')
   return `${d}/${m}/${y}`
@@ -51,10 +54,28 @@ const inputClass = 'w-full rounded-lg border px-3 py-2 text-xs outline-none focu
 const inputStyle = { background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }
 const labelClass = 'text-[10px] font-semibold uppercase tracking-wider block mb-1'
 
+// Lightweight occurrence shape for the "ligar a ocorrência" picker — only
+// what the dropdown reads, so callers (in particular the squad-wide /rehab
+// page, which fetches this for every athlete at once) don't need the much
+// heavier ActiveOccurrence shape (occurrence_records, diagnoses, ...).
+export interface RehabPlanOccurrenceOption {
+  id: string
+  athlete_id: string
+  title: string | null
+  occurrence_type: string | null
+  occurrence_date: string
+}
+
+export interface RehabPlanAthleteOption {
+  id: string
+  name: string
+  shirt_number: number | null
+}
+
 // Plain data fetchers (no hooks, no setState) — called from inside effects
 // with an explicit cancelled-guard at the call site, so the effect body does
 // real async work rather than a bare pass-through to a state-setting callback.
-async function fetchPlanDetail(planId: string) {
+export async function fetchPlanDetail(planId: string) {
   const supabase = createClient()
   const [{ data: phaseRows }, { data: dayRows }] = await Promise.all([
     supabase.from('rehab_plan_phases').select('*').eq('plan_id', planId).order('phase_number', { ascending: true }),
@@ -66,7 +87,7 @@ async function fetchPlanDetail(planId: string) {
   }
 }
 
-async function fetchRehabPlans(athleteId: string) {
+export async function fetchRehabPlans(athleteId: string) {
   const supabase = createClient()
   const { data } = await supabase
     .from('rehab_plans')
@@ -78,16 +99,22 @@ async function fetchRehabPlans(athleteId: string) {
 
 // ── Plan create/edit modal ──────────────────────────────────────────────────
 
-function PlanModal({
-  athleteId, existing, occurrences, onClose, onSaved,
+export function PlanModal({
+  athleteId, athletes, existing, occurrences, onClose, onSaved,
 }: {
-  athleteId: string
+  // Fixed athlete (embedded-in-profile context) — omit when using `athletes`.
+  athleteId?: string
+  // Athlete picker (squad-wide /rehab page context) — omit when `athleteId` is fixed.
+  athletes?: RehabPlanAthleteOption[]
   existing: RehabPlan | null
-  occurrences: AthleteProfileData['activeOccurrences']
+  occurrences: RehabPlanOccurrenceOption[]
   onClose: () => void
   onSaved: () => void
 }) {
   const isEdit = !!existing
+  const [selectedAthleteId, setSelectedAthleteId] = useState(
+    existing?.athlete_id ?? athleteId ?? athletes?.[0]?.id ?? '',
+  )
   const [title, setTitle] = useState(existing?.title ?? '')
   const [startDate, setStartDate] = useState(existing?.start_date ?? todayStr())
   const [expectedEndDate, setExpectedEndDate] = useState(existing?.expected_end_date ?? '')
@@ -95,7 +122,10 @@ function PlanModal({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const relevantOccurrences = occurrences.filter((o) => o.athlete_id === selectedAthleteId)
+
   async function handleSave() {
+    if (!selectedAthleteId) { setError('Seleciona um atleta'); return }
     if (!title.trim()) { setError('Título obrigatório'); return }
     setSaving(true)
     setError(null)
@@ -110,7 +140,7 @@ function PlanModal({
         })
       } else {
         await createRehabPlan({
-          athleteId,
+          athleteId: selectedAthleteId,
           title: title.trim(),
           startDate,
           expectedEndDate: expectedEndDate || null,
@@ -138,6 +168,17 @@ function PlanModal({
           </button>
         </div>
 
+        {!isEdit && athletes && (
+          <div>
+            <label className={labelClass} style={{ color: 'var(--sophi-text3)' }}>Atleta</label>
+            <select value={selectedAthleteId} onChange={(e) => { setSelectedAthleteId(e.target.value); setOccurrenceId('') }} className={inputClass} style={inputStyle}>
+              {athletes.map((a) => (
+                <option key={a.id} value={a.id}>{a.shirt_number != null ? `${a.shirt_number}. ` : ''}{a.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div>
           <label className={labelClass} style={{ color: 'var(--sophi-text3)' }}>Título</label>
           <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="ex: Lesão isquiotibial direito"
@@ -155,12 +196,12 @@ function PlanModal({
           </div>
         </div>
 
-        {occurrences.length > 0 && (
+        {relevantOccurrences.length > 0 && (
           <div>
             <label className={labelClass} style={{ color: 'var(--sophi-text3)' }}>Ligar a ocorrência (opcional)</label>
             <select value={occurrenceId} onChange={(e) => setOccurrenceId(e.target.value)} className={inputClass} style={inputStyle}>
               <option value="">— Nenhuma —</option>
-              {occurrences.map((o) => (
+              {relevantOccurrences.map((o) => (
                 <option key={o.id} value={o.id}>{(o.title || o.occurrence_type || 'Ocorrência')} — {o.occurrence_date}</option>
               ))}
             </select>
@@ -544,11 +585,12 @@ function WeekBlock({
 
 // ── Plan detail (calendar + phases) ──────────────────────────────────────────
 
-function PlanDetail({
-  plan, occurrences, canEdit, onPlanChanged,
+export function PlanDetail({
+  plan, athletes, occurrences, canEdit, onPlanChanged,
 }: {
   plan: RehabPlan
-  occurrences: AthleteProfileData['activeOccurrences']
+  athletes?: RehabPlanAthleteOption[]
+  occurrences: RehabPlanOccurrenceOption[]
   canEdit: boolean
   onPlanChanged: () => void
 }) {
@@ -774,7 +816,7 @@ function PlanDetail({
       )}
 
       {showPlanModal && (
-        <PlanModal athleteId={plan.athlete_id} existing={plan} occurrences={occurrences}
+        <PlanModal athleteId={plan.athlete_id} athletes={athletes} existing={plan} occurrences={occurrences}
           onClose={() => setShowPlanModal(false)}
           onSaved={() => { setShowPlanModal(false); onPlanChanged() }} />
       )}
@@ -793,98 +835,6 @@ function PlanDetail({
           onClose={() => setDayTarget(null)}
           onSaved={() => { setDayTarget(null); loadDetail() }}
         />
-      )}
-    </div>
-  )
-}
-
-// ── Main ──────────────────────────────────────────────────────────────────────
-
-export function RehabPlanTab({ profile }: { profile: AthleteProfileData }) {
-  const canEdit = profile.viewerRole === OWNER_ROLE || REHAB_ROLES.includes(profile.viewerRole)
-
-  const [plans, setPlans] = useState<RehabPlan[]>([])
-  const [loading, setLoading] = useState(true)
-  const [plansVersion, setPlansVersion] = useState(0)
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [expandedPastId, setExpandedPastId] = useState<string | null>(null)
-
-  const loadPlans = useCallback(() => setPlansVersion((v) => v + 1), [])
-
-  useEffect(() => {
-    let cancelled = false
-    const load = async () => {
-      setLoading(true)
-      try {
-        const rows = await fetchRehabPlans(profile.id)
-        if (!cancelled) setPlans(rows)
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-    load()
-    return () => { cancelled = true }
-  }, [profile.id, plansVersion])
-
-  if (loading) {
-    return <div className="flex justify-center py-10"><Loader2 size={20} className="animate-spin" style={{ color: 'var(--sophi-text3)' }} /></div>
-  }
-
-  const activePlan = plans.find((p) => p.is_active) ?? null
-  const pastPlans = plans.filter((p) => !p.is_active)
-
-  return (
-    <div className="space-y-4">
-      {activePlan ? (
-        <PlanDetail plan={activePlan} occurrences={profile.activeOccurrences} canEdit={canEdit} onPlanChanged={loadPlans} />
-      ) : (
-        <div className="rounded-xl border p-8 flex flex-col items-center gap-3 text-center" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
-          <CalendarClock size={22} style={{ color: 'var(--sophi-text3)' }} />
-          <p className="text-sm font-semibold" style={{ color: 'var(--sophi-text)' }}>Sem plano de reabilitação ativo</p>
-          {canEdit && (
-            <button type="button" onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg" style={{ background: 'var(--sophi-green)', color: '#000' }}>
-              <Plus size={12} /> Criar Plano de Reabilitação
-            </button>
-          )}
-        </div>
-      )}
-
-      {pastPlans.length > 0 && (
-        <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
-          <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
-            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text2)' }}>
-              Histórico de Planos ({pastPlans.length})
-            </p>
-          </div>
-          <div className="divide-y" style={{ borderColor: 'var(--sophi-border)' }}>
-            {pastPlans.map((p) => (
-              <div key={p.id}>
-                <button type="button" onClick={() => setExpandedPastId((cur) => (cur === p.id ? null : p.id))}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium" style={{ color: 'var(--sophi-text)' }}>{p.title}</p>
-                    <p className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>
-                      {formatShort(p.start_date)} – {formatShort(p.closed_at?.slice(0, 10) ?? p.expected_end_date)} · {p.is_completed ? 'Concluído' : 'Arquivado'}
-                    </p>
-                  </div>
-                  {expandedPastId === p.id ? <ChevronDown size={13} style={{ color: 'var(--sophi-text3)' }} /> : <ChevronRight size={13} style={{ color: 'var(--sophi-text3)' }} />}
-                </button>
-                {expandedPastId === p.id && (
-                  <div className="px-4 pb-4">
-                    <PlanDetail plan={p} occurrences={profile.activeOccurrences} canEdit={false} onPlanChanged={loadPlans} />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {showCreateModal && (
-        <PlanModal athleteId={profile.id} existing={null} occurrences={profile.activeOccurrences}
-          onClose={() => setShowCreateModal(false)}
-          onSaved={() => { setShowCreateModal(false); loadPlans() }} />
       )}
     </div>
   )

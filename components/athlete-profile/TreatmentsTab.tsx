@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { Activity, Plus, Clock, Edit2, Loader2, Syringe } from 'lucide-react'
+import { Activity, Plus, Clock, Edit2, Loader2, Syringe, CalendarClock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { administerMedication } from '@/lib/actions/clinical'
@@ -14,6 +14,7 @@ import type {
 } from '@/types/athlete-profile'
 
 const RehabSessionModal = dynamic(() => import('./RehabSessionModal').then((mod) => mod.RehabSessionModal))
+const RehabPlanSection = dynamic(() => import('./RehabPlanSection').then((mod) => mod.RehabPlanSection))
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -330,6 +331,12 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
   return (
     <>
       <div className="space-y-4">
+
+        {/* Rehab plan calendar — day-by-day programme, distinct from the
+            physio session log below it. */}
+        <Section icon={CalendarClock} title="Plano de Reabilitação">
+          <RehabPlanSection profile={profile} />
+        </Section>
 
         {/* Physiotherapy & Rehab */}
         <Section

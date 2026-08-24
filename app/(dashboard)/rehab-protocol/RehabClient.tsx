@@ -232,7 +232,7 @@ export function RehabClient({ dto }: { dto: RehabPageDTO }) {
           <div key={session.id} className="card" style={{ marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
               <div>
-                <Link href={`/rehab/${session.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link href={`/rehab-protocol/${session.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <div style={{ fontWeight: 700, fontSize: 16 }}>{session.athleteName}</div>
                 </Link>
                 <div style={{ fontSize: 12, color: 'var(--text2)', fontFamily: 'var(--mono)' }}>

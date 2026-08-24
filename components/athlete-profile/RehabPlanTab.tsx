@@ -13,6 +13,7 @@ import {
   upsertRehabPlanPhase, deleteRehabPlanPhase,
   upsertRehabPlanDay, deleteRehabPlanDay, moveRehabPlanDay,
 } from '@/lib/actions/rehab-plan'
+import { REHAB_DAY_OCCUPIED_ERROR } from '@/lib/actions/rehab-plan-errors'
 import type {
   AthleteProfileData, RehabPlan, RehabPlanPhase, RehabPlanDay, RehabPlanPeriod,
 } from '@/types/athlete-profile'
@@ -340,7 +341,7 @@ function DayEntryModal({
       onSaved()
     } catch (e) {
       const msg = (e as Error).message
-      if (!overwrite && msg.includes('já tem conteúdo')) {
+      if (!overwrite && msg === REHAB_DAY_OCCUPIED_ERROR) {
         setMoveConfirm(true)
       } else {
         setError(msg)

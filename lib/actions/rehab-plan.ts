@@ -8,6 +8,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { RehabPlanPeriod } from '@/types/athlete-profile'
+import { REHAB_DAY_OCCUPIED_ERROR } from '@/lib/actions/rehab-plan-errors'
 
 async function currentUserId(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: { user } } = await supabase.auth.getUser()
@@ -61,7 +62,13 @@ export async function createRehabPlan(input: CreateRehabPlanInput) {
     expected_end_date: input.expectedEndDate,
     created_by:        userId,
   }).select().single()
-  if (error) throw new Error(error.message)
+  if (error) {
+    // 23505 = unique_violation on rehab_plans_one_active_per_athlete — the
+    // pre-check above lost a race with a concurrent create. Translate rather
+    // than leak the raw constraint-name error to the clinician.
+    if (error.code === '23505') throw new Error('Este atleta já tem um plano de reabilitação ativo. Termina-o antes de criar um novo.')
+    throw new Error(error.message)
+  }
 
   revalidatePath(`/athletes/${input.athleteId}`)
   return data
@@ -168,7 +175,12 @@ export async function upsertRehabPlanPhase(input: UpsertRehabPlanPhaseInput) {
       start_date:   input.startDate,
       created_by:   userId,
     })
-    if (error) throw new Error(error.message)
+    if (error) {
+      // 23505 = unique_violation on (plan_id, phase_number) — a near-simultaneous
+      // second "Nova Fase" submit raced this one's max+1 computation.
+      if (error.code === '23505') throw new Error('Outra fase foi criada ao mesmo tempo — tenta novamente.')
+      throw new Error(error.message)
+    }
   }
 
   revalidatePath(`/athletes/${plan.athlete_id}`)
@@ -214,6 +226,17 @@ export async function upsertRehabPlanDay(input: UpsertRehabPlanDayInput) {
     .single()
   if (planError || !plan?.athlete_id) throw new Error(planError?.message ?? 'Plano não encontrado')
 
+  // Preserve the original author's created_by across an edit — a single
+  // upsert SETs every provided column on conflict, so without this an edit
+  // to an existing day would silently reassign authorship to the editor.
+  const { data: existingDay } = await supabase
+    .from('rehab_plan_days')
+    .select('created_by')
+    .eq('plan_id', input.planId)
+    .eq('entry_date', input.entryDate)
+    .eq('period', input.period)
+    .maybeSingle()
+
   const { error } = await supabase.from('rehab_plan_days').upsert({
     plan_id:     input.planId,
     entry_date:  input.entryDate,
@@ -221,7 +244,7 @@ export async function upsertRehabPlanDay(input: UpsertRehabPlanDayInput) {
     content:     input.content,
     is_rest_day: input.isRestDay,
     phase_id:    input.phaseId,
-    created_by:  userId,
+    created_by:  existingDay?.created_by ?? userId,
     updated_by:  userId,
   }, { onConflict: 'plan_id,entry_date,period' })
   if (error) throw new Error(error.message)
@@ -292,11 +315,16 @@ export async function moveRehabPlanDay(input: MoveRehabPlanDayInput) {
     .maybeSingle()
   if (destError) throw new Error(destError.message)
   if (destination && !input.overwrite) {
-    throw new Error('O dia de destino já tem conteúdo planeado. Confirma para substituir.')
+    throw new Error(REHAB_DAY_OCCUPIED_ERROR)
   }
 
   // Write destination first, then clear the source — if the destination write
-  // fails, the original entry is left untouched instead of being lost.
+  // fails, the original entry is left untouched instead of being lost. This
+  // is not a transaction, though: two separate Supabase calls can't be made
+  // atomic without an RPC, so a failure specifically on the delete below
+  // (after a successful write) leaves the content duplicated in both cells
+  // rather than moved. Judged an acceptable, narrow residual risk over the
+  // added complexity of a transactional RPC for this action.
   const { error: upsertError } = await supabase.from('rehab_plan_days').upsert({
     plan_id:     input.planId,
     entry_date:  input.toDate,

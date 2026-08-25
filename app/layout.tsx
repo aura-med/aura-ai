@@ -23,7 +23,7 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: "Aura — Health & Performance Intelligence",
+  title: "Sophi — Health & Performance Intelligence",
   description: "Predictive injury risk management platform for elite football",
 };
 

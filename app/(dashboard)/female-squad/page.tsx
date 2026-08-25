@@ -49,7 +49,9 @@ export default async function FemalePage({
     return { ...a, base_score: base.score, adjusted_score: adjusted.adjusted, phase: adjusted.phase }
   })
 
-  const rehab     = withData.filter(a => a.status === 'rehab')
+  const isRtp = (a: { availability_status?: string | null; status?: string | null }) =>
+    (a.availability_status ?? (a.status === 'rehab' ? 'rtp' : 'available')) === 'rtp'
+  const rehab     = withData.filter(isRtp)
   const highRisk  = withData.filter(a => a.adjusted_score >= 65)
   const inOvulation = withData.filter(a => a.phase?.phase === 'ovulatory')
 
@@ -76,7 +78,7 @@ export default async function FemalePage({
           <div className="adot ad-b" />
           <div style={{ fontSize: 12 }}>
             <strong>Evidência:</strong> Risco de lesão LCA varia até 4x ao longo do ciclo menstrual
-            (Hewett et al. 2007; Renstrom et al. BJSM 2008). A Aura é a única plataforma que integra
+            (Hewett et al. 2007; Renstrom et al. BJSM 2008). A Sophi é a única plataforma que integra
             este factor no score de risco.
           </div>
         </div>
@@ -134,7 +136,7 @@ export default async function FemalePage({
                   </div>
                 )}
 
-                {a.status === 'rehab' && (
+                {isRtp(a) && (
                   <div style={{ marginTop: 6 }}>
                     <span style={{ fontSize: 9, fontFamily: 'var(--mono)', padding: '2px 6px', borderRadius: 4, background: 'var(--blue2)', color: 'var(--blue)' }}>
                       REABILITAÇÃO

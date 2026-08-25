@@ -2,7 +2,7 @@
 
 // ─────────────────────────────────────────────────────────────────────────────
 // apps/admin/lib/recommendation-actions.ts
-// Aura Admin — Server actions for recommendation model management
+// Sophi Admin — Server actions for recommendation model management
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { revalidatePath } from 'next/cache'

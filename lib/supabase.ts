@@ -113,7 +113,7 @@ export async function getUserOrganizationContext() {
       .order('name')
 
   if (squadsError) {
-    console.warn('[aura] Could not load squads for organization', squadsError.message)
+    console.warn('[sophi] Could not load squads for organization', squadsError.message)
     return { org, squads: [] }
   }
 

@@ -26,7 +26,7 @@ export function DialogContent({
         className={cn('relative w-full rounded-xl border p-5 shadow-2xl', className)}
         role="dialog"
         aria-modal="true"
-        style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)', color: 'var(--aura-text)' }}
+        style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }}
       >
         {children}
       </div>
@@ -43,13 +43,13 @@ export function DialogTitle({ className, ...props }: ComponentProps<'h2'>) {
 }
 
 export function DialogFooter({ className, ...props }: ComponentProps<'div'>) {
-  return <div className={cn('flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-end', className)} style={{ borderColor: 'var(--aura-border)' }} {...props} />
+  return <div className={cn('flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-end', className)} style={{ borderColor: 'var(--sophi-border)' }} {...props} />
 }
 
 export function DialogClose({ className, ...props }: ComponentProps<'button'>) {
   return (
     <button
-      className={cn('absolute right-3 top-3 inline-flex size-8 items-center justify-center rounded-md hover:bg-[var(--aura-bg3)]', className)}
+      className={cn('absolute right-3 top-3 inline-flex size-8 items-center justify-center rounded-md hover:bg-[var(--sophi-bg3)]', className)}
       type="button"
       {...props}
     >

@@ -14,15 +14,15 @@ import type { RiskLevel } from '@root/types'
 function SectionToggle({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
-    <div className="rounded-lg border" style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg)' }}>
+    <div className="rounded-lg border" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg)' }}>
       <button
         onClick={() => setOpen(!open)}
         className="flex w-full items-center justify-between px-4 py-3 text-left"
       >
         <span className="text-sm font-semibold">{title}</span>
-        {open ? <ChevronUp size={14} style={{ color: 'var(--aura-text3)' }} /> : <ChevronDown size={14} style={{ color: 'var(--aura-text3)' }} />}
+        {open ? <ChevronUp size={14} style={{ color: 'var(--sophi-text3)' }} /> : <ChevronDown size={14} style={{ color: 'var(--sophi-text3)' }} />}
       </button>
-      {open && <div className="border-t px-4 pb-4 pt-3" style={{ borderColor: 'var(--aura-border)' }}>{children}</div>}
+      {open && <div className="border-t px-4 pb-4 pt-3" style={{ borderColor: 'var(--sophi-border)' }}>{children}</div>}
     </div>
   )
 }
@@ -34,7 +34,7 @@ function ActionFeedback({ success, error }: { success?: boolean; error?: string 
       className="flex items-center gap-2 rounded-md px-3 py-2 text-xs"
       style={{
         background: success ? 'rgba(0,229,160,0.08)' : 'rgba(239,68,68,0.08)',
-        color: success ? 'var(--aura-green)' : '#ef4444',
+        color: success ? 'var(--sophi-green)' : '#ef4444',
       }}
     >
       {success ? <Check size={12} /> : <AlertTriangle size={12} />}
@@ -67,15 +67,15 @@ function ThresholdsEditor({ orgId, thresholds }: { orgId: string; thresholds: { 
 
   return (
     <div className="space-y-4">
-      <p className="text-xs" style={{ color: 'var(--aura-text2)' }}>
+      <p className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
         Define the score boundaries (0–100) for each risk band. Lower boundary is inclusive.
         Default: Low &lt;40 · Medium 40–64 · High 65–84 · Critical ≥85.
       </p>
 
       {/* Visual band preview */}
-      <div className="relative h-5 w-full overflow-hidden rounded-full" style={{ background: 'var(--aura-bg3)' }}>
+      <div className="relative h-5 w-full overflow-hidden rounded-full" style={{ background: 'var(--sophi-bg3)' }}>
         {[
-          { from: 0,             to: vals.medium,   color: 'var(--aura-green)', label: 'Low' },
+          { from: 0,             to: vals.medium,   color: 'var(--sophi-green)', label: 'Low' },
           { from: vals.medium,   to: vals.high,     color: '#f59e0b',           label: 'Medium' },
           { from: vals.high,     to: vals.critical, color: '#f97316',           label: 'High' },
           { from: vals.critical, to: 100,           color: '#ef4444',           label: 'Critical' },
@@ -108,7 +108,7 @@ function ThresholdsEditor({ orgId, thresholds }: { orgId: string; thresholds: { 
               value={vals[level]}
               onChange={(e) => setVals((prev) => ({ ...prev, [level]: Number(e.target.value) }))}
               className="w-full rounded-md border px-3 py-2 text-sm"
-              style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border)', color: 'var(--aura-text)' }}
+              style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }}
             />
           </div>
         ))}
@@ -119,7 +119,7 @@ function ThresholdsEditor({ orgId, thresholds }: { orgId: string; thresholds: { 
           onClick={handleSave}
           disabled={isPending}
           className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold"
-          style={{ background: 'var(--aura-green)', color: 'var(--aura-bg)' }}
+          style={{ background: 'var(--sophi-green)', color: 'var(--sophi-bg)' }}
         >
           <Save size={13} />
           {isPending ? 'A guardar...' : 'Guardar limiares'}
@@ -127,7 +127,7 @@ function ThresholdsEditor({ orgId, thresholds }: { orgId: string; thresholds: { 
         <button
           onClick={handleReset}
           className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm"
-          style={{ color: 'var(--aura-text2)', border: '1px solid var(--aura-border)' }}
+          style={{ color: 'var(--sophi-text2)', border: '1px solid var(--sophi-border)' }}
         >
           <RotateCcw size={12} />
           Reset defaults
@@ -161,7 +161,7 @@ function WeightsEditor({ orgId, weights, weightsSum }: { orgId: string; weights:
 
   return (
     <div className="space-y-4">
-      <p className="text-xs" style={{ color: 'var(--aura-text2)' }}>
+      <p className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
         Weights must sum to 1.0 (±0.02 tolerance). Adjustments must be clinically justified.
         Changes are logged to the audit trail.
       </p>
@@ -174,12 +174,12 @@ function WeightsEditor({ orgId, weights, weightsSum }: { orgId: string; weights:
           return (
             <div key={variable} className="space-y-1">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>
+                <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>
                   {meta.label}
                 </label>
                 <span
                   className="text-xs font-bold"
-                  style={{ color: 'var(--aura-green)', fontFamily: 'var(--font-dm-mono)' }}
+                  style={{ color: 'var(--sophi-green)', fontFamily: 'var(--font-dm-mono)' }}
                 >
                   {pct}%
                 </span>
@@ -191,12 +191,12 @@ function WeightsEditor({ orgId, weights, weightsSum }: { orgId: string; weights:
                 step={0.01}
                 value={w}
                 onChange={(e) => handleChange(variable, parseFloat(e.target.value))}
-                className="w-full accent-[var(--aura-green)]"
+                className="w-full accent-[var(--sophi-green)]"
               />
-              <div className="h-1.5 w-full overflow-hidden rounded-full" style={{ background: 'var(--aura-bg3)' }}>
+              <div className="h-1.5 w-full overflow-hidden rounded-full" style={{ background: 'var(--sophi-bg3)' }}>
                 <div
                   className="h-full rounded-full transition-all"
-                  style={{ width: `${(w / 0.40) * 100}%`, background: 'var(--aura-green)' }}
+                  style={{ width: `${(w / 0.40) * 100}%`, background: 'var(--sophi-green)' }}
                 />
               </div>
             </div>
@@ -209,7 +209,7 @@ function WeightsEditor({ orgId, weights, weightsSum }: { orgId: string; weights:
           className="rounded px-2 py-1 text-xs font-bold"
           style={{
             background: sumOk ? 'rgba(0,229,160,0.1)' : 'rgba(239,68,68,0.1)',
-            color: sumOk ? 'var(--aura-green)' : '#ef4444',
+            color: sumOk ? 'var(--sophi-green)' : '#ef4444',
             fontFamily: 'var(--font-dm-mono)',
           }}
         >
@@ -219,7 +219,7 @@ function WeightsEditor({ orgId, weights, weightsSum }: { orgId: string; weights:
           onClick={handleSave}
           disabled={isPending || !sumOk}
           className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold disabled:opacity-40"
-          style={{ background: 'var(--aura-green)', color: 'var(--aura-bg)' }}
+          style={{ background: 'var(--sophi-green)', color: 'var(--sophi-bg)' }}
         >
           <Save size={13} />
           {isPending ? 'A guardar...' : 'Guardar pesos'}
@@ -259,44 +259,44 @@ function OverrideForm({ orgId }: { orgId: string }) {
   }
 
   const selectClass = "w-full rounded-md border px-2.5 py-2 text-sm"
-  const selectStyle = { background: 'var(--aura-bg3)', borderColor: 'var(--aura-border)', color: 'var(--aura-text)' }
+  const selectStyle = { background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }
 
   return (
     <div className="space-y-3">
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors hover:border-[var(--aura-green)]"
-          style={{ borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }}
+          className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors hover:border-[var(--sophi-green)]"
+          style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}
         >
           <Plus size={13} />
           Add rule override
         </button>
       ) : (
-        <div className="space-y-3 rounded-lg border p-4" style={{ borderColor: 'var(--aura-border)' }}>
+        <div className="space-y-3 rounded-lg border p-4" style={{ borderColor: 'var(--sophi-border)' }}>
           <p className="text-sm font-semibold">New rule override</p>
 
           <div className="grid gap-3 sm:grid-cols-4">
             <div>
-              <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--aura-text3)' }}>Variable</label>
+              <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--sophi-text3)' }}>Variable</label>
               <select value={form.variable} onChange={(e) => setForm((p) => ({ ...p, variable: e.target.value }))} className={selectClass} style={selectStyle}>
                 {ALL_VARIABLES.map((v) => <option key={v} value={v}>{VARIABLE_META[v]?.label ?? v}</option>)}
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--aura-text3)' }}>Risk Level</label>
+              <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--sophi-text3)' }}>Risk Level</label>
               <select value={form.risk_level} onChange={(e) => setForm((p) => ({ ...p, risk_level: e.target.value as RiskLevel }))} className={selectClass} style={selectStyle}>
                 {ALL_RISK_LEVELS.map((r) => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--aura-text3)' }}>Stakeholder</label>
+              <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--sophi-text3)' }}>Stakeholder</label>
               <select value={form.stakeholder} onChange={(e) => setForm((p) => ({ ...p, stakeholder: e.target.value as any }))} className={selectClass} style={selectStyle}>
                 {ALL_STAKEHOLDERS.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--aura-text3)' }}>Override Type</label>
+              <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--sophi-text3)' }}>Override Type</label>
               <select value={form.override_type} onChange={(e) => setForm((p) => ({ ...p, override_type: e.target.value as any }))} className={selectClass} style={selectStyle}>
                 <option value="text_only">Text only</option>
                 <option value="add_rule">Add rule</option>
@@ -308,7 +308,7 @@ function OverrideForm({ orgId }: { orgId: string }) {
           {form.override_type !== 'deactivate' && (
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="sm:col-span-2">
-                <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--aura-text3)' }}>Custom text *</label>
+                <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--sophi-text3)' }}>Custom text *</label>
                 <input
                   type="text"
                   value={form.custom_text}
@@ -319,7 +319,7 @@ function OverrideForm({ orgId }: { orgId: string }) {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--aura-text3)' }}>Timing</label>
+                <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--sophi-text3)' }}>Timing</label>
                 <input
                   type="text"
                   value={form.custom_timing}
@@ -351,9 +351,9 @@ function OverrideForm({ orgId }: { orgId: string }) {
           {form.override_type === 'text_only' && (
             <div
               className="flex items-start gap-2 rounded-md p-3 text-xs"
-              style={{ background: 'rgba(0,229,160,0.06)', color: 'var(--aura-text2)' }}
+              style={{ background: 'rgba(0,229,160,0.06)', color: 'var(--sophi-text2)' }}
             >
-              <AlertTriangle size={12} style={{ color: 'var(--aura-green)', flexShrink: 0, marginTop: 1 }} />
+              <AlertTriangle size={12} style={{ color: 'var(--sophi-green)', flexShrink: 0, marginTop: 1 }} />
               Text-only override preserves the clinical direction — the recommendation's intent cannot be altered.
             </div>
           )}
@@ -373,7 +373,7 @@ function OverrideForm({ orgId }: { orgId: string }) {
               onClick={handleSubmit}
               disabled={isPending}
               className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold disabled:opacity-40"
-              style={{ background: 'var(--aura-green)', color: 'var(--aura-bg)' }}
+              style={{ background: 'var(--sophi-green)', color: 'var(--sophi-bg)' }}
             >
               <Save size={13} />
               {isPending ? 'A guardar...' : 'Save override'}
@@ -381,7 +381,7 @@ function OverrideForm({ orgId }: { orgId: string }) {
             <button
               onClick={() => setOpen(false)}
               className="rounded-md px-3 py-1.5 text-sm"
-              style={{ color: 'var(--aura-text2)', border: '1px solid var(--aura-border)' }}
+              style={{ color: 'var(--sophi-text2)', border: '1px solid var(--sophi-border)' }}
             >
               Cancel
             </button>
@@ -425,7 +425,7 @@ export function RecommendationConfigClient({
       {/* Context type */}
       <SectionToggle title="Deployment Context" defaultOpen>
         <div className="space-y-3">
-          <p className="text-xs" style={{ color: 'var(--aura-text2)' }}>
+          <p className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
             Context affects ACWR calculation behaviour and match-day (MD+n) logic.
           </p>
           <div className="flex items-center gap-4">
@@ -435,8 +435,8 @@ export function RecommendationConfigClient({
                 onClick={() => handleContextSave('context_type', ct)}
                 className="flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold transition-all"
                 style={contextType === ct
-                  ? { borderColor: 'var(--aura-green)', color: 'var(--aura-green)', background: 'rgba(0,229,160,0.08)' }
-                  : { borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }
+                  ? { borderColor: 'var(--sophi-green)', color: 'var(--sophi-green)', background: 'rgba(0,229,160,0.08)' }
+                  : { borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }
                 }
               >
                 <span className="capitalize">{ct}</span>
@@ -449,8 +449,8 @@ export function RecommendationConfigClient({
                 onClick={() => handleContextSave('language', lang)}
                 className="rounded-md border px-3 py-2 text-sm font-semibold uppercase transition-all"
                 style={language === lang
-                  ? { borderColor: 'var(--aura-green)', color: 'var(--aura-green)', background: 'rgba(0,229,160,0.08)' }
-                  : { borderColor: 'var(--aura-border)', color: 'var(--aura-text2)' }
+                  ? { borderColor: 'var(--sophi-green)', color: 'var(--sophi-green)', background: 'rgba(0,229,160,0.08)' }
+                  : { borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }
                 }
               >
                 {lang}

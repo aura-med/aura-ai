@@ -153,9 +153,9 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
 
   // ── Style helpers ──────────────────────────────────────────────────────────
   const baseInput =
-    'mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--aura-green)] transition-colors'
+    'mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--sophi-green)] transition-colors'
   const baseTextarea =
-    'mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--aura-green)] transition-colors resize-none'
+    'mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--sophi-green)] transition-colors resize-none'
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -172,7 +172,7 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
           {/* ── Name + Key ──────────────────────────────────────────────── */}
           <div className="grid grid-cols-3 gap-4">
             <div className="col-span-2">
-              <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>
+              <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>
                 Nome do Protocolo *
               </label>
               <input
@@ -181,16 +181,16 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
                 placeholder="Ex: Lesão Muscular Grau II — Isquiotibiais"
                 className={baseInput}
                 style={{
-                  borderColor: errors.name ? 'var(--aura-danger)' : 'var(--aura-border2)',
-                  color: 'var(--aura-text)',
+                  borderColor: errors.name ? 'var(--sophi-danger)' : 'var(--sophi-border2)',
+                  color: 'var(--sophi-text)',
                 }}
               />
               {errors.name && (
-                <p className="text-xs mt-1" style={{ color: 'var(--aura-danger)' }}>{errors.name}</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--sophi-danger)' }}>{errors.name}</p>
               )}
             </div>
             <div>
-              <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>
+              <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>
                 Chave (key) *
               </label>
               <input
@@ -199,12 +199,12 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
                 placeholder="Ex: tms2_grau2"
                 className={`${baseInput} font-mono`}
                 style={{
-                  borderColor: errors.key ? 'var(--aura-danger)' : 'var(--aura-border2)',
-                  color: 'var(--aura-text)',
+                  borderColor: errors.key ? 'var(--sophi-danger)' : 'var(--sophi-border2)',
+                  color: 'var(--sophi-text)',
                 }}
               />
               {errors.key && (
-                <p className="text-xs mt-1" style={{ color: 'var(--aura-danger)' }}>{errors.key}</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--sophi-danger)' }}>{errors.key}</p>
               )}
             </div>
           </div>
@@ -212,7 +212,7 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
           {/* ── Total Days + Evidence ────────────────────────────────────── */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>
+              <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>
                 Duração Total (dias)
               </label>
               <input
@@ -222,11 +222,11 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
                 onChange={(e) => setTotalDays(e.target.value)}
                 placeholder="Ex: 21"
                 className={baseInput}
-                style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }}
+                style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
               />
             </div>
             <div className="col-span-2">
-              <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>
+              <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>
                 Referência / Evidência
               </label>
               <input
@@ -234,7 +234,7 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
                 onChange={(e) => setEvidence(e.target.value)}
                 placeholder="Ex: UEFA Elite Club Injury Study 2023"
                 className={baseInput}
-                style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }}
+                style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
               />
             </div>
           </div>
@@ -243,18 +243,18 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
           <div>
             <div className="flex items-center justify-between mb-2">
               <div>
-                <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>
+                <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>
                   Fases do Protocolo *
                 </label>
-                <span className="ml-2 text-[10px] font-mono" style={{ color: 'var(--aura-text3)' }}>
+                <span className="ml-2 text-[10px] font-mono" style={{ color: 'var(--sophi-text3)' }}>
                   {phases.length} fase{phases.length !== 1 ? 's' : ''}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={addPhase}
-                className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-colors hover:bg-[var(--aura-bg4)]"
-                style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-green)' }}
+                className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-colors hover:bg-[var(--sophi-bg4)]"
+                style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-green)' }}
               >
                 <Plus size={11} />
                 Adicionar Fase
@@ -275,8 +275,8 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
                         ? 'rgba(255,77,109,0.4)'
                         : isExpanded
                         ? 'rgba(0,229,160,0.2)'
-                        : 'var(--aura-border)',
-                      background: 'var(--aura-bg3)',
+                        : 'var(--sophi-border)',
+                      background: 'var(--sophi-bg3)',
                     }}
                   >
                     {/* Header */}
@@ -284,19 +284,19 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
                       className="flex items-center gap-2 px-3 py-2.5 cursor-pointer select-none"
                       onClick={() => setExpandedIdx(isExpanded ? -1 : i)}
                     >
-                      <GripVertical size={13} style={{ color: 'var(--aura-text3)', flexShrink: 0 }} />
+                      <GripVertical size={13} style={{ color: 'var(--sophi-text3)', flexShrink: 0 }} />
                       <span
                         className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0"
                         style={{
-                          background: isExpanded ? 'rgba(0,229,160,0.1)' : 'var(--aura-bg4)',
-                          color: isExpanded ? 'var(--aura-green)' : 'var(--aura-text3)',
+                          background: isExpanded ? 'rgba(0,229,160,0.1)' : 'var(--sophi-bg4)',
+                          color: isExpanded ? 'var(--sophi-green)' : 'var(--sophi-text3)',
                         }}
                       >
                         F{i + 1}
                       </span>
                       <span
                         className="flex-1 text-sm truncate"
-                        style={{ color: phase.name ? 'var(--aura-text)' : 'var(--aura-text3)' }}
+                        style={{ color: phase.name ? 'var(--sophi-text)' : 'var(--sophi-text3)' }}
                       >
                         {phase.name || `Fase ${i + 1} — sem nome`}
                       </span>
@@ -304,24 +304,24 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); removePhase(i) }}
-                          className="p-1 rounded-lg transition-colors hover:bg-[var(--aura-danger-bg)]"
+                          className="p-1 rounded-lg transition-colors hover:bg-[var(--sophi-danger-bg)]"
                         >
-                          <Trash2 size={12} style={{ color: 'var(--aura-danger)' }} />
+                          <Trash2 size={12} style={{ color: 'var(--sophi-danger)' }} />
                         </button>
                       )}
                       {isExpanded
-                        ? <ChevronUp  size={13} style={{ color: 'var(--aura-text3)' }} />
-                        : <ChevronDown size={13} style={{ color: 'var(--aura-text3)' }} />}
+                        ? <ChevronUp  size={13} style={{ color: 'var(--sophi-text3)' }} />
+                        : <ChevronDown size={13} style={{ color: 'var(--sophi-text3)' }} />}
                     </div>
 
                     {/* Body */}
                     {isExpanded && (
                       <div
                         className="px-3 pb-4 space-y-4 border-t"
-                        style={{ borderColor: 'var(--aura-border)' }}
+                        style={{ borderColor: 'var(--sophi-border)' }}
                       >
                         <div className="pt-3">
-                          <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>
+                          <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>
                             Nome da Fase *
                           </label>
                           <input
@@ -331,21 +331,21 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
                             className={baseInput}
                             style={{
                               borderColor: errors[`phase_${i}_name`]
-                                ? 'var(--aura-danger)'
-                                : 'var(--aura-border2)',
-                              color: 'var(--aura-text)',
+                                ? 'var(--sophi-danger)'
+                                : 'var(--sophi-border2)',
+                              color: 'var(--sophi-text)',
                             }}
                           />
                           {errors[`phase_${i}_name`] && (
-                            <p className="text-xs mt-1" style={{ color: 'var(--aura-danger)' }}>
+                            <p className="text-xs mt-1" style={{ color: 'var(--sophi-danger)' }}>
                               {errors[`phase_${i}_name`]}
                             </p>
                           )}
                         </div>
                         <div>
-                          <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>
+                          <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>
                             Critérios de Progressão{' '}
-                            <span style={{ color: 'var(--aura-text3)', fontWeight: 400 }}>(opcional)</span>
+                            <span style={{ color: 'var(--sophi-text3)', fontWeight: 400 }}>(opcional)</span>
                           </label>
                           <textarea
                             value={phase.progression_criteria}
@@ -353,13 +353,13 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
                             rows={2}
                             placeholder="Ex: Dor < 3/10, sem edema, amplitude de movimento completa…"
                             className={baseTextarea}
-                            style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }}
+                            style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>
+                          <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>
                             Restrições de Carga{' '}
-                            <span style={{ color: 'var(--aura-text3)', fontWeight: 400 }}>(opcional)</span>
+                            <span style={{ color: 'var(--sophi-text3)', fontWeight: 400 }}>(opcional)</span>
                           </label>
                           <textarea
                             value={phase.load_restrictions}
@@ -367,7 +367,7 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
                             rows={2}
                             placeholder="Ex: Sem corrida, máximo 30% carga isométrica, sem contacto…"
                             className={baseTextarea}
-                            style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }}
+                            style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
                           />
                         </div>
                       </div>

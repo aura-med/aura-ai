@@ -14,7 +14,12 @@ import { authorizeScoreAccess, normalizeOrgId } from '@/lib/scoring/score-access
 import { ScoreHistorySchema } from '@/lib/schemas/score'
 import { generateAndPersistRecommendations } from '@/lib/actions/recommendations'
 import { logAudit } from '@/lib/audit'
-import type { ScoreInputs } from '@/types'
+import { REHAB_ROLES } from '@/lib/roles'
+import type { ScoreInputs, UserRole } from '@/types'
+
+// score_history RLS restricts writes to owner/doctor/physio; REHAB_ROLES is
+// exactly [doctor, physio] and owner is checked separately.
+const SCORE_WRITER_ROLES = REHAB_ROLES
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>> | NonNullable<ReturnType<typeof createServiceRoleClient>>
 
@@ -33,7 +38,7 @@ export async function POST(
   const response = await recalculateAthleteScore(id, apiClient ?? undefined, apiViewer ?? undefined)
 
   if (response.status === 200 && apiViewer) {
-    void logAudit({
+    await logAudit({
       userId:       apiViewer.userId,
       userEmail:    apiViewer.email,
       orgId:        apiViewer.orgId,
@@ -65,15 +70,15 @@ export async function recalculateAthleteScore(id: string, supabase?: SupabaseCli
 
   const [{ data: profile }, { data: athlete }] = await Promise.all([
     apiViewer
-      ? Promise.resolve({ data: { org_id: apiViewer.orgId } })
+      ? Promise.resolve({ data: { org_id: apiViewer.orgId, role: apiViewer.role } })
       : client
         .from('profiles')
-        .select('org_id')
+        .select('org_id, role')
         .eq('id', user.id)
         .single(),
     client
       .from('athletes')
-      .select('org_id')
+      .select('org_id, squad_id')
       .eq('id', id)
       .maybeSingle(),
   ])
@@ -87,6 +92,25 @@ export async function recalculateAthleteScore(id: string, supabase?: SupabaseCli
 
   if (!access.ok) {
     return { body: { error: access.error }, status: access.status }
+  }
+
+  // Persistence below runs through the service-role client (bypasses RLS), so
+  // both the score-write ROLE and the athlete's SQUAD must be enforced here,
+  // mirroring the score_history RLS (owner/doctor/physio) + athletes squad scope.
+  const viewerRole = (profile as { role?: string | null } | null)?.role ?? null
+  if (viewerRole !== 'owner' && !SCORE_WRITER_ROLES.includes(viewerRole as UserRole)) {
+    return { body: { error: 'Forbidden' }, status: 403 }
+  }
+  if (viewerRole !== 'owner') {
+    const athleteSquadId = (athlete as { squad_id?: string | null } | null)?.squad_id ?? null
+    const { data: squadRows } = await client
+      .from('staff_squads')
+      .select('squad_id')
+      .eq('profile_id', user.id)
+    const allowed = new Set((squadRows ?? []).map((r) => (r as { squad_id: string }).squad_id))
+    if (!athleteSquadId || !allowed.has(athleteSquadId)) {
+      return { body: { error: 'Forbidden' }, status: 403 }
+    }
   }
 
   const persistenceClient = createServiceRoleClient() ?? client

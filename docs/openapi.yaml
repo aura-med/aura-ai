@@ -449,7 +449,7 @@ components:
           format: email
         role:
           type: string
-          enum: [admin, doctor, physio, coach, fitness_coach, athlete]
+          enum: [owner, doctor, physio, masseur, coach, fitness_coach, nutritionist, director, scout, team_manager, athlete]
         full_name:
           type: [string, 'null']
     PaginatedAthletes:

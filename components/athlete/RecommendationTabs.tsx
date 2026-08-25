@@ -26,7 +26,7 @@ export function RecommendationTabs({
       {/* Tab buttons */}
       <div
         className="flex gap-1 mb-3 p-1 rounded-lg"
-        style={{ background: 'var(--aura-bg3)' }}
+        style={{ background: 'var(--sophi-bg3)' }}
       >
         {STAKEHOLDERS.map(({ value, label, icon }) => (
           <button
@@ -35,10 +35,10 @@ export function RecommendationTabs({
             className={cn(
               'flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-medium transition-colors',
               active === value
-                ? 'text-[var(--aura-text)]'
-                : 'text-[var(--aura-text3)] hover:text-[var(--aura-text2)]'
+                ? 'text-[var(--sophi-text)]'
+                : 'text-[var(--sophi-text3)] hover:text-[var(--sophi-text2)]'
             )}
-            style={active === value ? { background: 'var(--aura-bg2)' } : {}}
+            style={active === value ? { background: 'var(--sophi-bg2)' } : {}}
           >
             <span>{icon}</span>
             <span className="hidden sm:inline">{label}</span>
@@ -49,7 +49,7 @@ export function RecommendationTabs({
       {/* Recommendations list */}
       <div className="space-y-2">
         {recommendations.length === 0 ? (
-          <p className="text-xs py-3 text-center" style={{ color: 'var(--aura-text3)' }}>
+          <p className="text-xs py-3 text-center" style={{ color: 'var(--sophi-text3)' }}>
             Sem recomendações para este nível de risco.
           </p>
         ) : (
@@ -57,15 +57,15 @@ export function RecommendationTabs({
             <div
               key={i}
               className="flex gap-3 p-3 rounded-lg"
-              style={{ background: 'var(--aura-bg3)' }}
+              style={{ background: 'var(--sophi-bg3)' }}
             >
               <span className="text-base mt-0.5">{rec.icon}</span>
               <div className="flex-1 min-w-0">
-                <p className="text-xs leading-snug" style={{ color: 'var(--aura-text)' }}>
+                <p className="text-xs leading-snug" style={{ color: 'var(--sophi-text)' }}>
                   {rec.text}
                 </p>
                 {rec.timing && (
-                  <p className="text-[11px] mt-1 font-mono" style={{ color: 'var(--aura-text3)' }}>
+                  <p className="text-[11px] mt-1 font-mono" style={{ color: 'var(--sophi-text3)' }}>
                     {rec.timing}
                   </p>
                 )}

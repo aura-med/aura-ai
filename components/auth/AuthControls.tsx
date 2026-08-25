@@ -30,9 +30,9 @@ export function AuthControls() {
             onClick={() => handleLocale(loc)}
             className="text-[10px] font-medium px-1.5 py-0.5 rounded uppercase transition-colors"
             style={{
-              background: locale === loc ? 'var(--aura-green)' : 'transparent',
-              color: locale === loc ? 'var(--aura-bg)' : 'var(--aura-text3)',
-              border: `1px solid ${locale === loc ? 'var(--aura-green)' : 'var(--aura-border2)'}`,
+              background: locale === loc ? 'var(--sophi-green)' : 'transparent',
+              color: locale === loc ? 'var(--sophi-bg)' : 'var(--sophi-text3)',
+              border: `1px solid ${locale === loc ? 'var(--sophi-green)' : 'var(--sophi-border2)'}`,
             }}
           >
             {loc}
@@ -43,7 +43,7 @@ export function AuthControls() {
       <button
         onClick={toggleTheme}
         className="p-1 rounded transition-colors"
-        style={{ color: 'var(--aura-text3)', border: '1px solid var(--aura-border2)' }}
+        style={{ color: 'var(--sophi-text3)', border: '1px solid var(--sophi-border2)' }}
         aria-label={t('controls.toggleTheme')}
       >
         {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}

@@ -9,7 +9,7 @@
  *   as a signed-off batch (requires explicit clinician confirmation).
  *
  * GDPR compliance:
- * - localStorage key: "aura_fl_deltas"
+ * - localStorage key: "sophi_fl_deltas"
  * - Only stores: { variable, delta, n_observations, last_computed }
  * - Never stores: athlete_id, name, injury_id or any PII
  *
@@ -26,7 +26,7 @@ import type { WeightDelta } from '@/types'
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const LS_KEY = 'aura_fl_deltas'
+const LS_KEY = 'sophi_fl_deltas'
 const SYNC_INTERVAL_MS = 5 * 60 * 1000   // flush to Supabase every 5 min
 const PHASE2_THRESHOLD = 30               // observations needed to unlock Phase 2
 

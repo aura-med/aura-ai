@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react'
+
 // Shared athlete avatar: shows photo when available, falls back to shirt number.
 // Matches .ath-avatar dimensions (34×34, border-radius 8px) by default.
 
@@ -5,12 +7,34 @@ interface AthleteAvatarProps {
   photoUrl?: string | null
   shirtNumber?: number | null
   name: string
+  size?: number
 }
 
-export function AthleteAvatar({ photoUrl, shirtNumber, name }: AthleteAvatarProps) {
+export function AthleteAvatar({ photoUrl, shirtNumber, name, size }: AthleteAvatarProps) {
+  const className = size ? undefined : 'ath-avatar'
+
+  const containerStyle: CSSProperties = size
+    ? {
+        width: size,
+        height: size,
+        borderRadius: 8,
+        background: 'var(--sophi-bg3)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        fontSize: Math.max(9, size * 0.35),
+        fontWeight: 700,
+        color: 'var(--sophi-text3)',
+        fontFamily: 'var(--font-dm-mono)',
+        overflow: 'hidden',
+        position: 'relative',
+      }
+    : {}
+
   if (photoUrl) {
     return (
-      <div className="ath-avatar">
+      <div className={className} style={size ? containerStyle : undefined}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photoUrl}
@@ -28,5 +52,10 @@ export function AthleteAvatar({ photoUrl, shirtNumber, name }: AthleteAvatarProp
       </div>
     )
   }
-  return <div className="ath-avatar">{shirtNumber ?? '—'}</div>
+
+  return (
+    <div className={className} style={size ? containerStyle : undefined}>
+      {shirtNumber ?? '—'}
+    </div>
+  )
 }

@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────
-// AURA — Rehab Protocol Engine
+// SOPHI — Rehab Protocol Engine
 // Issue #20: structured phase gates, progression rules, audit trail
 // ─────────────────────────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────
-// AURA — Scoring Engine v1.1
+// SOPHI — Scoring Engine v1.1
 // Mirrors the exact model from the HTML demo
 // ─────────────────────────────────────────────────────────────────
 

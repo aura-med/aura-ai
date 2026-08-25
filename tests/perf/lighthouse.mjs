@@ -18,7 +18,7 @@ const mainRoutes = [
   ['calendar', '/calendar'],
   ['load', '/load'],
   ['rehab', '/rehab'],
-  ['clinical-portal', '/clinical-portal'],
+  ['clinical', '/clinical'],
   ['input-scoring', '/input?squadId=9b8cd13c-11cc-4e97-8e13-9c88d814afb8'],
   ['athletes', '/athletes'],
 ]

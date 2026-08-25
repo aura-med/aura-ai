@@ -13,7 +13,7 @@ export default async function OverviewPage() {
     <div className="space-y-6">
       <PageHeader
         title="Platform overview"
-        description="Aggregate operational health for Aura organizations, users, data freshness, consent coverage, notifications, and support activity."
+        description="Aggregate operational health for Sophi organizations, users, data freshness, consent coverage, notifications, and support activity."
       />
 
       <div className="grid gap-3 md:grid-cols-4">
@@ -27,8 +27,8 @@ export default async function OverviewPage() {
         <Card>
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold" style={{ color: 'var(--aura-text)' }}>Operational queue</h2>
-              <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>Aggregate warnings that need platform attention.</p>
+              <h2 className="text-sm font-semibold" style={{ color: 'var(--sophi-text)' }}>Operational queue</h2>
+              <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>Aggregate warnings that need platform attention.</p>
             </div>
             <StatusBadge tone={metrics.staleOrgs ? 'warn' : 'green'}>{metrics.staleOrgs} stale orgs</StatusBadge>
           </div>
@@ -37,23 +37,23 @@ export default async function OverviewPage() {
               <div
                 className="flex items-center justify-between rounded-lg border px-3 py-2"
                 key={org.id}
-                style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border)' }}
+                style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border)' }}
               >
                 <div className="flex items-center gap-3">
-                  <AlertTriangle size={15} style={{ color: 'var(--aura-warn)' }} />
+                  <AlertTriangle size={15} style={{ color: 'var(--sophi-warn)' }} />
                   <div>
-                    <div className="text-sm" style={{ color: 'var(--aura-text)' }}>{org.name}</div>
-                    <div className="text-xs" style={{ color: 'var(--aura-text3)' }}>
+                    <div className="text-sm" style={{ color: 'var(--sophi-text)' }}>{org.name}</div>
+                    <div className="text-xs" style={{ color: 'var(--sophi-text3)' }}>
                       Last check-in data: {org.last_data_at ? formatDateTime(org.last_data_at) : 'none'}
                     </div>
                   </div>
                 </div>
-                <Link className="text-xs font-semibold" href={`/organizations/${org.id}`} style={{ color: 'var(--aura-green)' }}>
+                <Link className="text-xs font-semibold" href={`/organizations/${org.id}`} style={{ color: 'var(--sophi-green)' }}>
                   Inspect
                 </Link>
               </div>
             )) : (
-              <div className="rounded-lg border p-5 text-sm" style={{ color: 'var(--aura-text2)', borderColor: 'var(--aura-border)' }}>
+              <div className="rounded-lg border p-5 text-sm" style={{ color: 'var(--sophi-text2)', borderColor: 'var(--sophi-border)' }}>
                 No stale organization data detected.
               </div>
             )}
@@ -62,8 +62,8 @@ export default async function OverviewPage() {
 
         <Card>
           <div className="mb-4">
-            <h2 className="text-sm font-semibold" style={{ color: 'var(--aura-text)' }}>Start Support Mode</h2>
-            <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--sophi-text)' }}>Start Support Mode</h2>
+            <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>
               Requires organization scope, ticket ID, and reason. Expires after 30 minutes.
             </p>
           </div>
@@ -90,7 +90,7 @@ export default async function OverviewPage() {
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <div className="mb-3 flex items-center gap-2">
-            <Clock3 size={15} style={{ color: 'var(--aura-blue)' }} />
+            <Clock3 size={15} style={{ color: 'var(--sophi-blue)' }} />
             <h2 className="text-sm font-semibold">Recent audit events</h2>
           </div>
           <table className="admin-table">
@@ -115,7 +115,7 @@ export default async function OverviewPage() {
 
         <Card>
           <div className="mb-3 flex items-center gap-2">
-            <Building2 size={15} style={{ color: 'var(--aura-purple)' }} />
+            <Building2 size={15} style={{ color: 'var(--sophi-purple)' }} />
             <h2 className="text-sm font-semibold">Notification health</h2>
             <StatusBadge tone="blue">{metrics.notificationReadRate}% read</StatusBadge>
           </div>
@@ -148,13 +148,13 @@ export default async function OverviewPage() {
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <Link className="inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-semibold" href="/organizations" style={{ background: 'var(--aura-bg3)', color: 'var(--aura-text)' }}>
+        <Link className="inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-semibold" href="/organizations" style={{ background: 'var(--sophi-bg3)', color: 'var(--sophi-text)' }}>
           <Building2 size={15} /> Organizations <ArrowRight size={14} />
         </Link>
-        <Link className="inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-semibold" href="/users" style={{ background: 'var(--aura-bg3)', color: 'var(--aura-text)' }}>
+        <Link className="inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-semibold" href="/users" style={{ background: 'var(--sophi-bg3)', color: 'var(--sophi-text)' }}>
           <Users size={15} /> Users <ArrowRight size={14} />
         </Link>
-        <Link className="inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-semibold" href="/users" style={{ background: 'var(--aura-green)', color: 'var(--aura-bg)' }}>
+        <Link className="inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-semibold" href="/users" style={{ background: 'var(--sophi-green)', color: 'var(--sophi-bg)' }}>
           <UserPlus size={15} /> Invite user
         </Link>
       </div>

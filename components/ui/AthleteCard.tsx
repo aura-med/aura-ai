@@ -6,10 +6,10 @@ import Link from 'next/link'
 // ─────────────────────────────────────────────────────────────────────────────
 
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-  available:   { label: 'Disponível',   color: 'var(--aura-green)',  bg: 'var(--aura-green-bg)',  dot: '#00e5a0' },
-  modified:    { label: 'Condicionado', color: 'var(--aura-warn)',   bg: 'var(--aura-warn-bg)',   dot: '#f6ad55' },
-  unavailable: { label: 'Indisponível', color: 'var(--aura-danger)', bg: 'var(--aura-danger-bg)', dot: '#ff4d6d' },
-  rehab:       { label: 'Reabilitação', color: 'var(--aura-blue)',   bg: 'var(--aura-blue-bg)',   dot: '#4d9aff' },
+  available:   { label: 'Disponível',   color: 'var(--sophi-green)',  bg: 'var(--sophi-green-bg)',  dot: '#00e5a0' },
+  modified:    { label: 'Condicionado', color: 'var(--sophi-warn)',   bg: 'var(--sophi-warn-bg)',   dot: '#f6ad55' },
+  unavailable: { label: 'Indisponível', color: 'var(--sophi-danger)', bg: 'var(--sophi-danger-bg)', dot: '#ff4d6d' },
+  rehab:       { label: 'Reabilitação', color: 'var(--sophi-blue)',   bg: 'var(--sophi-blue-bg)',   dot: '#4d9aff' },
 }
 
 interface AthleteCardProps {
@@ -26,7 +26,7 @@ interface AthleteCardProps {
 
 export function AthleteCard({
   href, name, photoUrl, shirtNumber, position,
-  status, score, scoreColor, scoreLabel,
+  status,
 }: AthleteCardProps) {
   const st = STATUS_CFG[status] ?? STATUS_CFG.available
 
@@ -34,12 +34,12 @@ export function AthleteCard({
     <Link href={href} style={{ textDecoration: 'none' }}>
       <div
         className="fut-card flex flex-col overflow-hidden rounded-2xl cursor-pointer"
-        style={{ background: 'var(--aura-bg2)' }}
+        style={{ background: 'var(--sophi-bg2)' }}
       >
         {/* ── Hero photo (top ~65%) ──────────────────────────────────── */}
         <div
           className="relative w-full overflow-hidden"
-          style={{ aspectRatio: '4/5', background: 'var(--aura-bg3)' }}
+          style={{ aspectRatio: '4/5', background: 'var(--sophi-bg3)' }}
         >
           {photoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -61,7 +61,7 @@ export function AthleteCard({
             <div
               className="absolute inset-0 flex items-center justify-center"
               style={{
-                backgroundImage: 'radial-gradient(var(--aura-border2) 1px, transparent 1px)',
+                backgroundImage: 'radial-gradient(var(--sophi-border2) 1px, transparent 1px)',
                 backgroundSize:  '12px 12px',
               }}
             >
@@ -70,7 +70,7 @@ export function AthleteCard({
                   fontFamily: 'var(--font-syne)',
                   fontSize:   '2.5rem',
                   fontWeight: 900,
-                  color:      'var(--aura-green)',
+                  color:      'var(--sophi-green)',
                   lineHeight: 1,
                 }}
               >
@@ -79,42 +79,22 @@ export function AthleteCard({
             </div>
           )}
 
-          {/* Score chip — top right corner */}
-          {score !== null && (
-            <div
-              className="absolute top-2 right-2 rounded-lg px-1.5 py-0.5"
-              style={{
-                background: 'rgba(10,13,18,0.72)',
-                backdropFilter: 'blur(6px)',
-                border: `1px solid ${scoreColor}44`,
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: 'var(--font-dm-mono)',
-                  fontSize:   '11px',
-                  fontWeight: 700,
-                  color:      scoreColor,
-                }}
-              >
-                {score}%
-              </span>
-            </div>
-          )}
+          {/* Score chip — hidden for now: phase-1 scoring isn't populated yet,
+              showing it here would misrepresent the athlete's actual state. */}
         </div>
 
         {/* ── Data zone (bottom ~35%) ────────────────────────────────── */}
         <div
           className="flex flex-col gap-1.5 p-3"
           style={{
-            background:  'var(--aura-bg2)',
-            borderTop:   '1px solid var(--aura-border)',
+            background:  'var(--sophi-bg2)',
+            borderTop:   '1px solid var(--sophi-border)',
           }}
         >
           {/* Name */}
           <p
             className="text-sm font-semibold truncate leading-tight"
-            style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-inter)' }}
+            style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-inter)' }}
           >
             {name}
           </p>
@@ -122,7 +102,7 @@ export function AthleteCard({
           {/* Shirt + position */}
           <p
             className="text-[10px] truncate"
-            style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}
+            style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}
           >
             {shirtNumber ? `#${shirtNumber}` : ''}
             {shirtNumber && position ? ' · ' : ''}
@@ -144,14 +124,6 @@ export function AthleteCard({
             >
               {st.label}
             </span>
-            {score !== null && (
-              <span
-                className="ml-auto text-[10px] font-medium"
-                style={{ color: st.color, opacity: 0.7 }}
-              >
-                {scoreLabel}
-              </span>
-            )}
           </div>
         </div>
       </div>

@@ -52,7 +52,7 @@ export default async function OrganizationsPage({
 
       {/* Create organization */}
       <Card>
-        <h2 className="mb-3 text-sm font-semibold" style={{ color: 'var(--aura-text)' }}>
+        <h2 className="mb-3 text-sm font-semibold" style={{ color: 'var(--sophi-text)' }}>
           Create organization
         </h2>
         <form action={createOrganization} className="space-y-3">
@@ -74,7 +74,7 @@ export default async function OrganizationsPage({
               </select>
             </Field>
           </div>
-          <div className="flex flex-wrap gap-4 text-sm" style={{ color: 'var(--aura-text2)' }}>
+          <div className="flex flex-wrap gap-4 text-sm" style={{ color: 'var(--sophi-text2)' }}>
             {['readiness', 'rehab', 'performance', 'female_squad', 'passport'].map((mod) => (
               <label key={mod} className="flex items-center gap-2 cursor-pointer">
                 <input defaultChecked name={mod} type="checkbox" value="on" />
@@ -114,8 +114,8 @@ export default async function OrganizationsPage({
             {orgRows.map((org) => (
               <tr key={org.id}>
                 <td>
-                  <div className="font-medium" style={{ color: 'var(--aura-text)' }}>{org.name}</div>
-                  <div className="text-xs" style={{ color: 'var(--aura-text3)' }}>{org.type}</div>
+                  <div className="font-medium" style={{ color: 'var(--sophi-text)' }}>{org.name}</div>
+                  <div className="text-xs" style={{ color: 'var(--sophi-text3)' }}>{org.type}</div>
                 </td>
                 <td><StatusBadge tone={statusTone(org.status)}>{org.status}</StatusBadge></td>
                 <td>{org.plan}</td>
@@ -131,7 +131,7 @@ export default async function OrganizationsPage({
                   <Link
                     className="inline-flex min-h-8 items-center gap-1 rounded-md px-2 text-xs hover:bg-white/5"
                     href={`/organizations/${org.id}`}
-                    style={{ color: 'var(--aura-blue)' }}
+                    style={{ color: 'var(--sophi-blue)' }}
                   >
                     <Eye size={13} /> Detail
                   </Link>

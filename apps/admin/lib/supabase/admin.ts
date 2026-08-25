@@ -8,7 +8,7 @@ function supabaseUrl() {
 
 function supabaseServiceRoleKey() {
   const value = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!value) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required for Aura Admin')
+  if (!value) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required for Sophi Admin')
   return value
 }
 

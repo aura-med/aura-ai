@@ -20,7 +20,7 @@ const mainRoutes = [
   { name: 'calendar', path: '/calendar' },
   { name: 'load', path: '/load' },
   { name: 'rehab', path: '/rehab' },
-  { name: 'clinical-portal', path: '/clinical-portal' },
+  { name: 'clinical', path: '/clinical' },
   { name: 'input-scoring', path: '/input?squadId=9b8cd13c-11cc-4e97-8e13-9c88d814afb8' },
   { name: 'athletes', path: '/athletes' },
 ]

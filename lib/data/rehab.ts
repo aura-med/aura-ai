@@ -11,11 +11,15 @@ export async function getRehabPageDTO(squadId: string | null): Promise<RehabPage
   if (!canUseSquad(viewer, squadId)) return { squadId: null, sessions: [] }
 
   const supabase = await createClient()
+  // Select by the rehab-session relationship (inner join), not the athlete's
+  // exclusive display status: an athlete in active rehab can be floored to
+  // 'unavailable' by a concurrent open occurrence/diagnosis (more restrictive
+  // than the RTP floor) and would otherwise drop off the rehab roster, hiding
+  // their protocol controls from clinicians.
   let query = supabase
     .from('athletes')
-    .select('id, name, position, club, rehab_sessions(id, current_day, rtp_criteria, clinical_data, rehab_protocols(key, name, total_days, evidence, phases))')
+    .select('id, name, position, club, rehab_sessions!inner(id, current_day, rtp_criteria, clinical_data, rehab_protocols(key, name, total_days, evidence, phases))')
     .eq('active', true)
-    .eq('status', 'rehab')
     .order('shirt_number')
     .order('updated_at', { referencedTable: 'rehab_sessions', ascending: false })
     .limit(1, { referencedTable: 'rehab_sessions' })

@@ -23,7 +23,7 @@ export function LanguageDropdown({ currentLocale }: LanguageDropdownProps) {
   }
 
   return (
-    <div className="flex gap-0.5 rounded-lg border p-0.5" style={{ borderColor: 'var(--aura-border)' }}>
+    <div className="flex gap-0.5 rounded-lg border p-0.5" style={{ borderColor: 'var(--sophi-border)' }}>
       {LOCALES.map(({ code, label }) => (
         <button
           key={code}
@@ -31,8 +31,8 @@ export function LanguageDropdown({ currentLocale }: LanguageDropdownProps) {
           onClick={() => setLocale(code)}
           style={
             currentLocale === code
-              ? { background: 'var(--aura-green-bg)', color: 'var(--aura-green)' }
-              : { color: 'var(--aura-text3)' }
+              ? { background: 'var(--sophi-green-bg)', color: 'var(--sophi-green)' }
+              : { color: 'var(--sophi-text3)' }
           }
           type="button"
         >

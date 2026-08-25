@@ -26,10 +26,10 @@ export function ThemeToggle() {
     <button
       aria-label="Toggle theme"
       aria-pressed={theme === 'light'}
-      className="flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-md transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--aura-green)]"
+      className="flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-md transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--sophi-green)]"
       disabled={isPending}
       onClick={handleToggle}
-      style={{ color: 'var(--aura-text2)' }}
+      style={{ color: 'var(--sophi-text2)' }}
       title={nextTheme === 'light' ? 'Light mode' : 'Dark mode'}
       type="button"
     >

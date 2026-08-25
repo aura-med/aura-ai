@@ -29,7 +29,7 @@ export default async function AnalyticsPage({
           title="Analytics"
           description="Operational and adoption analytics. Sensitive clinical data is hidden unless Support Mode is active."
         />
-        <div className="flex gap-1 rounded-lg border p-1" style={{ borderColor: 'var(--aura-border)' }}>
+        <div className="flex gap-1 rounded-lg border p-1" style={{ borderColor: 'var(--sophi-border)' }}>
           {RANGES.map((r) => (
             <Link
               key={r.value}
@@ -37,8 +37,8 @@ export default async function AnalyticsPage({
               className="min-h-8 rounded-md px-3 text-xs font-medium"
               style={
                 String(range) === r.value
-                  ? { background: 'var(--aura-green-bg)', color: 'var(--aura-green)' }
-                  : { color: 'var(--aura-text2)' }
+                  ? { background: 'var(--sophi-green-bg)', color: 'var(--sophi-green)' }
+                  : { color: 'var(--sophi-text2)' }
               }
             >
               {r.label}
@@ -59,7 +59,7 @@ export default async function AnalyticsPage({
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h2 className="text-sm font-semibold">High risk score events</h2>
-              <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>Daily aggregate — no athlete identity exposed.</p>
+              <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>Daily aggregate — no athlete identity exposed.</p>
             </div>
             <StatusBadge tone="warn">aggregate</StatusBadge>
           </div>
@@ -69,7 +69,7 @@ export default async function AnalyticsPage({
         <Card>
           <div className="mb-4">
             <h2 className="text-sm font-semibold">Cumulative user signups</h2>
-            <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>Total profiles over time.</p>
+            <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>Total profiles over time.</p>
           </div>
           <MiniLineChart data={signupSeries} dataKey="signups" />
         </Card>
@@ -78,7 +78,7 @@ export default async function AnalyticsPage({
       <Card>
         <div className="mb-4">
           <h2 className="text-sm font-semibold">Athlete coverage by organization</h2>
-          <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>Largest organizations by active athlete count.</p>
+          <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>Largest organizations by active athlete count.</p>
         </div>
         <MiniBarChart data={orgFreshness} dataKey="athletes" />
       </Card>
@@ -96,7 +96,7 @@ export default async function AnalyticsPage({
           <tbody>
             {orgRows.map((org) => (
               <tr key={org.id}>
-                <td style={{ color: 'var(--aura-text)' }}>{org.name}</td>
+                <td style={{ color: 'var(--sophi-text)' }}>{org.name}</td>
                 <td>{org.users_count}</td>
                 <td>{org.athletes_count}</td>
                 <td>{org.missing_consent_count}</td>

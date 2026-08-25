@@ -23,14 +23,14 @@ export default async function OrganizationDetailPage({
         <OrgTabNav orgId={id} active="detail" />
         <Card>
           <div className="flex items-start gap-3">
-            <LockKeyhole size={20} style={{ color: 'var(--aura-warn)' }} />
+            <LockKeyhole size={20} style={{ color: 'var(--sophi-warn)' }} />
             <div>
               <div className="text-sm font-semibold">Sensitive detail locked</div>
-              <p className="mt-1 text-sm" style={{ color: 'var(--aura-text2)' }}>
+              <p className="mt-1 text-sm" style={{ color: 'var(--sophi-text2)' }}>
                 Platform admins see aggregate data by default. Scoped sensitive inspection requires a ticketed,
                 timeboxed support session and every read is audited.
               </p>
-              <Link className="mt-4 inline-flex min-h-10 items-center rounded-md px-3 text-sm font-semibold" href="/" style={{ background: 'var(--aura-green)', color: 'var(--aura-bg)' }}>
+              <Link className="mt-4 inline-flex min-h-10 items-center rounded-md px-3 text-sm font-semibold" href="/" style={{ background: 'var(--sophi-green)', color: 'var(--sophi-bg)' }}>
                 Start Support Mode
               </Link>
             </div>
@@ -50,7 +50,7 @@ export default async function OrganizationDetailPage({
 
       <div className="grid gap-4 xl:grid-cols-2">
         <Card className="overflow-x-auto p-0">
-          <div className="border-b px-4 py-3" style={{ borderColor: 'var(--aura-border)' }}>
+          <div className="border-b px-4 py-3" style={{ borderColor: 'var(--sophi-border)' }}>
             <h2 className="text-sm font-semibold">Athletes</h2>
           </div>
           <table className="admin-table">
@@ -65,7 +65,7 @@ export default async function OrganizationDetailPage({
             <tbody>
               {data.athletes.map((athlete) => (
                 <tr key={athlete.id}>
-                  <td style={{ color: 'var(--aura-text)' }}>{athlete.name}</td>
+                  <td style={{ color: 'var(--sophi-text)' }}>{athlete.name}</td>
                   <td>{athlete.position ?? '-'}</td>
                   <td><StatusBadge tone={athlete.active ? 'green' : 'neutral'}>{athlete.status}</StatusBadge></td>
                   <td>{athlete.consent_date ? formatDate(athlete.consent_date) : <StatusBadge tone="danger">missing</StatusBadge>}</td>
@@ -76,7 +76,7 @@ export default async function OrganizationDetailPage({
         </Card>
 
         <Card className="overflow-x-auto p-0">
-          <div className="border-b px-4 py-3" style={{ borderColor: 'var(--aura-border)' }}>
+          <div className="border-b px-4 py-3" style={{ borderColor: 'var(--sophi-border)' }}>
             <h2 className="text-sm font-semibold">Organization users</h2>
           </div>
           <table className="admin-table">
@@ -90,8 +90,8 @@ export default async function OrganizationDetailPage({
             <tbody>
               {data.users.map((user) => (
                 <tr key={user.id}>
-                  <td style={{ color: 'var(--aura-text)' }}>{user.full_name ?? 'Unnamed user'}</td>
-                  <td><StatusBadge tone={user.role === 'admin' ? 'green' : 'neutral'}>{user.role ?? '-'}</StatusBadge></td>
+                  <td style={{ color: 'var(--sophi-text)' }}>{user.full_name ?? 'Unnamed user'}</td>
+                  <td><StatusBadge tone={user.role === 'owner' ? 'green' : 'neutral'}>{user.role ?? '-'}</StatusBadge></td>
                   <td>{formatDate(user.created_at)}</td>
                 </tr>
               ))}

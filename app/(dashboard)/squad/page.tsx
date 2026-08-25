@@ -31,7 +31,10 @@ export default async function SquadPage({
   const byPos: Record<string, typeof withScores> = { GK: [], DEF: [], MID: [], FWD: [] }
   const rehab: typeof withScores = []
   withScores.forEach((a) => {
-    if (a.status === 'rehab') rehab.push(a)
+    // RTP is the canonical rehab bucket (availability_status), falling back to
+    // the legacy status flag for rows predating the 4-state migration.
+    const isRtp = (a.availability_status ?? (a.status === 'rehab' ? 'rtp' : 'available')) === 'rtp'
+    if (isRtp) rehab.push(a)
     else if (a.position && byPos[a.position]) byPos[a.position].push(a)
   })
 
@@ -56,7 +59,7 @@ export default async function SquadPage({
             {/* Position group header */}
             <div
               className="text-[9px] font-semibold uppercase tracking-[0.18em] mb-3 pb-2 border-b"
-              style={{ color: 'var(--aura-text3)', borderColor: 'var(--aura-border)', fontFamily: 'var(--font-dm-mono)' }}
+              style={{ color: 'var(--sophi-text3)', borderColor: 'var(--sophi-border)', fontFamily: 'var(--font-dm-mono)' }}
             >
               {posLabels[pos]}
             </div>
@@ -86,7 +89,7 @@ export default async function SquadPage({
         <div className="mb-8">
           <div
             className="text-[9px] font-semibold uppercase tracking-[0.18em] mb-3 pb-2 border-b"
-            style={{ color: 'var(--aura-text3)', borderColor: 'var(--aura-border)', fontFamily: 'var(--font-dm-mono)' }}
+            style={{ color: 'var(--sophi-text3)', borderColor: 'var(--sophi-border)', fontFamily: 'var(--font-dm-mono)' }}
           >
             Reabilitação
           </div>

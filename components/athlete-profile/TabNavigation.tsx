@@ -4,7 +4,8 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import {
-  LayoutGrid, Stethoscope, Activity, Syringe, FolderOpen, ChevronDown, Brain,
+  LayoutGrid, Stethoscope, Activity, Syringe, FolderOpen, ChevronDown,
+  Apple, FileStack, Brain,
 } from 'lucide-react'
 import type { TabId } from '@/types/athlete-profile'
 
@@ -16,12 +17,14 @@ interface Tab {
 }
 
 const TABS: Tab[] = [
-  { id: 'overview',         label: 'Overview',        icon: LayoutGrid  },
-  { id: 'medical',          label: 'Médico',          icon: Stethoscope },
-  { id: 'injuries',         label: 'Lesões',          icon: Activity    },
-  { id: 'treatments',       label: 'Tratamentos',     icon: Syringe     },
-  { id: 'documents',        label: 'Documentos',      icon: FolderOpen  },
-  { id: 'recommendations',  label: 'Recomendações',   icon: Brain       },
+  { id: 'overview',         label: 'Overview',        icon: LayoutGrid    },
+  { id: 'medical',          label: 'Ficha Clínica',   icon: Stethoscope   },
+  { id: 'injuries',         label: 'Lesões',          icon: Activity      },
+  { id: 'treatments',       label: 'Tratamentos',     icon: Syringe       },
+  { id: 'nutrition',        label: 'Nutrição',        icon: Apple         },
+  { id: 'training',         label: 'Plano de Treino', icon: FileStack     },
+  { id: 'documents',        label: 'Documentos',      icon: FolderOpen    },
+  { id: 'recommendations',  label: 'Recomendações',   icon: Brain         },
 ]
 
 interface TabNavigationProps {
@@ -49,7 +52,7 @@ export function TabNavigation({ activeTab, badges = {} }: TabNavigationProps) {
       {/* ── Desktop: horizontal tabs ──────────────────────────────────────── */}
       <div
         className="hidden md:flex items-center gap-1 border-b"
-        style={{ borderColor: 'var(--aura-border)' }}
+        style={{ borderColor: 'var(--sophi-border)' }}
       >
         {TABS.map((tab) => {
           const Icon = tab.icon
@@ -63,17 +66,17 @@ export function TabNavigation({ activeTab, badges = {} }: TabNavigationProps) {
               className={cn(
                 'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-all whitespace-nowrap',
                 isActive
-                  ? 'border-[var(--aura-green)] text-[var(--aura-green)]'
-                  : 'border-transparent hover:border-[var(--aura-border2)] hover:text-[var(--aura-text)]',
+                  ? 'border-[var(--sophi-green)] text-[var(--sophi-green)]'
+                  : 'border-transparent hover:border-[var(--sophi-border2)] hover:text-[var(--sophi-text)]',
               )}
-              style={{ color: isActive ? 'var(--aura-green)' : 'var(--aura-text2)' }}
+              style={{ color: isActive ? 'var(--sophi-green)' : 'var(--sophi-text2)' }}
             >
               <Icon size={14} />
               {tab.label}
               {badge != null && badge > 0 && (
                 <span
                   className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full"
-                  style={{ background: 'var(--aura-danger-bg)', color: 'var(--aura-danger)' }}
+                  style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}
                 >
                   {badge}
                 </span>
@@ -90,20 +93,20 @@ export function TabNavigation({ activeTab, badges = {} }: TabNavigationProps) {
           onClick={() => setMobileOpen(mobileOpen ? null : activeTab)}
           className="w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-medium"
           style={{
-            background: 'var(--aura-bg2)',
-            borderColor: 'var(--aura-border)',
-            color: 'var(--aura-text)',
+            background: 'var(--sophi-bg2)',
+            borderColor: 'var(--sophi-border)',
+            color: 'var(--sophi-text)',
           }}
         >
           <span className="flex items-center gap-2">
-            <activeTabData.icon size={14} style={{ color: 'var(--aura-green)' }} />
+            <activeTabData.icon size={14} style={{ color: 'var(--sophi-green)' }} />
             {activeTabData.label}
           </span>
           <ChevronDown
             size={14}
             className="transition-transform"
             style={{
-              color: 'var(--aura-text3)',
+              color: 'var(--sophi-text3)',
               transform: mobileOpen ? 'rotate(180deg)' : 'rotate(0deg)',
             }}
           />
@@ -111,7 +114,7 @@ export function TabNavigation({ activeTab, badges = {} }: TabNavigationProps) {
         {mobileOpen && (
           <div
             className="mt-1 rounded-xl border overflow-hidden"
-            style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+            style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
           >
             {TABS.filter((t) => t.id !== activeTab).map((tab) => {
               const Icon = tab.icon
@@ -121,15 +124,15 @@ export function TabNavigation({ activeTab, badges = {} }: TabNavigationProps) {
                   key={tab.id}
                   type="button"
                   onClick={() => navigate(tab.id)}
-                  className="w-full flex items-center gap-2 px-4 py-3 text-sm transition-colors hover:bg-[var(--aura-bg3)] border-t first:border-t-0"
-                  style={{ color: 'var(--aura-text2)', borderColor: 'var(--aura-border)' }}
+                  className="w-full flex items-center gap-2 px-4 py-3 text-sm transition-colors hover:bg-[var(--sophi-bg3)] border-t first:border-t-0"
+                  style={{ color: 'var(--sophi-text2)', borderColor: 'var(--sophi-border)' }}
                 >
                   <Icon size={14} />
                   {tab.label}
                   {badge != null && badge > 0 && (
                     <span
                       className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full ml-auto"
-                      style={{ background: 'var(--aura-danger-bg)', color: 'var(--aura-danger)' }}
+                      style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}
                     >
                       {badge}
                     </span>

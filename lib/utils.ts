@@ -8,10 +8,10 @@ export function cn(...inputs: ClassValue[]) {
 
 export function riskColor(level: RiskLevel): string {
   switch (level) {
-    case 'low':      return 'var(--aura-green)'
-    case 'medium':   return 'var(--aura-warn)'
+    case 'low':      return 'var(--sophi-green)'
+    case 'medium':   return 'var(--sophi-warn)'
     case 'high':     return '#ff9330'
-    case 'critical': return 'var(--aura-danger)'
+    case 'critical': return 'var(--sophi-danger)'
   }
 }
 
@@ -34,10 +34,10 @@ export function riskBgClass(level: RiskLevel): string {
 }
 
 export function partialBarColor(partial: number): string {
-  if (partial < 0.4)  return 'var(--aura-green)'
-  if (partial < 0.65) return 'var(--aura-warn)'
+  if (partial < 0.4)  return 'var(--sophi-green)'
+  if (partial < 0.65) return 'var(--sophi-warn)'
   if (partial < 0.85) return '#ff9330'
-  return 'var(--aura-danger)'
+  return 'var(--sophi-danger)'
 }
 
 export function formatDate(dateStr: string): string {

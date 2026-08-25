@@ -1,10 +1,10 @@
 import type { ReadinessIndicator } from '@/types'
 
 const STATUS_COLORS: Record<string, string> = {
-  green: 'var(--aura-green)',
-  amber: 'var(--aura-warn)',
-  red: 'var(--aura-danger)',
-  grey: 'var(--aura-text3)',
+  green: 'var(--sophi-green)',
+  amber: 'var(--sophi-warn)',
+  red: 'var(--sophi-danger)',
+  grey: 'var(--sophi-text3)',
 }
 
 export function ReadinessRow({ indicators }: { indicators: ReadinessIndicator[] }) {
@@ -14,10 +14,10 @@ export function ReadinessRow({ indicators }: { indicators: ReadinessIndicator[] 
         <div
           key={ind.label}
           className="rounded-lg border p-3 flex flex-col gap-1"
-          style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+          style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-mono uppercase tracking-wide" style={{ color: 'var(--aura-text3)' }}>
+            <span className="text-[11px] font-mono uppercase tracking-wide" style={{ color: 'var(--sophi-text3)' }}>
               {ind.label}
             </span>
             <span
@@ -29,7 +29,7 @@ export function ReadinessRow({ indicators }: { indicators: ReadinessIndicator[] 
             {ind.value}
           </span>
           {ind.detail && (
-            <span className="text-[10px]" style={{ color: 'var(--aura-text3)' }}>
+            <span className="text-[10px]" style={{ color: 'var(--sophi-text3)' }}>
               {ind.detail}
             </span>
           )}

@@ -88,8 +88,8 @@ export function NotificationCenter({
       <button
         ref={triggerRef}
         onClick={() => setOpen(!open)}
-        className="relative flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--aura-green)]"
-        style={{ color: open ? 'var(--aura-text)' : 'var(--aura-text2)' }}
+        className="relative flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--sophi-green)]"
+        style={{ color: open ? 'var(--sophi-text)' : 'var(--sophi-text2)' }}
         aria-label={`${t('title')}${unreadCount ? `, ${unreadCount} por ler` : ''}`}
         aria-expanded={open}
         aria-haspopup="dialog"
@@ -98,7 +98,7 @@ export function NotificationCenter({
         {unreadCount > 0 && (
           <span
             className="absolute right-0.5 top-0.5 min-w-4 rounded-full px-1 text-[10px] font-bold leading-4"
-            style={{ background: 'var(--aura-danger)', color: 'white' }}
+            style={{ background: 'var(--sophi-danger)', color: 'white' }}
           >
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
@@ -111,23 +111,23 @@ export function NotificationCenter({
           aria-label={t('title')}
           className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-0.5rem)] overflow-hidden rounded-lg border shadow-2xl z-50"
           style={{
-            background: 'var(--aura-bg2)',
-            borderColor: 'var(--aura-border)',
+            background: 'var(--sophi-bg2)',
+            borderColor: 'var(--sophi-border)',
           }}
         >
           <div
             className="flex items-center justify-between border-b px-4 py-3"
-            style={{ borderColor: 'var(--aura-border)' }}
+            style={{ borderColor: 'var(--sophi-border)' }}
           >
             <span
               className="text-sm font-semibold"
-              style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}
+              style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}
             >
               {t('title')}
               {unreadCount > 0 && (
                 <span
                   className="ml-2 rounded-full px-2 py-0.5 text-xs font-mono"
-                  style={{ background: 'var(--aura-danger)', color: 'white' }}
+                  style={{ background: 'var(--sophi-danger)', color: 'white' }}
                 >
                   {unreadCount}
                 </span>
@@ -138,8 +138,8 @@ export function NotificationCenter({
                 <button
                   onClick={handleMarkAllRead}
                   disabled={isPending}
-                  className="flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-md transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--aura-green)]"
-                  style={{ color: 'var(--aura-text3)' }}
+                  className="flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-md transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--sophi-green)]"
+                  style={{ color: 'var(--sophi-text3)' }}
                   aria-label={t('markAllRead')}
                   title={t('markAllRead')}
                 >
@@ -151,8 +151,8 @@ export function NotificationCenter({
                   setOpen(false)
                   triggerRef.current?.focus()
                 }}
-                className="flex size-9 items-center justify-center rounded-md transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--aura-green)]"
-                style={{ color: 'var(--aura-text3)' }}
+                className="flex size-9 items-center justify-center rounded-md transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--sophi-green)]"
+                style={{ color: 'var(--sophi-text3)' }}
                 aria-label="Fechar notificacoes"
               >
                 <X size={15} aria-hidden="true" />
@@ -162,7 +162,7 @@ export function NotificationCenter({
 
           <div className="max-h-96 overflow-y-auto" role="list">
             {notifications.length === 0 ? (
-              <div className="py-10 text-center" style={{ color: 'var(--aura-text3)' }}>
+              <div className="py-10 text-center" style={{ color: 'var(--sophi-text3)' }}>
                 <Bell size={24} className="mx-auto mb-2 opacity-30" aria-hidden="true" />
                 <p className="text-xs">{t('empty')}</p>
               </div>
@@ -177,14 +177,14 @@ export function NotificationCenter({
                       'flex gap-3 border-b px-4 py-3 transition-colors',
                       !isRead && 'bg-white/[0.02]'
                     )}
-                    style={{ borderColor: 'var(--aura-border)' }}
+                    style={{ borderColor: 'var(--sophi-border)' }}
                     aria-label={`${n.title}. ${n.status.ariaLabel}`}
                   >
                     <div
                       className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md border text-[10px] font-bold"
                       style={{
-                        color: n.status.key === 'red' ? 'var(--aura-danger)' : n.status.key === 'amber' ? 'var(--aura-warn)' : 'var(--aura-green)',
-                        borderColor: 'var(--aura-border2)',
+                        color: n.status.key === 'red' ? 'var(--sophi-danger)' : n.status.key === 'amber' ? 'var(--sophi-warn)' : 'var(--sophi-green)',
+                        borderColor: 'var(--sophi-border2)',
                         fontFamily: 'var(--font-mono)',
                       }}
                       aria-hidden="true"
@@ -195,13 +195,13 @@ export function NotificationCenter({
                       <div className="flex items-start justify-between gap-2">
                         <p
                           className={cn('text-xs leading-snug', !isRead && 'font-semibold')}
-                          style={{ color: 'var(--aura-text)' }}
+                          style={{ color: 'var(--sophi-text)' }}
                         >
                           {n.title}
                         </p>
                         <span
                           className="shrink-0 text-[10px] font-mono"
-                          style={{ color: 'var(--aura-text3)' }}
+                          style={{ color: 'var(--sophi-text3)' }}
                         >
                           {formatTime(n.createdAt, now)}
                         </span>
@@ -209,7 +209,7 @@ export function NotificationCenter({
                       {n.body && (
                         <p
                           className="mt-1 text-[11px] leading-snug"
-                          style={{ color: 'var(--aura-text2)' }}
+                          style={{ color: 'var(--sophi-text2)' }}
                         >
                           {n.body}
                         </p>
@@ -217,8 +217,8 @@ export function NotificationCenter({
                       <span
                         className="mt-2 inline-flex rounded-full px-2 py-0.5 text-[10px] font-mono"
                         style={{
-                          color: n.status.key === 'red' ? 'var(--aura-danger)' : n.status.key === 'amber' ? 'var(--aura-warn)' : 'var(--aura-green)',
-                          background: 'var(--aura-bg3)',
+                          color: n.status.key === 'red' ? 'var(--sophi-danger)' : n.status.key === 'amber' ? 'var(--sophi-warn)' : 'var(--sophi-green)',
+                          background: 'var(--sophi-bg3)',
                         }}
                       >
                         {n.status.label}
@@ -227,7 +227,7 @@ export function NotificationCenter({
                     {!isRead && (
                       <span
                         className="mt-2 size-2 shrink-0 rounded-full"
-                        style={{ background: 'var(--aura-blue)' }}
+                        style={{ background: 'var(--sophi-blue)' }}
                         aria-label="Por ler"
                       />
                     )}
@@ -238,10 +238,10 @@ export function NotificationCenter({
           </div>
 
           {notifications.length > 0 && (
-            <div className="border-t px-4 py-2.5" style={{ borderColor: 'var(--aura-border)' }}>
+            <div className="border-t px-4 py-2.5" style={{ borderColor: 'var(--sophi-border)' }}>
               <p
                 className="text-center text-[10px] font-mono"
-                style={{ color: 'var(--aura-text3)' }}
+                style={{ color: 'var(--sophi-text3)' }}
               >
                 {t('last10')}
               </p>

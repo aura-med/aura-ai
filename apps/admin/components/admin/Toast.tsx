@@ -24,17 +24,17 @@ export function ToastContainer({ toasts, dismiss }: Props) {
           }}
         >
           {t.type === 'success' ? (
-            <CheckCircle2 size={15} style={{ color: 'var(--aura-green)', flexShrink: 0 }} />
+            <CheckCircle2 size={15} style={{ color: 'var(--sophi-green)', flexShrink: 0 }} />
           ) : (
-            <AlertTriangle size={15} style={{ color: 'var(--aura-danger)', flexShrink: 0 }} />
+            <AlertTriangle size={15} style={{ color: 'var(--sophi-danger)', flexShrink: 0 }} />
           )}
-          <span className="flex-1 text-sm" style={{ color: 'var(--aura-text)' }}>
+          <span className="flex-1 text-sm" style={{ color: 'var(--sophi-text)' }}>
             {t.message}
           </span>
           <button
             onClick={() => dismiss(t.id)}
             className="shrink-0 hover:opacity-60 transition-opacity"
-            style={{ color: 'var(--aura-text3)' }}
+            style={{ color: 'var(--sophi-text3)' }}
           >
             <X size={13} />
           </button>

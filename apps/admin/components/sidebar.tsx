@@ -55,16 +55,16 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
           'transition-transform duration-200 md:translate-x-0',
           open ? 'translate-x-0' : '-translate-x-full',
         )}
-        style={{ background: 'var(--aura-bg)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg)', borderColor: 'var(--sophi-border)' }}
       >
-        {/* Mobile-only Aura Admin badge */}
+        {/* Mobile-only Sophi Admin badge */}
         <div
           className="flex items-center gap-2 border-b px-4 py-3 md:hidden"
-          style={{ borderColor: 'var(--aura-border)' }}
+          style={{ borderColor: 'var(--sophi-border)' }}
         >
           <div
             className="flex h-7 w-7 items-center justify-center rounded-lg"
-            style={{ background: 'var(--aura-green-bg)', color: 'var(--aura-green)' }}
+            style={{ background: 'var(--sophi-green-bg)', color: 'var(--sophi-green)' }}
           >
             <ShieldCheck size={14} />
           </div>
@@ -72,7 +72,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
             className="text-sm font-bold"
             style={{ fontFamily: 'var(--font-syne)' }}
           >
-            Aura Admin
+            Sophi Admin
           </span>
         </div>
 
@@ -81,7 +81,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
             <div key={section}>
               <p
                 className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest"
-                style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}
+                style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}
               >
                 {section}
               </p>
@@ -97,14 +97,14 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                         className={cn(
                           'flex min-h-10 items-center gap-3 rounded-md px-3 text-sm transition-colors',
                           active
-                            ? 'font-medium text-[var(--aura-green)]'
-                            : 'text-[var(--aura-text2)] hover:bg-[var(--aura-bg3)] hover:text-[var(--aura-text)]'
+                            ? 'font-medium text-[var(--sophi-green)]'
+                            : 'text-[var(--sophi-text2)] hover:bg-[var(--sophi-bg3)] hover:text-[var(--sophi-text)]'
                         )}
                         style={active ? { background: 'rgba(0,229,160,0.08)' } : undefined}
                       >
                         <Icon
                           size={15}
-                          className={active ? 'text-[var(--aura-green)]' : 'text-[var(--aura-text3)]'}
+                          className={active ? 'text-[var(--sophi-green)]' : 'text-[var(--sophi-text3)]'}
                         />
                         <span className="truncate">{item.label}</span>
                       </Link>
@@ -117,7 +117,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
         </nav>
         <div
           className="flex items-center gap-2 px-6 py-3 text-[10px]"
-          style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}
+          style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}
         >
           <LockKeyhole size={12} />
           INTERNAL ADMIN

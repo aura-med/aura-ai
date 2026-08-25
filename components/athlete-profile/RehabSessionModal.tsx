@@ -2,21 +2,22 @@
 
 import { useState } from 'react'
 import { X, Check, Loader2, Activity, Trash2 } from 'lucide-react'
-import type { RehabSession } from '@/types/athlete-profile'
+import type { RehabSession, ActiveOccurrence } from '@/types/athlete-profile'
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SESSION_TYPES: { value: RehabSession['session_type']; label: string }[] = [
-  { value: 'physio', label: 'Fisioterapia' },
-  { value: 'gym',    label: 'Ginásio / Força' },
-  { value: 'pool',   label: 'Piscina' },
-  { value: 'field',  label: 'Campo' },
-  { value: 'other',  label: 'Outro' },
+  { value: 'physio',  label: 'Fisioterapia' },
+  { value: 'gym',     label: 'Ginásio / Força' },
+  { value: 'massage', label: 'Massagem' },
+  { value: 'field',   label: 'Campo' },
+  { value: 'other',   label: 'Outro' },
 ]
 
 interface Props {
   athleteId: string
   existing?: RehabSession | null
+  occurrences?: ActiveOccurrence[]
   onClose:   () => void
   onSaved:   (s: RehabSession) => void
   onDeleted?: (id: string) => void
@@ -26,7 +27,7 @@ function todayISO() {
   return new Date().toISOString().split('T')[0]
 }
 
-export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDeleted }: Props) {
+export function RehabSessionModal({ athleteId, existing, occurrences, onClose, onSaved, onDeleted }: Props) {
   const isEdit = !!existing
 
   const [sessionDate,  setSessionDate]  = useState(existing?.session_date   ?? todayISO())
@@ -35,13 +36,14 @@ export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDel
   const [description,  setDescription]  = useState(existing?.description    ?? '')
   const [clinician,    setClinician]    = useState(existing?.clinician_name  ?? '')
   const [notes,        setNotes]        = useState(existing?.notes           ?? '')
+  const [occurrenceId, setOccurrenceId] = useState(existing?.occurrence_id   ?? '')
 
   const [saving,   setSaving]   = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [error,    setError]    = useState<string | null>(null)
 
-  const inputClass = "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--aura-green)]"
-  const inputStyle = { background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)', color: 'var(--aura-text)' }
+  const inputClass = "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+  const inputStyle = { background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }
 
   async function handleSave() {
     if (!sessionDate) { setError('Data da sessão obrigatória.'); return }
@@ -55,6 +57,7 @@ export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDel
         description:      description.trim() || null,
         clinician_name:   clinician.trim()   || null,
         notes:            notes.trim()       || null,
+        occurrence_id:    occurrenceId || null,
       }
 
       let res: Response
@@ -105,18 +108,18 @@ export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDel
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)' }}>
       <div
         className="w-full max-w-lg rounded-2xl border shadow-2xl flex flex-col max-h-[90vh]"
-        style={{ background: 'var(--aura-bg)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg)', borderColor: 'var(--sophi-border)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b shrink-0" style={{ borderColor: 'var(--aura-border)' }}>
+        <div className="flex items-center justify-between px-5 py-4 border-b shrink-0" style={{ borderColor: 'var(--sophi-border)' }}>
           <div className="flex items-center gap-2">
-            <Activity size={14} style={{ color: 'var(--aura-green)' }} />
-            <p className="text-sm font-bold" style={{ color: 'var(--aura-text)' }}>
+            <Activity size={14} style={{ color: 'var(--sophi-green)' }} />
+            <p className="text-sm font-bold" style={{ color: 'var(--sophi-text)' }}>
               {isEdit ? 'Editar Sessão' : 'Nova Sessão de Reabilitação'}
             </p>
           </div>
           <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-white/10">
-            <X size={14} style={{ color: 'var(--aura-text3)' }} />
+            <X size={14} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
 
@@ -126,7 +129,7 @@ export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDel
           {/* Date + Type */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
                 Data *
               </label>
               <input
@@ -138,7 +141,7 @@ export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDel
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
                 Duração (min)
               </label>
               <input
@@ -156,7 +159,7 @@ export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDel
 
           {/* Session type */}
           <div className="space-y-2">
-            <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+            <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
               Tipo de Sessão
             </label>
             <div className="flex flex-wrap gap-2">
@@ -167,9 +170,9 @@ export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDel
                   onClick={() => setSessionType(t.value)}
                   className="px-3 py-1.5 rounded-lg border text-xs font-medium transition-all"
                   style={{
-                    borderColor: sessionType === t.value ? 'var(--aura-green)' : 'var(--aura-border)',
-                    background:  sessionType === t.value ? 'var(--aura-green-bg)' : 'var(--aura-bg2)',
-                    color:       sessionType === t.value ? 'var(--aura-green)' : 'var(--aura-text3)',
+                    borderColor: sessionType === t.value ? 'var(--sophi-green)' : 'var(--sophi-border)',
+                    background:  sessionType === t.value ? 'var(--sophi-green-bg)' : 'var(--sophi-bg2)',
+                    color:       sessionType === t.value ? 'var(--sophi-green)' : 'var(--sophi-text3)',
                   }}
                 >
                   {t.label}
@@ -178,9 +181,31 @@ export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDel
             </div>
           </div>
 
+          {/* Occurrence / diagnosis association */}
+          {occurrences && occurrences.length > 0 && (
+            <div className="space-y-1">
+              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
+                Ocorrência / Diagnóstico associado
+              </label>
+              <select
+                value={occurrenceId}
+                onChange={(e) => setOccurrenceId(e.target.value)}
+                className={inputClass}
+                style={inputStyle}
+              >
+                <option value="">Nenhuma</option>
+                {occurrences.map((occ) => (
+                  <option key={occ.id} value={occ.id}>
+                    {(occ.title || occ.occurrence_type || 'Ocorrência')} — {occ.occurrence_date}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Description */}
           <div className="space-y-1">
-            <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+            <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
               Descrição / Exercícios
             </label>
             <textarea
@@ -195,7 +220,7 @@ export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDel
 
           {/* Clinician + notes */}
           <div className="space-y-1">
-            <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+            <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
               Fisioterapeuta / Clínico
             </label>
             <input
@@ -208,7 +233,7 @@ export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDel
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)' }}>
+            <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
               Notas
             </label>
             <textarea
@@ -222,22 +247,22 @@ export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDel
           </div>
 
           {error && (
-            <p className="text-xs rounded-lg px-3 py-2" style={{ background: 'var(--aura-danger-bg)', color: 'var(--aura-danger)' }}>
+            <p className="text-xs rounded-lg px-3 py-2" style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}>
               {error}
             </p>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-2 px-5 py-4 border-t shrink-0" style={{ borderColor: 'var(--aura-border)' }}>
+        <div className="flex items-center justify-between gap-2 px-5 py-4 border-t shrink-0" style={{ borderColor: 'var(--sophi-border)' }}>
           <div>
             {isEdit && (
               <button
                 type="button"
                 onClick={handleDelete}
                 disabled={deleting || saving}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium disabled:opacity-50 hover:bg-[var(--aura-danger-bg)]"
-                style={{ color: 'var(--aura-danger)' }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium disabled:opacity-50 hover:bg-[var(--sophi-danger-bg)]"
+                style={{ color: 'var(--sophi-danger)' }}
               >
                 {deleting ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
                 Eliminar
@@ -248,7 +273,7 @@ export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDel
             <button
               type="button" onClick={onClose}
               className="px-4 py-2 rounded-lg text-xs font-medium border hover:bg-white/5"
-              style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text2)' }}
+              style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)' }}
             >
               Cancelar
             </button>
@@ -256,7 +281,7 @@ export function RehabSessionModal({ athleteId, existing, onClose, onSaved, onDel
               type="button" onClick={handleSave}
               disabled={saving || deleting}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50"
-              style={{ background: 'var(--aura-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-green)', color: '#000' }}
             >
               {saving ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
               {saving ? 'A guardar…' : isEdit ? 'Guardar' : 'Criar Sessão'}

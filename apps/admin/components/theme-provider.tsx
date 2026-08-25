@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const stored = typeof window !== 'undefined'
-      ? localStorage.getItem('aura-theme')
+      ? localStorage.getItem('sophi-theme')
       : null
     const html = document.documentElement
     if (stored === 'light') {

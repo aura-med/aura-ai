@@ -30,7 +30,7 @@ export function ScoreBadge({ score, level, confidence, size = 'md', className }:
             >
               {score}
             </div>
-            <div className="text-xs" style={{ color: 'var(--aura-text3)' }}>%</div>
+            <div className="text-xs" style={{ color: 'var(--sophi-text3)' }}>%</div>
           </div>
         </div>
         <span
@@ -42,7 +42,7 @@ export function ScoreBadge({ score, level, confidence, size = 'md', className }:
         {confidence && (
           <span
             className="text-[10px] font-mono"
-            style={{ color: 'var(--aura-text3)' }}
+            style={{ color: 'var(--sophi-text3)' }}
           >
             conf. {confidence === 'high' ? 'alta' : confidence === 'medium' ? 'média' : 'baixa'}
           </span>
@@ -88,7 +88,7 @@ export function ScoreBadge({ score, level, confidence, size = 'md', className }:
           {label}
         </span>
         {confidence && (
-          <span className="text-[10px] mt-0.5" style={{ color: 'var(--aura-text3)' }}>
+          <span className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>
             Conf. {confidence === 'high' ? 'Alta' : confidence === 'medium' ? 'Média' : 'Baixa'}
           </span>
         )}

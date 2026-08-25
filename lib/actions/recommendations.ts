@@ -2,7 +2,7 @@
 
 // ─────────────────────────────────────────────────────────────────────────────
 // lib/actions/recommendations.ts
-// Aura — Recommendations Server Actions
+// Sophi — Recommendations Server Actions
 //
 // Flow:
 //   1. After calculateScore() → call generateAndPersistRecommendations()
@@ -23,6 +23,7 @@ import {
   canAcknowledgeRecommendation,
   normalizeRecommendationOrgId,
 } from '@/lib/actions/recommendation-access'
+import { isOwner } from '@/lib/roles'
 import type { RecommendationSet, RiskLevel, Confidence } from '@/types'
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
@@ -154,12 +155,38 @@ export async function acknowledgeRecommendations(
     return { success: false, error: 'Forbidden' }
   }
 
+  const writeClient = createServiceRoleClient() ?? supabase
+
+  // The update runs through the service-role client (bypasses RLS), so the
+  // squad scope enforced by 021's RLS must be replicated here. Owners stay
+  // unrestricted within their org; other roles may only acknowledge logs whose
+  // athlete belongs to a squad they are assigned to (staff_squads).
+  if (!isOwner(profile?.role)) {
+    const { data: logRow } = await writeClient
+      .from('recommendation_log')
+      .select('athletes!inner(squad_id)')
+      .eq('id', logId)
+      .eq('org_id', orgId)
+      .maybeSingle()
+    if (!logRow) return { success: false, error: 'Recommendation not found' }
+    // Supabase types an embedded !inner join as an array; the FK guarantees one row.
+    const joined = (logRow as unknown as { athletes: { squad_id: string | null } | { squad_id: string | null }[] }).athletes
+    const squadId = (Array.isArray(joined) ? joined[0]?.squad_id : joined?.squad_id) ?? null
+    const { data: squadRows } = await writeClient
+      .from('staff_squads')
+      .select('squad_id')
+      .eq('profile_id', user.id)
+    const allowed = new Set((squadRows ?? []).map((r) => (r as { squad_id: string }).squad_id))
+    if (!squadId || !allowed.has(squadId)) {
+      return { success: false, error: 'Forbidden' }
+    }
+  }
+
   const now = new Date().toISOString()
   const update = stakeholder === 'clinical'
     ? { clinical_acknowledged_at: now, clinical_acknowledged_by: user.id }
     : { coach_acknowledged_at: now, coach_acknowledged_by: user.id }
 
-  const writeClient = createServiceRoleClient() ?? supabase
   const { data, error } = await writeClient
     .from('recommendation_log')
     .update(update)

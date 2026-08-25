@@ -1,3 +1,4 @@
+import { connection } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
@@ -8,10 +9,14 @@ import { BASE_WEIGHTS_V1 } from '@/lib/scoring/engine'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import { AthleteProfileClient } from '@/components/athlete-profile/AthleteProfileClient'
 import { getLatestRecommendations } from '@/lib/actions/recommendations'
+import { getViewerContext } from '@/lib/data/auth'
 import type { UserRole } from '@/types'
-import type { AthleteProfileData, TabId, InjuryEventSummary } from '@/types/athlete-profile'
+import type { AthleteProfileData, TabId, InjuryEventSummary, ActiveDiagnosis, ActiveOccurrence, AthleteAnamnesis } from '@/types/athlete-profile'
 
-const VALID_TABS: TabId[] = ['overview', 'medical', 'injuries', 'treatments', 'documents', 'recommendations']
+const VALID_TABS: TabId[] = [
+  'overview', 'medical', 'injuries', 'treatments',
+  'nutrition', 'training', 'documents', 'recommendations',
+]
 
 function parseTab(raw: string | string[] | undefined): TabId {
   const s = Array.isArray(raw) ? raw[0] : raw
@@ -38,17 +43,26 @@ async function AthleteDetailContent({
   id: string
   searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
+  // Opt out of the cached/prerendered shell (Next.js Cache Components) so
+  // occurrence/diagnosis/medication writes show up immediately here, not a
+  // stale snapshot.
+  await connection()
   const resolvedSearch = searchParams ? await searchParams : {}
   const squadId   = getSquadIdParam(resolvedSearch)
   const activeTab = parseTab(resolvedSearch.tab)
   const supabase  = await createClient()
   const injuryEventColumns = 'id, injury_date, return_date, diagnosis, location, severity, is_recurrence'
 
+  // Athletes may only ever view their own profile — RLS already enforces this
+  // at the data layer, but fail fast here to skip the queries below entirely.
+  const viewer = await getViewerContext()
+  if (viewer.role === 'athlete' && viewer.athleteId !== id) notFound()
+
   // ── Core athlete data ──────────────────────────────────────────────────────
   const { data: athlete, error } = await supabase
     .from('athletes')
     .select(`
-      id, name, shirt_number, photo_url, position, date_of_birth, club, status,
+      id, name, shirt_number, photo_url, position, date_of_birth, club, status, availability_status,
       score_history (score_date, total_score, acwr_partial, hrv_partial, fatigue_partial, sleep_partial, tqr_partial, history_partial, stress_partial, decel_partial, confidence, days_since_match)
     `)
     .eq('id', id)
@@ -85,15 +99,6 @@ async function AthleteDetailContent({
     .eq('athlete_id', id)
     .maybeSingle()
 
-  // ── Latest EMD ─────────────────────────────────────────────────────────────
-  const { data: latestEmd } = await supabase
-    .from('emd_submissions')
-    .select('*')
-    .eq('athlete_id', id)
-    .order('submission_date', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-
   // ── Baseline SCAT-6 ────────────────────────────────────────────────────────
   const { data: baselineScat6 } = await supabase
     .from('scat6_assessments')
@@ -117,6 +122,46 @@ async function AthleteDetailContent({
     .limit(1)
     .maybeSingle()
 
+  // ── Active diagnoses + occurrences (clinical module) ─────────────────────
+  // Occurrences carry the full SOAP + title so the Overview tab can expand a
+  // row inline instead of navigating away; a short window of recently-resolved
+  // rows is fetched separately for the Overview's compact history.
+  const occurrenceColumns = `
+    id, athlete_id, title, occurrence_date, occurrence_type, availability_status,
+    subjective, objective, assessment, plan, clinician_name, clinician_role,
+    is_resolved, resolved_at,
+    occurrence_records ( id, record_date, subjective, objective, assessment, plan, availability_status, clinician_name, created_at ),
+    diagnoses ( id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, is_resolved )
+  `
+  const [{ data: activeDiagnoses }, { data: activeOccurrences }, { data: recentResolvedOccurrences }, { data: anamnesis }] = await Promise.all([
+    supabase
+      .from('diagnoses')
+      .select('id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, diagnosed_at, is_resolved, occurrence_id')
+      .eq('athlete_id', id)
+      .eq('is_resolved', false)
+      .order('diagnosed_at', { ascending: false }),
+    supabase
+      .from('occurrences')
+      .select(occurrenceColumns)
+      .eq('athlete_id', id)
+      .eq('is_resolved', false)
+      .order('occurrence_date', { ascending: false }),
+    supabase
+      .from('occurrences')
+      .select(occurrenceColumns)
+      .eq('athlete_id', id)
+      .eq('is_resolved', true)
+      .order('resolved_at', { ascending: false })
+      .limit(5),
+    supabase
+      .from('athlete_anamnesis')
+      .select('*')
+      .eq('athlete_id', id)
+      .order('season', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ])
+
   // ── Document + consultation counts ────────────────────────────────────────
   const [{ count: documentCount }, { count: consultationCount }] = await Promise.all([
     supabase
@@ -130,13 +175,9 @@ async function AthleteDetailContent({
       .eq('athlete_id', id),
   ])
 
-  // ── Viewer role + latest recommendations ──────────────────────────────────
-  const { data: { user } } = await supabase.auth.getUser()
-  const [profileResult, recommendations] = await Promise.all([
-    supabase.from('profiles').select('role').eq('id', user?.id ?? '').maybeSingle(),
-    getLatestRecommendations(id),
-  ])
-  const viewerRole = (profileResult.data?.role ?? 'athlete') as UserRole
+  // ── Latest recommendations ─────────────────────────────────────────────────
+  const recommendations = await getLatestRecommendations(id)
+  const viewerRole = (viewer.role ?? 'athlete') as UserRole
 
   // ── Score computations ────────────────────────────────────────────────────
   const latestScore = athlete.score_history?.[0]
@@ -213,15 +254,20 @@ async function AthleteDetailContent({
     }))
 
   // ── Assemble profile ──────────────────────────────────────────────────────
+  const rawAthlete = athlete as typeof athlete & { availability_status?: string | null }
+  const availabilityStatus = rawAthlete.availability_status
+    ?? (athlete.status === 'rehab' ? 'rtp' : 'available')
+
   const profile: AthleteProfileData = {
     id:                athlete.id,
     name:              athlete.name,
     shirt_number:      athlete.shirt_number ?? null,
-    photo_url:         (athlete as { photo_url?: string | null }).photo_url ?? null,
+    photo_url:         rawAthlete.photo_url ?? null,
     position:          athlete.position ?? null,
     date_of_birth:     athlete.date_of_birth ?? null,
     club:              athlete.club ?? null,
     status:            athlete.status ?? 'available',
+    availabilityStatus,
     score,
     riskLevel,
     confidence,
@@ -231,10 +277,13 @@ async function AthleteDetailContent({
     age,
     bmi,
     medicalHistory:    medicalHistory ?? null,
-    latestEmd:         latestEmd ?? null,
+    anamnesis:         (anamnesis ?? null) as AthleteAnamnesis | null,
     baselineScat6:     baselineScat6 ?? null,
     activeConcussion:  activeConcussion ?? null,
     injuryEvents,
+    activeDiagnoses:   (activeDiagnoses ?? []) as ActiveDiagnosis[],
+    activeOccurrences: (activeOccurrences ?? []) as ActiveOccurrence[],
+    recentResolvedOccurrences: (recentResolvedOccurrences ?? []) as ActiveOccurrence[],
     documentCount:     documentCount ?? 0,
     consultationCount: consultationCount ?? 0,
     recommendations,
@@ -246,8 +295,8 @@ async function AthleteDetailContent({
       {/* Back link */}
       <Link
         href={withSquadParam('/athletes', squadId)}
-        className="inline-flex items-center gap-1.5 text-xs transition-colors hover:text-[var(--aura-text)]"
-        style={{ color: 'var(--aura-text3)' }}
+        className="inline-flex items-center gap-1.5 text-xs transition-colors hover:text-[var(--sophi-text)]"
+        style={{ color: 'var(--sophi-text3)' }}
       >
         <ArrowLeft size={13} />
         Plantel

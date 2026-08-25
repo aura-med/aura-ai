@@ -40,16 +40,16 @@ const RTP_SPRINT_THRESHOLD   = 80    // volume must be ≥ 80 %
 // ── Availability badge ────────────────────────────────────────────────────────
 
 const AVAIL_CONFIG: Record<AvailabilityStatus, { label: string; color: string; bg: string }> = {
-  unfit:      { label: 'Indisponível',   color: 'var(--aura-danger)',  bg: 'var(--aura-danger-bg)'      },
-  modified:   { label: 'Modificado',     color: 'var(--aura-warn)',    bg: 'rgba(255,196,0,0.12)'        },
-  monitoring: { label: 'Monitorização',  color: 'var(--aura-blue)',    bg: 'var(--aura-blue-bg)'         },
+  unfit:      { label: 'Indisponível',   color: 'var(--sophi-danger)',  bg: 'var(--sophi-danger-bg)'      },
+  modified:   { label: 'Modificado',     color: 'var(--sophi-warn)',    bg: 'rgba(255,196,0,0.12)'        },
+  monitoring: { label: 'Monitorização',  color: 'var(--sophi-blue)',    bg: 'var(--sophi-blue-bg)'         },
   delayed:    { label: 'Adiado',         color: '#ff9330',             bg: 'rgba(255,147,48,0.12)'       },
-  recovered:  { label: 'Recuperado',     color: 'var(--aura-green)',   bg: 'rgba(0,229,160,0.10)'        },
+  recovered:  { label: 'Recuperado',     color: 'var(--sophi-green)',   bg: 'rgba(0,229,160,0.10)'        },
 }
 
 function AvailBadge({ status }: { status: AvailabilityStatus | null }) {
   const cfg = status ? AVAIL_CONFIG[status] : null
-  if (!cfg) return <span style={{ color: 'var(--aura-text3)', fontSize: 12 }}>—</span>
+  if (!cfg) return <span style={{ color: 'var(--sophi-text3)', fontSize: 12 }}>—</span>
   return (
     <span
       className="text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
@@ -76,19 +76,19 @@ function UefaProgressBar({
     <div className="space-y-1">
       <div
         className="flex items-center justify-between text-[10px]"
-        style={{ color: 'var(--aura-text3)' }}
+        style={{ color: 'var(--sophi-text3)' }}
       >
         <span>Progresso UEFA</span>
-        <span className={cn('font-mono font-bold', overdue && 'text-[var(--aura-danger)]')}>
+        <span className={cn('font-mono font-bold', overdue && 'text-[var(--sophi-danger)]')}>
           {daysIn}d / {totalExpected}d {overdue ? '⚠' : ''}
         </span>
       </div>
-      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--aura-bg4)' }}>
+      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--sophi-bg4)' }}>
         <div
           className="h-full rounded-full transition-all"
           style={{
             width: `${pct}%`,
-            background: overdue ? 'var(--aura-danger)' : 'var(--aura-green)',
+            background: overdue ? 'var(--sophi-danger)' : 'var(--sophi-green)',
           }}
         />
       </div>
@@ -120,11 +120,11 @@ function RtpMetricsPanel({
   return (
     <div
       className="rounded-lg border p-3 space-y-3 mt-2"
-      style={{ background: 'rgba(255,196,0,0.04)', borderColor: 'var(--aura-warn)' }}
+      style={{ background: 'rgba(255,196,0,0.04)', borderColor: 'var(--sophi-warn)' }}
     >
       <p
         className="text-[10px] font-bold uppercase tracking-wider"
-        style={{ color: 'var(--aura-warn)' }}
+        style={{ color: 'var(--sophi-warn)' }}
       >
         🎯 Métricas Objectivas de Retorno ao Jogo
       </p>
@@ -134,7 +134,7 @@ function RtpMetricsPanel({
         <div className="space-y-1">
           <label
             className="text-[10px]"
-            style={{ color: 'var(--aura-text3)' }}
+            style={{ color: 'var(--sophi-text3)' }}
           >
             Défice de Força Assimétrico (%)
           </label>
@@ -152,19 +152,19 @@ function RtpMetricsPanel({
             placeholder={`< ${RTP_STRENGTH_THRESHOLD}% para aprovação`}
             className="w-full rounded-md border px-2.5 py-1.5 text-xs outline-none"
             style={{
-              background: 'var(--aura-bg2)',
+              background: 'var(--sophi-bg2)',
               borderColor: strengthOk
-                ? 'var(--aura-green)'
+                ? 'var(--sophi-green)'
                 : metrics.strengthDeficit !== ''
-                ? 'var(--aura-danger)'
-                : 'var(--aura-border)',
-              color: 'var(--aura-text)',
+                ? 'var(--sophi-danger)'
+                : 'var(--sophi-border)',
+              color: 'var(--sophi-text)',
             }}
           />
           {metrics.strengthDeficit !== '' && (
             <p
               className="text-[10px] font-semibold"
-              style={{ color: strengthOk ? 'var(--aura-green)' : 'var(--aura-danger)' }}
+              style={{ color: strengthOk ? 'var(--sophi-green)' : 'var(--sophi-danger)' }}
             >
               {strengthOk ? '✓ Aprovado' : `✗ Limiar: < ${RTP_STRENGTH_THRESHOLD}%`}
             </p>
@@ -175,7 +175,7 @@ function RtpMetricsPanel({
         <div className="space-y-1">
           <label
             className="text-[10px]"
-            style={{ color: 'var(--aura-text3)' }}
+            style={{ color: 'var(--sophi-text3)' }}
           >
             Volume de Sprint GPS (% do limiar)
           </label>
@@ -193,19 +193,19 @@ function RtpMetricsPanel({
             placeholder={`≥ ${RTP_SPRINT_THRESHOLD}% para aprovação`}
             className="w-full rounded-md border px-2.5 py-1.5 text-xs outline-none"
             style={{
-              background: 'var(--aura-bg2)',
+              background: 'var(--sophi-bg2)',
               borderColor: sprintOk
-                ? 'var(--aura-green)'
+                ? 'var(--sophi-green)'
                 : metrics.sprintVolume !== ''
-                ? 'var(--aura-danger)'
-                : 'var(--aura-border)',
-              color: 'var(--aura-text)',
+                ? 'var(--sophi-danger)'
+                : 'var(--sophi-border)',
+              color: 'var(--sophi-text)',
             }}
           />
           {metrics.sprintVolume !== '' && (
             <p
               className="text-[10px] font-semibold"
-              style={{ color: sprintOk ? 'var(--aura-green)' : 'var(--aura-danger)' }}
+              style={{ color: sprintOk ? 'var(--sophi-green)' : 'var(--sophi-danger)' }}
             >
               {sprintOk ? '✓ Aprovado' : `✗ Limiar: ≥ ${RTP_SPRINT_THRESHOLD}%`}
             </p>
@@ -216,7 +216,7 @@ function RtpMetricsPanel({
       {strengthOk && sprintOk && (
         <p
           className="text-[11px] font-semibold text-center py-1 rounded-md"
-          style={{ background: 'rgba(0,229,160,0.10)', color: 'var(--aura-green)' }}
+          style={{ background: 'rgba(0,229,160,0.10)', color: 'var(--sophi-green)' }}
         >
           ✓ Todos os critérios de RTP cumpridos — pronto para autorização médica
         </p>
@@ -289,13 +289,13 @@ function PhaseStepper({
                   className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-all"
                   style={{
                     background: done
-                      ? 'var(--aura-green)'
+                      ? 'var(--sophi-green)'
                       : active
-                      ? (phase.color ?? 'var(--aura-blue)')
-                      : 'var(--aura-bg4)',
-                    color: done || active ? '#fff' : 'var(--aura-text3)',
+                      ? (phase.color ?? 'var(--sophi-blue)')
+                      : 'var(--sophi-bg4)',
+                    color: done || active ? '#fff' : 'var(--sophi-text3)',
                     boxShadow: active
-                      ? `0 0 0 2px ${phase.color ?? 'var(--aura-blue)'}40`
+                      ? `0 0 0 2px ${phase.color ?? 'var(--sophi-blue)'}40`
                       : undefined,
                   }}
                 >
@@ -303,18 +303,18 @@ function PhaseStepper({
                 </div>
                 <span
                   className="text-[9px] text-center max-w-[60px] leading-tight"
-                  style={{ color: active ? 'var(--aura-text)' : 'var(--aura-text3)' }}
+                  style={{ color: active ? 'var(--sophi-text)' : 'var(--sophi-text3)' }}
                 >
                   {phase.name}
                 </span>
-                <span className="text-[8px] font-mono" style={{ color: 'var(--aura-text3)' }}>
+                <span className="text-[8px] font-mono" style={{ color: 'var(--sophi-text3)' }}>
                   {phase.range}
                 </span>
               </div>
               {idx < phases.length - 1 && (
                 <div
                   className="h-px w-8 mx-1 mb-4"
-                  style={{ background: done ? 'var(--aura-green)' : 'var(--aura-border)' }}
+                  style={{ background: done ? 'var(--sophi-green)' : 'var(--sophi-border)' }}
                 />
               )}
             </div>
@@ -325,13 +325,13 @@ function PhaseStepper({
       {/* Current phase detail */}
       <div
         className="rounded-lg p-3 border space-y-2"
-        style={{ background: 'var(--aura-bg4)', borderColor: 'var(--aura-border)' }}
+        style={{ background: 'var(--sophi-bg4)', borderColor: 'var(--sophi-border)' }}
       >
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold" style={{ color: 'var(--aura-text)' }}>
+          <p className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>
             {currentPhase.name}
           </p>
-          <span className="text-[10px] font-mono" style={{ color: 'var(--aura-text3)' }}>
+          <span className="text-[10px] font-mono" style={{ color: 'var(--sophi-text3)' }}>
             Dia {currentDay} · {currentPhase.range}
           </span>
         </div>
@@ -343,7 +343,7 @@ function PhaseStepper({
               <span
                 key={i}
                 className="text-[10px] px-1.5 py-0.5 rounded"
-                style={{ background: 'var(--aura-bg2)', color: 'var(--aura-text3)' }}
+                style={{ background: 'var(--sophi-bg2)', color: 'var(--sophi-text3)' }}
               >
                 {ex}
               </span>
@@ -356,7 +356,7 @@ function PhaseStepper({
           <div className="space-y-1.5 pt-1">
             <p
               className="text-[10px] font-semibold uppercase tracking-wider"
-              style={{ color: 'var(--aura-text3)' }}
+              style={{ color: 'var(--sophi-text3)' }}
             >
               Critérios de progressão
             </p>
@@ -375,18 +375,18 @@ function PhaseStepper({
                       onProgressUpdate(phaseKey, i, !checked)
                     }
                   }}
-                  className="flex items-start gap-2 cursor-pointer select-none rounded px-1 py-0.5 transition-colors hover:bg-[var(--aura-bg2)]"
+                  className="flex items-start gap-2 cursor-pointer select-none rounded px-1 py-0.5 transition-colors hover:bg-[var(--sophi-bg2)]"
                 >
                   <div className="mt-0.5 shrink-0">
                     {checked ? (
-                      <CheckCircle2 size={14} style={{ color: 'var(--aura-green)' }} />
+                      <CheckCircle2 size={14} style={{ color: 'var(--sophi-green)' }} />
                     ) : (
-                      <Circle size={14} style={{ color: 'var(--aura-text3)' }} />
+                      <Circle size={14} style={{ color: 'var(--sophi-text3)' }} />
                     )}
                   </div>
                   <span
                     className={cn('text-xs leading-relaxed', checked && 'line-through')}
-                    style={{ color: checked ? 'var(--aura-text3)' : 'var(--aura-text2)' }}
+                    style={{ color: checked ? 'var(--sophi-text3)' : 'var(--sophi-text2)' }}
                   >
                     {criterion}
                   </span>
@@ -420,12 +420,12 @@ function PhaseStepper({
                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all"
                 style={{
                   background: confirmRegress
-                    ? 'color-mix(in srgb, var(--aura-warn) 20%, transparent)'
-                    : 'var(--aura-bg3)',
-                  color: confirmRegress ? 'var(--aura-warn)' : 'var(--aura-text3)',
+                    ? 'color-mix(in srgb, var(--sophi-warn) 20%, transparent)'
+                    : 'var(--sophi-bg3)',
+                  color: confirmRegress ? 'var(--sophi-warn)' : 'var(--sophi-text3)',
                   border: confirmRegress
-                    ? '1px solid var(--aura-warn)'
-                    : '1px solid var(--aura-border)',
+                    ? '1px solid var(--sophi-warn)'
+                    : '1px solid var(--sophi-border)',
                 }}
                 title="Regredir para a fase anterior e limpar critérios"
               >
@@ -433,7 +433,7 @@ function PhaseStepper({
                 {confirmRegress ? 'Confirmar regressão?' : `← ${phases[currentPhaseIndex - 1]?.name}`}
               </button>
               {confirmRegress && (
-                <p className="text-[10px] px-1" style={{ color: 'var(--aura-warn)' }}>
+                <p className="text-[10px] px-1" style={{ color: 'var(--sophi-warn)' }}>
                   Clique novamente para confirmar.{' '}
                   <button
                     className="underline"
@@ -457,8 +457,8 @@ function PhaseStepper({
                 canAdvance ? 'hover:opacity-90 cursor-pointer' : 'opacity-40 cursor-not-allowed',
               )}
               style={{
-                background: canAdvance ? 'var(--aura-green)' : 'var(--aura-bg3)',
-                color: canAdvance ? '#000' : 'var(--aura-text3)',
+                background: canAdvance ? 'var(--sophi-green)' : 'var(--sophi-bg3)',
+                color: canAdvance ? '#000' : 'var(--sophi-text3)',
               }}
               title={!allChecked ? 'Cumprir todos os critérios para avançar' : undefined}
             >
@@ -477,8 +477,8 @@ function PhaseStepper({
                 canAdvance ? 'hover:opacity-90 cursor-pointer' : 'opacity-40 cursor-not-allowed',
               )}
               style={{
-                background: canAdvance ? 'var(--aura-green)' : 'var(--aura-bg3)',
-                color: canAdvance ? '#000' : 'var(--aura-text3)',
+                background: canAdvance ? 'var(--sophi-green)' : 'var(--sophi-bg3)',
+                color: canAdvance ? '#000' : 'var(--sophi-text3)',
               }}
             >
               <CheckCircle2 size={13} />
@@ -546,14 +546,14 @@ function ClinicalJournal({
     <div className="space-y-3">
       <p
         className="text-[10px] font-semibold uppercase tracking-wider"
-        style={{ color: 'var(--aura-text3)' }}
+        style={{ color: 'var(--sophi-text3)' }}
       >
         Diário Clínico
       </p>
 
       <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
         {notes.length === 0 && (
-          <p className="text-xs italic" style={{ color: 'var(--aura-text3)' }}>
+          <p className="text-xs italic" style={{ color: 'var(--sophi-text3)' }}>
             Sem notas clínicas.
           </p>
         )}
@@ -561,7 +561,7 @@ function ClinicalJournal({
           <div
             key={i}
             className="rounded-lg p-2.5 border"
-            style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+            style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
           >
             {editingIdx === i ? (
               /* Edit mode */
@@ -573,9 +573,9 @@ function ClinicalJournal({
                   autoFocus
                   className="w-full rounded-md border px-2.5 py-2 text-xs outline-none resize-none"
                   style={{
-                    background: 'var(--aura-bg3)',
-                    borderColor: 'var(--aura-border)',
-                    color: 'var(--aura-text)',
+                    background: 'var(--sophi-bg3)',
+                    borderColor: 'var(--sophi-border)',
+                    color: 'var(--sophi-text)',
                   }}
                 />
                 <div className="flex gap-2">
@@ -583,15 +583,15 @@ function ClinicalJournal({
                     type="button"
                     onClick={() => handleSaveEdit(i)}
                     className="px-2.5 py-1 rounded-md text-[11px] font-semibold"
-                    style={{ background: 'var(--aura-green)', color: '#000' }}
+                    style={{ background: 'var(--sophi-green)', color: '#000' }}
                   >
                     Guardar
                   </button>
                   <button
                     type="button"
                     onClick={() => setEditingIdx(null)}
-                    className="px-2.5 py-1 rounded-md text-[11px] transition-colors hover:bg-[var(--aura-bg3)]"
-                    style={{ color: 'var(--aura-text2)' }}
+                    className="px-2.5 py-1 rounded-md text-[11px] transition-colors hover:bg-[var(--sophi-bg3)]"
+                    style={{ color: 'var(--sophi-text2)' }}
                   >
                     Cancelar
                   </button>
@@ -600,11 +600,11 @@ function ClinicalJournal({
             ) : (
               /* Display mode */
               <>
-                <p className="text-xs leading-relaxed" style={{ color: 'var(--aura-text)' }}>
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--sophi-text)' }}>
                   {n.text}
                 </p>
                 <div className="flex items-center justify-between mt-1.5">
-                  <p className="text-[10px]" style={{ color: 'var(--aura-text3)' }}>
+                  <p className="text-[10px]" style={{ color: 'var(--sophi-text3)' }}>
                     {new Date(n.created_at).toLocaleString('pt-PT', {
                       day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
                     })}
@@ -614,17 +614,17 @@ function ClinicalJournal({
                       type="button"
                       title="Editar nota"
                       onClick={() => { setEditingIdx(i); setEditText(n.text) }}
-                      className="p-1 rounded transition-colors hover:bg-[var(--aura-bg3)]"
+                      className="p-1 rounded transition-colors hover:bg-[var(--sophi-bg3)]"
                     >
-                      <Edit2 size={11} style={{ color: 'var(--aura-text3)' }} />
+                      <Edit2 size={11} style={{ color: 'var(--sophi-text3)' }} />
                     </button>
                     <button
                       type="button"
                       title="Apagar nota"
                       onClick={() => handleDelete(i)}
-                      className="p-1 rounded transition-colors hover:bg-[var(--aura-danger-bg)]"
+                      className="p-1 rounded transition-colors hover:bg-[var(--sophi-danger-bg)]"
                     >
-                      <Trash2 size={11} style={{ color: 'var(--aura-danger)' }} />
+                      <Trash2 size={11} style={{ color: 'var(--sophi-danger)' }} />
                     </button>
                   </div>
                 </div>
@@ -643,9 +643,9 @@ function ClinicalJournal({
           rows={2}
           className="flex-1 rounded-lg border px-3 py-2 text-xs resize-none outline-none"
           style={{
-            background: 'var(--aura-bg4)',
-            borderColor: 'var(--aura-border)',
-            color: 'var(--aura-text)',
+            background: 'var(--sophi-bg4)',
+            borderColor: 'var(--sophi-border)',
+            color: 'var(--sophi-text)',
           }}
           onKeyDown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleAdd() }}
         />
@@ -654,7 +654,7 @@ function ClinicalJournal({
           onClick={handleAdd}
           disabled={!text.trim() || saving}
           className="self-end px-3 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-40"
-          style={{ background: 'var(--aura-green)', color: '#000' }}
+          style={{ background: 'var(--sophi-green)', color: '#000' }}
         >
           {saving ? '…' : 'Guardar'}
         </button>
@@ -857,11 +857,11 @@ export function InjuryAccordionRow({
     <>
       {/* ── Parent row ─────────────────────────────────────────────────── */}
       <tr
-        className="group transition-colors hover:bg-[var(--aura-bg3)] cursor-pointer"
+        className="group transition-colors hover:bg-[var(--sophi-bg3)] cursor-pointer"
         style={{
           borderBottom:
             !open && index < totalRows - 1
-              ? '1px solid var(--aura-border)'
+              ? '1px solid var(--sophi-border)'
               : undefined,
         }}
         onClick={() => setOpen((o) => !o)}
@@ -875,7 +875,7 @@ export function InjuryAccordionRow({
             className="transition-transform"
             style={{
               transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
-              color: 'var(--aura-text3)',
+              color: 'var(--sophi-text3)',
             }}
           />
         </td>
@@ -885,12 +885,12 @@ export function InjuryAccordionRow({
           {injury?.osiics_code ? (
             <span
               className="font-mono font-bold text-[11px] px-2 py-1 rounded"
-              style={{ background: 'rgba(0,229,160,0.08)', color: 'var(--aura-green)' }}
+              style={{ background: 'rgba(0,229,160,0.08)', color: 'var(--sophi-green)' }}
             >
               {injury.osiics_code}
             </span>
           ) : (
-            <span className="font-mono text-[11px]" style={{ color: 'var(--aura-text3)' }}>
+            <span className="font-mono text-[11px]" style={{ color: 'var(--sophi-text3)' }}>
               —
             </span>
           )}
@@ -898,12 +898,12 @@ export function InjuryAccordionRow({
 
         {/* Athlete + diagnosis */}
         <td className="px-3 py-3 min-w-[160px]">
-          <p className="text-sm font-semibold leading-tight" style={{ color: 'var(--aura-text)' }}>
+          <p className="text-sm font-semibold leading-tight" style={{ color: 'var(--sophi-text)' }}>
             {athlete.name}
           </p>
           <p
             className="text-[11px] mt-0.5 line-clamp-1"
-            style={{ color: 'var(--aura-text3)' }}
+            style={{ color: 'var(--sophi-text3)' }}
           >
             {injury?.diagnosis ?? protocol?.name ?? '—'}
           </p>
@@ -912,7 +912,7 @@ export function InjuryAccordionRow({
         {/* Body region */}
         <td
           className="px-3 py-3 text-xs whitespace-nowrap"
-          style={{ color: 'var(--aura-text2)' }}
+          style={{ color: 'var(--sophi-text2)' }}
         >
           {injury?.location ?? '—'}
         </td>
@@ -921,7 +921,7 @@ export function InjuryAccordionRow({
         <td className="px-3 py-3">
           <span
             className="text-[11px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap"
-            style={{ background: 'var(--aura-blue-bg)', color: 'var(--aura-blue)' }}
+            style={{ background: 'var(--sophi-blue-bg)', color: 'var(--sophi-blue)' }}
           >
             {phaseLabel}
           </span>
@@ -936,12 +936,12 @@ export function InjuryAccordionRow({
         <td className="px-3 py-3 text-right pr-4">
           <div className="flex items-center justify-end gap-2">
             <div className="flex items-center gap-1.5">
-              <Clock size={11} style={{ color: 'var(--aura-text3)' }} />
-              <span className="text-xs font-mono" style={{ color: 'var(--aura-text2)' }}>
+              <Clock size={11} style={{ color: 'var(--sophi-text3)' }} />
+              <span className="text-xs font-mono" style={{ color: 'var(--sophi-text2)' }}>
                 {daysIn}d
               </span>
               {protocol?.total_days && daysIn > protocol.total_days && (
-                <AlertTriangle size={11} style={{ color: 'var(--aura-warn)' }} />
+                <AlertTriangle size={11} style={{ color: 'var(--sophi-warn)' }} />
               )}
             </div>
 
@@ -953,9 +953,9 @@ export function InjuryAccordionRow({
                 e.stopPropagation()   // prevent accordion toggle
                 setShowEdit(true)
               }}
-              className="p-1 rounded transition-colors opacity-0 group-hover:opacity-100 hover:bg-[var(--aura-bg4)]"
+              className="p-1 rounded transition-colors opacity-0 group-hover:opacity-100 hover:bg-[var(--sophi-bg4)]"
             >
-              <Edit2 size={12} style={{ color: 'var(--aura-text3)' }} />
+              <Edit2 size={12} style={{ color: 'var(--sophi-text3)' }} />
             </button>
           </div>
         </td>
@@ -966,15 +966,15 @@ export function InjuryAccordionRow({
         <tr
           style={{
             borderBottom:
-              index < totalRows - 1 ? '1px solid var(--aura-border)' : undefined,
+              index < totalRows - 1 ? '1px solid var(--sophi-border)' : undefined,
           }}
         >
           <td colSpan={7} className="px-4 pb-5 pt-0">
             <div
               className="rounded-xl border p-5 mt-1 grid gap-6"
               style={{
-                background: 'var(--aura-bg)',
-                borderColor: 'var(--aura-border)',
+                background: 'var(--sophi-bg)',
+                borderColor: 'var(--sophi-border)',
                 gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.4fr)',
               }}
             >
@@ -983,7 +983,7 @@ export function InjuryAccordionRow({
                 <div className="space-y-2">
                   <p
                     className="text-[10px] font-semibold uppercase tracking-wider"
-                    style={{ color: 'var(--aura-text3)' }}
+                    style={{ color: 'var(--sophi-text3)' }}
                   >
                     Dados da Lesão
                   </p>
@@ -1004,12 +1004,12 @@ export function InjuryAccordionRow({
                       ['Evidência',   protocol?.evidence ?? '—'],
                     ].map(([k, v]) => (
                       <div key={k as string}>
-                        <dt className="text-[10px]" style={{ color: 'var(--aura-text3)' }}>
+                        <dt className="text-[10px]" style={{ color: 'var(--sophi-text3)' }}>
                           {k}
                         </dt>
                         <dd
                           className="text-xs font-medium mt-0.5 truncate"
-                          style={{ color: 'var(--aura-text)' }}
+                          style={{ color: 'var(--sophi-text)' }}
                         >
                           {v}
                         </dd>
@@ -1027,7 +1027,7 @@ export function InjuryAccordionRow({
                 <div className="space-y-1.5">
                   <p
                     className="text-[10px] font-semibold uppercase tracking-wider"
-                    style={{ color: 'var(--aura-text3)' }}
+                    style={{ color: 'var(--sophi-text3)' }}
                   >
                     Estado de Disponibilidade
                   </p>
@@ -1035,9 +1035,9 @@ export function InjuryAccordionRow({
                     defaultValue={session.availability_status ?? ''}
                     className="w-full rounded-lg border px-3 py-1.5 text-xs outline-none"
                     style={{
-                      background: 'var(--aura-bg3)',
-                      borderColor: 'var(--aura-border)',
-                      color: 'var(--aura-text)',
+                      background: 'var(--sophi-bg3)',
+                      borderColor: 'var(--sophi-border)',
+                      color: 'var(--sophi-text)',
                     }}
                     onChange={async (e) => {
                       const val = e.target.value as AvailabilityStatus
@@ -1062,7 +1062,7 @@ export function InjuryAccordionRow({
                   >
                     <option value="">— Seleccionar —</option>
                     {(Object.keys(AVAIL_CONFIG) as AvailabilityStatus[]).map((s) => (
-                      <option key={s} value={s} style={{ background: 'var(--aura-bg2)' }}>
+                      <option key={s} value={s} style={{ background: 'var(--sophi-bg2)' }}>
                         {AVAIL_CONFIG[s].label}
                       </option>
                     ))}
@@ -1080,7 +1080,7 @@ export function InjuryAccordionRow({
               <div className="space-y-4">
                 <p
                   className="text-[10px] font-semibold uppercase tracking-wider"
-                  style={{ color: 'var(--aura-text3)' }}
+                  style={{ color: 'var(--sophi-text3)' }}
                 >
                   Faseamento de Reabilitação
                 </p>
@@ -1096,7 +1096,7 @@ export function InjuryAccordionRow({
                     onRegressPhase={handleRegressPhase}
                   />
                 ) : (
-                  <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>
+                  <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>
                     Sem protocolo de fases definido para esta sessão.
                   </p>
                 )}

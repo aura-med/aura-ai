@@ -8,7 +8,7 @@ export type MiniChartProps = {
 }
 
 function ChartSkeleton() {
-  return <div className="h-56 rounded-lg animate-pulse" style={{ background: 'var(--aura-bg3)' }} />
+  return <div className="h-56 rounded-lg animate-pulse" style={{ background: 'var(--sophi-bg3)' }} />
 }
 
 export const MiniLineChart = dynamic(

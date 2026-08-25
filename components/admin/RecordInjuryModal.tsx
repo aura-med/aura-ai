@@ -79,25 +79,25 @@ function UefaPreview({ code }: { code: OsiicsCode | null }) {
   return (
     <div
       className="rounded-lg p-3 border space-y-1"
-      style={{ background: 'rgba(0,229,160,0.05)', borderColor: 'var(--aura-green)' }}
+      style={{ background: 'rgba(0,229,160,0.05)', borderColor: 'var(--sophi-green)' }}
     >
       <p
         className="text-[10px] font-semibold uppercase tracking-wider"
-        style={{ color: 'var(--aura-green)' }}
+        style={{ color: 'var(--sophi-green)' }}
       >
         Referência UEFA
       </p>
-      <p className="text-xs font-semibold" style={{ color: 'var(--aura-text)' }}>
+      <p className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>
         {code.diagnosis}
       </p>
       <div className="flex items-center gap-3">
-        <span className="text-[11px]" style={{ color: 'var(--aura-text3)' }}>
+        <span className="text-[11px]" style={{ color: 'var(--sophi-text3)' }}>
           Severidade:{' '}
-          <strong style={{ color: 'var(--aura-text2)' }}>{code.severity_label ?? '—'}</strong>
+          <strong style={{ color: 'var(--sophi-text2)' }}>{code.severity_label ?? '—'}</strong>
         </span>
-        <span className="text-[11px]" style={{ color: 'var(--aura-text3)' }}>
+        <span className="text-[11px]" style={{ color: 'var(--sophi-text3)' }}>
           Recuperação:{' '}
-          <strong style={{ color: 'var(--aura-text2)' }}>
+          <strong style={{ color: 'var(--sophi-text2)' }}>
             {code.expected_recovery_min ?? '?'}–{code.expected_recovery_max ?? '?'}d
           </strong>
         </span>
@@ -111,7 +111,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <div className="space-y-1.5">
       <label
         className="block text-[10px] font-semibold uppercase tracking-wider"
-        style={{ color: 'var(--aura-text3)' }}
+        style={{ color: 'var(--sophi-text3)' }}
       >
         {label}
       </label>
@@ -129,8 +129,8 @@ function RecurrenceWarning({ visible }: { visible: boolean }) {
       className="flex items-start gap-2 rounded-lg p-3 border text-xs"
       style={{
         background: 'rgba(255,196,0,0.08)',
-        borderColor: 'var(--aura-warn)',
-        color: 'var(--aura-warn)',
+        borderColor: 'var(--sophi-warn)',
+        color: 'var(--sophi-warn)',
       }}
     >
       <AlertTriangle size={13} className="shrink-0 mt-0.5" />
@@ -194,38 +194,38 @@ function ProtocolSandbox({
           <div
             key={phase.tempId}
             className="rounded-lg border overflow-hidden"
-            style={{ borderColor: isRtp ? 'var(--aura-warn)' : 'var(--aura-border)' }}
+            style={{ borderColor: isRtp ? 'var(--sophi-warn)' : 'var(--sophi-border)' }}
           >
             {/* Phase header */}
             <button
               type="button"
               onClick={() => setOpenPhaseId(isOpen ? null : phase.tempId)}
-              className="w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors hover:bg-[var(--aura-bg3)]"
-              style={{ background: 'var(--aura-bg4)' }}
+              className="w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors hover:bg-[var(--sophi-bg3)]"
+              style={{ background: 'var(--sophi-bg4)' }}
             >
               <div className="flex items-center gap-2">
                 <div
                   className="w-2.5 h-2.5 rounded-full"
                   style={{ background: phase.color }}
                 />
-                <span className="text-xs font-semibold" style={{ color: 'var(--aura-text)' }}>
+                <span className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>
                   {phaseIdx + 1}. {phase.name}
                 </span>
-                <span className="text-[10px] font-mono" style={{ color: 'var(--aura-text3)' }}>
+                <span className="text-[10px] font-mono" style={{ color: 'var(--sophi-text3)' }}>
                   {phase.range}
                 </span>
                 {isRtp && (
                   <span
                     className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                    style={{ background: 'rgba(255,196,0,0.15)', color: 'var(--aura-warn)' }}
+                    style={{ background: 'rgba(255,196,0,0.15)', color: 'var(--sophi-warn)' }}
                   >
                     RTP
                   </span>
                 )}
               </div>
               {isOpen
-                ? <ChevronDown size={13} style={{ color: 'var(--aura-text3)' }} />
-                : <ChevronRight size={13} style={{ color: 'var(--aura-text3)' }} />
+                ? <ChevronDown size={13} style={{ color: 'var(--sophi-text3)' }} />
+                : <ChevronRight size={13} style={{ color: 'var(--sophi-text3)' }} />
               }
             </button>
 
@@ -233,13 +233,13 @@ function ProtocolSandbox({
             {isOpen && (
               <div
                 className="px-3 pb-3 pt-2 space-y-3"
-                style={{ background: 'var(--aura-bg2)' }}
+                style={{ background: 'var(--sophi-bg2)' }}
               >
                 {/* Phase name */}
                 <div className="space-y-1">
                   <p
                     className="text-[9px] font-semibold uppercase tracking-wider"
-                    style={{ color: 'var(--aura-text3)' }}
+                    style={{ color: 'var(--sophi-text3)' }}
                   >
                     Nome da fase
                   </p>
@@ -248,9 +248,9 @@ function ProtocolSandbox({
                     onChange={(e) => updatePhase(phase.tempId, { name: e.target.value })}
                     className="w-full rounded-md border px-2.5 py-1.5 text-xs outline-none"
                     style={{
-                      background: 'var(--aura-bg3)',
-                      borderColor: 'var(--aura-border)',
-                      color: 'var(--aura-text)',
+                      background: 'var(--sophi-bg3)',
+                      borderColor: 'var(--sophi-border)',
+                      color: 'var(--sophi-text)',
                     }}
                   />
                 </div>
@@ -260,7 +260,7 @@ function ProtocolSandbox({
                   <div className="space-y-1">
                     <p
                       className="text-[9px] font-semibold uppercase tracking-wider"
-                      style={{ color: 'var(--aura-text3)' }}
+                      style={{ color: 'var(--sophi-text3)' }}
                     >
                       Exercícios
                     </p>
@@ -269,7 +269,7 @@ function ProtocolSandbox({
                         <span
                           key={i}
                           className="text-[10px] px-2 py-0.5 rounded"
-                          style={{ background: 'var(--aura-bg3)', color: 'var(--aura-text3)' }}
+                          style={{ background: 'var(--sophi-bg3)', color: 'var(--sophi-text3)' }}
                         >
                           {ex}
                         </span>
@@ -282,12 +282,12 @@ function ProtocolSandbox({
                 <div className="space-y-1.5">
                   <p
                     className="text-[9px] font-semibold uppercase tracking-wider"
-                    style={{ color: 'var(--aura-text3)' }}
+                    style={{ color: 'var(--sophi-text3)' }}
                   >
                     Critérios de progressão
                   </p>
                   {phase.criteria.length === 0 && (
-                    <p className="text-[11px] italic" style={{ color: 'var(--aura-text3)' }}>
+                    <p className="text-[11px] italic" style={{ color: 'var(--sophi-text3)' }}>
                       Sem critérios definidos.
                     </p>
                   )}
@@ -299,25 +299,25 @@ function ProtocolSandbox({
                         placeholder="Descrever critério…"
                         className="flex-1 rounded-md border px-2.5 py-1 text-xs outline-none"
                         style={{
-                          background: 'var(--aura-bg3)',
-                          borderColor: 'var(--aura-border)',
-                          color: 'var(--aura-text)',
+                          background: 'var(--sophi-bg3)',
+                          borderColor: 'var(--sophi-border)',
+                          color: 'var(--sophi-text)',
                         }}
                       />
                       <button
                         type="button"
                         onClick={() => removeCriterion(phase.tempId, i)}
-                        className="shrink-0 p-1 rounded transition-colors hover:bg-[var(--aura-danger-bg)]"
+                        className="shrink-0 p-1 rounded transition-colors hover:bg-[var(--sophi-danger-bg)]"
                       >
-                        <Trash2 size={11} style={{ color: 'var(--aura-danger)' }} />
+                        <Trash2 size={11} style={{ color: 'var(--sophi-danger)' }} />
                       </button>
                     </div>
                   ))}
                   <button
                     type="button"
                     onClick={() => addCriterion(phase.tempId)}
-                    className="flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-md transition-colors hover:bg-[var(--aura-bg3)]"
-                    style={{ color: 'var(--aura-green)' }}
+                    className="flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-md transition-colors hover:bg-[var(--sophi-bg3)]"
+                    style={{ color: 'var(--sophi-green)' }}
                   >
                     <Plus size={11} />
                     Adicionar critério
@@ -336,9 +336,9 @@ function ProtocolSandbox({
 
 const inputClass = 'w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors'
 const inputStyle = {
-  background: 'var(--aura-bg3)',
-  borderColor: 'var(--aura-border)',
-  color: 'var(--aura-text)',
+  background: 'var(--sophi-bg3)',
+  borderColor: 'var(--sophi-border)',
+  color: 'var(--sophi-text)',
 }
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
@@ -698,20 +698,20 @@ export function RecordInjuryModal({
       <div
         className="w-full max-w-2xl rounded-2xl border shadow-2xl flex flex-col overflow-hidden"
         style={{
-          background: 'var(--aura-bg2)',
-          borderColor: 'var(--aura-border)',
+          background: 'var(--sophi-bg2)',
+          borderColor: 'var(--sophi-border)',
           maxHeight: '90vh',
         }}
       >
         {/* ── Header ────────────────────────────────────────────────────── */}
         <div
           className="flex items-center justify-between px-6 py-4 border-b"
-          style={{ borderColor: 'var(--aura-border)' }}
+          style={{ borderColor: 'var(--sophi-border)' }}
         >
           <div>
             <h2
               className="text-base font-bold"
-              style={{ fontFamily: 'var(--font-syne)', color: 'var(--aura-text)' }}
+              style={{ fontFamily: 'var(--font-syne)', color: 'var(--sophi-text)' }}
             >
               Registar Lesão
             </h2>
@@ -724,14 +724,14 @@ export function RecordInjuryModal({
                     style={{
                       background:
                         s === step
-                          ? 'var(--aura-green)'
+                          ? 'var(--sophi-green)'
                           : i < currentStepIdx
-                          ? 'var(--aura-text3)'
-                          : 'var(--aura-bg4)',
+                          ? 'var(--sophi-text3)'
+                          : 'var(--sophi-bg4)',
                     }}
                   />
                   {i < STEPS.length - 1 && (
-                    <div className="w-4 h-px" style={{ background: 'var(--aura-border)' }} />
+                    <div className="w-4 h-px" style={{ background: 'var(--sophi-border)' }} />
                   )}
                 </div>
               ))}
@@ -739,9 +739,9 @@ export function RecordInjuryModal({
           </div>
           <button
             onClick={handleClose}
-            className="rounded-lg p-1.5 transition-colors hover:bg-[var(--aura-bg3)]"
+            className="rounded-lg p-1.5 transition-colors hover:bg-[var(--sophi-bg3)]"
           >
-            <X size={16} style={{ color: 'var(--aura-text3)' }} />
+            <X size={16} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
 
@@ -760,7 +760,7 @@ export function RecordInjuryModal({
                 >
                   <option value="">— Seleccionar atleta —</option>
                   {athletes.map((a) => (
-                    <option key={a.id} value={a.id} style={{ background: 'var(--aura-bg2)' }}>
+                    <option key={a.id} value={a.id} style={{ background: 'var(--sophi-bg2)' }}>
                       #{a.shirt_number} {a.name} ({a.position})
                     </option>
                   ))}
@@ -824,7 +824,7 @@ export function RecordInjuryModal({
                   >
                     <option value="">Todas as regiões</option>
                     {bodyRegions.map((r) => (
-                      <option key={r} value={r} style={{ background: 'var(--aura-bg2)' }}>
+                      <option key={r} value={r} style={{ background: 'var(--sophi-bg2)' }}>
                         {r}
                       </option>
                     ))}
@@ -840,7 +840,7 @@ export function RecordInjuryModal({
                   >
                     <option value="">Todos os tipos</option>
                     {injuryTypes.map((t) => (
-                      <option key={t} value={t} style={{ background: 'var(--aura-bg2)' }}>
+                      <option key={t} value={t} style={{ background: 'var(--sophi-bg2)' }}>
                         {t}
                       </option>
                     ))}
@@ -853,41 +853,41 @@ export function RecordInjuryModal({
                 <div
                   className="flex items-center gap-2 rounded-lg border px-3 py-2"
                   style={{
-                    borderColor: 'var(--aura-border)',
-                    background: 'var(--aura-bg3)',
+                    borderColor: 'var(--sophi-border)',
+                    background: 'var(--sophi-bg3)',
                   }}
                 >
-                  <Search size={13} style={{ color: 'var(--aura-text3)' }} />
+                  <Search size={13} style={{ color: 'var(--sophi-text3)' }} />
                   <input
                     value={osiicsSearch}
                     onChange={(e) => setOsiicsSearch(e.target.value)}
                     placeholder="Pesquisar código ou diagnóstico…"
                     className="flex-1 bg-transparent text-sm outline-none"
-                    style={{ color: 'var(--aura-text)' }}
+                    style={{ color: 'var(--sophi-text)' }}
                   />
                 </div>
 
                 {/* Feature 0: list only appears with sufficient input */}
                 {loadingCodes ? (
-                  <p className="text-xs mt-2" style={{ color: 'var(--aura-text3)' }}>
+                  <p className="text-xs mt-2" style={{ color: 'var(--sophi-text3)' }}>
                     A carregar códigos…
                   </p>
                 ) : !showCodeList ? (
                   <p
                     className="text-xs mt-2 text-center py-4 italic"
-                    style={{ color: 'var(--aura-text3)' }}
+                    style={{ color: 'var(--sophi-text3)' }}
                   >
                     Escreva pelo menos 2 caracteres ou seleccione uma região para pesquisar.
                   </p>
                 ) : (
                   <div
                     className="mt-1 rounded-lg border overflow-y-auto"
-                    style={{ borderColor: 'var(--aura-border)', maxHeight: 220 }}
+                    style={{ borderColor: 'var(--sophi-border)', maxHeight: 220 }}
                   >
                     {filteredCodes.length === 0 ? (
                       <p
                         className="text-xs px-3 py-4 text-center"
-                        style={{ color: 'var(--aura-text3)' }}
+                        style={{ color: 'var(--sophi-text3)' }}
                       >
                         Nenhum código encontrado.
                       </p>
@@ -897,9 +897,9 @@ export function RecordInjuryModal({
                           key={c.code}
                           type="button"
                           onClick={() => setSelectedCode(c)}
-                          className="w-full text-left px-3 py-2.5 flex items-center gap-3 transition-colors hover:bg-[var(--aura-bg3)] border-b last:border-b-0"
+                          className="w-full text-left px-3 py-2.5 flex items-center gap-3 transition-colors hover:bg-[var(--sophi-bg3)] border-b last:border-b-0"
                           style={{
-                            borderColor: 'var(--aura-border)',
+                            borderColor: 'var(--sophi-border)',
                             background:
                               selectedCode?.code === c.code
                                 ? 'rgba(0,229,160,0.08)'
@@ -909,7 +909,7 @@ export function RecordInjuryModal({
                           <span
                             className="font-mono font-bold text-[11px] shrink-0 px-1.5 py-0.5 rounded"
                             style={{
-                              color: 'var(--aura-green)',
+                              color: 'var(--sophi-green)',
                               background: 'rgba(0,229,160,0.08)',
                             }}
                           >
@@ -917,12 +917,12 @@ export function RecordInjuryModal({
                           </span>
                           <span
                             className="text-xs flex-1 leading-tight"
-                            style={{ color: 'var(--aura-text2)' }}
+                            style={{ color: 'var(--sophi-text2)' }}
                           >
                             {c.diagnosis}
                           </span>
                           {selectedCode?.code === c.code && (
-                            <CheckCircle2 size={13} style={{ color: 'var(--aura-green)' }} />
+                            <CheckCircle2 size={13} style={{ color: 'var(--sophi-green)' }} />
                           )}
                         </button>
                       ))
@@ -954,12 +954,12 @@ export function RecordInjuryModal({
               {selectedCode && (
                 <div
                   className="rounded-lg p-3 border text-xs"
-                  style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border)' }}
+                  style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border)' }}
                 >
-                  <span className="font-mono font-bold" style={{ color: 'var(--aura-green)' }}>
+                  <span className="font-mono font-bold" style={{ color: 'var(--sophi-green)' }}>
                     {selectedCode.code}
                   </span>
-                  <span className="ml-2" style={{ color: 'var(--aura-text2)' }}>
+                  <span className="ml-2" style={{ color: 'var(--sophi-text2)' }}>
                     {selectedCode.diagnosis}
                   </span>
                 </div>
@@ -974,12 +974,12 @@ export function RecordInjuryModal({
                 >
                   <option value="">— Sem protocolo por agora —</option>
                   {protocols.map((p) => (
-                    <option key={p.id} value={p.id} style={{ background: 'var(--aura-bg2)' }}>
+                    <option key={p.id} value={p.id} style={{ background: 'var(--sophi-bg2)' }}>
                       {p.name}{p.total_days ? ` (${p.total_days}d)` : ''}
                     </option>
                   ))}
                 </select>
-                <p className="text-[11px] mt-1" style={{ color: 'var(--aura-text3)' }}>
+                <p className="text-[11px] mt-1" style={{ color: 'var(--sophi-text3)' }}>
                   Pode ser atribuído ou alterado mais tarde no painel médico.
                 </p>
               </Field>
@@ -990,29 +990,29 @@ export function RecordInjuryModal({
                   <button
                     type="button"
                     onClick={() => setSandboxOpen((o) => !o)}
-                    className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 border transition-colors hover:bg-[var(--aura-bg3)]"
+                    className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 border transition-colors hover:bg-[var(--sophi-bg3)]"
                     style={{
-                      background: 'var(--aura-bg3)',
-                      borderColor: 'var(--aura-border)',
+                      background: 'var(--sophi-bg3)',
+                      borderColor: 'var(--sophi-border)',
                     }}
                   >
-                    <span className="text-xs font-semibold" style={{ color: 'var(--aura-text)' }}>
+                    <span className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>
                       Preview & Personalizar Fases do Protocolo
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-mono" style={{ color: 'var(--aura-text3)' }}>
+                      <span className="text-[10px] font-mono" style={{ color: 'var(--sophi-text3)' }}>
                         {customPhases.length} fases
                       </span>
                       {sandboxOpen
-                        ? <ChevronDown size={13} style={{ color: 'var(--aura-text3)' }} />
-                        : <ChevronRight size={13} style={{ color: 'var(--aura-text3)' }} />
+                        ? <ChevronDown size={13} style={{ color: 'var(--sophi-text3)' }} />
+                        : <ChevronRight size={13} style={{ color: 'var(--sophi-text3)' }} />
                       }
                     </div>
                   </button>
 
                   {sandboxOpen && (
                     <div className="space-y-2">
-                      <p className="text-[11px]" style={{ color: 'var(--aura-text3)' }}>
+                      <p className="text-[11px]" style={{ color: 'var(--sophi-text3)' }}>
                         Personalize esta instância para o atleta. Os templates globais em{' '}
                         <code className="font-mono text-[10px]">rehab_protocols</code> não são
                         alterados.
@@ -1031,7 +1031,7 @@ export function RecordInjuryModal({
           {/* ── Step 4: Confirm ──────────────────────────────────────────── */}
           {step === 'confirm' && (
             <div className="space-y-3">
-              <p className="text-sm font-semibold" style={{ color: 'var(--aura-text)' }}>
+              <p className="text-sm font-semibold" style={{ color: 'var(--sophi-text)' }}>
                 Confirmar registo de lesão
               </p>
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
@@ -1047,8 +1047,8 @@ export function RecordInjuryModal({
                   ['Mecanismo',    mechanism || '—'],
                 ].map(([k, v]) => (
                   <div key={k}>
-                    <dt style={{ color: 'var(--aura-text3)' }}>{k}</dt>
-                    <dd className="font-semibold mt-0.5" style={{ color: 'var(--aura-text)' }}>
+                    <dt style={{ color: 'var(--sophi-text3)' }}>{k}</dt>
+                    <dd className="font-semibold mt-0.5" style={{ color: 'var(--sophi-text)' }}>
                       {v}
                     </dd>
                   </div>
@@ -1059,9 +1059,9 @@ export function RecordInjuryModal({
                 <div
                   className="flex items-start gap-2 rounded-lg p-3 border text-xs"
                   style={{
-                    background: 'var(--aura-danger-bg)',
-                    borderColor: 'var(--aura-danger)',
-                    color: 'var(--aura-danger)',
+                    background: 'var(--sophi-danger-bg)',
+                    borderColor: 'var(--sophi-danger)',
+                    color: 'var(--sophi-danger)',
                   }}
                 >
                   <AlertTriangle size={13} className="shrink-0 mt-0.5" />
@@ -1075,7 +1075,7 @@ export function RecordInjuryModal({
         {/* ── Footer ────────────────────────────────────────────────────── */}
         <div
           className="flex items-center justify-between px-6 py-4 border-t"
-          style={{ borderColor: 'var(--aura-border)' }}
+          style={{ borderColor: 'var(--sophi-border)' }}
         >
           <button
             type="button"
@@ -1083,8 +1083,8 @@ export function RecordInjuryModal({
               if (step === 'athlete') handleClose()
               else setStep(STEPS[currentStepIdx - 1])
             }}
-            className="px-4 py-2 rounded-lg text-sm transition-colors hover:bg-[var(--aura-bg3)]"
-            style={{ color: 'var(--aura-text2)' }}
+            className="px-4 py-2 rounded-lg text-sm transition-colors hover:bg-[var(--sophi-bg3)]"
+            style={{ color: 'var(--sophi-text2)' }}
           >
             {step === 'athlete' ? 'Cancelar' : '← Anterior'}
           </button>
@@ -1095,7 +1095,7 @@ export function RecordInjuryModal({
               disabled={step === 'athlete' && (!athleteId || !injuryDate)}
               onClick={() => setStep(STEPS[currentStepIdx + 1])}
               className="px-5 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-40"
-              style={{ background: 'var(--aura-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-green)', color: '#000' }}
             >
               Seguinte →
             </button>
@@ -1105,7 +1105,7 @@ export function RecordInjuryModal({
               disabled={saving}
               onClick={handleSubmit}
               className="px-5 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-40"
-              style={{ background: 'var(--aura-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-green)', color: '#000' }}
             >
               {saving ? 'A guardar…' : 'Confirmar e Guardar'}
             </button>

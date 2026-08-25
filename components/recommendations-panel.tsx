@@ -1,7 +1,7 @@
 'use client'
 
 // components/recommendations-panel.tsx
-// Aura — Recommendations Panel (main app)
+// Sophi — Recommendations Panel (main app)
 //
 // onAcknowledge matches the signature of acknowledgeRecommendations() server action:
 //   (logId: string, stakeholder: 'clinical' | 'coach') => Promise<{success, error?}>
@@ -9,6 +9,8 @@
 
 import { useState } from 'react'
 import type { RecommendationSet, Recommendation, UserRole } from '@/types'
+import { OWNER_ROLE, CLINICAL_ROLES, SQUAD_ROLES } from '@/lib/roles'
+import { canAcknowledgeRecommendation } from '@/lib/actions/recommendation-access'
 
 interface Props {
   recommendations:  RecommendationSet
@@ -23,14 +25,14 @@ interface Props {
 }
 
 const RISK_CONFIG = {
-  low:      { color: 'var(--aura-green)',  bg: 'rgba(0,229,160,0.08)',  label: 'Baixo Risco' },
+  low:      { color: 'var(--sophi-green)',  bg: 'rgba(0,229,160,0.08)',  label: 'Baixo Risco' },
   medium:   { color: '#f59e0b',            bg: 'rgba(245,158,11,0.08)', label: 'Risco Moderado' },
   high:     { color: '#f97316',            bg: 'rgba(249,115,22,0.08)', label: 'Risco Elevado' },
   critical: { color: '#ef4444',            bg: 'rgba(239,68,68,0.08)',  label: 'Risco Crítico' },
 }
 
 const REC_TYPE_CONFIG = {
-  success:  { color: 'var(--aura-green)', bg: 'rgba(0,229,160,0.06)' },
+  success:  { color: 'var(--sophi-green)', bg: 'rgba(0,229,160,0.06)' },
   info:     { color: '#3b82f6',           bg: 'rgba(59,130,246,0.06)' },
   warning:  { color: '#f97316',           bg: 'rgba(249,115,22,0.06)' },
   critical: { color: '#ef4444',           bg: 'rgba(239,68,68,0.06)' },
@@ -49,9 +51,9 @@ const VARIABLE_LABELS: Record<string, string> = {
 }
 
 const STAKEHOLDER_TABS: { key: keyof RecommendationSet; label: string; roles: UserRole[] }[] = [
-  { key: 'clinical', label: 'Clínico',   roles: ['admin', 'doctor', 'physio'] },
-  { key: 'coach',    label: 'Treinador', roles: ['admin', 'coach', 'fitness_coach', 'doctor', 'physio'] },
-  { key: 'athlete',  label: 'Atleta',    roles: ['admin', 'athlete', 'doctor', 'physio', 'coach', 'fitness_coach'] },
+  { key: 'clinical', label: 'Clínico',   roles: [OWNER_ROLE, ...CLINICAL_ROLES] },
+  { key: 'coach',    label: 'Treinador', roles: [OWNER_ROLE, ...SQUAD_ROLES, ...CLINICAL_ROLES] },
+  { key: 'athlete',  label: 'Atleta',    roles: [OWNER_ROLE, 'athlete', ...CLINICAL_ROLES, ...SQUAD_ROLES] },
 ]
 
 function RecCard({ rec }: { rec: Recommendation }) {
@@ -63,7 +65,7 @@ function RecCard({ rec }: { rec: Recommendation }) {
     >
       <span className="text-base leading-none">{rec.icon}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm leading-relaxed" style={{ color: 'var(--aura-text)' }}>
+        <p className="text-sm leading-relaxed" style={{ color: 'var(--sophi-text)' }}>
           {rec.text}
         </p>
         {rec.timing && rec.timing !== '—' && (
@@ -85,7 +87,7 @@ function RecCard({ rec }: { rec: Recommendation }) {
 
 function ConfidencePill({ confidence }: { confidence: 'high' | 'medium' | 'low' }) {
   const cfg = {
-    high:   { color: 'var(--aura-green)', label: 'Alta confiança' },
+    high:   { color: 'var(--sophi-green)', label: 'Alta confiança' },
     medium: { color: '#f59e0b',           label: 'Confiança média' },
     low:    { color: '#ef4444',           label: 'Dados incompletos' },
   }[confidence]
@@ -128,8 +130,8 @@ export function RecommendationsPanel({
   const currentRecs  = recommendations[activeTab] ?? []
 
   const canAcknowledge =
-    (activeTab === 'clinical' && ['admin', 'doctor', 'physio'].includes(viewerRole)) ||
-    (activeTab === 'coach'    && ['admin', 'coach', 'fitness_coach'].includes(viewerRole))
+    (activeTab === 'clinical' || activeTab === 'coach') &&
+    canAcknowledgeRecommendation(viewerRole, activeTab)
 
   const isAcknowledged =
     (activeTab === 'clinical' && localAcknowledged.clinical) ||
@@ -157,7 +159,7 @@ export function RecommendationsPanel({
   return (
     <div
       className="overflow-hidden rounded-xl"
-      style={{ border: '1px solid var(--aura-border)', background: 'var(--aura-bg2)' }}
+      style={{ border: '1px solid var(--sophi-border)', background: 'var(--sophi-bg2)' }}
     >
       {/* Header */}
       <div
@@ -170,7 +172,7 @@ export function RecommendationsPanel({
             {riskCfg.label}
           </span>
           {dominantVariable && (
-            <span className="text-xs" style={{ color: 'var(--aura-text3)' }}>
+            <span className="text-xs" style={{ color: 'var(--sophi-text3)' }}>
               · {VARIABLE_LABELS[dominantVariable] ?? dominantVariable}
             </span>
           )}
@@ -180,7 +182,7 @@ export function RecommendationsPanel({
 
       {/* Tabs */}
       {visibleTabs.length > 1 && (
-        <div className="flex border-b" style={{ borderColor: 'var(--aura-border)' }}>
+        <div className="flex border-b" style={{ borderColor: 'var(--sophi-border)' }}>
           {visibleTabs.map((tab) => (
             <button
               key={tab.key}
@@ -188,8 +190,8 @@ export function RecommendationsPanel({
               className="flex-1 px-4 py-2.5 text-xs font-semibold transition-colors"
               style={
                 activeTab === tab.key
-                  ? { color: 'var(--aura-green)', borderBottom: '2px solid var(--aura-green)' }
-                  : { color: 'var(--aura-text3)', borderBottom: '2px solid transparent' }
+                  ? { color: 'var(--sophi-green)', borderBottom: '2px solid var(--sophi-green)' }
+                  : { color: 'var(--sophi-text3)', borderBottom: '2px solid transparent' }
               }
             >
               {tab.label}
@@ -207,7 +209,7 @@ export function RecommendationsPanel({
       {/* Recommendations */}
       <div className="space-y-2 p-4">
         {currentRecs.length === 0 ? (
-          <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>
+          <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>
             Sem recomendações para este nível de risco.
           </p>
         ) : (
@@ -218,15 +220,15 @@ export function RecommendationsPanel({
       {/* Footer */}
       <div
         className="flex items-center justify-between gap-3 border-t px-4 py-2.5"
-        style={{ borderColor: 'var(--aura-border)' }}
+        style={{ borderColor: 'var(--sophi-border)' }}
       >
         <div>
-          <p className="text-[10px]" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono, monospace)' }}>
+          <p className="text-[10px]" style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-mono, monospace)' }}>
             {new Date(generatedAt).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
             {' · Suporte à decisão — não substitui julgamento clínico'}
           </p>
           {ackError && (
-            <p className="mt-1 text-[11px]" role="alert" style={{ color: 'var(--aura-danger)' }}>
+            <p className="mt-1 text-[11px]" role="alert" style={{ color: 'var(--sophi-danger)' }}>
               {ackError}
             </p>
           )}
@@ -239,8 +241,8 @@ export function RecommendationsPanel({
             className="flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-semibold transition-all disabled:opacity-50"
             style={
               isAcknowledged
-                ? { background: 'rgba(0,229,160,0.1)', color: 'var(--aura-green)' }
-                : { background: 'var(--aura-bg3)', color: 'var(--aura-text2)', border: '1px solid var(--aura-border)' }
+                ? { background: 'rgba(0,229,160,0.1)', color: 'var(--sophi-green)' }
+                : { background: 'var(--sophi-bg3)', color: 'var(--sophi-text2)', border: '1px solid var(--sophi-border)' }
             }
           >
             {isAcknowledging ? 'A registar...' : isAcknowledged ? '✓ Visto' : 'Marcar como visto'}

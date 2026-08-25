@@ -146,13 +146,13 @@ export function InjuryFormModal({ open, onClose, onSuccess, toast }: Props) {
 
   // ── Input style helpers ────────────────────────────────────────────────────
   function borderFor(key: keyof FormState) {
-    return errors[key] ? 'var(--aura-danger)' : 'var(--aura-border2)'
+    return errors[key] ? 'var(--sophi-danger)' : 'var(--sophi-border2)'
   }
 
   const baseInput =
-    'mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--aura-green)] transition-colors'
+    'mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--sophi-green)] transition-colors'
   const baseTextarea =
-    'mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--aura-green)] transition-colors resize-none'
+    'mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--sophi-green)] transition-colors resize-none'
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -165,7 +165,7 @@ export function InjuryFormModal({ open, onClose, onSuccess, toast }: Props) {
         <form onSubmit={handleSubmit} className="space-y-5 mt-2">
           {/* ── Code ──────────────────────────────────────────────────────── */}
           <div>
-            <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>
+            <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>
               Código OSIICS *
             </label>
             <input
@@ -175,58 +175,58 @@ export function InjuryFormModal({ open, onClose, onSuccess, toast }: Props) {
               placeholder="Ex: TMS1"
               spellCheck={false}
               className={`${baseInput} font-mono uppercase tracking-widest`}
-              style={{ borderColor: borderFor('code'), color: 'var(--aura-text)' }}
+              style={{ borderColor: borderFor('code'), color: 'var(--sophi-text)' }}
             />
             {errors.code && (
-              <p className="text-xs mt-1" style={{ color: 'var(--aura-danger)' }}>{errors.code}</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--sophi-danger)' }}>{errors.code}</p>
             )}
           </div>
 
           {/* ── Body Region + Injury Type ────────────────────────────────── */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>
+              <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>
                 Região Corporal *
               </label>
               <input
                 value={form.body_region}
                 onChange={(e) => setField('body_region', e.target.value)}
-                list="aura-body-regions"
+                list="sophi-body-regions"
                 placeholder="Ex: Coxa"
                 className={baseInput}
-                style={{ borderColor: borderFor('body_region'), color: 'var(--aura-text)' }}
+                style={{ borderColor: borderFor('body_region'), color: 'var(--sophi-text)' }}
               />
-              <datalist id="aura-body-regions">
+              <datalist id="sophi-body-regions">
                 {BODY_REGIONS.map((r) => <option key={r} value={r} />)}
               </datalist>
               {errors.body_region && (
-                <p className="text-xs mt-1" style={{ color: 'var(--aura-danger)' }}>{errors.body_region}</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--sophi-danger)' }}>{errors.body_region}</p>
               )}
             </div>
             <div>
-              <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>
+              <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>
                 Tipo de Lesão *
               </label>
               <input
                 value={form.injury_type}
                 onChange={(e) => setField('injury_type', e.target.value)}
-                list="aura-injury-types"
+                list="sophi-injury-types"
                 placeholder="Ex: Músculo"
                 className={baseInput}
-                style={{ borderColor: borderFor('injury_type'), color: 'var(--aura-text)' }}
+                style={{ borderColor: borderFor('injury_type'), color: 'var(--sophi-text)' }}
               />
-              <datalist id="aura-injury-types">
+              <datalist id="sophi-injury-types">
                 {INJURY_TYPES.map((t) => <option key={t} value={t} />)}
               </datalist>
               {errors.injury_type && (
-                <p className="text-xs mt-1" style={{ color: 'var(--aura-danger)' }}>{errors.injury_type}</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--sophi-danger)' }}>{errors.injury_type}</p>
               )}
             </div>
           </div>
 
           {/* ── Diagnosis ───────────────────────────────────────────────── */}
           <div>
-            <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>
+            <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>
               Diagnóstico Clínico *
             </label>
             <textarea
@@ -235,28 +235,28 @@ export function InjuryFormModal({ open, onClose, onSuccess, toast }: Props) {
               rows={2}
               placeholder="Descrição clínica do diagnóstico…"
               className={baseTextarea}
-              style={{ borderColor: borderFor('diagnosis'), color: 'var(--aura-text)' }}
+              style={{ borderColor: borderFor('diagnosis'), color: 'var(--sophi-text)' }}
             />
             {errors.diagnosis && (
-              <p className="text-xs mt-1" style={{ color: 'var(--aura-danger)' }}>{errors.diagnosis}</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--sophi-danger)' }}>{errors.diagnosis}</p>
             )}
           </div>
 
           {/* ── Severity Label (optional) ────────────────────────────────── */}
           <div>
-            <label className="text-xs font-medium" style={{ color: 'var(--aura-text2)' }}>
+            <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>
               Severidade{' '}
-              <span className="font-normal" style={{ color: 'var(--aura-text3)' }}>(opcional)</span>
+              <span className="font-normal" style={{ color: 'var(--sophi-text3)' }}>(opcional)</span>
             </label>
             <input
               value={form.severity_label}
               onChange={(e) => setField('severity_label', e.target.value)}
-              list="aura-severity-labels"
+              list="sophi-severity-labels"
               placeholder="Ex: Moderate"
               className={baseInput}
-              style={{ borderColor: 'var(--aura-border2)', color: 'var(--aura-text)' }}
+              style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
             />
-            <datalist id="aura-severity-labels">
+            <datalist id="sophi-severity-labels">
               {SEVERITY_LABELS.map((s) => <option key={s} value={s} />)}
             </datalist>
           </div>
@@ -264,14 +264,14 @@ export function InjuryFormModal({ open, onClose, onSuccess, toast }: Props) {
           {/* ── UEFA Reference Data toggle ───────────────────────────────── */}
           <div
             className="rounded-xl border p-4 space-y-4"
-            style={{ borderColor: 'var(--aura-border)', background: 'var(--aura-bg3)' }}
+            style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                <p className="text-sm font-medium" style={{ color: 'var(--aura-text)' }}>
+                <p className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>
                   Dados de Referência UEFA
                 </p>
-                <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--aura-text3)' }}>
+                <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--sophi-text3)' }}>
                   Ativar apenas se existem dados do estudo UEFA para esta lesão.
                   Desativado → passa <code className="font-mono text-[10px]">NULL</code> para prevenir alucinações do modelo ML.
                 </p>
@@ -284,7 +284,7 @@ export function InjuryFormModal({ open, onClose, onSuccess, toast }: Props) {
                 onClick={() => setField('has_uefa_data', !form.has_uefa_data)}
                 className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus-visible:ring-2"
                 style={{
-                  background: form.has_uefa_data ? 'var(--aura-green)' : 'var(--aura-bg4)',
+                  background: form.has_uefa_data ? 'var(--sophi-green)' : 'var(--sophi-bg4)',
                 }}
               >
                 <span
@@ -302,7 +302,7 @@ export function InjuryFormModal({ open, onClose, onSuccess, toast }: Props) {
               <div>
                 <label
                   className="text-xs font-medium transition-colors"
-                  style={{ color: form.has_uefa_data ? 'var(--aura-text2)' : 'var(--aura-text3)' }}
+                  style={{ color: form.has_uefa_data ? 'var(--sophi-text2)' : 'var(--sophi-text3)' }}
                 >
                   Recuperação Mínima (dias)
                 </label>
@@ -315,12 +315,12 @@ export function InjuryFormModal({ open, onClose, onSuccess, toast }: Props) {
                   placeholder="0"
                   className={`${baseInput} disabled:opacity-40 disabled:cursor-not-allowed`}
                   style={{
-                    borderColor: errors.expected_recovery_min ? 'var(--aura-danger)' : 'var(--aura-border2)',
-                    color: 'var(--aura-text)',
+                    borderColor: errors.expected_recovery_min ? 'var(--sophi-danger)' : 'var(--sophi-border2)',
+                    color: 'var(--sophi-text)',
                   }}
                 />
                 {errors.expected_recovery_min && (
-                  <p className="text-xs mt-1" style={{ color: 'var(--aura-danger)' }}>
+                  <p className="text-xs mt-1" style={{ color: 'var(--sophi-danger)' }}>
                     {errors.expected_recovery_min}
                   </p>
                 )}
@@ -328,7 +328,7 @@ export function InjuryFormModal({ open, onClose, onSuccess, toast }: Props) {
               <div>
                 <label
                   className="text-xs font-medium transition-colors"
-                  style={{ color: form.has_uefa_data ? 'var(--aura-text2)' : 'var(--aura-text3)' }}
+                  style={{ color: form.has_uefa_data ? 'var(--sophi-text2)' : 'var(--sophi-text3)' }}
                 >
                   Recuperação Máxima (dias)
                 </label>
@@ -341,12 +341,12 @@ export function InjuryFormModal({ open, onClose, onSuccess, toast }: Props) {
                   placeholder="0"
                   className={`${baseInput} disabled:opacity-40 disabled:cursor-not-allowed`}
                   style={{
-                    borderColor: errors.expected_recovery_max ? 'var(--aura-danger)' : 'var(--aura-border2)',
-                    color: 'var(--aura-text)',
+                    borderColor: errors.expected_recovery_max ? 'var(--sophi-danger)' : 'var(--sophi-border2)',
+                    color: 'var(--sophi-text)',
                   }}
                 />
                 {errors.expected_recovery_max && (
-                  <p className="text-xs mt-1" style={{ color: 'var(--aura-danger)' }}>
+                  <p className="text-xs mt-1" style={{ color: 'var(--sophi-danger)' }}>
                     {errors.expected_recovery_max}
                   </p>
                 )}

@@ -16,7 +16,7 @@ There is no test suite configured.
 
 ## Architecture
 
-**Aura** is a predictive injury risk management platform for elite football, built with Next.js 16.2.4 App Router, React 19, TypeScript, Supabase, Tailwind CSS v4, next-intl, Zustand, and Recharts.
+**Sophi** is a predictive injury risk management platform for elite football, built with Next.js 16.2.4 App Router, React 19, TypeScript, Supabase, Tailwind CSS v4, next-intl, Zustand, and Recharts.
 
 ### Route groups
 
@@ -44,7 +44,7 @@ Female-squad scoring includes a menstrual cycle LCA-risk multiplier — see `lib
 ### State management (Zustand)
 
 - `stores/athleteStore.ts` — in-memory athlete list and selected athlete ID; not persisted
-- `stores/uiStore.ts` — persisted to localStorage (`aura-ui`): active role (`UserRole`), theme, locale, and selected `squadId`/`orgId`
+- `stores/uiStore.ts` — persisted to localStorage (`sophi-ui`): active role (`UserRole`), theme, locale, and selected `squadId`/`orgId`
 
 ### Multi-squad / multi-org
 
@@ -56,7 +56,7 @@ next-intl is configured via `i18n/request.ts`. The active locale is read from th
 
 ### Styling
 
-Tailwind CSS v4 with PostCSS. Theme tokens are CSS custom properties (`--aura-bg`, `--aura-green`, `--aura-border`, `--aura-text`, etc.) defined in `app/globals.css`. Prefer inline `style={{ color: 'var(--aura-text2)' }}` over one-off Tailwind colour utilities when using Aura design tokens. UI primitives in `components/ui/` are shadcn-based; `components/ui/aura.tsx` has project-specific variants.
+Tailwind CSS v4 with PostCSS. Theme tokens are CSS custom properties (`--sophi-bg`, `--sophi-green`, `--sophi-border`, `--sophi-text`, etc.) defined in `app/globals.css`. Prefer inline `style={{ color: 'var(--sophi-text2)' }}` over one-off Tailwind colour utilities when using Sophi design tokens. UI primitives in `components/ui/` are shadcn-based; `components/ui/sophi.tsx` has project-specific variants.
 
 Fonts: Inter (`--font-inter`), DM Mono (`--font-dm-mono`), Syne (`--font-syne` — used for headings and the brand wordmark).
 

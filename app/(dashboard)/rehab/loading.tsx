@@ -1,5 +1,5 @@
 import { DashboardSkeleton } from '@/components/ui/DashboardSkeleton'
 
 export default function Loading() {
-  return <DashboardSkeleton title="A carregar reabilitacao" />
+  return <DashboardSkeleton title="A carregar reabilitação" />
 }

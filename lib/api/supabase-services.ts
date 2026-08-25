@@ -2,6 +2,7 @@ import type { UserRole } from '@/types'
 import { ApiError, parsePagination } from './errors.ts'
 import { type ApiViewer } from './auth.ts'
 import { createServiceRoleClient } from '@/lib/supabase/service'
+import { CLINICAL_ROLES, isOwner } from '@/lib/roles'
 import type { ApiUserDTO, ApiUsersService, PaginatedApiUsers } from './users.ts'
 
 type SupabaseServiceClient = NonNullable<ReturnType<typeof createServiceRoleClient>>
@@ -13,13 +14,35 @@ function serviceClient() {
 }
 
 function requireAdmin(viewer: ApiViewer) {
-  if (viewer.role !== 'admin') throw new ApiError('Forbidden', 403)
+  if (!isOwner(viewer.role)) throw new ApiError('Forbidden', 403)
 }
 
-const CLINICAL_ROLES: UserRole[] = ['admin', 'doctor', 'physio']
-
 export function requireClinical(viewer: ApiViewer) {
-  if (!CLINICAL_ROLES.includes(viewer.role)) throw new ApiError('Forbidden', 403)
+  if (!isOwner(viewer.role) && !CLINICAL_ROLES.includes(viewer.role)) throw new ApiError('Forbidden', 403)
+}
+
+// Roles allowed to read injuries, mirroring the injury_events SELECT policies in
+// 018 (owner + doctor/physio/coach/fitness_coach + athlete self). The service
+// role bypasses RLS, so masseurs/nutritionists/directors/scouts/team_managers —
+// who have no injury SELECT policy — must be rejected here in code.
+const INJURY_READER_ROLES: UserRole[] = ['doctor', 'physio', 'coach', 'fitness_coach']
+
+function requireInjuryReader(viewer: ApiViewer) {
+  if (isOwner(viewer.role) || viewer.role === 'athlete') return
+  if (!INJURY_READER_ROLES.includes(viewer.role)) throw new ApiError('Forbidden', 403)
+}
+
+// Squads this viewer is assigned to via staff_squads. The service-role client
+// bypasses RLS entirely, so squad scoping for non-owner viewers must be
+// replicated here in application code, mirroring get_user_squad_ids() in SQL.
+async function getViewerSquadIds(service: SupabaseServiceClient, viewer: ApiViewer): Promise<string[] | null> {
+  if (isOwner(viewer.role)) return null // null = unrestricted (all squads in org)
+  const { data, error } = await service
+    .from('staff_squads')
+    .select('squad_id')
+    .eq('profile_id', viewer.userId)
+  if (error) throw new ApiError(error.message, 500)
+  return (data ?? []).map((row) => row.squad_id as string)
 }
 
 async function currentViewer(service: SupabaseServiceClient, viewer: ApiViewer): Promise<ApiViewer> {
@@ -164,13 +187,21 @@ export async function listAthletes(request: Request, viewer: ApiViewer) {
   const service = serviceClient()
   const freshViewer = await currentViewer(service, viewer)
   const pagination = parsePagination(request.url)
-  const { data, error, count } = await service
+  let query = service
     .from('athletes')
     .select('id, name, shirt_number, position, status, squad_id, org_id, active, created_at, updated_at', { count: 'exact' })
     .eq('org_id', freshViewer.orgId)
     .eq('active', true)
     .order('shirt_number')
     .range(pagination.from, pagination.to)
+  if (freshViewer.role === 'athlete') {
+    // Athletes see only their own self-linked row, mirroring the athletes RLS.
+    query = query.eq('user_id', freshViewer.userId)
+  } else {
+    const squadIds = await getViewerSquadIds(service, freshViewer)
+    if (squadIds) query = query.in('squad_id', squadIds)
+  }
+  const { data, error, count } = await query
 
   if (error) throw new ApiError(error.message, 500)
   return paginatedResponse(data ?? [], count, request)
@@ -179,12 +210,19 @@ export async function listAthletes(request: Request, viewer: ApiViewer) {
 export async function getAthlete(id: string, viewer: ApiViewer) {
   const service = serviceClient()
   const freshViewer = await currentViewer(service, viewer)
-  const { data, error } = await service
+  let query = service
     .from('athletes')
     .select('id, name, shirt_number, position, status, squad_id, org_id, active, created_at, updated_at')
     .eq('id', id)
     .eq('org_id', freshViewer.orgId)
-    .maybeSingle()
+  if (freshViewer.role === 'athlete') {
+    // Athletes see only their own self-linked row, mirroring the athletes RLS.
+    query = query.eq('user_id', freshViewer.userId)
+  } else {
+    const squadIds = await getViewerSquadIds(service, freshViewer)
+    if (squadIds) query = query.in('squad_id', squadIds)
+  }
+  const { data, error } = await query.maybeSingle()
 
   if (error) throw new ApiError(error.message, 500)
   return data
@@ -193,13 +231,23 @@ export async function getAthlete(id: string, viewer: ApiViewer) {
 export async function listInjuries(request: Request, viewer: ApiViewer) {
   const service = serviceClient()
   const freshViewer = await currentViewer(service, viewer)
+  requireInjuryReader(freshViewer)
   const pagination = parsePagination(request.url)
-  const { data, error, count } = await service
+  let query = service
     .from('injury_events')
-    .select('id, athlete_id, injury_date, return_date, diagnosis, location, mechanism, severity, days_absent, is_recurrence, notes, created_at, athletes!inner(id, name, org_id)', { count: 'exact' })
+    .select('id, athlete_id, injury_date, return_date, diagnosis, location, mechanism, severity, days_absent, is_recurrence, notes, created_at, athletes!inner(id, name, org_id, squad_id)', { count: 'exact' })
     .eq('athletes.org_id', freshViewer.orgId)
     .order('injury_date', { ascending: false })
     .range(pagination.from, pagination.to)
+  if (freshViewer.role === 'athlete') {
+    // Athletes see only their own injuries via the self-link, mirroring the
+    // injury_events_athlete RLS — not staff_squads assignments.
+    query = query.eq('athletes.user_id', freshViewer.userId)
+  } else {
+    const squadIds = await getViewerSquadIds(service, freshViewer)
+    if (squadIds) query = query.in('athletes.squad_id', squadIds)
+  }
+  const { data, error, count } = await query
 
   if (error) throw new ApiError(error.message, 500)
   return paginatedResponse(data ?? [], count, request)
@@ -208,12 +256,21 @@ export async function listInjuries(request: Request, viewer: ApiViewer) {
 export async function getInjury(id: string, viewer: ApiViewer) {
   const service = serviceClient()
   const freshViewer = await currentViewer(service, viewer)
-  const { data, error } = await service
+  requireInjuryReader(freshViewer)
+  let query = service
     .from('injury_events')
-    .select('id, athlete_id, injury_date, return_date, diagnosis, location, mechanism, severity, days_absent, is_recurrence, notes, created_at, athletes!inner(id, name, org_id)')
+    .select('id, athlete_id, injury_date, return_date, diagnosis, location, mechanism, severity, days_absent, is_recurrence, notes, created_at, athletes!inner(id, name, org_id, squad_id)')
     .eq('id', id)
     .eq('athletes.org_id', freshViewer.orgId)
-    .maybeSingle()
+  if (freshViewer.role === 'athlete') {
+    // Athletes see only their own injuries via the self-link, mirroring the
+    // injury_events_athlete RLS — not staff_squads assignments.
+    query = query.eq('athletes.user_id', freshViewer.userId)
+  } else {
+    const squadIds = await getViewerSquadIds(service, freshViewer)
+    if (squadIds) query = query.in('athletes.squad_id', squadIds)
+  }
+  const { data, error } = await query.maybeSingle()
 
   if (error) throw new ApiError(error.message, 500)
   return data

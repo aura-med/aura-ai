@@ -8,7 +8,9 @@ import { createServiceRoleClient } from '@/lib/supabase/service'
 import { verifyApiViewerFromRequest } from '@/lib/api/auth'
 import { errorFromUnknown, readJsonBody } from '@/lib/api/errors'
 import { requireClinical } from '@/lib/api/supabase-services'
+import { REHAB_ROLES } from '@/lib/roles'
 import { RtpCriteriaSchema } from '@/lib/schemas/rehab'
+import type { UserRole } from '@/types'
 
 export async function POST(
   request: NextRequest,
@@ -44,11 +46,11 @@ export async function POST(
 
   const [{ data: profile }, { data: session, error: sessionError }] = await Promise.all([
     apiViewer
-      ? Promise.resolve({ data: { org_id: apiViewer.orgId } })
-      : supabase.from('profiles').select('org_id').eq('id', user.id).single(),
+      ? Promise.resolve({ data: { org_id: apiViewer.orgId, role: apiViewer.role } })
+      : supabase.from('profiles').select('org_id, role').eq('id', user.id).single(),
     supabase
       .from('rehab_sessions')
-      .select('id, athletes(org_id)')
+      .select('id, athletes(org_id, squad_id)')
       .eq('id', sessionId)
       .single(),
   ])
@@ -61,9 +63,29 @@ export async function POST(
     return NextResponse.json({ error: 'Session not found' }, { status: 404 })
   }
 
-  const sessionOrgId = asString(firstRecord(session.athletes).org_id)
+  const athleteRow = firstRecord(session.athletes)
+  const sessionOrgId = asString(athleteRow.org_id)
   if (sessionOrgId !== profile.org_id) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  // The service-role client bypasses RLS, so replicate the rehab_sessions write
+  // scope here: RTP writes are owner + doctor/physio only (not masseur), and
+  // non-owners are limited to their assigned squads (mirrors get_user_squad_ids()).
+  const viewerRole = (profile as { role?: string | null } | null)?.role ?? null
+  if (viewerRole !== 'owner' && !REHAB_ROLES.includes(viewerRole as UserRole)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+  if (viewerRole !== 'owner') {
+    const sessionSquadId = asString(athleteRow.squad_id)
+    const { data: squadRows } = await supabase
+      .from('staff_squads')
+      .select('squad_id')
+      .eq('profile_id', user.id)
+    const allowed = new Set((squadRows ?? []).map((r) => (r as { squad_id: string }).squad_id))
+    if (!sessionSquadId || !allowed.has(sessionSquadId)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
   }
 
   const { error: updateError } = await supabase

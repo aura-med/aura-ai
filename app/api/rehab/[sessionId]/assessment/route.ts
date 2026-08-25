@@ -66,7 +66,7 @@ export async function POST(
     return NextResponse.json({ error: updateError.message }, { status: 500 })
   }
 
-  void logAudit({
+  await logAudit({
     userId:       user.id,
     userEmail:    user.email ?? '',
     orgId:        profile?.org_id ?? '',

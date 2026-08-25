@@ -12,17 +12,17 @@ export function MiniLineChartImpl({
       <ResponsiveContainer height="100%" width="100%">
         <LineChart data={data}>
           <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
-          <XAxis dataKey="label" stroke="var(--aura-text3)" tick={{ fontSize: 11 }} />
-          <YAxis stroke="var(--aura-text3)" tick={{ fontSize: 11 }} width={28} />
+          <XAxis dataKey="label" stroke="var(--sophi-text3)" tick={{ fontSize: 11 }} />
+          <YAxis stroke="var(--sophi-text3)" tick={{ fontSize: 11 }} width={28} />
           <Tooltip
             contentStyle={{
-              background: 'var(--aura-bg2)',
-              border: '1px solid var(--aura-border2)',
+              background: 'var(--sophi-bg2)',
+              border: '1px solid var(--sophi-border2)',
               borderRadius: 8,
-              color: 'var(--aura-text)',
+              color: 'var(--sophi-text)',
             }}
           />
-          <Line dataKey={dataKey} dot={false} stroke="var(--aura-green)" strokeWidth={2} type="monotone" />
+          <Line dataKey={dataKey} dot={false} stroke="var(--sophi-green)" strokeWidth={2} type="monotone" />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -38,17 +38,17 @@ export function MiniBarChartImpl({
       <ResponsiveContainer height="100%" width="100%">
         <BarChart data={data}>
           <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
-          <XAxis dataKey="label" stroke="var(--aura-text3)" tick={{ fontSize: 11 }} />
-          <YAxis stroke="var(--aura-text3)" tick={{ fontSize: 11 }} width={28} />
+          <XAxis dataKey="label" stroke="var(--sophi-text3)" tick={{ fontSize: 11 }} />
+          <YAxis stroke="var(--sophi-text3)" tick={{ fontSize: 11 }} width={28} />
           <Tooltip
             contentStyle={{
-              background: 'var(--aura-bg2)',
-              border: '1px solid var(--aura-border2)',
+              background: 'var(--sophi-bg2)',
+              border: '1px solid var(--sophi-border2)',
               borderRadius: 8,
-              color: 'var(--aura-text)',
+              color: 'var(--sophi-text)',
             }}
           />
-          <Bar dataKey={dataKey} fill="var(--aura-blue)" radius={[4, 4, 0, 0]} />
+          <Bar dataKey={dataKey} fill="var(--sophi-blue)" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

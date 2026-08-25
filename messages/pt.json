@@ -59,8 +59,13 @@
       "athletes": "Avaliação Atleta",
       "input": "Input Wellness",
       "readiness": "Prontidão",
+      "clinical": "Módulo Clínico",
       "rehab": "Reabilitação",
-      "clinical_portal": "Portal Clínico",
+      "medication": "Medicação",
+      "nutrition": "Nutrição",
+      "clinical_file": "Ficheiro Clínico",
+      "my_profile": "O Meu Perfil",
+      "occurrences": "Ocorrências",
       "load": "Carga & GPS",
       "performance": "Máximos & Perfil",
       "calendar": "Calendar Intelligence",
@@ -68,7 +73,7 @@
       "female_squad": "Seleção Feminina",
       "settings": "Definições"
     },
-    "version": "Aura v1.1 · FPF Pilot"
+    "version": "Sophi v1.1 · FPF Pilot"
   },
   "risk": {
     "low": "Baixo",
@@ -285,6 +290,7 @@
       "squads": "Squads",
       "preferences": "Preferências",
       "users": "Utilizadores",
+      "calendar": "Calendário",
       "notifications": "Notificações",
       "integrations": "Integrações",
       "subscription": "Subscrição",
@@ -365,7 +371,7 @@
     "integrations": {
       "title": "Integrações",
       "description": "Conecta dispositivos e plataformas externas.",
-      "note": "As integrações serão disponibilizadas progressivamente. Contacta a equipa Aura para acesso antecipado."
+      "note": "As integrações serão disponibilizadas progressivamente. Contacta a equipa Sophi para acesso antecipado."
     },
     "subscription": {
       "title": "Subscrição",
@@ -385,7 +391,7 @@
       "featureSupport": "Suporte técnico dedicado",
       "upgradeTitle": "Interessado em expandir?",
       "upgradeDescription": "Contacta-nos para explorar opções de plano completo, integrações adicionais ou implementação noutras organizações.",
-      "contactUpgrade": "Contactar equipa Aura"
+      "contactUpgrade": "Contactar equipa Sophi"
     },
     "privacy": {
       "title": "Privacidade & GDPR",

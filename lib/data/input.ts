@@ -13,9 +13,9 @@ export async function getInputPageDTO(squadId: string | null): Promise<InputPage
   const supabase = await createClient()
   let query = supabase
     .from('athletes')
-    .select('id, name, shirt_number, position, status, injury_events(id)')
+    .select('id, name, shirt_number, position, status, availability_status, injury_events(id)')
     .eq('active', true)
-    .eq('status', 'available')
+    .or('availability_status.is.null,availability_status.eq.available')
     .order('shirt_number')
     .limit(2, { referencedTable: 'injury_events' })
 

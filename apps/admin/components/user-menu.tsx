@@ -6,10 +6,10 @@ import { ChevronDown, LogOut, Moon, Settings, Sun, UserCircle } from 'lucide-rea
 import { signOut } from '@/lib/actions'
 
 const LEVEL_COLORS: Record<string, string> = {
-  owner:   'var(--aura-green)',
-  admin:   'var(--aura-blue)',
-  support: 'var(--aura-warn)',
-  analyst: 'var(--aura-text3)',
+  owner:   'var(--sophi-green)',
+  admin:   'var(--sophi-blue)',
+  support: 'var(--sophi-warn)',
+  analyst: 'var(--sophi-text3)',
 }
 
 interface UserMenuProps {
@@ -24,7 +24,7 @@ export function UserMenu({ email, fullName, level }: UserMenuProps) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const stored = localStorage.getItem('aura-theme')
+    const stored = localStorage.getItem('sophi-theme')
     setTheme(stored === 'light' ? 'light' : 'dark')
   }, [])
 
@@ -47,12 +47,12 @@ export function UserMenu({ email, fullName, level }: UserMenuProps) {
     const next = theme === 'dark' ? 'light' : 'dark'
     document.documentElement.classList.remove('dark', 'light')
     document.documentElement.classList.add(next)
-    localStorage.setItem('aura-theme', next)
+    localStorage.setItem('sophi-theme', next)
     setTheme(next)
   }
 
-  const displayName = fullName ?? email ?? 'Aura admin'
-  const levelColor = LEVEL_COLORS[level] ?? 'var(--aura-text3)'
+  const displayName = fullName ?? email ?? 'Sophi admin'
+  const levelColor = LEVEL_COLORS[level] ?? 'var(--sophi-text3)'
 
   return (
     <div className="relative" ref={ref}>
@@ -61,28 +61,28 @@ export function UserMenu({ email, fullName, level }: UserMenuProps) {
         onClick={() => setOpen((v) => !v)}
         type="button"
       >
-        <UserCircle size={16} style={{ color: 'var(--aura-text3)' }} />
+        <UserCircle size={16} style={{ color: 'var(--sophi-text3)' }} />
         <span
           className="hidden max-w-32 truncate text-xs font-medium sm:block"
-          style={{ color: 'var(--aura-text)' }}
+          style={{ color: 'var(--sophi-text)' }}
         >
           {displayName}
         </span>
-        <ChevronDown size={12} style={{ color: 'var(--aura-text3)' }} />
+        <ChevronDown size={12} style={{ color: 'var(--sophi-text3)' }} />
       </button>
 
       {open && (
         <div
           className="absolute right-0 top-full z-50 mt-1 w-60 rounded-xl border shadow-lg"
-          style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border2)' }}
+          style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border2)' }}
         >
           {/* User info header */}
-          <div className="border-b px-4 py-3" style={{ borderColor: 'var(--aura-border)' }}>
-            <div className="text-sm font-medium" style={{ color: 'var(--aura-text)' }}>
+          <div className="border-b px-4 py-3" style={{ borderColor: 'var(--sophi-border)' }}>
+            <div className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>
               {displayName}
             </div>
             {fullName && (
-              <div className="text-xs" style={{ color: 'var(--aura-text3)' }}>
+              <div className="text-xs" style={{ color: 'var(--sophi-text3)' }}>
                 {email}
               </div>
             )}
@@ -99,23 +99,23 @@ export function UserMenu({ email, fullName, level }: UserMenuProps) {
           </div>
 
           {/* Preferences section */}
-          <div className="border-b px-4 py-3" style={{ borderColor: 'var(--aura-border)' }}>
+          <div className="border-b px-4 py-3" style={{ borderColor: 'var(--sophi-border)' }}>
             <p
               className="mb-2 text-[10px] font-semibold uppercase tracking-widest"
-              style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}
+              style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}
             >
               Preferências
             </p>
             {/* Theme */}
             <div className="flex items-center justify-between">
-              <span className="text-xs" style={{ color: 'var(--aura-text2)' }}>
+              <span className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
                 Tema
               </span>
               <button
                 onClick={toggleTheme}
                 type="button"
                 className="flex items-center gap-1.5 rounded px-2 py-0.5 text-xs transition-colors hover:bg-white/5"
-                style={{ color: 'var(--aura-text2)' }}
+                style={{ color: 'var(--sophi-text2)' }}
               >
                 {theme === 'dark' ? <Moon size={13} /> : <Sun size={13} />}
                 {theme === 'dark' ? 'Dark' : 'Light'}
@@ -127,7 +127,7 @@ export function UserMenu({ email, fullName, level }: UserMenuProps) {
           <div className="px-1 py-1">
             <p
               className="mb-1 px-3 pt-1 text-[10px] font-semibold uppercase tracking-widest"
-              style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}
+              style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}
             >
               Conta
             </p>
@@ -135,7 +135,7 @@ export function UserMenu({ email, fullName, level }: UserMenuProps) {
               href="/settings"
               onClick={() => setOpen(false)}
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-white/5"
-              style={{ color: 'var(--aura-text2)' }}
+              style={{ color: 'var(--sophi-text2)' }}
             >
               <Settings size={14} />
               Definições
@@ -143,7 +143,7 @@ export function UserMenu({ email, fullName, level }: UserMenuProps) {
             <form action={signOut}>
               <button
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-white/5"
-                style={{ color: 'var(--aura-text2)' }}
+                style={{ color: 'var(--sophi-text2)' }}
                 type="submit"
               >
                 <LogOut size={14} />

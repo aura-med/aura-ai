@@ -7,15 +7,16 @@ import {
   handleListUsers,
   type ApiUsersService,
 } from '../../lib/api/users.ts'
+import type { UserRole } from '../../types/index.ts'
 
 const SECRET = 'test-secret-at-least-32-characters'
 
-async function authHeaders() {
+async function authHeaders(role: UserRole = 'owner') {
   const token = await signApiToken({
     userId: 'actor-1',
     email: 'actor@example.com',
     orgId: 'org-1',
-    role: 'admin',
+    role,
   }, { secret: SECRET, now: 1_700_000_000 })
 
   return { Authorization: `Bearer ${token}` }
@@ -95,6 +96,19 @@ test('POST with invalid body returns 400', async () => {
   )
 
   assert.equal(response.status, 400)
+})
+
+test('POST from a non-owner role returns 403', async () => {
+  const response = await handleCreateUser(
+    new Request('http://localhost/api/users', {
+      method: 'POST',
+      headers: { ...(await authHeaders('physio')), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'new@example.com', role: 'physio', full_name: 'New User' }),
+    }),
+    { jwtSecret: SECRET, now: 1_700_000_000, service: usersService() },
+  )
+
+  assert.equal(response.status, 403)
 })
 
 test('POST with duplicate email returns 409', async () => {

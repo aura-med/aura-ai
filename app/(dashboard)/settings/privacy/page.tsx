@@ -61,7 +61,7 @@ export default function PrivacyPage() {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `aura_consent_${new Date().toISOString().slice(0, 10)}.csv`
+      link.download = `sophi_consent_${new Date().toISOString().slice(0, 10)}.csv`
       link.click()
       URL.revokeObjectURL(url)
     } finally {
@@ -74,7 +74,7 @@ export default function PrivacyPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-48">
-        <div className="text-sm" style={{ color: 'var(--aura-text3)' }}>A carregar…</div>
+        <div className="text-sm" style={{ color: 'var(--sophi-text3)' }}>A carregar…</div>
       </div>
     )
   }
@@ -82,26 +82,26 @@ export default function PrivacyPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-lg font-semibold" style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}>
+        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
           {t('title')}
         </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--aura-text3)' }}>{t('description')}</p>
+        <p className="text-sm mt-1" style={{ color: 'var(--sophi-text3)' }}>{t('description')}</p>
       </div>
 
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: t('totalAthletes'), value: athletes.length, color: 'var(--aura-text)' },
-          { label: t('consentGiven'),  value: consentCount, color: 'var(--aura-green)' },
-          { label: t('consentMissing'), value: athletes.length - consentCount, color: 'var(--aura-danger)' },
+          { label: t('totalAthletes'), value: athletes.length, color: 'var(--sophi-text)' },
+          { label: t('consentGiven'),  value: consentCount, color: 'var(--sophi-green)' },
+          { label: t('consentMissing'), value: athletes.length - consentCount, color: 'var(--sophi-danger)' },
         ].map(({ label, value, color }) => (
           <div
             key={label}
             className="rounded-xl border p-3 text-center"
-            style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+            style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
           >
             <div className="text-2xl font-bold" style={{ color, fontFamily: 'var(--font-syne)' }}>{value}</div>
-            <div className="text-xs mt-1" style={{ color: 'var(--aura-text3)' }}>{label}</div>
+            <div className="text-xs mt-1" style={{ color: 'var(--sophi-text3)' }}>{label}</div>
           </div>
         ))}
       </div>
@@ -109,14 +109,14 @@ export default function PrivacyPage() {
       {/* Athlete list */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}>
+          <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-mono)' }}>
             {t('consentList')}
           </div>
           <button
             onClick={exportCSV}
             disabled={exporting || athletes.length === 0}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors disabled:opacity-50"
-            style={{ background: 'rgba(0,229,160,0.1)', color: 'var(--aura-green)', border: '1px solid rgba(0,229,160,0.2)' }}
+            style={{ background: 'rgba(0,229,160,0.1)', color: 'var(--sophi-green)', border: '1px solid rgba(0,229,160,0.2)' }}
           >
             <Download size={12} />
             {t('exportCsv')}
@@ -124,27 +124,27 @@ export default function PrivacyPage() {
         </div>
 
         {error && (
-          <div className="text-sm px-3 py-2 rounded-md mb-3" style={{ background: 'rgba(255,77,109,0.1)', color: 'var(--aura-danger)' }}>
+          <div className="text-sm px-3 py-2 rounded-md mb-3" style={{ background: 'rgba(255,77,109,0.1)', color: 'var(--sophi-danger)' }}>
             {error}
           </div>
         )}
 
         <div
           className="rounded-xl border overflow-hidden"
-          style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border)' }}
+          style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
         >
           {athletes.length === 0 ? (
             <div className="p-8 text-center">
-              <ShieldCheck size={32} className="mx-auto mb-3" style={{ color: 'var(--aura-text3)' }} />
-              <p className="text-sm" style={{ color: 'var(--aura-text3)' }}>{t('noAthletes')}</p>
+              <ShieldCheck size={32} className="mx-auto mb-3" style={{ color: 'var(--sophi-text3)' }} />
+              <p className="text-sm" style={{ color: 'var(--sophi-text3)' }}>{t('noAthletes')}</p>
             </div>
           ) : (
             athletes.map((a, i) => (
-              <div key={a.id} className="flex items-center justify-between px-4 py-3" style={{ borderTop: i > 0 ? '1px solid var(--aura-border)' : 'none' }}>
+              <div key={a.id} className="flex items-center justify-between px-4 py-3" style={{ borderTop: i > 0 ? '1px solid var(--sophi-border)' : 'none' }}>
                 <div>
-                  <div className="text-sm" style={{ color: 'var(--aura-text)' }}>{a.name}</div>
+                  <div className="text-sm" style={{ color: 'var(--sophi-text)' }}>{a.name}</div>
                   {a.consent_date && (
-                    <div className="text-xs" style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-mono)' }}>
+                    <div className="text-xs" style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-mono)' }}>
                       {new Date(a.consent_date).toLocaleDateString('pt-PT')}
                     </div>
                   )}
@@ -152,13 +152,13 @@ export default function PrivacyPage() {
                 <div className="flex items-center gap-1.5">
                   {a.consent_date ? (
                     <>
-                      <Check size={14} style={{ color: 'var(--aura-green)' }} />
-                      <span className="text-xs" style={{ color: 'var(--aura-green)' }}>{t('consentOk')}</span>
+                      <Check size={14} style={{ color: 'var(--sophi-green)' }} />
+                      <span className="text-xs" style={{ color: 'var(--sophi-green)' }}>{t('consentOk')}</span>
                     </>
                   ) : (
                     <>
-                      <X size={14} style={{ color: 'var(--aura-danger)' }} />
-                      <span className="text-xs" style={{ color: 'var(--aura-danger)' }}>{t('consentMissingLabel')}</span>
+                      <X size={14} style={{ color: 'var(--sophi-danger)' }} />
+                      <span className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{t('consentMissingLabel')}</span>
                     </>
                   )}
                 </div>
@@ -174,10 +174,10 @@ export default function PrivacyPage() {
         style={{ background: 'rgba(0,229,160,0.03)', borderColor: 'rgba(0,229,160,0.12)' }}
       >
         <div className="flex items-center gap-2">
-          <ShieldCheck size={14} style={{ color: 'var(--aura-green)' }} />
-          <span className="text-xs font-semibold" style={{ color: 'var(--aura-text2)' }}>{t('gdprTitle')}</span>
+          <ShieldCheck size={14} style={{ color: 'var(--sophi-green)' }} />
+          <span className="text-xs font-semibold" style={{ color: 'var(--sophi-text2)' }}>{t('gdprTitle')}</span>
         </div>
-        <p className="text-xs" style={{ color: 'var(--aura-text3)' }}>{t('gdprNote')}</p>
+        <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>{t('gdprNote')}</p>
       </div>
     </div>
   )

@@ -2,9 +2,11 @@
 // Athlete Profile — TypeScript types (migration 006)
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { RecommendationSet, UserRole } from '@/types'
+import type { RecommendationSet, UserRole, AthleteAvailabilityStatus } from '@/types'
 
-export type TabId = 'overview' | 'medical' | 'injuries' | 'treatments' | 'documents' | 'recommendations'
+export type TabId =
+  | 'overview' | 'medical' | 'injuries' | 'treatments'
+  | 'nutrition' | 'training' | 'documents' | 'recommendations'
 
 export type LatestRecommendations = RecommendationSet & {
   logId: string
@@ -27,10 +29,78 @@ export interface MedicalHistory {
   family_history: Record<string, unknown>
   surgical_history: SurgicalRecord[]
   medications: MedicationRecord[]
-  orthotics: OrthoticRecord[]
+  chronic_conditions: string[] | null
+  skinfold_limit_mm: number | null
   notes: string | null
   created_at: string
   updated_at: string
+}
+
+// ── Clinical Module Types (migration 009) ────────────────────────────────────
+
+export interface ActiveDiagnosis {
+  id: string
+  osiics_code: string | null
+  osiics_description: string | null
+  diagnosis_type: string | null
+  custom_description: string | null
+  availability_status: string | null
+  diagnosed_at: string
+  is_resolved: boolean
+  occurrence_id: string | null
+}
+
+// Covers both active and recently-resolved occurrences — the Overview tab
+// renders both through the same OccurrenceRow used on the Ocorrências page
+// (see components/occurrences/OccurrenceRow.tsx), so this mirrors that
+// component's field requirements (minus the nested `athletes`, which the
+// Overview tab supplies itself since every row belongs to the same athlete).
+export interface ActiveOccurrence {
+  id: string
+  athlete_id: string
+  title: string | null
+  occurrence_date: string
+  occurrence_type: string | null
+  availability_status: AthleteAvailabilityStatus
+  subjective: string | null
+  objective: string | null
+  assessment: string | null
+  plan: string | null
+  clinician_name: string | null
+  clinician_role: string | null
+  is_resolved: boolean
+  resolved_at: string | null
+  occurrence_records: {
+    id: string
+    record_date: string
+    subjective: string | null
+    objective: string | null
+    assessment: string | null
+    plan: string | null
+    availability_status: AthleteAvailabilityStatus | null
+    clinician_name: string | null
+    created_at: string
+  }[]
+  diagnoses: {
+    id: string
+    osiics_code: string | null
+    osiics_description: string | null
+    diagnosis_type: string | null
+    custom_description: string | null
+    availability_status: AthleteAvailabilityStatus | null
+    is_resolved: boolean
+  }[]
+}
+
+export interface MedicationAdministration {
+  id: string
+  medication_name: string
+  dose: string | null
+  route: string | null
+  administered_by_name: string | null
+  administered_at: string
+  notes: string | null
+  created_at: string
 }
 
 export interface SurgicalRecord {
@@ -49,17 +119,9 @@ export interface MedicationRecord {
   prescriber?: string
 }
 
-export interface OrthoticRecord {
-  name: string
-  body_part: string
-  prescribed_date?: string
-  prescriber?: string
-  notes?: string
-}
-
 // ── Rehab Sessions ────────────────────────────────────────────────────────────
 
-export type RehabSessionType = 'physio' | 'gym' | 'pool' | 'field' | 'other'
+export type RehabSessionType = 'physio' | 'gym' | 'massage' | 'field' | 'other'
 
 export interface RehabSession {
   id: string
@@ -70,6 +132,50 @@ export interface RehabSession {
   description: string | null
   clinician_name: string | null
   notes: string | null
+  occurrence_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+// ── Rehab Plan Calendar (migration 034) ───────────────────────────────────────
+// Day-by-day reabilitação calendar — distinct from RehabSession above (a flat
+// physio-visit log) and from the /rehab gate-based RTP protocol tracker.
+
+export type RehabPlanPeriod = 'morning' | 'afternoon'
+
+export interface RehabPlan {
+  id: string
+  athlete_id: string
+  occurrence_id: string | null
+  title: string
+  start_date: string
+  expected_end_date: string | null
+  is_active: boolean
+  is_completed: boolean
+  closed_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface RehabPlanPhase {
+  id: string
+  plan_id: string
+  phase_number: number
+  name: string
+  criteria: string | null
+  start_date: string
+  created_at: string
+  updated_at: string
+}
+
+export interface RehabPlanDay {
+  id: string
+  plan_id: string
+  phase_id: string | null
+  entry_date: string
+  period: RehabPlanPeriod
+  content: string | null
+  is_rest_day: boolean
   created_at: string
   updated_at: string
 }
@@ -109,26 +215,6 @@ export interface MedicalConsultation {
   plan: string | null
   created_at: string
   updated_at: string
-}
-
-// ── EMD ───────────────────────────────────────────────────────────────────────
-
-export type EmdDecision = 'apto' | 'apto_com_restricoes' | 'inapto'
-export type EmdExamType = 'upload' | 'form'
-
-export interface EmdSubmission {
-  id: string
-  athlete_id: string
-  season: string
-  submission_date: string
-  exam_type: EmdExamType
-  pdf_url: string | null
-  decision: EmdDecision | null
-  restrictions: string | null
-  clinician_id: string | null
-  clinician_name: string | null
-  signature_date: string | null
-  created_at: string
 }
 
 // ── SCAT-6 ────────────────────────────────────────────────────────────────────
@@ -248,22 +334,6 @@ export const RTP_STAGES = [
   { stage: 6, name: 'Retorno à Competição',          hours: 0,  desc: 'Jogo normal.' },
 ] as const
 
-// ── Body Map ─────────────────────────────────────────────────────────────────
-
-export type BodyRegion =
-  | 'head' | 'neck' | 'chest' | 'abdomen' | 'hip'
-  | 'thigh' | 'knee' | 'calf' | 'ankle' | 'foot'
-  | 'shoulder' | 'arm' | 'elbow' | 'forearm' | 'wrist' | 'hand'
-  | 'upper_back' | 'lower_back' | 'glute' | 'hamstring'
-
-export type BodyZoneStatus = 'clear' | 'recent' | 'active'
-
-export interface BodyZoneInfo {
-  region: BodyRegion
-  status: BodyZoneStatus
-  injuries: InjuryEventSummary[]
-}
-
 export interface InjuryEventSummary {
   id: string
   injury_date: string
@@ -272,6 +342,118 @@ export interface InjuryEventSummary {
   location: string | null
   severity: string | null
   is_active: boolean
+}
+
+// ── Anamnese / Ficha Clínica (structured pre-season assessment) ──────────────
+
+export interface AthleteAnamnesis {
+  id: string
+  athlete_id: string
+  season: string
+  assessment_date: string | null
+  injury_history: string | null
+  preexisting_conditions: string | null
+  current_medications: string | null
+  drug_allergies: string | null
+  food_allergies: string | null
+  cardiovascular_red_flags: string | null
+  family_history: string | null
+  blood_pressure: string | null
+  heart_rate_bpm: number | null
+  cardiac_auscultation: string | null
+  pulmonary_auscultation: string | null
+  abdominal_exam: string | null
+  lower_limb_inspection: string | null
+  foot_structure: string | null
+  knee_alignment: string | null
+  knee_stability_tests: string | null
+  ankle_stability_tests: string | null
+  ultrasound_assessment: string | null
+  complementary_exams: string | null
+  final_observations: string | null
+  clinician_name: string | null
+  created_at: string
+  updated_at: string
+}
+
+// ── Nutrition ─────────────────────────────────────────────────────────────────
+
+export interface AthleteDailyWeight {
+  id: string
+  athlete_id: string
+  measurement_date: string
+  weight_kg: number
+  recorded_by_name: string | null
+  created_at: string
+}
+
+export interface NutritionAssessment {
+  id: string
+  athlete_id: string
+  assessment_date: string
+  skinfold_tricep_mm: number | null
+  skinfold_subscapular_mm: number | null
+  skinfold_bicep_mm: number | null
+  skinfold_iliac_mm: number | null
+  skinfold_supraspinal_mm: number | null
+  skinfold_abdominal_mm: number | null
+  skinfold_thigh_mm: number | null
+  skinfold_calf_mm: number | null
+  perimeter_arm_relaxed_cm: number | null
+  perimeter_arm_flexed_cm: number | null
+  perimeter_waist_cm: number | null
+  perimeter_hip_cm: number | null
+  perimeter_thigh_cm: number | null
+  perimeter_calf_cm: number | null
+  urine_specific_gravity: number | null
+  recorded_by_name: string | null
+  notes: string | null
+  created_at: string
+}
+
+export const SKINFOLD_FIELDS = [
+  { key: 'skinfold_tricep_mm',      label: 'Tricipital' },
+  { key: 'skinfold_subscapular_mm', label: 'Subescapular' },
+  { key: 'skinfold_bicep_mm',       label: 'Bicipital' },
+  { key: 'skinfold_iliac_mm',       label: 'Supra-ilíaca' },
+  { key: 'skinfold_supraspinal_mm', label: 'Supraespinal' },
+  { key: 'skinfold_abdominal_mm',   label: 'Abdominal' },
+  { key: 'skinfold_thigh_mm',       label: 'Crural' },
+  { key: 'skinfold_calf_mm',        label: 'Geminal' },
+] as const
+
+export const PERIMETER_FIELDS = [
+  { key: 'perimeter_arm_relaxed_cm', label: 'Braço relaxado' },
+  { key: 'perimeter_arm_flexed_cm',  label: 'Braço contraído' },
+  { key: 'perimeter_waist_cm',       label: 'Cintura' },
+  { key: 'perimeter_hip_cm',         label: 'Anca' },
+  { key: 'perimeter_thigh_cm',       label: 'Medial da coxa' },
+  { key: 'perimeter_calf_cm',        label: 'Geminal' },
+] as const
+
+export interface AthleteSupplement {
+  id: string
+  athlete_id: string
+  name: string
+  dosage: string | null
+  frequency: string | null
+  start_date: string
+  end_date: string | null
+  notes: string | null
+  recorded_by_name: string | null
+  created_at: string
+}
+
+// ── Training Plans ────────────────────────────────────────────────────────────
+
+export interface TrainingPlan {
+  id: string
+  athlete_id: string
+  file_url: string
+  file_name: string
+  file_size: number | null
+  uploaded_by_name: string | null
+  created_at: string
 }
 
 // ── Full Profile Data (assembled server-side) ─────────────────────────────────
@@ -286,6 +468,7 @@ export interface AthleteProfileData {
   date_of_birth: string | null
   club: string | null
   status: string
+  availabilityStatus: string
   // Score
   score: number | null
   riskLevel: string | null
@@ -298,11 +481,16 @@ export interface AthleteProfileData {
   bmi: number | null
   // Clinical
   medicalHistory: MedicalHistory | null
-  latestEmd: EmdSubmission | null
+  anamnesis: AthleteAnamnesis | null
   baselineScat6: Scat6Assessment | null
   activeConcussion: Scat6Assessment | null
   // Injuries (from existing table)
   injuryEvents: InjuryEventSummary[]
+  // Clinical module (migration 009)
+  activeDiagnoses: ActiveDiagnosis[]
+  activeOccurrences: ActiveOccurrence[]
+  // Short history for the Overview compact summary (migration 026)
+  recentResolvedOccurrences: ActiveOccurrence[]
   // Documents count (not full list — fetched lazily)
   documentCount: number
   consultationCount: number

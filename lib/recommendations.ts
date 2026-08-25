@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // lib/recommendations.ts
-// Aura — Evidence-Based Recommendations Engine
+// Sophi — Evidence-Based Recommendations Engine
 //
 // Architecture:
 //   • RULES: static library of base rules — all grounded in best available
@@ -1020,57 +1020,57 @@ export const FALLBACK: Record<RiskLevel, Record<Stakeholder, BaseRule[]>> = {
   low: {
     clinical: [{
       type: 'success', icon: '✅', text: 'Parâmetro normal — sem acção necessária.', timing: '—',
-      evidence_ref: 'Aura Model v1.1', evidence_level: 'Expert', clinical_direction: 'maintain', overridable: true,
+      evidence_ref: 'Sophi Model v1.1', evidence_level: 'Expert', clinical_direction: 'maintain', overridable: true,
     }],
     coach: [{
       type: 'success', icon: '✅', text: 'Disponível para treino completo.', timing: '—',
-      evidence_ref: 'Aura Model v1.1', evidence_level: 'Expert', clinical_direction: 'maintain', overridable: true,
+      evidence_ref: 'Sophi Model v1.1', evidence_level: 'Expert', clinical_direction: 'maintain', overridable: true,
     }],
     athlete: [{
       type: 'success', icon: '✅', text: 'Boa recuperação — continua assim!', timing: '—',
-      evidence_ref: 'Aura Model v1.1', evidence_level: 'Expert', clinical_direction: 'maintain', overridable: true,
+      evidence_ref: 'Sophi Model v1.1', evidence_level: 'Expert', clinical_direction: 'maintain', overridable: true,
     }],
   },
   medium: {
     clinical: [{
       type: 'info', icon: '👁️', text: 'Parâmetro a monitorizar — reavaliação em 48h.', timing: '48h',
-      evidence_ref: 'Aura Model v1.1', evidence_level: 'Expert', clinical_direction: 'monitor', overridable: true,
+      evidence_ref: 'Sophi Model v1.1', evidence_level: 'Expert', clinical_direction: 'monitor', overridable: true,
     }],
     coach: [{
       type: 'info', icon: '📉', text: 'Considerar ajuste de intensidade.', timing: 'Amanhã',
-      evidence_ref: 'Aura Model v1.1', evidence_level: 'Expert', clinical_direction: 'reduce_load', overridable: true,
+      evidence_ref: 'Sophi Model v1.1', evidence_level: 'Expert', clinical_direction: 'reduce_load', overridable: true,
     }],
     athlete: [{
       type: 'info', icon: '💡', text: 'Repouso e alimentação de qualidade esta noite.', timing: 'Esta noite',
-      evidence_ref: 'Aura Model v1.1', evidence_level: 'Expert', clinical_direction: 'monitor', overridable: true,
+      evidence_ref: 'Sophi Model v1.1', evidence_level: 'Expert', clinical_direction: 'monitor', overridable: true,
     }],
   },
   high: {
     clinical: [{
       type: 'warning', icon: '⚠️', text: 'Parâmetro elevado — intervenção recomendada.', timing: 'Hoje',
-      evidence_ref: 'Aura Model v1.1', evidence_level: 'Expert', clinical_direction: 'reduce_load', overridable: false,
+      evidence_ref: 'Sophi Model v1.1', evidence_level: 'Expert', clinical_direction: 'reduce_load', overridable: false,
     }],
     coach: [{
       type: 'warning', icon: '⚠️', text: 'Reduzir carga no próximo treino.', timing: 'Amanhã',
-      evidence_ref: 'Aura Model v1.1', evidence_level: 'Expert', clinical_direction: 'reduce_load', overridable: false,
+      evidence_ref: 'Sophi Model v1.1', evidence_level: 'Expert', clinical_direction: 'reduce_load', overridable: false,
     }],
     athlete: [{
       type: 'warning', icon: '⚠️', text: 'Priorizar recuperação.', timing: 'Hoje',
-      evidence_ref: 'Aura Model v1.1', evidence_level: 'Expert', clinical_direction: 'rest', overridable: true,
+      evidence_ref: 'Sophi Model v1.1', evidence_level: 'Expert', clinical_direction: 'rest', overridable: true,
     }],
   },
   critical: {
     clinical: [{
       type: 'critical', icon: '🚨', text: 'Parâmetro crítico — acção imediata necessária.', timing: 'Imediato',
-      evidence_ref: 'Aura Model v1.1', evidence_level: 'Expert', clinical_direction: 'assess', overridable: false,
+      evidence_ref: 'Sophi Model v1.1', evidence_level: 'Expert', clinical_direction: 'assess', overridable: false,
     }],
     coach: [{
       type: 'critical', icon: '🚨', text: 'Excluir de treino até avaliação médica.', timing: 'Imediato',
-      evidence_ref: 'Aura Model v1.1', evidence_level: 'Expert', clinical_direction: 'rest', overridable: false,
+      evidence_ref: 'Sophi Model v1.1', evidence_level: 'Expert', clinical_direction: 'rest', overridable: false,
     }],
     athlete: [{
       type: 'critical', icon: '🚨', text: 'Repouso obrigatório — consulta imediata.', timing: 'Imediato',
-      evidence_ref: 'Aura Model v1.1', evidence_level: 'Expert', clinical_direction: 'rest', overridable: false,
+      evidence_ref: 'Sophi Model v1.1', evidence_level: 'Expert', clinical_direction: 'rest', overridable: false,
     }],
   },
 }

@@ -1,20 +1,20 @@
-# Aura
+# Sophi
 
 ## The Operating System for Sports Medicine
 
-Aura is a Health & Performance Intelligence Platform for professional football clubs. It turns raw biometric, wellness, GPS, and rehabilitation signals into actionable medical protocols that help sports medicine departments protect player availability, reduce avoidable injuries, and coordinate return-to-play decisions with confidence.
+Sophi is a Health & Performance Intelligence Platform for professional football clubs. It turns raw biometric, wellness, GPS, and rehabilitation signals into actionable medical protocols that help sports medicine departments protect player availability, reduce avoidable injuries, and coordinate return-to-play decisions with confidence.
 
 > Our mission is to keep elite athletes healthy, available, and performing by giving medical teams a real-time intelligence layer between data collection and clinical action.
 
-## Why Aura?
+## Why Sophi?
 
-In professional football, the squad is the club's most valuable asset. Every preventable soft-tissue injury carries a competitive, medical, and financial cost. Aura exists to keep players on the pitch by helping multidisciplinary teams move from retrospective reporting to proactive, evidence-led intervention.
+In professional football, the squad is the club's most valuable asset. Every preventable soft-tissue injury carries a competitive, medical, and financial cost. Sophi exists to keep players on the pitch by helping multidisciplinary teams move from retrospective reporting to proactive, evidence-led intervention.
 
-Aura is not just another dashboard. It is designed as the operating layer for sports medicine departments: a shared system where doctors, physios, performance staff, and coaches can understand athlete readiness, detect risk earlier, and adapt rehabilitation plans as the athlete responds.
+Sophi is not just another dashboard. It is designed as the operating layer for sports medicine departments: a shared system where doctors, physios, performance staff, and coaches can understand athlete readiness, detect risk earlier, and adapt rehabilitation plans as the athlete responds.
 
 ## Product Preview
 
-![Aura Dashboard](./public/screenshot.png)
+![Sophi Dashboard](./public/screenshot.png)
 
 ## Core Pillars
 
@@ -26,7 +26,7 @@ Aura is not just another dashboard. It is designed as the operating layer for sp
 
 ## Technical Architecture
 
-| Layer | Technology | Role in Aura |
+| Layer | Technology | Role in Sophi |
 | --- | --- | --- |
 | Application Framework | Next.js 16 App Router, React 19 | File-system routing, server-rendered clinical workflows, and modern React primitives for fast decision surfaces. |
 | Type Safety | TypeScript | Strong contracts for athlete profiles, scoring inputs, rehabilitation state, and sensitive health-related data flows. |
@@ -34,12 +34,12 @@ Aura is not just another dashboard. It is designed as the operating layer for sp
 | Visualization | Recharts | Real-time-ready charts for risk trends, workload signals, and health/performance interpretation. |
 | State Management | Zustand | Lightweight UI and squad-context state for authenticated dashboard workflows. |
 | Internationalization | next-intl | Multilingual clinical workflows with Portuguese, English, and Spanish message files. |
-| Styling | Tailwind CSS v4, shadcn-based primitives, Aura CSS tokens | A consistent visual system for high-density medical and performance interfaces. |
-| Typography | next/font-managed product typography | Aura uses a design-first approach for maximum legibility of complex medical metrics. The requested production direction is Vercel's Geist family for clinical readability; the current app imports Inter, DM Mono, and Syne in `app/layout.tsx`. |
+| Styling | Tailwind CSS v4, shadcn-based primitives, Sophi CSS tokens | A consistent visual system for high-density medical and performance interfaces. |
+| Typography | next/font-managed product typography | Sophi uses a design-first approach for maximum legibility of complex medical metrics. The requested production direction is Vercel's Geist family for clinical readability; the current app imports Inter, DM Mono, and Syne in `app/layout.tsx`. |
 
 ### Performance Principles
 
-Aura is optimized for high-frequency decision-making: fast navigation, clear risk visualization, and server-side scoring boundaries for sensitive calculations. The injury score engine runs server-side, persists daily score history, and keeps display helpers separate from canonical scoring logic.
+Sophi is optimized for high-frequency decision-making: fast navigation, clear risk visualization, and server-side scoring boundaries for sensitive calculations. The injury score engine runs server-side, persists daily score history, and keeps display helpers separate from canonical scoring logic.
 
 ## Setup & Installation
 
@@ -85,7 +85,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 
 # Optional deployment or integration placeholders
-DATABASE_URL=postgresql://user:password@host:5432/aura
+DATABASE_URL=postgresql://user:password@host:5432/sophi
 NEXT_PUBLIC_API_KEY=your-public-api-key
 SUPABASE_SERVICE_ROLE_KEY=server-only-service-role-key
 AURA_API_JWT_SECRET=replace-with-a-long-random-secret
@@ -130,11 +130,11 @@ curl -X POST http://localhost:3000/api/rehab/session-id/rtp \
   -d '{"rtp_criteria":[{"label":"Pain-free sprinting","done":true}]}'
 ```
 
-API tokens are Aura REST tokens only. They expire after 30 minutes and do not expose Supabase refresh tokens.
+API tokens are Sophi REST tokens only. They expire after 30 minutes and do not expose Supabase refresh tokens.
 
 ## Security & Data Integrity
 
-Aura is built for sensitive athlete health and performance workflows. The platform should be operated with a HIPAA/GDPR compliance mindset: least-privilege access, strict separation of public and server-only keys, audit-ready data handling, encrypted transport, and careful control over who can view or modify medical context.
+Sophi is built for sensitive athlete health and performance workflows. The platform should be operated with a HIPAA/GDPR compliance mindset: least-privilege access, strict separation of public and server-only keys, audit-ready data handling, encrypted transport, and careful control over who can view or modify medical context.
 
 Formal compliance depends on deployment, hosting, contracts, data residency, access controls, audit logging, and organizational process. Treat the application as a clinical-grade system even during development.
 

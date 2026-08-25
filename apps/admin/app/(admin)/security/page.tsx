@@ -49,7 +49,7 @@ export default async function SecurityPage({
       {isOwner && (
         <Card>
           <div className="mb-4 flex items-center gap-2">
-            <ShieldPlus size={15} style={{ color: 'var(--aura-green)' }} />
+            <ShieldPlus size={15} style={{ color: 'var(--sophi-green)' }} />
             <h2 className="text-sm font-semibold">Admin Registry</h2>
           </div>
           <form action={inviteAdmin} className="mb-5 grid gap-3 sm:grid-cols-[1fr_160px_auto]">
@@ -86,7 +86,7 @@ export default async function SecurityPage({
               {admins.length === 0 && <EmptyState message="No platform admins registered." />}
               {admins.map((admin) => (
                 <tr key={admin.user_id}>
-                  <td style={{ color: 'var(--aura-text)' }}>{admin.email ?? admin.user_id.slice(0, 8)}</td>
+                  <td style={{ color: 'var(--sophi-text)' }}>{admin.email ?? admin.user_id.slice(0, 8)}</td>
                   <td><StatusBadge tone={admin.level === 'owner' ? 'green' : admin.level === 'support' ? 'warn' : 'neutral'}>{admin.level}</StatusBadge></td>
                   <td>{admin.last_seen_at ? formatDateTime(admin.last_seen_at) : 'Never'}</td>
                   <td><StatusBadge tone={admin.active ? 'green' : 'neutral'}>{admin.active ? 'active' : 'revoked'}</StatusBadge></td>
@@ -107,7 +107,7 @@ export default async function SecurityPage({
                       />
                     )}
                     {admin.user_id === context.user.id && (
-                      <span className="text-xs" style={{ color: 'var(--aura-text3)' }}>You</span>
+                      <span className="text-xs" style={{ color: 'var(--sophi-text3)' }}>You</span>
                     )}
                   </td>
                 </tr>
@@ -119,7 +119,7 @@ export default async function SecurityPage({
 
       {/* Support sessions */}
       <Card className="overflow-x-auto p-0">
-        <div className="border-b px-4 py-3" style={{ borderColor: 'var(--aura-border)' }}>
+        <div className="border-b px-4 py-3" style={{ borderColor: 'var(--sophi-border)' }}>
           <h2 className="text-sm font-semibold">Support sessions</h2>
         </div>
         <table className="admin-table min-w-[900px]">
@@ -130,7 +130,7 @@ export default async function SecurityPage({
             {supportSessions.length === 0 && <EmptyState message="No support sessions." />}
             {supportSessions.map((s) => (
               <tr key={s.id}>
-                <td style={{ color: 'var(--aura-text)' }}>{s.ticket_id}</td>
+                <td style={{ color: 'var(--sophi-text)' }}>{s.ticket_id}</td>
                 <td>{s.org_name}</td>
                 <td><StatusBadge tone={s.status === 'active' ? 'warn' : 'neutral'}>{s.status}</StatusBadge></td>
                 <td>{formatDateTime(s.started_at)}</td>
@@ -144,7 +144,7 @@ export default async function SecurityPage({
 
       {/* Audit log */}
       <Card className="overflow-x-auto p-0">
-        <div className="border-b px-4 py-3 flex items-center justify-between" style={{ borderColor: 'var(--aura-border)' }}>
+        <div className="border-b px-4 py-3 flex items-center justify-between" style={{ borderColor: 'var(--sophi-border)' }}>
           <h2 className="text-sm font-semibold">Audit log</h2>
           <SearchFilter
             typeOptions={[
@@ -163,7 +163,7 @@ export default async function SecurityPage({
             {auditLogs.length === 0 && <EmptyState message="No audit events match this filter." />}
             {auditLogs.map((log) => (
               <tr key={log.id}>
-                <td style={{ color: 'var(--aura-text)' }}>{log.event_type}</td>
+                <td style={{ color: 'var(--sophi-text)' }}>{log.event_type}</td>
                 <td>{log.target_type ?? '-'} {log.target_id ? `· ${String(log.target_id).slice(0, 8)}` : ''}</td>
                 <td>{log.org_name ?? '-'}</td>
                 <td>{log.support_session_id ? <StatusBadge tone="warn">{String(log.support_session_id).slice(0, 8)}</StatusBadge> : '-'}</td>

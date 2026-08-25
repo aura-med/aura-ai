@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useMemo, useState, useTransition } from 'react'
 import { updatePassportShare } from '@/lib/data/actions'
 import type { PassportPageDTO } from '@/lib/data/types'
@@ -64,7 +65,9 @@ export function PassportClient({ dto }: { dto: PassportPageDTO }) {
           <div className="card" style={{ marginBottom: 12, borderColor: isShareable ? 'rgba(0,229,160,0.3)' : 'var(--border)' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
               <div>
-                <div style={{ fontFamily: 'var(--display)', fontSize: 22, fontWeight: 900 }}>{athlete.name}</div>
+                <Link href={`/athletes/${athlete.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <div style={{ fontFamily: 'var(--display)', fontSize: 22, fontWeight: 900 }}>{athlete.name}</div>
+                </Link>
                 <div style={{ fontSize: 12, color: 'var(--text2)', fontFamily: 'var(--mono)' }}>
                   {athlete.position ?? '-'} · {athlete.club ?? '-'}
                 </div>
@@ -139,7 +142,7 @@ export function PassportClient({ dto }: { dto: PassportPageDTO }) {
             <div className="ctitle">Simulacao - Novo clube recebe passaporte</div>
             <div style={{ background: 'var(--bg3)', borderRadius: 8, padding: 14, marginBottom: 12 }}>
               <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text3)', letterSpacing: 1.5, marginBottom: 10 }}>
-                CENARIO: TRANSFERENCIA PARA CLUBE CLIENTE AURA
+                CENARIO: TRANSFERENCIA PARA CLUBE CLIENTE SOPHI
               </div>
               <button
                 onClick={() => setShared((state) => ({ ...state, [athlete.id]: !isShared }))}
@@ -161,7 +164,7 @@ export function PassportClient({ dto }: { dto: PassportPageDTO }) {
                 </div>
               ) : (
                 <div style={{ background: 'var(--bg4)', borderRadius: 8, padding: 12, fontSize: 12, color: 'var(--text3)' }}>
-                  Sem Aura: o novo clube comeca do zero. Nenhum historial, nenhum baseline.
+                  Sem Sophi: o novo clube comeca do zero. Nenhum historial, nenhum baseline.
                 </div>
               )}
             </div>

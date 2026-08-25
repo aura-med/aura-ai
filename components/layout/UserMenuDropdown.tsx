@@ -73,28 +73,28 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
         onClick={() => setOpen((v) => !v)}
         type="button"
       >
-        <UserCircle size={16} style={{ color: 'var(--aura-text3)' }} />
+        <UserCircle size={16} style={{ color: 'var(--sophi-text3)' }} />
         <span
           className="hidden max-w-32 truncate text-xs font-medium sm:block"
-          style={{ color: 'var(--aura-text)' }}
+          style={{ color: 'var(--sophi-text)' }}
         >
           {displayName}
         </span>
-        <ChevronDown size={12} style={{ color: 'var(--aura-text3)' }} />
+        <ChevronDown size={12} style={{ color: 'var(--sophi-text3)' }} />
       </button>
 
       {open && (
         <div
           className="absolute right-0 top-full z-50 mt-1 w-60 rounded-xl border shadow-lg"
-          style={{ background: 'var(--aura-bg2)', borderColor: 'var(--aura-border2)' }}
+          style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border2)' }}
         >
           {/* User info header */}
-          <div className="border-b px-4 py-3" style={{ borderColor: 'var(--aura-border)' }}>
-            <div className="text-sm font-medium" style={{ color: 'var(--aura-text)' }}>
+          <div className="border-b px-4 py-3" style={{ borderColor: 'var(--sophi-border)' }}>
+            <div className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>
               {displayName}
             </div>
             {user?.fullName && user.email && (
-              <div className="text-xs" style={{ color: 'var(--aura-text3)' }}>
+              <div className="text-xs" style={{ color: 'var(--sophi-text3)' }}>
                 {user.email}
               </div>
             )}
@@ -103,7 +103,7 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
                 className="mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
                 style={{
                   background: 'rgba(0,229,160,0.10)',
-                  color: 'var(--aura-green)',
+                  color: 'var(--sophi-green)',
                   fontFamily: 'var(--font-dm-mono)',
                 }}
               >
@@ -113,15 +113,15 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
           </div>
 
           {/* Preferences section */}
-          <div className="border-b px-4 py-3" style={{ borderColor: 'var(--aura-border)' }}>
+          <div className="border-b px-4 py-3" style={{ borderColor: 'var(--sophi-border)' }}>
             <p
               className="mb-2 text-[10px] font-semibold uppercase tracking-widest"
-              style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}
+              style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}
             >
               Preferências
             </p>
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs" style={{ color: 'var(--aura-text2)' }}>
+              <span className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
                 Idioma
               </span>
               <div className="flex gap-1" role="group" aria-label="Choose language">
@@ -134,9 +134,9 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
                     aria-pressed={locale === l.value}
                     className="rounded px-2 py-0.5 text-[10px] font-semibold uppercase transition-colors"
                     style={{
-                      background: locale === l.value ? 'rgba(0,229,160,0.10)' : 'var(--aura-bg3)',
-                      color: locale === l.value ? 'var(--aura-green)' : 'var(--aura-text2)',
-                      border: `1px solid ${locale === l.value ? 'rgba(0,229,160,0.3)' : 'var(--aura-border)'}`,
+                      background: locale === l.value ? 'rgba(0,229,160,0.10)' : 'var(--sophi-bg3)',
+                      color: locale === l.value ? 'var(--sophi-green)' : 'var(--sophi-text2)',
+                      border: `1px solid ${locale === l.value ? 'rgba(0,229,160,0.3)' : 'var(--sophi-border)'}`,
                       fontFamily: 'var(--font-dm-mono)',
                     }}
                   >
@@ -146,7 +146,7 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs" style={{ color: 'var(--aura-text2)' }}>
+              <span className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
                 Tema
               </span>
               <button
@@ -156,7 +156,7 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
                 onClick={handleThemeToggle}
                 type="button"
                 className="flex items-center gap-1.5 rounded px-2 py-0.5 text-xs transition-colors hover:bg-white/5"
-                style={{ color: 'var(--aura-text2)' }}
+                style={{ color: 'var(--sophi-text2)' }}
               >
                 {theme === 'dark' ? <Moon size={13} /> : <Sun size={13} />}
                 {theme === 'dark' ? 'Dark' : 'Light'}
@@ -168,7 +168,7 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
           <div className="px-1 py-1">
             <p
               className="mb-1 px-3 pt-1 text-[10px] font-semibold uppercase tracking-widest"
-              style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}
+              style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}
             >
               Conta
             </p>
@@ -176,7 +176,7 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
               href="/settings"
               onClick={() => setOpen(false)}
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-white/5"
-              style={{ color: 'var(--aura-text2)' }}
+              style={{ color: 'var(--sophi-text2)' }}
             >
               <Settings size={14} />
               Definições
@@ -185,7 +185,7 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
               onClick={handleSignOut}
               type="button"
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-white/5"
-              style={{ color: 'var(--aura-text2)' }}
+              style={{ color: 'var(--sophi-text2)' }}
             >
               <LogOut size={14} />
               Terminar sessão

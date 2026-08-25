@@ -17,20 +17,20 @@ export default function AdminError({
     <div className="flex flex-col items-center justify-center gap-4 p-12 text-center">
       <div
         className="rounded-full p-3"
-        style={{ background: 'var(--aura-danger-bg)' }}
+        style={{ background: 'var(--sophi-danger-bg)' }}
       >
-        <span style={{ color: 'var(--aura-danger)', fontSize: 20 }}>!</span>
+        <span style={{ color: 'var(--sophi-danger)', fontSize: 20 }}>!</span>
       </div>
-      <h2 className="text-sm font-semibold" style={{ color: 'var(--aura-text)' }}>
+      <h2 className="text-sm font-semibold" style={{ color: 'var(--sophi-text)' }}>
         Page error
       </h2>
-      <p className="max-w-sm text-xs" style={{ color: 'var(--aura-text2)' }}>
+      <p className="max-w-sm text-xs" style={{ color: 'var(--sophi-text2)' }}>
         {error.message ?? 'An unexpected error occurred loading this page.'}
       </p>
       <button
         className="min-h-9 rounded-md px-4 text-sm font-semibold"
         onClick={reset}
-        style={{ background: 'var(--aura-bg3)', color: 'var(--aura-text)' }}
+        style={{ background: 'var(--sophi-bg3)', color: 'var(--sophi-text)' }}
         type="button"
       >
         Reload

@@ -1,5 +1,5 @@
 {
-  "name": "aura-ai",
+  "name": "sophi-ai",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -29,6 +29,8 @@
     "@supabase/supabase-js": "^2.103.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "lucide-react": "^1.8.0",
     "next": "16.2.4",
     "next-intl": "^4.9.2",

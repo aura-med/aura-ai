@@ -30,7 +30,7 @@ export async function GET(
   const { data, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  void logAudit({
+  await logAudit({
     userId:       user.id,
     userEmail:    user.email ?? '',
     orgId:        profile?.org_id ?? '',

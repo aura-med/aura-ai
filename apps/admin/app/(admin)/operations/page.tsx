@@ -26,17 +26,17 @@ export default async function OperationsPage() {
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <div className="mb-3 flex items-center gap-2">
-            <AlertTriangle size={15} style={{ color: 'var(--aura-warn)' }} />
+            <AlertTriangle size={15} style={{ color: 'var(--sophi-warn)' }} />
             <h2 className="text-sm font-semibold">Stale data queue</h2>
           </div>
           <div className="space-y-2">
             {stale.map((org) => (
-              <div className="flex items-center justify-between rounded-lg border px-3 py-2" key={org.id} style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border)' }}>
+              <div className="flex items-center justify-between rounded-lg border px-3 py-2" key={org.id} style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border)' }}>
                 <div>
-                  <div className="text-sm" style={{ color: 'var(--aura-text)' }}>{org.name}</div>
-                  <div className="text-xs" style={{ color: 'var(--aura-text3)' }}>{org.last_data_at ? formatDateTime(org.last_data_at) : 'No check-ins found'}</div>
+                  <div className="text-sm" style={{ color: 'var(--sophi-text)' }}>{org.name}</div>
+                  <div className="text-xs" style={{ color: 'var(--sophi-text3)' }}>{org.last_data_at ? formatDateTime(org.last_data_at) : 'No check-ins found'}</div>
                 </div>
-                <Link href={`/organizations/${org.id}`} style={{ color: 'var(--aura-green)' }} className="text-xs font-semibold">Open</Link>
+                <Link href={`/organizations/${org.id}`} style={{ color: 'var(--sophi-green)' }} className="text-xs font-semibold">Open</Link>
               </div>
             ))}
           </div>
@@ -44,15 +44,15 @@ export default async function OperationsPage() {
 
         <Card>
           <div className="mb-3 flex items-center gap-2">
-            <Activity size={15} style={{ color: 'var(--aura-blue)' }} />
+            <Activity size={15} style={{ color: 'var(--sophi-blue)' }} />
             <h2 className="text-sm font-semibold">Consent queue</h2>
           </div>
           <div className="space-y-2">
             {consentIssues.map((org) => (
-              <div className="flex items-center justify-between rounded-lg border px-3 py-2" key={org.id} style={{ background: 'var(--aura-bg3)', borderColor: 'var(--aura-border)' }}>
+              <div className="flex items-center justify-between rounded-lg border px-3 py-2" key={org.id} style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border)' }}>
                 <div>
-                  <div className="text-sm" style={{ color: 'var(--aura-text)' }}>{org.name}</div>
-                  <div className="text-xs" style={{ color: 'var(--aura-text3)' }}>{org.missing_consent_count} active athletes missing consent</div>
+                  <div className="text-sm" style={{ color: 'var(--sophi-text)' }}>{org.name}</div>
+                  <div className="text-xs" style={{ color: 'var(--sophi-text3)' }}>{org.missing_consent_count} active athletes missing consent</div>
                 </div>
                 <StatusBadge tone="danger">{org.missing_consent_count}</StatusBadge>
               </div>

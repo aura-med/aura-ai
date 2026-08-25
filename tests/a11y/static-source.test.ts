@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
 test('rehab RTP controls use semantic checkbox inputs', () => {
-  const source = readFileSync('app/(dashboard)/rehab/RehabClient.tsx', 'utf8')
+  const source = readFileSync('app/(dashboard)/rehab-protocol/RehabClient.tsx', 'utf8')
   assert.match(source, /type="checkbox"/)
   assert.doesNotMatch(source, /className="rtp-check"/)
 })

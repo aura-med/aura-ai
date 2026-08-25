@@ -31,7 +31,7 @@ const NotificationCenter = dynamic(
 )
 
 export function TopbarClient({ dto }: { dto: TopbarDTO }) {
-  const { selectedSquadId, setSquad, setOrg, setSquads, setTheme, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
+  const { selectedSquadId, setSquad, setOrg, setSquads, setTheme, setRole, setAthleteId, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
   const appliedThemePreference = useRef<'dark' | 'light' | null>(null)
   const router = useRouter()
   const pathname = usePathname()
@@ -41,6 +41,14 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
   useEffect(() => {
     setOrg(dto.org ?? null)
   }, [dto.org, setOrg])
+
+  useEffect(() => {
+    if (dto.role) setRole(dto.role as import('@/types').UserRole)
+  }, [dto.role, setRole])
+
+  useEffect(() => {
+    setAthleteId(dto.athleteId ?? null)
+  }, [dto.athleteId, setAthleteId])
 
   useEffect(() => {
     setSquads(squads)
@@ -87,15 +95,15 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
     <header
       className="fixed top-0 left-0 right-0 h-14 flex items-center justify-between px-5 z-40 border-b"
       style={{
-        background: 'var(--aura-bg)',
-        borderColor: 'var(--aura-border)',
+        background: 'var(--sophi-bg)',
+        borderColor: 'var(--sophi-border)',
       }}
     >
       <div className="flex min-w-0 items-center gap-3">
         <button
           onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
           className="flex size-11 items-center justify-center rounded-md transition-colors md:hidden"
-          style={{ color: 'var(--aura-text2)' }}
+          style={{ color: 'var(--sophi-text2)' }}
           aria-label="Toggle menu"
         >
           <Menu size={18} />
@@ -106,27 +114,27 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
           className="text-xl font-bold tracking-tight"
           style={{
             fontFamily: 'var(--font-syne)',
-            background: 'linear-gradient(135deg, var(--aura-green) 0%, var(--aura-blue) 100%)',
+            background: 'linear-gradient(135deg, var(--sophi-green) 0%, var(--sophi-blue) 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
           }}
         >
-          Aura
+          Sophi
         </Link>
         {dto.org && (
           <div
             className="hidden min-w-0 items-baseline gap-2 border-l pl-3 md:flex"
-            style={{ borderColor: 'var(--aura-border)' }}
+            style={{ borderColor: 'var(--sophi-border)' }}
           >
             <span
               className="truncate text-base font-bold leading-none"
-              style={{ color: 'var(--aura-text)', fontFamily: 'var(--font-syne)' }}
+              style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}
             >
               {dto.org.name}
             </span>
             <span
               className="text-[10px] font-mono uppercase tracking-wide"
-              style={{ color: 'var(--aura-text3)' }}
+              style={{ color: 'var(--sophi-text3)' }}
             >
               {dto.org.type}
             </span>
@@ -141,7 +149,7 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
           <SelectTrigger
             size="sm"
             aria-label="Choose squad"
-            className="ml-1 hidden sm:flex min-w-32 max-w-52 border-[var(--aura-border2)] bg-[var(--aura-bg3)] text-xs text-[var(--aura-text)]"
+            className="ml-1 hidden sm:flex min-w-32 max-w-52 border-[var(--sophi-border2)] bg-[var(--sophi-bg3)] text-xs text-[var(--sophi-text)]"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             <span className="min-w-0 flex-1 truncate text-left">
@@ -161,7 +169,7 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
       <div className="flex items-center gap-2">
         <span
           className="hidden lg:block text-xs"
-          style={{ color: 'var(--aura-text3)', fontFamily: 'var(--font-dm-mono)' }}
+          style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}
         >
           {formatDate()}
         </span>

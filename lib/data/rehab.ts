@@ -23,11 +23,11 @@ export async function getRehabPageDTO(squadId: string | null): Promise<RehabPage
     .order('shirt_number')
     .order('updated_at', { referencedTable: 'rehab_sessions', ascending: false })
     .limit(1, { referencedTable: 'rehab_sessions' })
-    .limit(1, { referencedTable: 'rehab_protocols' })
 
   if (squadId) query = query.eq('squad_id', squadId)
 
-  const { data } = await query
+  const { data, error } = await query
+  if (error) console.error('[rehab] Supabase query error:', error)
   return {
     squadId,
     sessions: asRecordArray(data).map(rehabSessionDTO),

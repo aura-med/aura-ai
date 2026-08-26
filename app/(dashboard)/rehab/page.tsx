@@ -31,7 +31,7 @@ async function getData(squadId: string | null) {
     .from('rehab_plans')
     .select(`
       id, athlete_id, occurrence_id, title, start_date, expected_end_date,
-      is_active, is_completed, closed_at, created_at, updated_at,
+      is_active, is_completed, closed_at, rtp_criteria, created_at, updated_at,
       athletes ( id, name, shirt_number, photo_url, position )
     `)
     .eq('org_id', orgId)
@@ -77,6 +77,7 @@ async function getData(squadId: string | null) {
   const normalisedPlans = ((plans ?? []) as unknown as RawPlan[]).map((p) => ({
     ...p,
     athletes: Array.isArray(p.athletes) ? p.athletes[0] : p.athletes,
+    rtp_criteria: Array.isArray(p.rtp_criteria) ? p.rtp_criteria : [],
   })) as Parameters<typeof RehabPlansClient>[0]['plans']
 
   return {

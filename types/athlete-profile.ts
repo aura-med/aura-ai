@@ -167,6 +167,7 @@ export interface RehabPlanPhase {
   name: string
   criteria: string | null
   start_date: string
+  test_date: string | null
   created_at: string
   updated_at: string
 }

@@ -133,6 +133,7 @@ export interface UpsertRehabPlanPhaseInput {
   name: string
   criteria: string | null
   startDate: string
+  testDate: string | null
 }
 
 export async function upsertRehabPlanPhase(input: UpsertRehabPlanPhaseInput) {
@@ -149,7 +150,7 @@ export async function upsertRehabPlanPhase(input: UpsertRehabPlanPhaseInput) {
   if (input.phaseId) {
     const { error } = await supabase
       .from('rehab_plan_phases')
-      .update({ name: input.name, criteria: input.criteria, start_date: input.startDate })
+      .update({ name: input.name, criteria: input.criteria, start_date: input.startDate, test_date: input.testDate })
       .eq('id', input.phaseId)
       .eq('plan_id', input.planId)
     if (error) throw new Error(error.message)
@@ -173,6 +174,7 @@ export async function upsertRehabPlanPhase(input: UpsertRehabPlanPhaseInput) {
       name:         input.name,
       criteria:     input.criteria,
       start_date:   input.startDate,
+      test_date:    input.testDate,
       created_by:   userId,
     })
     if (error) {

@@ -239,11 +239,12 @@ function PhaseModal({
   const [name, setName] = useState(existing?.name ?? '')
   const [criteria, setCriteria] = useState(existing?.criteria ?? '')
   const [startDate, setStartDate] = useState(existing?.start_date ?? todayStr())
+  const [testDate, setTestDate] = useState(existing?.test_date ?? '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleSave() {
-    if (!name.trim()) { setError('Nome da fase obrigatório'); return }
+    if (!name.trim()) { setError('Nome do critério obrigatório'); return }
     setSaving(true)
     setError(null)
     try {
@@ -253,6 +254,7 @@ function PhaseModal({
         name: name.trim(),
         criteria: criteria.trim() || null,
         startDate,
+        testDate: testDate || null,
       })
       onSaved()
     } catch (e) {
@@ -268,7 +270,7 @@ function PhaseModal({
       <div className="w-full max-w-md rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
-            {isEdit ? 'Editar Fase' : 'Nova Fase'}
+            {isEdit ? 'Editar Critério de Progressão' : 'Novo Critério de Progressão'}
           </h3>
           <button type="button" onClick={onClose} className="p-1 rounded hover:bg-white/10">
             <X size={16} style={{ color: 'var(--sophi-text3)' }} />
@@ -281,13 +283,19 @@ function PhaseModal({
             className={inputClass} style={inputStyle} />
         </div>
 
-        <div>
-          <label className={labelClass} style={{ color: 'var(--sophi-text3)' }}>Data de início da fase</label>
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} style={inputStyle} />
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelClass} style={{ color: 'var(--sophi-text3)' }}>Data de início da fase</label>
+            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} style={inputStyle} />
+          </div>
+          <div>
+            <label className={labelClass} style={{ color: 'var(--sophi-text3)' }}>Dia para testar critérios (opcional)</label>
+            <input type="date" value={testDate} onChange={(e) => setTestDate(e.target.value)} className={inputClass} style={inputStyle} />
+          </div>
         </div>
 
         <div>
-          <label className={labelClass} style={{ color: 'var(--sophi-text3)' }}>Critérios esperados</label>
+          <label className={labelClass} style={{ color: 'var(--sophi-text3)' }}>Critérios de progressão</label>
           <textarea value={criteria} onChange={(e) => setCriteria(e.target.value)} rows={4}
             placeholder="ex: assimetria muscular <20%; sem dor à palpação; testes de força/hop dentro dos limiares"
             className={inputClass} style={{ ...inputStyle, resize: 'vertical' }} />
@@ -530,11 +538,17 @@ function WeekBlock({
         {weekDates.map((date, i) => {
           const md = calculateMDStatus(date, matchDays)
           const isToday = date === today
+          const testPhase = phases.find((ph) => ph.test_date === date)
           return (
             <div key={date} className="border-l first:border-l-0 border-b" style={{ borderColor: 'var(--sophi-border)' }}>
               <div className="px-2 py-1.5 text-center" style={{ background: isToday ? 'var(--sophi-green-bg)' : 'var(--sophi-bg3)' }}>
                 <p className="text-[10px] font-semibold" style={{ color: isToday ? 'var(--sophi-green)' : 'var(--sophi-text2)' }}>{WEEKDAY_LABELS[i]}</p>
                 <p className="text-[9px] font-mono" style={{ color: 'var(--sophi-text3)' }}>{md.label} · {formatShort(date)}</p>
+                {testPhase && (
+                  <p className="text-[8px] font-bold mt-0.5 px-1 py-0.5 rounded" style={{ background: 'var(--sophi-purple)', color: '#fff' }} title={testPhase.name}>
+                    Teste F{testPhase.phase_number}
+                  </p>
+                )}
               </div>
               {PERIODS.map((p) => {
                 const entry = days.get(dayKey(date, p.value))
@@ -668,6 +682,7 @@ export function PlanDetail({
     const candidates = [
       plan.expected_end_date,
       ...days.map((d) => d.entry_date),
+      ...phases.map((ph) => ph.test_date),
       plan.is_active ? todayStr() : rangeStart,
     ].filter((d): d is string => !!d)
     const last = candidates.reduce((a, b) => (b > a ? b : a), rangeStart)
@@ -735,17 +750,17 @@ export function PlanDetail({
       {/* Phases */}
       <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
-          <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>Fases</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>Critérios de Progressão</p>
           {canEdit && plan.is_active && (
             <button type="button" onClick={() => { setEditingPhase(null); setShowPhaseModal(true) }}
               className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]" style={{ color: 'var(--sophi-green)' }}>
-              <Plus size={10} /> Nova Fase
+              <Plus size={10} /> Novo Critério
             </button>
           )}
         </div>
         <div className="p-4">
           {phases.length === 0 ? (
-            <p className="text-xs text-center py-3" style={{ color: 'var(--sophi-text3)' }}>Sem fases definidas</p>
+            <p className="text-xs text-center py-3" style={{ color: 'var(--sophi-text3)' }}>Sem critérios definidos</p>
           ) : (
             <div className="space-y-2">
               {phases.map((ph) => (
@@ -753,7 +768,10 @@ export function PlanDetail({
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>Fase {ph.phase_number} — {ph.name}</p>
-                      <p className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>a partir de {formatShort(ph.start_date)}</p>
+                      <p className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>
+                        a partir de {formatShort(ph.start_date)}
+                        {ph.test_date ? ` · Teste de critérios: ${formatShort(ph.test_date)}` : ''}
+                      </p>
                       {ph.criteria && <p className="text-[11px] mt-1.5 whitespace-pre-wrap" style={{ color: 'var(--sophi-text2)' }}>{ph.criteria}</p>}
                     </div>
                     {canEdit && confirmDeletePhaseId !== ph.id && (

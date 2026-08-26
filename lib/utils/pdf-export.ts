@@ -2,6 +2,7 @@
 // Uses jsPDF + autotable; imported only from 'use client' components.
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { addDays } from '@/lib/utils/microcycle'
 
 const STATUS_LABELS: Record<string, string> = {
   available: 'Disponível',
@@ -253,14 +254,25 @@ export interface RehabPlanExportDay {
 }
 
 const PERIOD_LABELS: Record<string, string> = { morning: 'Manhã', afternoon: 'Tarde' }
+const WEEKDAY_LABELS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
+
+function mondayOf(dateStr: string): string {
+  const dow = new Date(dateStr + 'T12:00:00').getDay() // 0=Sun..6=Sat
+  return addDays(dateStr, -((dow + 6) % 7))
+}
+
+function diffDaysLocal(a: string, b: string): number {
+  return Math.round((new Date(b + 'T12:00:00').getTime() - new Date(a + 'T12:00:00').getTime()) / 86_400_000)
+}
 
 export function exportRehabPlanPDF(
   plan: { title: string; start_date: string; expected_end_date: string | null; is_active: boolean; is_completed: boolean },
   phases: RehabPlanExportPhase[],
   days: RehabPlanExportDay[],
+  range: { rangeStart: string; rangeEnd: string },
   meta: { athleteName: string; currentDate: string },
 ) {
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
   const statusLabel = plan.is_active ? 'Ativo' : plan.is_completed ? 'Concluído' : 'Arquivado'
   const subtitleParts = [
     meta.athleteName,
@@ -274,7 +286,7 @@ export function exportRehabPlanPDF(
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(10)
     doc.setTextColor(30, 30, 30)
-    doc.text('Critérios de Progressão', 14, y)
+    doc.text('Fases & Critérios de Progressão', 14, y)
     y += 4
 
     autoTable(doc, {
@@ -289,32 +301,64 @@ export function exportRehabPlanPDF(
       ]),
       styles: { fontSize: 8, cellPadding: 2 },
       headStyles: { fillColor: [18, 22, 28], textColor: [180, 141, 252], fontStyle: 'bold' },
-      columnStyles: { 4: { cellWidth: 70 } },
+      columnStyles: { 4: { cellWidth: 90 } },
       margin: { left: 14, right: 14 },
     })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     y = (doc as any).lastAutoTable.finalY + 8
   }
 
+  // Weekly grid — mirrors the on-screen calendar (Manhã/Tarde x weekday),
+  // one table per week, instead of a flat chronological list, so a printed
+  // copy reads the same way the club's own paper weekly plans always have.
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(10)
   doc.setTextColor(30, 30, 30)
-  doc.text('Calendário', 14, y)
-  y += 4
+  doc.text('Plano Semanal', 14, y)
+  y += 5
 
-  const sortedDays = [...days].sort((a, b) => a.entry_date.localeCompare(b.entry_date) || a.period.localeCompare(b.period))
-  autoTable(doc, {
-    startY: y,
-    head: [['Data', 'Período', 'Conteúdo']],
-    body: sortedDays.length
-      ? sortedDays.map((d) => [d.entry_date, PERIOD_LABELS[d.period] ?? d.period, d.is_rest_day ? 'Folga' : (d.content ?? '—')])
-      : [['—', '—', 'Sem sessões planeadas']],
-    styles: { fontSize: 8, cellPadding: 2 },
-    headStyles: { fillColor: [18, 22, 28], textColor: [0, 229, 160], fontStyle: 'bold' },
-    columnStyles: { 2: { cellWidth: 130 } },
-    alternateRowStyles: { fillColor: [246, 248, 247] },
-    margin: { left: 14, right: 14 },
-  })
+  const dayMap = new Map(days.map((d) => [`${d.entry_date}__${d.period}`, d]))
+  const startMonday = mondayOf(range.rangeStart)
+  const totalWeeks = Math.max(1, Math.ceil((diffDaysLocal(startMonday, range.rangeEnd) + 1) / 7))
+
+  for (let w = 0; w < totalWeeks; w++) {
+    const monday = addDays(startMonday, w * 7)
+    const weekDates = Array.from({ length: 7 }, (_, i) => addDays(monday, i))
+
+    if (y > 170) { doc.addPage(); y = 20 }
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9)
+    doc.setTextColor(30, 30, 30)
+    doc.text(`Semana ${w + 1} · ${weekDates[0]} – ${weekDates[6]}`, 14, y)
+    y += 4
+
+    autoTable(doc, {
+      startY: y,
+      head: [['', ...weekDates.map((d, i) => `${WEEKDAY_LABELS[i].slice(0, 3)} ${d.slice(8, 10)}/${d.slice(5, 7)}`)]],
+      body: (['morning', 'afternoon'] as const).map((period) => [
+        PERIOD_LABELS[period],
+        ...weekDates.map((date) => {
+          if (date < range.rangeStart || date > range.rangeEnd) return ''
+          const entry = dayMap.get(`${date}__${period}`)
+          if (!entry) return '—'
+          return entry.is_rest_day ? 'Folga' : (entry.content ?? '—')
+        }),
+      ]),
+      styles: { fontSize: 7, cellPadding: 2, valign: 'top' },
+      headStyles: { fillColor: [18, 22, 28], textColor: [0, 229, 160], fontStyle: 'bold', halign: 'center' },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 18 } },
+      margin: { left: 14, right: 14 },
+    })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    y = (doc as any).lastAutoTable.finalY + 8
+  }
+
+  if (!days.length && !phases.length) {
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    doc.setTextColor(120, 120, 120)
+    doc.text('Sem sessões planeadas', 14, y)
+  }
 
   withFooter(doc, meta.currentDate)
   doc.save(`plano-reabilitacao-${meta.athleteName.replace(/\s+/g, '-').toLowerCase()}-${meta.currentDate}.pdf`)

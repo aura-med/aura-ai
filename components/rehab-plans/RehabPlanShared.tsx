@@ -720,7 +720,7 @@ export function PlanDetail({
   }
 
   function handleExportPDF() {
-    exportRehabPlanPDF(plan, phases, days, { athleteName, currentDate: todayStr() })
+    exportRehabPlanPDF(plan, phases, days, { rangeStart, rangeEnd }, { athleteName, currentDate: todayStr() })
   }
 
   return (
@@ -777,7 +777,7 @@ export function PlanDetail({
       {/* Phases */}
       <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
-          <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>Critérios de Progressão</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>Fases & Critérios de Progressão</p>
           {canEdit && plan.is_active && (
             <button type="button" onClick={() => { setEditingPhase(null); setShowPhaseModal(true) }}
               className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]" style={{ color: 'var(--sophi-green)' }}>

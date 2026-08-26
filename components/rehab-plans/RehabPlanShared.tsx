@@ -9,7 +9,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Plus, X, Check, Pencil, Trash2, Loader2, ChevronRight, ChevronDown,
-  CalendarClock, ArrowRightLeft, Sun, Sunset, Flag,
+  CalendarClock, ArrowRightLeft, Sun, Sunset, Flag, Download,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { addDays, todayStr, calculateMDStatus, formatDisplayDate } from '@/lib/utils/microcycle'
@@ -19,6 +19,7 @@ import {
   upsertRehabPlanDay, deleteRehabPlanDay, moveRehabPlanDay,
 } from '@/lib/actions/rehab-plan'
 import { REHAB_DAY_OCCUPIED_ERROR } from '@/lib/actions/rehab-plan-errors'
+import { exportRehabPlanPDF } from '@/lib/utils/pdf-export'
 import type { RehabPlan, RehabPlanPhase, RehabPlanDay, RehabPlanPeriod } from '@/types/athlete-profile'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -516,10 +517,12 @@ function DayEntryModal({
 // ── Week block ────────────────────────────────────────────────────────────────
 
 function WeekBlock({
-  weekIndex, mondayStart, days, matchDays, phases, canEdit, onCellClick,
+  weekIndex, mondayStart, rangeStart, rangeEnd, days, matchDays, phases, canEdit, onCellClick,
 }: {
   weekIndex: number
   mondayStart: string
+  rangeStart: string
+  rangeEnd: string
   days: Map<string, RehabPlanDay>
   matchDays: string[]
   phases: RehabPlanPhase[]
@@ -536,6 +539,15 @@ function WeekBlock({
       </div>
       <div className="grid" style={{ gridTemplateColumns: 'repeat(7, minmax(0, 1fr))' }}>
         {weekDates.map((date, i) => {
+          // Days outside the plan's actual range (before its start, or past
+          // wherever it's been extended to) render as blank, non-interactive
+          // filler — so the grid still lines up by weekday, but the plan
+          // isn't forced to start/end on a Monday/Sunday.
+          if (date < rangeStart || date > rangeEnd) {
+            return (
+              <div key={date} className="border-l first:border-l-0 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg)', opacity: 0.4 }} />
+            )
+          }
           const md = calculateMDStatus(date, matchDays)
           const isToday = date === today
           const testPhase = phases.find((ph) => ph.test_date === date)
@@ -600,10 +612,11 @@ function WeekBlock({
 // ── Plan detail (calendar + phases) ──────────────────────────────────────────
 
 export function PlanDetail({
-  plan, athletes, occurrences, canEdit, onPlanChanged,
+  plan, athletes, athleteName, occurrences, canEdit, onPlanChanged,
 }: {
   plan: RehabPlan
   athletes?: RehabPlanAthleteOption[]
+  athleteName: string
   occurrences: RehabPlanOccurrenceOption[]
   canEdit: boolean
   onPlanChanged: () => void
@@ -612,7 +625,7 @@ export function PlanDetail({
   const [days, setDays] = useState<RehabPlanDay[]>([])
   const [loading, setLoading] = useState(true)
   const [detailVersion, setDetailVersion] = useState(0)
-  const [extraWeeks, setExtraWeeks] = useState(0)
+  const [extraDays, setExtraDays] = useState(0)
 
   const [showPlanModal, setShowPlanModal] = useState(false)
   const [showPhaseModal, setShowPhaseModal] = useState(false)
@@ -673,12 +686,14 @@ export function PlanDetail({
   const rangeStart = earliestEntryDate && earliestEntryDate < plan.start_date ? earliestEntryDate : plan.start_date
   const startMonday = mondayOf(rangeStart)
 
-  // Default visible week range covers rangeStart through whichever is later:
-  // the plan's expected end, its last planned day, or (if still active) today
-  // — so an in-progress plan always shows through the current week. Purely
-  // derived from already-loaded data, so it's computed here rather than
-  // stored/set in an effect; "+ Adicionar semana" layers extraWeeks on top.
-  const defaultWeekCount = loading ? 1 : (() => {
+  // Default visible range covers rangeStart through whichever is later: the
+  // plan's expected end, its last planned day, a phase's test day, or (if
+  // still active) today — so an in-progress plan always shows through the
+  // current day. Measured in days, not whole weeks, so the plan isn't forced
+  // to start/end on a Monday/Sunday — "+ Adicionar dia"/"- Remover dia" layer
+  // extraDays on top, and can only trim back down to this default (never
+  // hiding a day that already has real content).
+  const defaultDayCount = loading ? 1 : (() => {
     const candidates = [
       plan.expected_end_date,
       ...days.map((d) => d.entry_date),
@@ -686,9 +701,11 @@ export function PlanDetail({
       plan.is_active ? todayStr() : rangeStart,
     ].filter((d): d is string => !!d)
     const last = candidates.reduce((a, b) => (b > a ? b : a), rangeStart)
-    return Math.max(1, Math.ceil((diffDays(startMonday, last) + 1) / 7))
+    return Math.max(1, diffDays(rangeStart, last) + 1)
   })()
-  const weekCount = defaultWeekCount + extraWeeks
+  const dayCount = Math.max(1, defaultDayCount + extraDays)
+  const rangeEnd = addDays(rangeStart, dayCount - 1)
+  const weekCount = Math.ceil((diffDays(startMonday, rangeEnd) + 1) / 7)
 
   const dayMap = new Map(days.map((d) => [dayKey(d.entry_date, d.period), d]))
 
@@ -700,6 +717,10 @@ export function PlanDetail({
     } finally {
       setClosing(null)
     }
+  }
+
+  function handleExportPDF() {
+    exportRehabPlanPDF(plan, phases, days, { athleteName, currentDate: todayStr() })
   }
 
   return (
@@ -724,26 +745,32 @@ export function PlanDetail({
               {plan.closed_at ? ` · Encerrado ${formatShort(plan.closed_at.slice(0, 10))}` : ''}
             </p>
           </div>
-          {canEdit && (
-            <div className="flex items-center gap-1.5 shrink-0">
-              <button type="button" onClick={() => setShowPlanModal(true)}
-                className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-white/5" style={{ color: 'var(--sophi-text2)' }}>
-                <Pencil size={10} /> Editar
-              </button>
-              {plan.is_active && (
-                <>
-                  <button type="button" onClick={() => handleClose(true)} disabled={closing !== null}
-                    className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]" style={{ color: 'var(--sophi-green)' }}>
-                    {closing === 'complete' ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />} Concluir
-                  </button>
-                  <button type="button" onClick={() => handleClose(false)} disabled={closing !== null}
-                    className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-white/5" style={{ color: 'var(--sophi-text3)' }}>
-                    {closing === 'archive' ? <Loader2 size={10} className="animate-spin" /> : <Flag size={10} />} Arquivar
-                  </button>
-                </>
-              )}
-            </div>
-          )}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button type="button" onClick={handleExportPDF}
+              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-white/5" style={{ color: 'var(--sophi-text2)' }}>
+              <Download size={10} /> Exportar PDF
+            </button>
+            {canEdit && (
+              <>
+                <button type="button" onClick={() => setShowPlanModal(true)}
+                  className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-white/5" style={{ color: 'var(--sophi-text2)' }}>
+                  <Pencil size={10} /> Editar
+                </button>
+                {plan.is_active && (
+                  <>
+                    <button type="button" onClick={() => handleClose(true)} disabled={closing !== null}
+                      className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]" style={{ color: 'var(--sophi-green)' }}>
+                      {closing === 'complete' ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />} Concluir
+                    </button>
+                    <button type="button" onClick={() => handleClose(false)} disabled={closing !== null}
+                      className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-white/5" style={{ color: 'var(--sophi-text3)' }}>
+                      {closing === 'archive' ? <Loader2 size={10} className="animate-spin" /> : <Flag size={10} />} Arquivar
+                    </button>
+                  </>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -816,6 +843,8 @@ export function PlanDetail({
               key={monday}
               weekIndex={i}
               mondayStart={monday}
+              rangeStart={rangeStart}
+              rangeEnd={rangeEnd}
               days={dayMap}
               matchDays={matchDays}
               phases={phases}
@@ -824,11 +853,18 @@ export function PlanDetail({
             />
           ))}
           {canEdit && (
-            <button type="button" onClick={() => setExtraWeeks((w) => w + 1)}
-              className="w-full py-2 rounded-lg border border-dashed text-xs font-medium hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
-              style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}>
-              + Adicionar semana
-            </button>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setExtraDays((d) => d - 1)} disabled={extraDays <= 0}
+                className="flex-1 py-2 rounded-lg border border-dashed text-xs font-medium hover:border-[var(--sophi-danger)] hover:text-[var(--sophi-danger)] disabled:opacity-30 disabled:hover:border-[var(--sophi-border2)] disabled:hover:text-[var(--sophi-text3)]"
+                style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}>
+                − Remover dia
+              </button>
+              <button type="button" onClick={() => setExtraDays((d) => d + 1)}
+                className="flex-1 py-2 rounded-lg border border-dashed text-xs font-medium hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
+                style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}>
+                + Adicionar dia
+              </button>
+            </div>
           )}
         </div>
       )}

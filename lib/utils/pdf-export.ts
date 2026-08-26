@@ -234,3 +234,88 @@ export function exportDashboardPDF(
   withFooter(doc, meta.currentDate)
   doc.save(`registos-clinicos-${meta.currentDate}.pdf`)
 }
+
+// ── Rehab plan export ───────────────────────────────────────────────────────
+
+export interface RehabPlanExportPhase {
+  phase_number: number
+  name: string
+  criteria: string | null
+  start_date: string
+  test_date: string | null
+}
+
+export interface RehabPlanExportDay {
+  entry_date: string
+  period: 'morning' | 'afternoon'
+  content: string | null
+  is_rest_day: boolean
+}
+
+const PERIOD_LABELS: Record<string, string> = { morning: 'Manhã', afternoon: 'Tarde' }
+
+export function exportRehabPlanPDF(
+  plan: { title: string; start_date: string; expected_end_date: string | null; is_active: boolean; is_completed: boolean },
+  phases: RehabPlanExportPhase[],
+  days: RehabPlanExportDay[],
+  meta: { athleteName: string; currentDate: string },
+) {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+  const statusLabel = plan.is_active ? 'Ativo' : plan.is_completed ? 'Concluído' : 'Arquivado'
+  const subtitleParts = [
+    meta.athleteName,
+    `Início ${plan.start_date}`,
+    plan.expected_end_date ? `Fim previsto ${plan.expected_end_date}` : null,
+    statusLabel,
+  ].filter(Boolean)
+  let y = brandHeader(doc, plan.title, subtitleParts.join(' · '))
+
+  if (phases.length) {
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(10)
+    doc.setTextColor(30, 30, 30)
+    doc.text('Critérios de Progressão', 14, y)
+    y += 4
+
+    autoTable(doc, {
+      startY: y,
+      head: [['Fase', 'Nome', 'Início', 'Dia de Teste', 'Critérios']],
+      body: phases.map((ph) => [
+        String(ph.phase_number),
+        ph.name,
+        ph.start_date,
+        ph.test_date ?? '—',
+        ph.criteria ?? '—',
+      ]),
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [18, 22, 28], textColor: [180, 141, 252], fontStyle: 'bold' },
+      columnStyles: { 4: { cellWidth: 70 } },
+      margin: { left: 14, right: 14 },
+    })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    y = (doc as any).lastAutoTable.finalY + 8
+  }
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(10)
+  doc.setTextColor(30, 30, 30)
+  doc.text('Calendário', 14, y)
+  y += 4
+
+  const sortedDays = [...days].sort((a, b) => a.entry_date.localeCompare(b.entry_date) || a.period.localeCompare(b.period))
+  autoTable(doc, {
+    startY: y,
+    head: [['Data', 'Período', 'Conteúdo']],
+    body: sortedDays.length
+      ? sortedDays.map((d) => [d.entry_date, PERIOD_LABELS[d.period] ?? d.period, d.is_rest_day ? 'Folga' : (d.content ?? '—')])
+      : [['—', '—', 'Sem sessões planeadas']],
+    styles: { fontSize: 8, cellPadding: 2 },
+    headStyles: { fillColor: [18, 22, 28], textColor: [0, 229, 160], fontStyle: 'bold' },
+    columnStyles: { 2: { cellWidth: 130 } },
+    alternateRowStyles: { fillColor: [246, 248, 247] },
+    margin: { left: 14, right: 14 },
+  })
+
+  withFooter(doc, meta.currentDate)
+  doc.save(`plano-reabilitacao-${meta.athleteName.replace(/\s+/g, '-').toLowerCase()}-${meta.currentDate}.pdf`)
+}

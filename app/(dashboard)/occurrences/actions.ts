@@ -161,18 +161,15 @@ export interface UpdateOccurrenceInput {
   title: string
   occurrenceDate: string
   occurrenceType: 'complaint' | 'trauma' | 'disease' | 'other'
-  subjective: string
-  objective: string
-  assessment: string
-  plan: string
+  observations: string
   availabilityStatus: AvailabilityStatus
   loadManagementRestrictions: string[]
   loadManagementNotes: string | null
 }
 
-// Edits the occurrence's own record (title/date/type/SOAP/status) — distinct
-// from addOccurrenceRecord, which appends a new reassessment entry. This
-// corrects the original entry itself rather than logging a new event.
+// Edits the occurrence's own record (title/date/type/observations/status) —
+// distinct from addOccurrenceRecord, which appends a new reassessment entry.
+// This corrects the original entry itself rather than logging a new event.
 export async function updateOccurrence(input: UpdateOccurrenceInput) {
   const supabase = await createClient()
 
@@ -182,10 +179,7 @@ export async function updateOccurrence(input: UpdateOccurrenceInput) {
       title: input.title,
       occurrence_date: input.occurrenceDate,
       occurrence_type: input.occurrenceType,
-      subjective: input.subjective,
-      objective: input.objective,
-      assessment: input.assessment,
-      plan: input.plan,
+      assessment: input.observations,
       availability_status: input.availabilityStatus,
       load_management_restrictions: input.loadManagementRestrictions,
       load_management_notes: input.loadManagementNotes,
@@ -341,10 +335,7 @@ export async function addOccurrenceRecord(input: {
 export async function updateOccurrenceRecord(input: {
   recordId: string
   recordDate: string
-  subjective: string
-  objective: string
   assessment: string
-  plan: string
   availabilityStatus: AvailabilityStatus
   loadManagementRestrictions: string[]
   loadManagementNotes: string | null
@@ -355,10 +346,7 @@ export async function updateOccurrenceRecord(input: {
     .from('occurrence_records')
     .update({
       record_date: input.recordDate,
-      subjective: input.subjective,
-      objective: input.objective,
       assessment: input.assessment,
-      plan: input.plan,
       availability_status: input.availabilityStatus,
       load_management_restrictions: input.loadManagementRestrictions,
       load_management_notes: input.loadManagementNotes,

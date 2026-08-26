@@ -119,10 +119,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
     title: occ.title ?? '',
     occurrenceDate: occ.occurrence_date,
     occurrenceType: (occ.occurrence_type ?? 'complaint') as 'complaint' | 'trauma' | 'disease' | 'other',
-    subjective: occ.subjective ?? '',
-    objective: occ.objective ?? '',
-    assessment: occ.assessment ?? '',
-    plan: occ.plan ?? '',
+    observations: occ.assessment ?? '',
     availability_status: occ.availability_status as AthleteAvailabilityStatus,
     restrictions: occ.load_management_restrictions ?? [],
     notes: occ.load_management_notes ?? '',
@@ -132,10 +129,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null)
   const [recordEditData, setRecordEditData] = useState({
     recordDate: '',
-    subjective: '',
-    objective: '',
     assessment: '',
-    plan: '',
     availability_status: 'available' as AthleteAvailabilityStatus,
     restrictions: [] as string[],
     notes: '',
@@ -186,10 +180,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
         title: editData.title,
         occurrenceDate: editData.occurrenceDate,
         occurrenceType: editData.occurrenceType,
-        subjective: editData.subjective,
-        objective: editData.objective,
-        assessment: editData.assessment,
-        plan: editData.plan,
+        observations: editData.observations,
         availabilityStatus: editData.availability_status,
         loadManagementRestrictions: editData.restrictions,
         loadManagementNotes: editData.notes.trim() || null,
@@ -215,10 +206,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
   function startEditRecord(r: OccurrenceRecord) {
     setRecordEditData({
       recordDate: r.record_date,
-      subjective: r.subjective ?? '',
-      objective: r.objective ?? '',
       assessment: r.assessment ?? '',
-      plan: r.plan ?? '',
       availability_status: (r.availability_status ?? 'available') as AthleteAvailabilityStatus,
       restrictions: r.load_management_restrictions ?? [],
       notes: r.load_management_notes ?? '',
@@ -232,10 +220,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
       await updateOccurrenceRecord({
         recordId: editingRecordId,
         recordDate: recordEditData.recordDate,
-        subjective: recordEditData.subjective,
-        objective: recordEditData.objective,
         assessment: recordEditData.assessment,
-        plan: recordEditData.plan,
         availabilityStatus: recordEditData.availability_status,
         loadManagementRestrictions: recordEditData.restrictions,
         loadManagementNotes: recordEditData.notes.trim() || null,
@@ -427,24 +412,17 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                         onNotesChange={(next) => setRecordEditData((d) => ({ ...d, notes: next }))}
                       />
                     )}
-                    {([
-                      ['subjective', 'Subjetivo'],
-                      ['objective', 'Objetivo'],
-                      ['assessment', 'Observações'],
-                      ['plan', 'Plano'],
-                    ] as const).map(([key, label]) => (
-                      <div key={key} style={{ marginBottom: 6 }}>
-                        <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
-                          {label}
-                        </label>
-                        <textarea
-                          value={recordEditData[key]}
-                          onChange={(e) => setRecordEditData((d) => ({ ...d, [key]: e.target.value }))}
-                          rows={2}
-                          style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)', resize: 'vertical', fontFamily: 'inherit' }}
-                        />
-                      </div>
-                    ))}
+                    <div style={{ marginBottom: 6 }}>
+                      <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                        Observações
+                      </label>
+                      <textarea
+                        value={recordEditData.assessment}
+                        onChange={(e) => setRecordEditData((d) => ({ ...d, assessment: e.target.value }))}
+                        rows={3}
+                        style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)', resize: 'vertical', fontFamily: 'inherit' }}
+                      />
+                    </div>
                     <div style={{ display: 'flex', gap: 6 }}>
                       <button
                         onClick={handleUpdateRecord}
@@ -605,29 +583,20 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                   }}
                 />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 6 }}>
-                {([
-                  ['subjective', 'Subjetivo'],
-                  ['objective', 'Objetivo'],
-                  ['assessment', 'Observações'],
-                  ['plan', 'Plano'],
-                ] as const).map(([key, label]) => (
-                  <div key={key}>
-                    <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
-                      {label}
-                    </label>
-                    <textarea
-                      value={editData[key]}
-                      onChange={(e) => setEditData((d) => ({ ...d, [key]: e.target.value }))}
-                      rows={2}
-                      style={{
-                        width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12,
-                        background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)',
-                        color: 'var(--sophi-text)', resize: 'vertical', fontFamily: 'inherit',
-                      }}
-                    />
-                  </div>
-                ))}
+              <div style={{ marginBottom: 6 }}>
+                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                  Observações
+                </label>
+                <textarea
+                  value={editData.observations}
+                  onChange={(e) => setEditData((d) => ({ ...d, observations: e.target.value }))}
+                  rows={3}
+                  style={{
+                    width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12,
+                    background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)',
+                    color: 'var(--sophi-text)', resize: 'vertical', fontFamily: 'inherit',
+                  }}
+                />
               </div>
               <div style={{ marginBottom: 8 }}>
                 <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>

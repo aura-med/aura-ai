@@ -4,7 +4,7 @@ import type { RehabSessionExercise } from '@/types/athlete-profile'
 
 type Ctx = { params: Promise<{ id: string }> }
 
-const COLUMNS = 'id, athlete_id, session_date, session_type, duration_minutes, description, clinician_name, notes, occurrence_id, pse, exercises, created_at, updated_at'
+const COLUMNS = 'id, athlete_id, session_date, session_type, duration_minutes, description, clinician_name, notes, occurrence_id, rehab_plan_id, pse, exercises, created_at, updated_at'
 
 // Trusts only the shape the client-side exercise-row editor produces; drops
 // anything else rather than persisting arbitrary client JSON.
@@ -60,6 +60,7 @@ export async function POST(req: Request, { params }: Ctx) {
       clinician_name:   body.clinician_name ?? null,
       notes:            body.notes ?? null,
       occurrence_id:    body.occurrence_id ?? null,
+      rehab_plan_id:    body.rehab_plan_id ?? null,
       pse:              sanitizePse(body.pse),
       exercises:        sanitizeExercises(body.exercises),
     })
@@ -89,6 +90,7 @@ export async function PATCH(req: Request, { params }: Ctx) {
       clinician_name:   rest.clinician_name ?? null,
       notes:            rest.notes ?? null,
       occurrence_id:    rest.occurrence_id ?? null,
+      rehab_plan_id:    rest.rehab_plan_id ?? null,
       pse:              sanitizePse(rest.pse),
       exercises:        sanitizeExercises(rest.exercises),
       updated_at:       new Date().toISOString(),

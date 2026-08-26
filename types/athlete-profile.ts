@@ -144,6 +144,7 @@ export interface RehabSession {
   clinician_name: string | null
   notes: string | null
   occurrence_id: string | null
+  rehab_plan_id: string | null
   pse: number | null
   exercises: RehabSessionExercise[]
   created_at: string

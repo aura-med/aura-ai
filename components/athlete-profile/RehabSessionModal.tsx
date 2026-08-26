@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { X, Check, Loader2, Activity, Trash2, Plus } from 'lucide-react'
-import type { RehabSession, RehabSessionExercise, ActiveOccurrence } from '@/types/athlete-profile'
+import type { RehabSession, RehabSessionExercise, RehabPlan, ActiveOccurrence } from '@/types/athlete-profile'
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -18,6 +18,7 @@ interface Props {
   athleteId: string
   existing?: RehabSession | null
   occurrences?: ActiveOccurrence[]
+  plans?: RehabPlan[]
   onClose:   () => void
   onSaved:   (s: RehabSession) => void
   onDeleted?: (id: string) => void
@@ -31,7 +32,7 @@ function emptyExercise(): RehabSessionExercise {
   return { name: '', sets: null, reps: null, load: null }
 }
 
-export function RehabSessionModal({ athleteId, existing, occurrences, onClose, onSaved, onDeleted }: Props) {
+export function RehabSessionModal({ athleteId, existing, occurrences, plans, onClose, onSaved, onDeleted }: Props) {
   const isEdit = !!existing
 
   const [sessionDate,  setSessionDate]  = useState(existing?.session_date   ?? todayISO())
@@ -41,6 +42,7 @@ export function RehabSessionModal({ athleteId, existing, occurrences, onClose, o
   const [clinician,    setClinician]    = useState(existing?.clinician_name  ?? '')
   const [notes,        setNotes]        = useState(existing?.notes           ?? '')
   const [occurrenceId, setOccurrenceId] = useState(existing?.occurrence_id   ?? '')
+  const [rehabPlanId,  setRehabPlanId]  = useState(existing?.rehab_plan_id   ?? '')
   const [pse,          setPse]          = useState(existing?.pse != null ? String(existing.pse) : '')
   const [exercises,    setExercises]    = useState<RehabSessionExercise[]>(
     existing?.exercises?.length ? existing.exercises : []
@@ -74,6 +76,7 @@ export function RehabSessionModal({ athleteId, existing, occurrences, onClose, o
         clinician_name:   clinician.trim()   || null,
         notes:            notes.trim()       || null,
         occurrence_id:    occurrenceId || null,
+        rehab_plan_id:    rehabPlanId || null,
         pse:              pse !== '' ? Number(pse) : null,
         exercises:        exercises.filter((ex) => ex.name.trim().length > 0),
       }
@@ -215,6 +218,28 @@ export function RehabSessionModal({ athleteId, existing, occurrences, onClose, o
                 {occurrences.map((occ) => (
                   <option key={occ.id} value={occ.id}>
                     {(occ.title || occ.occurrence_type || 'Ocorrência')} — {occ.occurrence_date}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Rehab plan association */}
+          {plans && plans.length > 0 && (
+            <div className="space-y-1">
+              <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
+                Plano de Reabilitação associado
+              </label>
+              <select
+                value={rehabPlanId}
+                onChange={(e) => setRehabPlanId(e.target.value)}
+                className={inputClass}
+                style={inputStyle}
+              >
+                <option value="">Nenhum</option>
+                {plans.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.title} {p.is_active ? '(ativo)' : '(encerrado)'}
                   </option>
                 ))}
               </select>

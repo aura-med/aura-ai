@@ -38,17 +38,6 @@ export interface MedicalHistory {
 
 // ── Clinical Module Types (migration 009) ────────────────────────────────────
 
-export interface ActiveDiagnosis {
-  id: string
-  osiics_code: string | null
-  osiics_description: string | null
-  diagnosis_type: string | null
-  custom_description: string | null
-  availability_status: string | null
-  diagnosed_at: string
-  is_resolved: boolean
-  occurrence_id: string | null
-}
 
 // Covers both active and recently-resolved occurrences — the Overview tab
 // renders both through the same OccurrenceRow used on the Ocorrências page
@@ -501,7 +490,6 @@ export interface AthleteProfileData {
   // Injuries (from existing table)
   injuryEvents: InjuryEventSummary[]
   // Clinical module (migration 009)
-  activeDiagnoses: ActiveDiagnosis[]
   activeOccurrences: ActiveOccurrence[]
   // Short history for the Overview compact summary (migration 026)
   recentResolvedOccurrences: ActiveOccurrence[]

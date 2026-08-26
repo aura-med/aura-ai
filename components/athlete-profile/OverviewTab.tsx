@@ -1,15 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import dynamic from 'next/dynamic'
-import { AlertTriangle, Plus, CheckCircle2, Loader2, Pencil } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
-import { resolveDiagnosis } from '@/lib/actions/clinical'
+import { AlertTriangle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { OccurrenceRow as SharedOccurrenceRow, type Athlete as SharedRowAthlete } from '@/components/occurrences/OccurrenceRow'
-import type { AthleteProfileData, InjuryEventSummary, ActiveDiagnosis, ActiveOccurrence } from '@/types/athlete-profile'
-
-const DiagnosisModal = dynamic(() => import('./DiagnosisModal').then((m) => m.DiagnosisModal))
+import type { AthleteProfileData, InjuryEventSummary, ActiveOccurrence } from '@/types/athlete-profile'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -45,13 +39,6 @@ const STATUS_CONFIG = {
   // Legacy values — fallback
   modified:    { label: '🟡 Treino Modificado', color: 'var(--sophi-warn)',   bg: 'var(--sophi-warn-bg)'        },
   rehab:       { label: '🟣 Em Reabilitação',   color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.12)'    },
-}
-
-const DIAG_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  available:   { label: 'Disponível',   color: 'var(--sophi-green)',  bg: 'var(--sophi-green-bg)' },
-  evaluation:  { label: 'Em Avaliação', color: 'var(--sophi-warn)',   bg: 'var(--sophi-warn-bg)'  },
-  unavailable: { label: 'Indisponível', color: 'var(--sophi-danger)', bg: 'var(--sophi-danger-bg)' },
-  rtp:         { label: 'Em RTP',        color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.12)' },
 }
 
 type InjuryTimelinePoint = { label: string; injuries: number; severity: number }
@@ -162,7 +149,7 @@ function OccurrencesSummarySection({
       <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
         <AlertTriangle size={13} style={{ color: 'var(--sophi-warn)' }} />
         <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>
-          Ocorrências
+          Ocorrências & Diagnósticos
         </p>
         {active.length > 0 && (
           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-warn-bg)', color: 'var(--sophi-warn)' }}>
@@ -233,219 +220,6 @@ function InjuryTimeline({ injuries }: { injuries: InjuryEventSummary[] }) {
   )
 }
 
-// ── Active Diagnoses Section ──────────────────────────────────────────────────
-
-function DiagnosisCard({
-  diag,
-  athleteId,
-  canResolve,
-  onResolved,
-  onEdit,
-}: {
-  diag: ActiveDiagnosis
-  athleteId: string
-  canResolve: boolean
-  onResolved: (id: string) => void
-  onEdit: () => void
-}) {
-  const [resolving, setResolving] = useState(false)
-  const [confirming, setConfirming] = useState(false)
-  const router = useRouter()
-  const statusCfg = DIAG_STATUS_CONFIG[diag.availability_status ?? 'evaluation'] ?? DIAG_STATUS_CONFIG.evaluation
-  const title = diag.osiics_description ?? diag.custom_description ?? 'Diagnóstico sem descrição'
-
-  async function handleResolve() {
-    setResolving(true)
-    try {
-      // Author/recompute handled server-side (resolved_by can't be forged).
-      await resolveDiagnosis(diag.id, athleteId)
-      onResolved(diag.id)
-      router.refresh()
-    } finally {
-      setResolving(false)
-      setConfirming(false)
-    }
-  }
-
-  return (
-    <div
-      className="rounded-lg border p-3 space-y-2"
-      style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border)' }}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          {diag.osiics_code && (
-            <span className="text-[10px] font-mono mr-1.5" style={{ color: 'var(--sophi-text3)' }}>
-              {diag.osiics_code}
-            </span>
-          )}
-          <span className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>{title}</span>
-          {diag.custom_description && diag.osiics_description && (
-            <p className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>{diag.custom_description}</p>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span
-            className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-            style={{ background: statusCfg.bg, color: statusCfg.color }}
-          >
-            {statusCfg.label}
-          </span>
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-bg4)', color: 'var(--sophi-text3)' }}>
-            {diag.diagnosis_type === 'injury' ? 'Lesão' : diag.diagnosis_type === 'disease' ? 'Doença' : '—'}
-          </span>
-        </div>
-      </div>
-      {canResolve && !confirming && (
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onEdit}
-            className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80"
-            style={{ color: 'var(--sophi-text2)' }}
-          >
-            <Pencil size={10} />
-            Editar
-          </button>
-          <button
-            type="button"
-            onClick={() => setConfirming(true)}
-            disabled={resolving}
-            className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80"
-            style={{ color: 'var(--sophi-green)' }}
-          >
-            <CheckCircle2 size={10} />
-            Resolver diagnóstico
-          </button>
-        </div>
-      )}
-      {canResolve && confirming && (
-        <div
-          className="flex items-center gap-2 rounded-lg border px-2 py-1.5"
-          style={{ background: 'var(--sophi-green-bg)', borderColor: 'var(--sophi-green)' }}
-        >
-          <p className="text-[10px] flex-1" style={{ color: 'var(--sophi-text2)' }}>
-            Confirma que o atleta fica <strong>Disponível</strong>, salvo outras ocorrências em aberto?
-          </p>
-          <button
-            type="button"
-            onClick={() => setConfirming(false)}
-            disabled={resolving}
-            className="text-[10px] font-medium hover:opacity-80 shrink-0"
-            style={{ color: 'var(--sophi-text3)' }}
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={handleResolve}
-            disabled={resolving}
-            className="flex items-center gap-1 text-[10px] font-bold hover:opacity-80 shrink-0"
-            style={{ color: 'var(--sophi-green)' }}
-          >
-            {resolving ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle2 size={10} />}
-            Confirmar
-          </button>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function ActiveDiagnosesSection({
-  diagnoses: initialDiagnoses,
-  canCreate,
-  athleteId,
-  profile,
-}: {
-  diagnoses: ActiveDiagnosis[]
-  canCreate: boolean
-  athleteId: string
-  profile: AthleteProfileData
-}) {
-  const [diagnoses, setDiagnoses] = useState(initialDiagnoses)
-  const [showModal, setShowModal] = useState(false)
-  const [editingDiagnosis, setEditingDiagnosis] = useState<ActiveDiagnosis | null>(null)
-  const router = useRouter()
-
-  function handleResolved(id: string) {
-    setDiagnoses((prev) => prev.filter((d) => d.id !== id))
-  }
-
-  async function refetchDiagnoses() {
-    // router.refresh() preserves this mounted component's state, so re-read
-    // the active diagnoses directly or the new/edited row won't show.
-    const supabase = createClient()
-    const { data } = await supabase
-      .from('diagnoses')
-      .select('id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, diagnosed_at, is_resolved, occurrence_id')
-      .eq('athlete_id', athleteId)
-      .eq('is_resolved', false)
-      .order('diagnosed_at', { ascending: false })
-    if (data) setDiagnoses(data as ActiveDiagnosis[])
-    router.refresh()
-  }
-
-  return (
-    <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
-      <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
-        <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>
-          Diagnósticos Ativos
-        </p>
-        {diagnoses.length > 0 && (
-          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}>
-            {diagnoses.length}
-          </span>
-        )}
-        {canCreate && (
-          <button
-            type="button"
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]"
-            style={{ color: 'var(--sophi-green)' }}
-          >
-            <Plus size={10} /> Novo
-          </button>
-        )}
-      </div>
-      <div className="p-4">
-        {diagnoses.length === 0 ? (
-          <p className="text-xs text-center py-4" style={{ color: 'var(--sophi-text3)' }}>
-            Sem diagnósticos ativos
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {diagnoses.map((d) => (
-              <DiagnosisCard
-                key={d.id}
-                diag={d}
-                athleteId={athleteId}
-                canResolve={canCreate}
-                onResolved={handleResolved}
-                onEdit={() => setEditingDiagnosis(d)}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {(showModal || editingDiagnosis) && (
-        <DiagnosisModal
-          athleteId={athleteId}
-          occurrences={profile.activeOccurrences}
-          existing={editingDiagnosis}
-          onClose={() => { setShowModal(false); setEditingDiagnosis(null) }}
-          onSaved={async () => {
-            setShowModal(false)
-            setEditingDiagnosis(null)
-            await refetchDiagnoses()
-          }}
-        />
-      )}
-    </div>
-  )
-}
-
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export function OverviewTab({ profile }: { profile: AthleteProfileData }) {
@@ -469,14 +243,6 @@ export function OverviewTab({ profile }: { profile: AthleteProfileData }) {
           availability_status: profile.availabilityStatus as SharedRowAthlete['availability_status'],
         }}
         canCreateDiagnosis={canCreateDiagnosis}
-      />
-
-      {/* Active diagnoses */}
-      <ActiveDiagnosesSection
-        diagnoses={profile.activeDiagnoses}
-        canCreate={canCreateDiagnosis}
-        athleteId={profile.id}
-        profile={profile}
       />
 
       {/* Injury timeline */}

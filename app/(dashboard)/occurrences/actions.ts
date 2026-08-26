@@ -161,13 +161,16 @@ export interface UpdateOccurrenceInput {
   title: string
   occurrenceDate: string
   occurrenceType: 'complaint' | 'trauma' | 'disease' | 'other'
-  observations: string
+  subjective: string
+  objective: string
+  assessment: string
+  plan: string
   availabilityStatus: AvailabilityStatus
 }
 
-// Edits the occurrence's own record (title/date/type/observations/status) —
-// distinct from addOccurrenceRecord, which appends a new reassessment entry.
-// This corrects the original entry itself rather than logging a new event.
+// Edits the occurrence's own record (title/date/type/SOAP/status) — distinct
+// from addOccurrenceRecord, which appends a new reassessment entry. This
+// corrects the original entry itself rather than logging a new event.
 export async function updateOccurrence(input: UpdateOccurrenceInput) {
   const supabase = await createClient()
 
@@ -177,7 +180,10 @@ export async function updateOccurrence(input: UpdateOccurrenceInput) {
       title: input.title,
       occurrence_date: input.occurrenceDate,
       occurrence_type: input.occurrenceType,
-      assessment: input.observations,
+      subjective: input.subjective,
+      objective: input.objective,
+      assessment: input.assessment,
+      plan: input.plan,
       availability_status: input.availabilityStatus,
       // updated_at is set explicitly — nothing bumps it automatically — so
       // recomputeAthleteAvailability's "most recent event wins" ranking sees
@@ -312,4 +318,40 @@ export async function addOccurrenceRecord(input: {
   revalidatePath('/occurrences')
   revalidatePath('/')
   revalidatePath(`/athletes/${targetAthleteId}`)
+}
+
+// Corrects an existing reassessment's own content (typo, wrong status picked at
+// the time) — unlike addOccurrenceRecord, this is not a new clinical event, so
+// it deliberately does NOT touch the parent occurrence's current status or
+// trigger a recompute. To actually change the athlete's current status, log a
+// new reassessment via addOccurrenceRecord instead.
+export async function updateOccurrenceRecord(input: {
+  recordId: string
+  recordDate: string
+  subjective: string
+  objective: string
+  assessment: string
+  plan: string
+  availabilityStatus: AvailabilityStatus
+}) {
+  const supabase = await createClient()
+
+  const { data: updated, error } = await supabase
+    .from('occurrence_records')
+    .update({
+      record_date: input.recordDate,
+      subjective: input.subjective,
+      objective: input.objective,
+      assessment: input.assessment,
+      plan: input.plan,
+      availability_status: input.availabilityStatus,
+    })
+    .eq('id', input.recordId)
+    .select('athlete_id, occurrence_id')
+    .maybeSingle()
+  if (error || !updated?.athlete_id) throw new Error(error?.message ?? 'Reavaliação não encontrada')
+
+  revalidatePath('/occurrences')
+  revalidatePath('/')
+  revalidatePath(`/athletes/${updated.athlete_id}`)
 }

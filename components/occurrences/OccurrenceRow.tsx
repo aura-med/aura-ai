@@ -4,8 +4,9 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { DiagnosisModal } from '@/components/athlete-profile/DiagnosisModal'
-import { ChevronDown, ChevronUp, Plus, Check, Pencil } from 'lucide-react'
-import { resolveOccurrence, addOccurrenceRecord, updateOccurrence } from '@/app/(dashboard)/occurrences/actions'
+import { ChevronDown, ChevronUp, Plus, Check, Pencil, CheckCircle2, Loader2 } from 'lucide-react'
+import { resolveOccurrence, addOccurrenceRecord, updateOccurrence, updateOccurrenceRecord } from '@/app/(dashboard)/occurrences/actions'
+import { resolveDiagnosis } from '@/lib/actions/clinical'
 import { todayStr } from '@/lib/utils/microcycle'
 import type { AthleteAvailabilityStatus } from '@/types'
 
@@ -109,21 +110,32 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
     title: occ.title ?? '',
     occurrenceDate: occ.occurrence_date,
     occurrenceType: (occ.occurrence_type ?? 'complaint') as 'complaint' | 'trauma' | 'disease' | 'other',
-    observations: occ.assessment ?? '',
+    subjective: occ.subjective ?? '',
+    objective: occ.objective ?? '',
+    assessment: occ.assessment ?? '',
+    plan: occ.plan ?? '',
     availability_status: occ.availability_status as AthleteAvailabilityStatus,
+  })
+  const [resolvingDiagnosis, setResolvingDiagnosis] = useState(false)
+  const [confirmResolveDiagnosis, setConfirmResolveDiagnosis] = useState(false)
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null)
+  const [recordEditData, setRecordEditData] = useState({
+    recordDate: '',
+    subjective: '',
+    objective: '',
+    assessment: '',
+    plan: '',
+    availability_status: 'available' as AthleteAvailabilityStatus,
   })
 
   const a = occ.athletes
   const typeLabel = OCCURRENCE_TYPES.find((t) => t.value === occ.occurrence_type)?.label ?? occ.occurrence_type
   const activeDiagnosis = occ.diagnoses?.find((d) => !d.is_resolved)
   // What's shown first: the active diagnosis takes priority; otherwise the
-  // most recent reassessment's note; otherwise the occurrence's own title.
-  const latestRecord = occ.occurrence_records.length
-    ? [...occ.occurrence_records].sort((x, y) => y.created_at.localeCompare(x.created_at))[0]
-    : null
+  // occurrence's own (original) title — never a reassessment's note, which is
+  // just a dated log entry, not a replacement headline for the issue itself.
   const primaryLabel =
     (activeDiagnosis && (activeDiagnosis.osiics_description ?? activeDiagnosis.custom_description))
-    || latestRecord?.assessment
     || occ.title
     || a.name
 
@@ -159,10 +171,55 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
         title: editData.title,
         occurrenceDate: editData.occurrenceDate,
         occurrenceType: editData.occurrenceType,
-        observations: editData.observations,
+        subjective: editData.subjective,
+        objective: editData.objective,
+        assessment: editData.assessment,
+        plan: editData.plan,
         availabilityStatus: editData.availability_status,
       })
       setShowEdit(false)
+      onRevalidate()
+    })
+  }
+
+  async function handleResolveDiagnosis() {
+    if (!activeDiagnosis) return
+    setResolvingDiagnosis(true)
+    try {
+      // Author/recompute handled server-side.
+      await resolveDiagnosis(activeDiagnosis.id, occ.athlete_id)
+      onRevalidate()
+    } finally {
+      setResolvingDiagnosis(false)
+      setConfirmResolveDiagnosis(false)
+    }
+  }
+
+  function startEditRecord(r: OccurrenceRecord) {
+    setRecordEditData({
+      recordDate: r.record_date,
+      subjective: r.subjective ?? '',
+      objective: r.objective ?? '',
+      assessment: r.assessment ?? '',
+      plan: r.plan ?? '',
+      availability_status: (r.availability_status ?? 'available') as AthleteAvailabilityStatus,
+    })
+    setEditingRecordId(r.id)
+  }
+
+  function handleUpdateRecord() {
+    if (!editingRecordId) return
+    startTransition(async () => {
+      await updateOccurrenceRecord({
+        recordId: editingRecordId,
+        recordDate: recordEditData.recordDate,
+        subjective: recordEditData.subjective,
+        objective: recordEditData.objective,
+        assessment: recordEditData.assessment,
+        plan: recordEditData.plan,
+        availabilityStatus: recordEditData.availability_status,
+      })
+      setEditingRecordId(null)
       onRevalidate()
     })
   }
@@ -237,7 +294,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                   {activeDiagnosis.osiics_description ?? activeDiagnosis.custom_description ?? '—'}
                 </span>
                 {activeDiagnosis.availability_status && <StatusBadge status={activeDiagnosis.availability_status} />}
-                {canCreateDiagnosis && (
+                {canCreateDiagnosis && !confirmResolveDiagnosis && (
                   <button
                     onClick={() => setShowEditDiagnosis(true)}
                     style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, padding: '3px 7px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer', flexShrink: 0 }}
@@ -246,7 +303,39 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                     Editar
                   </button>
                 )}
+                {canCreateDiagnosis && !confirmResolveDiagnosis && (
+                  <button
+                    onClick={() => setConfirmResolveDiagnosis(true)}
+                    disabled={resolvingDiagnosis}
+                    style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, padding: '3px 7px', borderRadius: 6, border: '1px solid rgba(0,229,160,0.3)', background: 'rgba(0,229,160,0.06)', color: 'var(--sophi-green)', cursor: 'pointer', flexShrink: 0 }}
+                  >
+                    <CheckCircle2 size={9} />
+                    Resolver diagnóstico
+                  </button>
+                )}
               </div>
+              {confirmResolveDiagnosis && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, borderRadius: 6, border: '1px solid var(--sophi-green)', background: 'var(--sophi-green-bg)', padding: '6px 8px' }}>
+                  <p style={{ fontSize: 10, flex: 1, color: 'var(--sophi-text2)' }}>
+                    Confirma que este diagnóstico fica resolvido?
+                  </p>
+                  <button
+                    onClick={() => setConfirmResolveDiagnosis(false)}
+                    disabled={resolvingDiagnosis}
+                    style={{ fontSize: 10, color: 'var(--sophi-text3)', background: 'transparent', border: 'none', cursor: 'pointer', flexShrink: 0 }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleResolveDiagnosis}
+                    disabled={resolvingDiagnosis}
+                    style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 700, color: 'var(--sophi-green)', background: 'transparent', border: 'none', cursor: 'pointer', flexShrink: 0 }}
+                  >
+                    {resolvingDiagnosis ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle2 size={10} />}
+                    Confirmar
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -257,12 +346,83 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                 Reavaliações ({occ.occurrence_records.length})
               </div>
               {occ.occurrence_records.map((r) => (
-                <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid var(--sophi-border)' }}>
-                  <span style={{ fontSize: 11, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)', flexShrink: 0 }}>{r.record_date}</span>
-                  <span style={{ fontSize: 11, color: 'var(--sophi-text2)', flex: 1 }}>{r.assessment ?? r.subjective ?? '—'}</span>
-                  {r.availability_status && <StatusBadge status={r.availability_status} />}
-                  <span style={{ fontSize: 10, color: 'var(--sophi-text3)' }}>{r.clinician_name}</span>
-                </div>
+                editingRecordId === r.id ? (
+                  <div key={r.id} style={{ background: 'var(--sophi-bg3)', borderRadius: 8, padding: 12, marginBottom: 8 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 6 }}>
+                      <div>
+                        <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                          Data
+                        </label>
+                        <input
+                          type="date"
+                          value={recordEditData.recordDate}
+                          onChange={(e) => setRecordEditData((d) => ({ ...d, recordDate: e.target.value }))}
+                          style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)', fontFamily: 'inherit' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                          Estado de disponibilidade
+                        </label>
+                        <select
+                          value={recordEditData.availability_status}
+                          onChange={(e) => setRecordEditData((d) => ({ ...d, availability_status: e.target.value as AthleteAvailabilityStatus }))}
+                          style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)', fontFamily: 'inherit' }}
+                        >
+                          {Object.entries(STATUS_CONFIG).map(([v, cfg]) => (
+                            <option key={v} value={v}>{cfg.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    {([
+                      ['subjective', 'Subjetivo'],
+                      ['objective', 'Objetivo'],
+                      ['assessment', 'Observações'],
+                      ['plan', 'Plano'],
+                    ] as const).map(([key, label]) => (
+                      <div key={key} style={{ marginBottom: 6 }}>
+                        <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                          {label}
+                        </label>
+                        <textarea
+                          value={recordEditData[key]}
+                          onChange={(e) => setRecordEditData((d) => ({ ...d, [key]: e.target.value }))}
+                          rows={2}
+                          style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)', resize: 'vertical', fontFamily: 'inherit' }}
+                        />
+                      </div>
+                    ))}
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button
+                        onClick={handleUpdateRecord}
+                        disabled={isPending}
+                        style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: 'none', background: 'var(--sophi-green)', color: '#000', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        {isPending ? 'A guardar...' : 'Guardar'}
+                      </button>
+                      <button
+                        onClick={() => setEditingRecordId(null)}
+                        style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid var(--sophi-border)' }}>
+                    <span style={{ fontSize: 11, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)', flexShrink: 0 }}>{r.record_date}</span>
+                    <span style={{ fontSize: 11, color: 'var(--sophi-text2)', flex: 1 }}>{r.assessment ?? r.subjective ?? '—'}</span>
+                    {r.availability_status && <StatusBadge status={r.availability_status} />}
+                    <span style={{ fontSize: 10, color: 'var(--sophi-text3)' }}>{r.clinician_name}</span>
+                    <button
+                      onClick={() => startEditRecord(r)}
+                      style={{ display: 'flex', alignItems: 'center', padding: 3, borderRadius: 6, border: 'none', background: 'transparent', color: 'var(--sophi-text3)', cursor: 'pointer', flexShrink: 0 }}
+                    >
+                      <Pencil size={11} />
+                    </button>
+                  </div>
+                )
               ))}
             </div>
           )}
@@ -377,20 +537,29 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                   }}
                 />
               </div>
-              <div style={{ marginBottom: 6 }}>
-                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
-                  Observações
-                </label>
-                <textarea
-                  value={editData.observations}
-                  onChange={(e) => setEditData((d) => ({ ...d, observations: e.target.value }))}
-                  rows={3}
-                  style={{
-                    width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12,
-                    background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)',
-                    color: 'var(--sophi-text)', resize: 'vertical', fontFamily: 'inherit',
-                  }}
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 6 }}>
+                {([
+                  ['subjective', 'Subjetivo'],
+                  ['objective', 'Objetivo'],
+                  ['assessment', 'Observações'],
+                  ['plan', 'Plano'],
+                ] as const).map(([key, label]) => (
+                  <div key={key}>
+                    <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                      {label}
+                    </label>
+                    <textarea
+                      value={editData[key]}
+                      onChange={(e) => setEditData((d) => ({ ...d, [key]: e.target.value }))}
+                      rows={2}
+                      style={{
+                        width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12,
+                        background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)',
+                        color: 'var(--sophi-text)', resize: 'vertical', fontFamily: 'inherit',
+                      }}
+                    />
+                  </div>
+                ))}
               </div>
               <div style={{ marginBottom: 8 }}>
                 <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>

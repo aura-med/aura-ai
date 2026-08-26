@@ -265,7 +265,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
             {TRAFFIC_LIGHT_ORDER.map((status) => {
               const cfg = STATUS_CONFIG[status]
               const group = byStatus[status]
-              const isPriority = status === 'unavailable' || status === 'rtp'
+              const isPriority = status === 'unavailable' || status === 'rtp' || status === 'load_management'
               return (
                 <div key={status} style={{
                   background: 'var(--sophi-bg2)',

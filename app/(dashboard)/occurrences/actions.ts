@@ -3,15 +3,16 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-type AvailabilityStatus = 'available' | 'evaluation' | 'unavailable' | 'rtp'
+type AvailabilityStatus = 'available' | 'evaluation' | 'unavailable' | 'rtp' | 'load_management'
 
 // Higher number = more restrictive. When an athlete has several open
 // occurrences/diagnoses, the most restrictive one wins.
 const STATUS_SEVERITY: Record<AvailabilityStatus, number> = {
   available: 0,
   evaluation: 1,
-  rtp: 2,
-  unavailable: 3,
+  load_management: 2,
+  rtp: 3,
+  unavailable: 4,
 }
 
 // Derive an athlete's availability from their still-open occurrences and
@@ -103,7 +104,7 @@ export interface RegisterOccurrenceInput {
   objective: string
   assessment: string
   plan: string
-  availabilityStatus: 'available' | 'evaluation' | 'unavailable' | 'rtp'
+  availabilityStatus: AvailabilityStatus
   clinicianName: string
   clinicianRole: string
 }
@@ -161,7 +162,7 @@ export interface UpdateOccurrenceInput {
   occurrenceDate: string
   occurrenceType: 'complaint' | 'trauma' | 'disease' | 'other'
   observations: string
-  availabilityStatus: 'available' | 'evaluation' | 'unavailable' | 'rtp'
+  availabilityStatus: AvailabilityStatus
 }
 
 // Edits the occurrence's own record (title/date/type/observations/status) —
@@ -205,7 +206,7 @@ export async function updateOccurrence(input: UpdateOccurrenceInput) {
 export async function resolveOccurrence(
   occurrenceId: string,
   athleteId: string,
-  resolutionStatus: 'available' | 'evaluation' | 'unavailable' | 'rtp'
+  resolutionStatus: AvailabilityStatus
 ) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -254,7 +255,7 @@ export async function addOccurrenceRecord(input: {
   objective: string
   assessment: string
   plan: string
-  availabilityStatus: 'available' | 'evaluation' | 'unavailable' | 'rtp'
+  availabilityStatus: AvailabilityStatus
 }) {
   const supabase = await createClient()
   const clinician = await getClinician(supabase)

@@ -14,10 +14,11 @@ import type { AthleteAvailabilityStatus } from '@/types'
 // attach a diagnosis — regardless of where it's opened from.
 
 export const STATUS_CONFIG: Record<AthleteAvailabilityStatus, { label: string; color: string; bg: string; dot: string }> = {
-  available:   { label: 'Disponível',   color: 'var(--sophi-green)',  bg: 'rgba(0,229,160,0.1)',   dot: '#00e5a0' },
-  evaluation:  { label: 'Em Avaliação', color: 'var(--sophi-warn)',   bg: 'rgba(246,173,85,0.1)',  dot: '#f6ad55' },
-  unavailable: { label: 'Indisponível', color: 'var(--sophi-danger)', bg: 'rgba(255,77,109,0.1)',  dot: '#ff4d6d' },
-  rtp:         { label: 'Em RTP',       color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.1)', dot: '#b48dfc' },
+  available:       { label: 'Disponível',      color: 'var(--sophi-green)',  bg: 'rgba(0,229,160,0.1)',   dot: '#00e5a0' },
+  evaluation:      { label: 'Em Avaliação',    color: 'var(--sophi-warn)',   bg: 'rgba(246,173,85,0.1)',  dot: '#f6ad55' },
+  load_management: { label: 'Gestão de Carga', color: 'var(--sophi-orange)', bg: 'rgba(204,85,0,0.1)',    dot: '#cc5500' },
+  unavailable:     { label: 'Indisponível',    color: 'var(--sophi-danger)', bg: 'rgba(255,77,109,0.1)',  dot: '#ff4d6d' },
+  rtp:             { label: 'Em RTP',          color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.1)', dot: '#b48dfc' },
 }
 
 export const OCCURRENCE_TYPES = [

@@ -6,12 +6,14 @@ import { createDiagnosis, updateDiagnosis } from '@/lib/actions/clinical'
 import { searchOsiics, OSIICS_FOOTBALL } from '@/lib/data/osiics'
 import type { OsiicsEntry } from '@/lib/data/osiics'
 import type { ActiveOccurrence } from '@/types/athlete-profile'
+import type { AthleteAvailabilityStatus } from '@/types'
 
 const STATUS_OPTIONS = [
-  { value: 'available',   label: '🟢 Disponível',   color: 'var(--sophi-green)',   bg: 'var(--sophi-green-bg)'           },
-  { value: 'evaluation',  label: '🟡 Em Avaliação', color: 'var(--sophi-warn)',    bg: 'var(--sophi-warn-bg)'            },
-  { value: 'unavailable', label: '🔴 Indisponível', color: 'var(--sophi-danger)',  bg: 'var(--sophi-danger-bg)'          },
-  { value: 'rtp',         label: '🟣 Em RTP',        color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.12)'         },
+  { value: 'available',        label: '🟢 Disponível',      color: 'var(--sophi-green)',  bg: 'var(--sophi-green-bg)'  },
+  { value: 'evaluation',       label: '🟡 Em Avaliação',    color: 'var(--sophi-warn)',   bg: 'var(--sophi-warn-bg)'   },
+  { value: 'load_management',  label: '🟠 Gestão de Carga', color: 'var(--sophi-orange)', bg: 'var(--sophi-orange-bg)' },
+  { value: 'unavailable',      label: '🔴 Indisponível',    color: 'var(--sophi-danger)', bg: 'var(--sophi-danger-bg)' },
+  { value: 'rtp',              label: '🟣 Em RTP',           color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.12)' },
 ]
 
 export interface ExistingDiagnosis {
@@ -72,7 +74,7 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
           osiicsDescription:  selectedOsiics?.description ?? null,
           diagnosisType,
           customDescription:  customDesc.trim() || null,
-          availabilityStatus: status as 'available' | 'evaluation' | 'unavailable' | 'rtp',
+          availabilityStatus: status as AthleteAvailabilityStatus,
           occurrenceId:       occurrenceId || null,
         })
       } else {
@@ -82,7 +84,7 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
           osiicsDescription:  selectedOsiics?.description ?? null,
           diagnosisType,
           customDescription:  customDesc.trim() || null,
-          availabilityStatus: status as 'available' | 'evaluation' | 'unavailable' | 'rtp',
+          availabilityStatus: status as AthleteAvailabilityStatus,
           occurrenceId:       occurrenceId || null,
         })
       }

@@ -2,6 +2,7 @@ import { calcScore, riskColor, riskLabel } from '@/lib/scoring'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import { getAthleteList, type AthleteListDTO } from '@/lib/dal/athletes'
 import { AthleteCard } from '@/components/ui/AthleteCard'
+import type { AthleteAvailabilityStatus } from '@/types'
 
 export default async function SquadPage({
   searchParams,
@@ -25,17 +26,17 @@ export default async function SquadPage({
       decel: null, md: null,
     }
     const score = calcScore(inputs)
-    const loadManagement = (a.rehab_plans ?? []).some((p) => p.is_active && p.plan_type === 'load_management')
-    return { ...a, score, loadManagement }
+    // Falls back to the legacy status flag for rows predating the
+    // availability_status migration.
+    const effectiveStatus = (a.availability_status as AthleteAvailabilityStatus | null)
+      ?? (a.status === 'rehab' ? 'rtp' : 'available')
+    return { ...a, score, effectiveStatus }
   })
 
   const byPos: Record<string, typeof withScores> = { GK: [], DEF: [], MID: [], FWD: [] }
   const rehab: typeof withScores = []
   withScores.forEach((a) => {
-    // RTP is the canonical rehab bucket (availability_status), falling back to
-    // the legacy status flag for rows predating the 4-state migration.
-    const isRtp = (a.availability_status ?? (a.status === 'rehab' ? 'rtp' : 'available')) === 'rtp'
-    if (isRtp) rehab.push(a)
+    if (a.effectiveStatus === 'rtp') rehab.push(a)
     else if (a.position && byPos[a.position]) byPos[a.position].push(a)
   })
 
@@ -75,11 +76,10 @@ export default async function SquadPage({
                   photoUrl={a.photo_url}
                   shirtNumber={a.shirt_number}
                   position={positionFull[a.position ?? ''] ?? a.position}
-                  status={a.status}
+                  status={a.effectiveStatus}
                   score={a.score.score}
                   scoreColor={riskColor(a.score.score)}
                   scoreLabel={riskLabel(a.score.score)}
-                  loadManagement={a.loadManagement}
                 />
               ))}
             </div>
@@ -104,11 +104,10 @@ export default async function SquadPage({
                 photoUrl={a.photo_url}
                 shirtNumber={a.shirt_number}
                 position={a.position}
-                status="rehab"
+                status="rtp"
                 score={a.score.score}
                 scoreColor={riskColor(a.score.score)}
                 scoreLabel={riskLabel(a.score.score)}
-                loadManagement={a.loadManagement}
               />
             ))}
           </div>

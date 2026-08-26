@@ -6,8 +6,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-type Avail = 'available' | 'evaluation' | 'unavailable' | 'rtp'
-const SEVERITY: Record<Avail, number> = { available: 0, evaluation: 1, rtp: 2, unavailable: 3 }
+type Avail = 'available' | 'evaluation' | 'unavailable' | 'rtp' | 'load_management'
+const SEVERITY: Record<Avail, number> = { available: 0, evaluation: 1, load_management: 2, rtp: 3, unavailable: 4 }
 
 // The athlete's status is whatever the MOST RECENTLY recorded open
 // occurrence/diagnosis says — not the most restrictive of all open issues.

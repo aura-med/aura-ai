@@ -19,7 +19,7 @@ import {
   upsertRehabPlanDay, deleteRehabPlanDay, moveRehabPlanDay,
 } from '@/lib/actions/rehab-plan'
 import { REHAB_DAY_OCCUPIED_ERROR } from '@/lib/actions/rehab-plan-errors'
-import type { RehabPlan, RehabPlanPhase, RehabPlanDay, RehabPlanPeriod, RehabPlanType } from '@/types/athlete-profile'
+import type { RehabPlan, RehabPlanPhase, RehabPlanDay, RehabPlanPeriod } from '@/types/athlete-profile'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -27,21 +27,6 @@ export const PERIODS: { value: RehabPlanPeriod; label: string; icon: React.Eleme
   { value: 'morning',   label: 'Manhã', icon: Sun    },
   { value: 'afternoon', label: 'Tarde', icon: Sunset },
 ]
-
-export const PLAN_TYPES: { value: RehabPlanType; label: string }[] = [
-  { value: 'rehabilitation', label: 'Reabilitação' },
-  { value: 'load_management', label: 'Gestão de Carga' },
-]
-
-export function planTypeBadgeStyle(planType: RehabPlanType) {
-  return planType === 'load_management'
-    ? { background: 'var(--sophi-warn-bg)', color: 'var(--sophi-warn)' }
-    : { background: 'var(--sophi-blue-bg)', color: 'var(--sophi-blue)' }
-}
-
-export function planTypeLabel(planType: RehabPlanType) {
-  return PLAN_TYPES.find((t) => t.value === planType)?.label ?? planType
-}
 
 const WEEKDAY_LABELS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
 
@@ -131,7 +116,6 @@ export function PlanModal({
     existing?.athlete_id ?? athleteId ?? athletes?.[0]?.id ?? '',
   )
   const [title, setTitle] = useState(existing?.title ?? '')
-  const [planType, setPlanType] = useState<RehabPlanType>(existing?.plan_type ?? 'rehabilitation')
   const [startDate, setStartDate] = useState(existing?.start_date ?? todayStr())
   const [expectedEndDate, setExpectedEndDate] = useState(existing?.expected_end_date ?? '')
   const [occurrenceId, setOccurrenceId] = useState(existing?.occurrence_id ?? '')
@@ -150,7 +134,6 @@ export function PlanModal({
         await updateRehabPlan({
           planId: existing.id,
           title: title.trim(),
-          planType,
           startDate,
           expectedEndDate: expectedEndDate || null,
           occurrenceId: occurrenceId || null,
@@ -159,7 +142,6 @@ export function PlanModal({
         await createRehabPlan({
           athleteId: selectedAthleteId,
           title: title.trim(),
-          planType,
           startDate,
           expectedEndDate: expectedEndDate || null,
           occurrenceId: occurrenceId || null,
@@ -201,27 +183,6 @@ export function PlanModal({
           <label className={labelClass} style={{ color: 'var(--sophi-text3)' }}>Título</label>
           <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="ex: Lesão isquiotibial direito"
             className={inputClass} style={inputStyle} />
-        </div>
-
-        <div>
-          <label className={labelClass} style={{ color: 'var(--sophi-text3)' }}>Tipo de plano</label>
-          <div className="flex gap-2">
-            {PLAN_TYPES.map((t) => (
-              <button
-                key={t.value}
-                type="button"
-                onClick={() => setPlanType(t.value)}
-                className="flex-1 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all"
-                style={{
-                  borderColor: planType === t.value ? 'var(--sophi-green)' : 'var(--sophi-border)',
-                  background:  planType === t.value ? 'var(--sophi-green-bg)' : 'var(--sophi-bg2)',
-                  color:       planType === t.value ? 'var(--sophi-green)' : 'var(--sophi-text3)',
-                }}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -734,9 +695,6 @@ export function PlanDetail({
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-sm font-bold" style={{ color: 'var(--sophi-text)' }}>{plan.title}</h3>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={planTypeBadgeStyle(plan.plan_type)}>
-                {planTypeLabel(plan.plan_type)}
-              </span>
               {plan.is_active ? (
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-green-bg)', color: 'var(--sophi-green)' }}>Ativo</span>
               ) : (

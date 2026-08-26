@@ -25,7 +25,6 @@ interface DashboardAthlete {
   score: number
   scoreColor: string
   scoreLabel: string
-  loadManagement: boolean
 }
 
 interface DashboardClientProps {
@@ -48,18 +47,21 @@ const STATUS_CONFIG: Record<AthleteAvailabilityStatus, {
   dot: string
   priority: number
 }> = {
-  available:   { label: 'Disponível',    color: 'var(--sophi-green)',  bg: 'rgba(0,229,160,0.06)',   border: 'rgba(0,229,160,0.2)',   dot: '#00e5a0', priority: 4 },
-  evaluation:  { label: 'Em Avaliação',  color: 'var(--sophi-warn)',   bg: 'rgba(246,173,85,0.06)',  border: 'rgba(246,173,85,0.25)', dot: '#f6ad55', priority: 2 },
-  unavailable: { label: 'Indisponível',  color: 'var(--sophi-danger)', bg: 'rgba(255,77,109,0.06)',  border: 'rgba(255,77,109,0.2)',  dot: '#ff4d6d', priority: 1 },
-  rtp:         { label: 'Return To Play', color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.06)', border: 'rgba(180,141,252,0.2)', dot: '#b48dfc', priority: 3 },
+  available:       { label: 'Disponível',      color: 'var(--sophi-green)',  bg: 'rgba(0,229,160,0.06)',   border: 'rgba(0,229,160,0.2)',   dot: '#00e5a0', priority: 5 },
+  evaluation:      { label: 'Em Avaliação',    color: 'var(--sophi-warn)',   bg: 'rgba(246,173,85,0.06)',  border: 'rgba(246,173,85,0.25)', dot: '#f6ad55', priority: 2 },
+  load_management: { label: 'Gestão de Carga', color: 'var(--sophi-orange)', bg: 'rgba(204,85,0,0.06)',    border: 'rgba(204,85,0,0.25)',   dot: '#cc5500', priority: 3 },
+  unavailable:     { label: 'Indisponível',    color: 'var(--sophi-danger)', bg: 'rgba(255,77,109,0.06)',  border: 'rgba(255,77,109,0.2)',  dot: '#ff4d6d', priority: 1 },
+  rtp:             { label: 'Return To Play',  color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.06)', border: 'rgba(180,141,252,0.2)', dot: '#b48dfc', priority: 4 },
 }
 
-const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 'rtp', 'available']
+const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 'load_management', 'rtp', 'available']
 
 // "Em Avaliação" isn't a semáforo colour — it's a to-do (athlete pending a clinical
 // decision), so it gets its own action band instead of a slot in the traffic light.
-// The remaining three read as severity: available < rtp < unavailable.
-const TRAFFIC_LIGHT_ORDER: AthleteAvailabilityStatus[] = ['available', 'rtp', 'unavailable']
+// The remaining four render as a 2x2 grid: Disponível/Gestão de Carga on top (both
+// train normally, just one is monitored), Indisponível/RTP below (both off the
+// normal training plan).
+const TRAFFIC_LIGHT_ORDER: AthleteAvailabilityStatus[] = ['available', 'load_management', 'unavailable', 'rtp']
 
 export function DashboardClient({ athletes, squadId, currentDate, microcycle, isToday, calendarEvents, clinicalOccurrences, clinicalStaff, orgName }: DashboardClientProps) {
   const [tab, setTab] = useState<'overview' | 'squad' | 'calendar'>('overview')
@@ -83,7 +85,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
 
   const byStatus = STATUS_ORDER.reduce<Record<AthleteAvailabilityStatus, DashboardAthlete[]>>(
     (acc, s) => ({ ...acc, [s]: athletes.filter((a) => a.availability_status === s) }),
-    { available: [], evaluation: [], unavailable: [], rtp: [] }
+    { available: [], evaluation: [], load_management: [], unavailable: [], rtp: [] }
   )
 
   const squadSearch = squadQuery.trim().toLowerCase()
@@ -255,11 +257,11 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
             </div>
           )}
 
-          {/* Semáforo: disponível → RTP → indisponível, por ordem crescente de restrição.
-              Fixed 3-column row spanning the full page width on desktop/tablet (≥640px,
-              same as before); stacks to 1 column on phones so the named pills have room
-              to wrap instead of being squeezed into a ~110px-wide slot. */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Semáforo em grelha 2x2: Disponível/Gestão de Carga em cima (treinam
+              normalmente), Indisponível/RTP em baixo (fora do plano normal).
+              Stacks to 1 column on phones so the named pills have room to wrap
+              instead of being squeezed into a ~110px-wide slot. */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {TRAFFIC_LIGHT_ORDER.map((status) => {
               const cfg = STATUS_CONFIG[status]
               const group = byStatus[status]
@@ -416,13 +418,10 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
                           photoUrl={a.photo_url}
                           shirtNumber={a.shirt_number}
                           position={posCodes[pos] ?? pos}
-                          status={a.availability_status === 'available' ? 'available'
-                            : a.availability_status === 'rtp' ? 'rehab'
-                            : 'unavailable'}
+                          status={a.availability_status}
                           score={a.score}
                           scoreColor={a.scoreColor}
                           scoreLabel={a.scoreLabel}
-                          loadManagement={a.loadManagement}
                         />
                       </div>
                     )

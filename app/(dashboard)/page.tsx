@@ -4,6 +4,7 @@ import { getSquadIdParam } from '@/lib/squad-url'
 import { calcScore, riskColor, riskLabel } from '@/lib/scoring'
 import { calculateMDStatus, todayStr, addDays } from '@/lib/utils/microcycle'
 import { DashboardClient } from './DashboardClient'
+import type { AthleteAvailabilityStatus } from '@/types'
 
 async function getData(squadId: string | null, date: string) {
   const supabase = await createClient()
@@ -27,8 +28,7 @@ async function getData(squadId: string | null, date: string) {
     .select(`
       id, name, shirt_number, photo_url, position, club, status,
       availability_status,
-      wellness_checkins(*), injury_events(*), score_history(*),
-      rehab_plans ( id, plan_type, is_active )
+      wellness_checkins(*), injury_events(*), score_history(*)
     `)
     .eq('active', true)
     .order('shirt_number')
@@ -179,9 +179,6 @@ export default async function Dashboard({
     // them from coaches) and lossy (availability_status is overwritten on
     // resolve/reassessment), so we intentionally show the current status here.
     const availabilityStatus = (a.availability_status as string) ?? 'available'
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rehabPlans: any[] = a.rehab_plans ?? []
-    const loadManagement = rehabPlans.some((p) => p.is_active && p.plan_type === 'load_management')
 
     return {
       id: a.id as string,
@@ -191,11 +188,10 @@ export default async function Dashboard({
       position: a.position as string | null,
       club: a.club as string | null,
       status: a.status as string,
-      availability_status: (availabilityStatus as 'available' | 'evaluation' | 'unavailable' | 'rtp'),
+      availability_status: (availabilityStatus as AthleteAvailabilityStatus),
       score: result.score,
       scoreColor: riskColor(result.score),
       scoreLabel: riskLabel(result.score),
-      loadManagement,
     }
   })
 

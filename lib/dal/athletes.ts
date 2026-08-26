@@ -29,11 +29,6 @@ export interface AthleteListDTO {
     score_date: string
     total_score: number
   }>
-  rehab_plans: Array<{
-    id: string
-    plan_type: string
-    is_active: boolean
-  }>
 }
 
 export async function getAthleteList(squadId?: string | null): Promise<AthleteListDTO[]> {
@@ -44,8 +39,7 @@ export async function getAthleteList(squadId?: string | null): Promise<AthleteLi
       id, name, shirt_number, photo_url, position, status, availability_status, squad_id,
       wellness_checkins ( checkin_date, fatigue, sleep_hours, tqr, stress, hrv_ms, sleep_quality ),
       injury_events ( id, injury_date, return_date, severity ),
-      score_history ( score_date, total_score ),
-      rehab_plans ( id, plan_type, is_active )
+      score_history ( score_date, total_score )
     `)
     .eq('active', true)
     .order('shirt_number')
@@ -100,7 +94,7 @@ export async function getReadinessList(squadId?: string | null): Promise<Readine
       athlete_passport ( is_shareable, passport_data )
     `)
     .eq('active', true)
-    .or('availability_status.is.null,availability_status.eq.available')
+    .or('availability_status.is.null,availability_status.eq.available,availability_status.eq.load_management')
     .order('shirt_number')
   if (squadId) query = query.eq('squad_id', squadId)
   const { data, error } = await query

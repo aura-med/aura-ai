@@ -1,33 +1,34 @@
 import Link from 'next/link'
+import type { AthleteAvailabilityStatus } from '@/types'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FUT-style athlete card — photo is the hero, data at the bottom.
-// Used in squad/page.tsx and athletes/page.tsx.
+// Used in squad/page.tsx, athletes/page.tsx and the dashboard.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const STATUS_CFG: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-  available:   { label: 'Disponível',   color: 'var(--sophi-green)',  bg: 'var(--sophi-green-bg)',  dot: '#00e5a0' },
-  modified:    { label: 'Condicionado', color: 'var(--sophi-warn)',   bg: 'var(--sophi-warn-bg)',   dot: '#f6ad55' },
-  unavailable: { label: 'Indisponível', color: 'var(--sophi-danger)', bg: 'var(--sophi-danger-bg)', dot: '#ff4d6d' },
-  rehab:       { label: 'Reabilitação', color: 'var(--sophi-blue)',   bg: 'var(--sophi-blue-bg)',   dot: '#4d9aff' },
+const STATUS_CFG: Record<AthleteAvailabilityStatus, { label: string; color: string; bg: string; dot: string }> = {
+  available:       { label: 'Disponível',      color: 'var(--sophi-green)',  bg: 'var(--sophi-green-bg)',  dot: '#00e5a0' },
+  evaluation:      { label: 'Em Avaliação',    color: 'var(--sophi-warn)',   bg: 'var(--sophi-warn-bg)',   dot: '#f6ad55' },
+  load_management: { label: 'Gestão de Carga', color: 'var(--sophi-orange)', bg: 'var(--sophi-orange-bg)', dot: '#cc5500' },
+  unavailable:     { label: 'Indisponível',    color: 'var(--sophi-danger)', bg: 'var(--sophi-danger-bg)', dot: '#ff4d6d' },
+  rtp:             { label: 'Return To Play',  color: 'var(--sophi-purple)', bg: 'var(--sophi-purple-bg)', dot: '#b48dfc' },
 }
 
 interface AthleteCardProps {
-  href:            string
-  name:            string
-  photoUrl?:       string | null
-  shirtNumber?:    number | null
-  position?:       string | null
-  status:          string
-  score:           number | null
-  scoreColor:      string
-  scoreLabel:      string
-  loadManagement?: boolean
+  href:         string
+  name:         string
+  photoUrl?:    string | null
+  shirtNumber?: number | null
+  position?:    string | null
+  status:       AthleteAvailabilityStatus
+  score:        number | null
+  scoreColor:   string
+  scoreLabel:   string
 }
 
 export function AthleteCard({
   href, name, photoUrl, shirtNumber, position,
-  status, loadManagement,
+  status,
 }: AthleteCardProps) {
   const st = STATUS_CFG[status] ?? STATUS_CFG.available
 
@@ -126,20 +127,6 @@ export function AthleteCard({
               {st.label}
             </span>
           </div>
-
-          {/* Load management badge — athlete is otherwise available but
-              training under a managed-load plan (see rehab_plans.plan_type). */}
-          {loadManagement && (
-            <div
-              className="flex items-center gap-1.5 rounded-lg px-2 py-1"
-              style={{ background: 'var(--sophi-warn-bg)' }}
-            >
-              <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#f6ad55' }} />
-              <span className="text-[10px] font-semibold truncate" style={{ color: 'var(--sophi-warn)' }}>
-                Gestão de Carga
-              </span>
-            </div>
-          )}
         </div>
       </div>
     </Link>

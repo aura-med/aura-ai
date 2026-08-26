@@ -156,14 +156,12 @@ export interface RehabSession {
 // physio-visit log) and from the /rehab gate-based RTP protocol tracker.
 
 export type RehabPlanPeriod = 'morning' | 'afternoon'
-export type RehabPlanType = 'rehabilitation' | 'load_management'
 
 export interface RehabPlan {
   id: string
   athlete_id: string
   occurrence_id: string | null
   title: string
-  plan_type: RehabPlanType
   start_date: string
   expected_end_date: string | null
   is_active: boolean

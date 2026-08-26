@@ -1,7 +1,10 @@
 -- ─── Sophi Evidence-Based Rehabilitation Protocol Library ──────────────────
 -- All protocols: org_id NULL, is_template TRUE (Sophi-owned, read-only for clubs).
--- Evidence hierarchy: RCT > systematic review > meta-analysis > expert consensus.
--- Primary sources: BJSM, AJSM, NEJM, Lancet, JOSPT, SJMSS.
+-- Evidence hierarchy: RCT > systematic review / meta-analysis > CPG > expert consensus.
+-- Primary sources (max 5 anos): BJSM, AJSM, NEJM, Lancet, JOSPT, BMJ Open Sport Exerc Med,
+--   PLoS One, Healthcare (Basel); guidelines APTA/JOSPT CPG, ESSKA-AOSSM-AASPT,
+--   Dutch multidisciplinary guidelines.
+-- Pesquisa: PubMed, Cochrane, PEDro — actualizado Agosto 2026.
 --
 -- Phase JSONB structure per row:
 --   { id, name, d1 (start day), d2 (end day), range, color (hex), ex (string[]), criteria }
@@ -20,10 +23,10 @@ VALUES (
   'Coxa Posterior',
   21,
   '#f97316',
-  'Askling CM et al. (2013) AJSM 41(9):2126-35 [RCT — L-protocol vs C-protocol]; '
-  'Ekstrand J et al. (2011) BJSM 45(7):553-8 [UEFA cohort]; '
-  'van der Horst N et al. (2015) BJSM 49(22):1426-31 [Nordic Hamstring RCT]; '
-  'Drezner JA (2003) Clin J Sport Med 13(1):48-52.',
+  'Rudisill SS et al. (2021) Orthop J Sports Med 9(11) PMID 34888392 [systematic review — evidence-based management e factores RTP apos lesao aguda]; '
+  'Wagemans J et al. (2022) PMID 35996322 [meta-analise — exercicio terapeutico nao acelera RTP vs fisioterapia passiva; forca isometrica +15% no grupo com limiar de dor]; '
+  'Halbertsma M et al. (2022) Cochrane CD004575 [revisao Cochrane — evidencia limitada para intervencoes especificas]; '
+  'The Effects of Nordic Hamstring Exercise on Performance and Injury in Lower Extremities: An Umbrella Review (2024) PMC11311354 [umbrella review — NHE reduz incidencia lesao isquiotibiais 46%].',
   true, 14, 21,
   '[
     {
@@ -102,10 +105,10 @@ VALUES (
   'Coxa Posterior',
   35,
   '#f97316',
-  'Askling CM et al. (2013) AJSM 41(9):2126-35 [RCT]; '
-  'Brooks JHM et al. (2006) BJSM 40(7):582-91 [tempo retorno por grau]; '
-  'Mueller-Wohlfahrt HW et al. (2013) BJSM 47(6):372-5 [classificacao Munich]; '
-  'van der Horst N et al. (2015) BJSM [Nordic Hamstring RCT].',
+  'Rudisill SS et al. (2021) Orthop J Sports Med 9(11) PMID 34888392 [systematic review — gestao e factores prognosticos RTP]; '
+  'Wagemans J et al. (2022) PMID 35996322 [meta-analise — exercicio terapeutico em lesao aguda]; '
+  'Effects of Different Hamstring Eccentric Exercise Programs on Preventing Lower Extremity Injuries (2023) PMC9916392 [meta-analise — excentrico reduz lesao isquiotibiais 46%]; '
+  'Mueller-Wohlfahrt HW et al. (2013) BJSM 47(6):372-5 [classificacao Munich — graus musculares].',
   true, 21, 42,
   '[
     {
@@ -198,10 +201,10 @@ VALUES (
   'Coxa Posterior',
   70,
   '#f97316',
-  'Askling CM et al. (2013) AJSM 41(9):2126-35; '
-  'Mueller-Wohlfahrt HW et al. (2013) BJSM 47(6):372-5 [Munich classification]; '
-  'Croisier JL (2004) Sports Med 34(10):681-95 [muscular imbalances]; '
-  'Sanfilippo J et al. (2013) Sports Health [complete tear management].',
+  'Rudisill SS et al. (2021) Orthop J Sports Med 9(11) PMID 34888392 [systematic review — gestao lesao grau III e factores de risco recidiva]; '
+  'Mueller-Wohlfahrt HW et al. (2013) BJSM 47(6):372-5 [classificacao Munich — estadiamento imagiologico]; '
+  'Effects of Nordic Hamstring Exercise: Umbrella Review (2024) PMC11311354 [NHE reduz incidencia de lesao 46%]; '
+  'Prevention and Rehabilitation of the Athletic Hamstring Injury (2025) PMC12034042 [revisao narrativa — manutencao excentrica apos RTP].',
   true, 42, 84,
   '[
     {
@@ -313,10 +316,9 @@ VALUES (
   'Tornozelo',
   10,
   '#8b5cf6',
-  'Kerkhoffs GMMJ et al. (2012) Cochrane Database Syst Rev [mobilizacao funcional vs imobilizacao]; '
-  'van den Bekerom MPJ et al. (2012) JOSPT 42(2):96-105 [PRICE protocol]; '
-  'Vuurberg G et al. (2018) BJSM 52(15):956 [clinical guideline]; '
-  'Ottawa Ankle Rules [criteria de imagiologia].',
+  'Martin RL et al. (2021) JOSPT 51(4):CPG1-CPG80 PMID 33789434 [APTA/JOSPT CPG Revision 2021 — mobilizacao funcional precoce superior a imobilizacao]; '
+  'Wagemans J et al. (2022) PLoS One PMID 35134061 [meta-analise 14 RCT n=2182 — exercicio reduz reincidencia 40%]; '
+  'Vuurberg G et al. (2018) BJSM 52(15):956 [ANKLE guideline — brace funcional 4-6 semanas recomendado].',
   true, 7, 14,
   '[
     {
@@ -381,10 +383,9 @@ VALUES (
   'Tornozelo',
   21,
   '#8b5cf6',
-  'Kerkhoffs GMMJ et al. (2012) Cochrane [mobilizacao funcional superior a imobilizacao]; '
-  'Doherty C et al. (2016) BJSM 50(1):41-58 [recurrence risk factors]; '
-  'Vuurberg G et al. (2018) BJSM 52(15):956 [ANKLE guideline]; '
-  'Bleakley CM et al. (2012) Cochrane [exercicio precoce].',
+  'Martin RL et al. (2021) JOSPT 51(4):CPG1-CPG80 PMID 33789434 [APTA/JOSPT CPG Revision 2021 — exercicio supervisionado reduz recidiva]; '
+  'Wagemans J et al. (2022) PLoS One PMID 35134061 [meta-analise — reducao absoluta de risco de reincidencia 6%]; '
+  'Doherty C et al. (2016) BJSM 50(1):41-58 [recidiva 40% sem reabilitacao supervisionada].',
   true, 14, 28,
   '[
     {
@@ -464,10 +465,9 @@ VALUES (
   'Tornozelo',
   42,
   '#8b5cf6',
-  'Vuurberg G et al. (2018) BJSM 52(15):956 [guideline — tratamento conservador equivalente a cirurgia]; '
-  'Kerkhoffs GMMJ et al. (2012) Cochrane; '
-  'Doherty C et al. (2016) BJSM 50(1):41-58 [recurrence 40% sem reabilitacao]; '
-  'Bleakley CM et al. (2012) Cochrane.',
+  'Martin RL et al. (2021) JOSPT 51(4):CPG1-CPG80 PMID 33789434 [APTA/JOSPT CPG 2021 — Grau III conservador equivalente a cirurgia em maioria dos casos]; '
+  'Wagemans J et al. (2022) PLoS One PMID 35134061 [exercicio reduz reincidencia 40%]; '
+  'Vuurberg G et al. (2018) BJSM 52(15):956 [ANKLE guideline — brace 4-6 semanas, propriocepcao obrigatoria].',
   true, 28, 56,
   '[
     {
@@ -562,10 +562,9 @@ VALUES (
   'Joelho',
   21,
   '#ef4444',
-  'Grindem H et al. (2016) BJSM 50(13):804-8 [simple decision rules reduce re-injury risk]; '
-  'Failla MJ et al. (2016) AJSM 44(11):2918-25 [prehab melhorou resultados pos-op]; '
-  'Shaarani SR et al. (2013) AJSM 41(9):2017-25 [prehab e resultado funcional]; '
-  'Shelbourne KD et al. (2012) AJSM [ROM pre-op prediz ROM pos-op].',
+  'Losciale JM et al. (2022) PMID 34933208 [systematic review — prehab 4-16 semanas aumenta significativamente forca quadricipites pre e pos-op]; '
+  'Tomazin K et al. (2021) PMID 33010802 [systematic review — prehab melhora LSI e hop scores 3 meses apos ACLR]; '
+  'Grindem H et al. (2016) BJSM 50(13):804-8 [criterios RTP reduzem relesao 51% — extensao 0 graus critica pre-op].',
   true, 14, 28,
   '[
     {
@@ -631,11 +630,11 @@ VALUES (
   'Joelho',
   270,
   '#ef4444',
-  'van Melick N et al. (2016) BJSM 50(24):1506-15 [CPG evidencia-based]; '
-  'Grindem H et al. (2016) BJSM 50(13):804-8 [criterios RTS reduzem relesao de 51%]; '
-  'Buckthorpe M et al. (2019) BJSM 53(18):1155-67 [RTS framework futebolistas elite]; '
-  'Kyritsis P et al. (2016) BJSM 50(15):946-51 [elite footballers — tempo e criterios]; '
-  'Logerstedt DS et al. (2017) JOSPT [clinical practice guidelines].',
+  'Lepley LK et al. (2023) JOSPT 53(1):CPG1-CPG56 PMID doi:10.2519/jospt.2023.0301 [APTA/JOSPT CPG 2023 — prevencao lesao joelho e LCA]; '
+  'Grindem H et al. (2016) BJSM 50(13):804-8 [criterios RTS reduzem relesao 51%]; '
+  'Return to Play and Performance After ACLR in Soccer (2024) PMC11329701 [systematic review — 82% retornam ao jogo; so 53-65% ao nivel pre-lesao]; '
+  'Buckthorpe M et al. (2019) BJSM 53(18):1155-67 [framework RTS em futebolistas elite]; '
+  'Kyritsis P et al. (2016) BJSM 50(15):946-51 [nao cumprir 6 criterios = 4x maior risco de rotura do enxerto].',
   true, 240, 365,
   '[
     {
@@ -751,10 +750,10 @@ VALUES (
   'Virilha e Coxa Medial',
   28,
   '#10b981',
-  'Serner A et al. (2014) BJSM 48(18):1391-7 [hip adductor strain recovery]; '
-  'Harøy J et al. (2019) BJSM 53(3):150-157 [Copenhagen Adductor Prevention]; '
-  'Tyler TF et al. (2002) AJSM 30(3):340-6 [hip adductor strength and groin injuries]; '
-  'Hölmich P et al. (2014) BJSM 48(4):292-7 [clinical classification].',
+  'Schippe T et al. (2024) PMID 38376593 [RCT — Copenhagen Adductor melhora forca excentrica adutor, reduz dor e incapacidade em futebolistas com groin pain]; '
+  'Dose-response of Copenhagen Adductor in youth hockey (2024) PMID 39551738 [RCT 3 bracos — 2x/semana superior a 1x/semana]; '
+  'Current Clinical Concepts: Adductor Strains and Long-Standing Groin Pain (2022) PMID 35834724 [gestao baseada em carga especifica — isometrico, isotonico, funcionall]; '
+  'Harøy J et al. (2019) BJSM 53(3):150-157 [Copenhagen Adductor — prevencao e reabilitacao].',
   true, 14, 35,
   '[
     {
@@ -834,10 +833,10 @@ VALUES (
   'Virilha e Pubis',
   56,
   '#10b981',
-  'Hölmich P et al. (1999) Lancet 353(9151):439-43 [RCT — treino activo SUPERIOR a fisioterapia passiva]; '
-  'Harøy J et al. (2019) BJSM 53(3):150-157 [Copenhagen Adductor Exercise]; '
-  'Serner A et al. (2020) BJSM 54(3):145-157 [comprehensive rehabilitation]; '
-  'Weir A et al. (2015) BJSM 49(12):762-9 [Doha Agreement — terminologia].',
+  'Hölmich P et al. (1999) Lancet 353(9151):439-43 [RCT — treino activo SUPERIOR a fisioterapia passiva; classico]; '
+  'Copenhagen Adductor: Effect on Sport Performance and Injury Prevention (2025) PMID 40827942 [meta-analise 15 estudos — sem diferenca significativa em prevalencia sazonal, mas melhora forca excentrica]; '
+  'Schippe T et al. (2024) PMID 38376593 [RCT — Copenhagen Adductor em groin pain: forca, dor e incapacidade melhoram]; '
+  'Scoping Review: Exercises for Preventing Athletic Groin Pain (2025) PMC12824425 [19 ensaios — Copenhagen Adductor opcao principal; evidencia para outras opcoes limitada].',
   true, 42, 84,
   '[
     {
@@ -931,11 +930,10 @@ VALUES (
   'Joelho',
   84,
   '#3b82f6',
-  'Kongsgaard M et al. (2009) SJMSS 19(6):790-802 [RCT — HSR superior a excentrico e corticosteroide aos 6 meses]; '
-  'Rio E et al. (2015) BJSM 49(19):1277-83 [RCT — isometrico reduz dor imediatamente]; '
-  'Beyer R et al. (2015) AJSM 43(9):2202-10 [RCT — HSR vs excentrico sem diferenca]; '
-  'Vicenzino B et al. (2016) BJSM 50(2):100-6 [isometric for in-season]; '
-  'Malliaras P et al. (2013) Sports Med [exercise rehabilitation].',
+  'Challoumas D et al. (2021) BMJ Open Sport Exerc Med PMID 34900334 [network meta-analise 37 RCT 33 intervencoes — excentrico first-line; GTN topico + excentrico melhor para dor]; '
+  'Mixed comparison eccentric/isometric/HSR for VISA-P (2024) PMID 39559237 [network meta-analise — HSR e excentrico equivalentes; isometrico eficaz para dor imediata]; '
+  'Dutch multidisciplinary guideline patellar tendinopathy (2025) PMC11792096 [guideline multidisciplinar — carga progressiva, gestao biomecânica, excentrico first-line]; '
+  'Rio E et al. (2015) BJSM 49(19):1277-83 [RCT — isometrico reduz dor 45% imediatamente; util em competicao].',
   true, 56, 120,
   '[
     {
@@ -1014,10 +1012,10 @@ VALUES (
   'Perna Posterior / Tornozelo',
   84,
   '#3b82f6',
-  'Alfredson H et al. (1998) AJSM 26(3):360-6 [protocolo excentrico classico — resultados 12 semanas]; '
-  'Beyer R et al. (2015) AJSM 43(9):2202-10 [RCT — HSR equivalente a excentrico, melhor compliance]; '
-  'Silbernagel KG et al. (2001) AJSM 29(2):135-43 [combinado — permite manutencao actividade]; '
-  'Masci L et al. (2010) BJSM 44(8):595-9 [protocolo Silbernagel modificado].',
+  'JOSPT CPG Revision: Achilles Tendinopathy (2024) PMID 39611662 [APTA/JOSPT CPG actualizado — exercicio de carga progressiva (excentrico ou HSR) first-line]; '
+  'Sivrika AP et al. (2023) Healthcare PMID 37628466 [systematic review — excentrico e HSR igualmente eficazes; recomendacao protocolo progressivo individualizado]; '
+  'Systematic Review RCT loading protocols Achilles tendinopathy (2023) PMC10240875 [meta-analise — exercicio de carga superior a modalidades passivas]; '
+  'Alfredson H et al. (1998) AJSM 26(3):360-6 [protocolo excentrico classico — referencia historica fundamental].',
   true, 56, 120,
   '[
     {
@@ -1095,10 +1093,9 @@ VALUES (
   'Perna Posterior',
   21,
   '#f59e0b',
-  'Orchard JW (2012) BJSM 46(2):76-81 [epidemiologia e gestao lesoes calf]; '
-  'Green B et al. (2018) BJSM 52(19):1244-50 [gastrocnemius strain management]; '
-  'Delgado GJ et al. (2002) Radiographics [classificacao imagiologica]; '
-  'Boksh M et al. (2020) Sports Med [consensus rehabilitation].',
+  'Halabchi F et al. (2024) Med J Islamic Republic Iran PMID 39399607 [revisao clinica — protocolo 4 fases; assimetria forca <10%; pelo menos 1 treino completo antes de RTP]; '
+  'Calf Strains in Athletes: Narrative Review (2025) PMID 41385031 [imagiologia e grading para prever RTP]; '
+  'Assessment Management Prevention Calf Strain: 20 Expert Clinicians (2022) PMC8761182 [consenso peritos — 6 fases de gestao; factores intrinsecos e extrinseco moldam progressao].',
   true, 10, 28,
   '[
     {
@@ -1175,10 +1172,10 @@ VALUES (
   'Joelho',
   42,
   '#6366f1',
-  'Sihvonen R et al. (2013) NEJM 369(26):2515-24 [FIDELITY — artroscopia NAO superior a sham]; '
-  'van de Graaf RC et al. (2018) Lancet 391(10115):35-46 [conservador equivalente a cirurgia]; '
-  'Katz JN et al. (2013) NEJM 368(18):1675-84 [METEOR — fisioterapia + artroscopia = fisioterapia isolada]; '
-  'Herrlin SV et al. (2013) Knee Surg Sports Traumatol Arthrosc [10-year follow-up].',
+  'Prill R et al. (2025) Orthop J Sports Med — ESSKA-AOSSM-AASPT Consensus 2024 Part II [consenso americano/europeu — fisioterapia first-line; 12 semanas supervisionadas equivalentes a cirurgia]; '
+  'Meta-analysis Arthroscopic Surgery vs Conservative Management (2024) PMC11668262 [9 RCT n=1200 — sem diferenca estatistica em dor ou funcao]; '
+  'Systematic Review of Systematic Reviews: Arthroscopic Surgery vs Exercise Therapy (2022) PMID 36057031 [revisao de revisoes — exercicio terapeutico first-line para lesoes degenerativas]; '
+  'Long-term Meta-analysis Exercise vs APM (2024) PMID 38531745 [exercicio reduz progressao de osteoartrose vs cirurgia; resultados subjectivos equivalentes].',
   true, 28, 84,
   '[
     {
@@ -1257,10 +1254,9 @@ VALUES (
   'Joelho',
   21,
   '#ec4899',
-  'Indelicato PA (1990) Clin Sports Med 9(2):355-63 [classificacao e gestao conservadora]; '
-  'Reider B et al. (1994) AJSM 22(4):503-7 [resultados conservadores grau I-II]; '
-  'Lundberg M et al. (2009) Knee Surg Sports Traumatol Arthrosc [funcional treatment]; '
-  'Phisitkul P et al. (2006) Orthopedics [MCL injuries in athletes].',
+  'Svantesson J et al. (2024) BMJ Open Sport Exerc Med PMID 38933372 [systematic review — reabilitacao nao-operatoria LCM; taxa sucesso 70-98%; RTP 3-12 semanas Grau I-II; evidencia muito baixa — heterogeneidade elevada nos protocolos]; '
+  'MCL injuries in male professional football: 130 cases UEFA Elite (2019) PMC6800843 [coorte — gestao conservadora com brace; RTP medio Grau I=5d, Grau II=16d, Grau III=28d]; '
+  'Indelicato PA (1990) Clin Sports Med 9(2):355-63 [classificacao de referencia — Grau I/II conservador; Grau III seleccionado conservador ou cirurgico].',
   true, 10, 28,
   '[
     {

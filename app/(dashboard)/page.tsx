@@ -67,11 +67,11 @@ async function getData(squadId: string | null, date: string) {
   // per athlete with an open clinical issue, matching the club's own paper
   // form (title/description + current decision), not the full roster.
   const athleteIds = (athletes ?? []).map((a: { id: string }) => a.id)
-  let occurrences: { title: string | null; occurrence_type: string | null; subjective: string | null; availability_status: string | null; athletes: { name: string } | { name: string }[] | null }[] = []
+  let occurrences: { athlete_id: string; title: string | null; occurrence_type: string | null; subjective: string | null; availability_status: string | null; athletes: { name: string } | { name: string }[] | null }[] = []
   if (athleteIds.length) {
     const { data } = await supabase
       .from('occurrences')
-      .select('title, occurrence_type, subjective, availability_status, athletes ( name )')
+      .select('athlete_id, title, occurrence_type, subjective, availability_status, athletes ( name )')
       .in('athlete_id', athleteIds)
       .eq('is_resolved', false)
       .order('occurrence_date', { ascending: false })
@@ -122,14 +122,29 @@ export default async function Dashboard({
 
   const { athletes, microcycle, calendarEvents, occurrences, clinicalStaff, orgName } = await getData(squadId, currentDate)
 
-  const clinicalOccurrences = occurrences.map((o) => {
-    const athlete = Array.isArray(o.athletes) ? o.athletes[0] : o.athletes
-    return {
-      athleteName: athlete?.name ?? '—',
-      description: o.title || o.subjective || o.occurrence_type || '—',
-      availabilityStatus: o.availability_status ?? 'evaluation',
-    }
-  })
+  // One row per athlete, not per occurrence — an athlete with several open
+  // occurrences previously produced one export row each, sometimes with
+  // conflicting decision colors since each occurrence only carries its own
+  // (possibly stale) snapshot of availability_status. `occurrences` is
+  // already ordered by date desc, so the first one seen per athlete is the
+  // most recent (used for the description); the decision column always
+  // reflects the athlete's actual current status, not that snapshot.
+  const currentStatusByAthleteId = new Map(athletes.map((a) => [a.id, a.availability_status]))
+  const seenAthleteIds = new Set<string>()
+  const clinicalOccurrences = occurrences
+    .filter((o) => {
+      if (seenAthleteIds.has(o.athlete_id)) return false
+      seenAthleteIds.add(o.athlete_id)
+      return true
+    })
+    .map((o) => {
+      const athlete = Array.isArray(o.athletes) ? o.athletes[0] : o.athletes
+      return {
+        athleteName: athlete?.name ?? '—',
+        description: o.title || o.subjective || o.occurrence_type || '—',
+        availabilityStatus: currentStatusByAthleteId.get(o.athlete_id) ?? o.availability_status ?? 'evaluation',
+      }
+    })
 
   const withScores = athletes.map((a) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -6,6 +6,7 @@ import autoTable from 'jspdf-autotable'
 const STATUS_LABELS: Record<string, string> = {
   available: 'Disponível',
   evaluation: 'Em Avaliação',
+  load_management: 'Gestão de Carga',
   unavailable: 'Indisponível',
   rtp: 'Em RTP',
 }
@@ -117,15 +118,20 @@ export interface ClinicalStaffMember {
 const DECISION_LABELS: Record<string, string> = {
   available: 'Apto',
   evaluation: 'Reavaliar',
+  load_management: 'Gestão de Carga',
   rtp: 'RTP',
   unavailable: 'Indisponível',
 }
 
+// evaluation is a true yellow (a to-do, not a severity colour) and
+// load_management is a strong/vivid orange — kept visually distinct from each
+// other and from unavailable's red, since a page can show all three at once.
 const DECISION_COLORS: Record<string, { fill: [number, number, number]; text: [number, number, number] }> = {
-  available:   { fill: [84, 130, 53],   text: [255, 255, 255] },
-  evaluation:  { fill: [255, 217, 0],   text: [40, 40, 40] },
-  rtp:         { fill: [47, 84, 150],   text: [255, 255, 255] },
-  unavailable: { fill: [214, 25, 25],   text: [255, 255, 255] },
+  available:       { fill: [84, 130, 53],   text: [255, 255, 255] },
+  evaluation:      { fill: [255, 217, 0],   text: [40, 40, 40] },
+  load_management: { fill: [255, 111, 0],   text: [255, 255, 255] },
+  rtp:              { fill: [47, 84, 150],   text: [255, 255, 255] },
+  unavailable:      { fill: [214, 25, 25],   text: [255, 255, 255] },
 }
 
 const STAFF_PREFIX: Record<string, string> = {
@@ -162,10 +168,11 @@ export function exportDashboardPDF(
   doc.text('Legenda:', 14, 25)
 
   const legendEntries: { status: string; text: string }[] = [
-    { status: 'available',   text: 'Apesar da observação atleta treina sem limitações - APTO' },
-    { status: 'evaluation',  text: 'Treina de forma condicionada/Gestão de carga/Reavaliar pré treino' },
-    { status: 'unavailable', text: 'Não pode treinar/Indisponível' },
-    { status: 'rtp',         text: 'Return to Play (RTP)' },
+    { status: 'available',        text: 'Apesar da observação atleta treina sem limitações - APTO' },
+    { status: 'evaluation',       text: 'Reavaliar pré treino' },
+    { status: 'load_management',  text: 'Treina de forma condicionada - Gestão de Carga' },
+    { status: 'unavailable',      text: 'Não pode treinar/Indisponível' },
+    { status: 'rtp',              text: 'Return to Play (RTP)' },
   ]
   let legendY = 29
   doc.setFont('helvetica', 'normal')

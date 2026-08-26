@@ -7,7 +7,7 @@
 // lib/actions/clinical.ts and app/(dashboard)/occurrences/actions.ts.
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import type { RehabPlanPeriod } from '@/types/athlete-profile'
+import type { RehabPlanPeriod, RehabPlanType } from '@/types/athlete-profile'
 import { REHAB_DAY_OCCUPIED_ERROR } from '@/lib/actions/rehab-plan-errors'
 
 async function currentUserId(supabase: Awaited<ReturnType<typeof createClient>>) {
@@ -20,6 +20,7 @@ async function currentUserId(supabase: Awaited<ReturnType<typeof createClient>>)
 export interface CreateRehabPlanInput {
   athleteId: string
   title: string
+  planType: RehabPlanType
   startDate: string
   expectedEndDate: string | null
   occurrenceId: string | null
@@ -58,6 +59,7 @@ export async function createRehabPlan(input: CreateRehabPlanInput) {
     squad_id:          athlete?.squad_id ?? null,
     occurrence_id:     input.occurrenceId,
     title:             input.title,
+    plan_type:         input.planType,
     start_date:        input.startDate,
     expected_end_date: input.expectedEndDate,
     created_by:        userId,
@@ -77,6 +79,7 @@ export async function createRehabPlan(input: CreateRehabPlanInput) {
 export interface UpdateRehabPlanInput {
   planId: string
   title: string
+  planType: RehabPlanType
   startDate: string
   expectedEndDate: string | null
   occurrenceId: string | null
@@ -89,6 +92,7 @@ export async function updateRehabPlan(input: UpdateRehabPlanInput) {
     .from('rehab_plans')
     .update({
       title:             input.title,
+      plan_type:         input.planType,
       start_date:        input.startDate,
       expected_end_date: input.expectedEndDate,
       occurrence_id:     input.occurrenceId,

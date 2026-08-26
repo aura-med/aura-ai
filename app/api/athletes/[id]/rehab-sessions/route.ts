@@ -1,7 +1,31 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import type { RehabSessionExercise } from '@/types/athlete-profile'
 
 type Ctx = { params: Promise<{ id: string }> }
+
+const COLUMNS = 'id, athlete_id, session_date, session_type, duration_minutes, description, clinician_name, notes, occurrence_id, pse, exercises, created_at, updated_at'
+
+// Trusts only the shape the client-side exercise-row editor produces; drops
+// anything else rather than persisting arbitrary client JSON.
+function sanitizeExercises(input: unknown): RehabSessionExercise[] {
+  if (!Array.isArray(input)) return []
+  return input
+    .filter((e): e is Record<string, unknown> => !!e && typeof e === 'object')
+    .map((e) => ({
+      name: typeof e.name === 'string' ? e.name.trim() : '',
+      sets: typeof e.sets === 'number' && Number.isFinite(e.sets) ? e.sets : null,
+      reps: typeof e.reps === 'string' && e.reps.trim() ? e.reps.trim() : null,
+      load: typeof e.load === 'string' && e.load.trim() ? e.load.trim() : null,
+    }))
+    .filter((e) => e.name.length > 0)
+}
+
+function sanitizePse(input: unknown): number | null {
+  const n = typeof input === 'string' ? Number(input) : input
+  if (typeof n !== 'number' || !Number.isFinite(n)) return null
+  return Math.min(10, Math.max(0, Math.round(n)))
+}
 
 // GET /api/athletes/[id]/rehab-sessions
 export async function GET(_req: Request, { params }: Ctx) {
@@ -10,7 +34,7 @@ export async function GET(_req: Request, { params }: Ctx) {
 
   const { data, error } = await supabase
     .from('rehab_sessions')
-    .select('id, athlete_id, session_date, session_type, duration_minutes, description, clinician_name, notes, occurrence_id, created_at, updated_at')
+    .select(COLUMNS)
     .eq('athlete_id', id)
     .order('session_date', { ascending: false })
     .limit(200)
@@ -36,8 +60,10 @@ export async function POST(req: Request, { params }: Ctx) {
       clinician_name:   body.clinician_name ?? null,
       notes:            body.notes ?? null,
       occurrence_id:    body.occurrence_id ?? null,
+      pse:              sanitizePse(body.pse),
+      exercises:        sanitizeExercises(body.exercises),
     })
-    .select('id, athlete_id, session_date, session_type, duration_minutes, description, clinician_name, notes, occurrence_id, created_at, updated_at')
+    .select(COLUMNS)
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -63,11 +89,13 @@ export async function PATCH(req: Request, { params }: Ctx) {
       clinician_name:   rest.clinician_name ?? null,
       notes:            rest.notes ?? null,
       occurrence_id:    rest.occurrence_id ?? null,
+      pse:              sanitizePse(rest.pse),
+      exercises:        sanitizeExercises(rest.exercises),
       updated_at:       new Date().toISOString(),
     })
     .eq('id', sessionId)
     .eq('athlete_id', id)
-    .select('id, athlete_id, session_date, session_type, duration_minutes, description, clinician_name, notes, occurrence_id, created_at, updated_at')
+    .select(COLUMNS)
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

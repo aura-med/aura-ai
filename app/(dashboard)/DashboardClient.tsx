@@ -25,6 +25,7 @@ interface DashboardAthlete {
   score: number
   scoreColor: string
   scoreLabel: string
+  loadManagement: boolean
 }
 
 interface DashboardClientProps {
@@ -421,6 +422,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
                           score={a.score}
                           scoreColor={a.scoreColor}
                           scoreLabel={a.scoreLabel}
+                          loadManagement={a.loadManagement}
                         />
                       </div>
                     )

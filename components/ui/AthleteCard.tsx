@@ -13,20 +13,21 @@ const STATUS_CFG: Record<string, { label: string; color: string; bg: string; dot
 }
 
 interface AthleteCardProps {
-  href:         string
-  name:         string
-  photoUrl?:    string | null
-  shirtNumber?: number | null
-  position?:    string | null
-  status:       string
-  score:        number | null
-  scoreColor:   string
-  scoreLabel:   string
+  href:            string
+  name:            string
+  photoUrl?:       string | null
+  shirtNumber?:    number | null
+  position?:       string | null
+  status:          string
+  score:           number | null
+  scoreColor:      string
+  scoreLabel:      string
+  loadManagement?: boolean
 }
 
 export function AthleteCard({
   href, name, photoUrl, shirtNumber, position,
-  status,
+  status, loadManagement,
 }: AthleteCardProps) {
   const st = STATUS_CFG[status] ?? STATUS_CFG.available
 
@@ -125,6 +126,20 @@ export function AthleteCard({
               {st.label}
             </span>
           </div>
+
+          {/* Load management badge — athlete is otherwise available but
+              training under a managed-load plan (see rehab_plans.plan_type). */}
+          {loadManagement && (
+            <div
+              className="flex items-center gap-1.5 rounded-lg px-2 py-1"
+              style={{ background: 'var(--sophi-warn-bg)' }}
+            >
+              <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#f6ad55' }} />
+              <span className="text-[10px] font-semibold truncate" style={{ color: 'var(--sophi-warn)' }}>
+                Gestão de Carga
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </Link>

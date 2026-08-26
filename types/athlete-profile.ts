@@ -123,6 +123,17 @@ export interface MedicationRecord {
 
 export type RehabSessionType = 'physio' | 'gym' | 'massage' | 'field' | 'other'
 
+// One exercise line within a session's structured log — mirrors the club's
+// paper/Excel session sheets (exercise name, sets, reps or hold duration,
+// load). reps/load stay free text since the source sheets mix counts,
+// durations ("30\"") and qualitative loads (band colour, bodyweight, kg).
+export interface RehabSessionExercise {
+  name: string
+  sets: number | null
+  reps: string | null
+  load: string | null
+}
+
 export interface RehabSession {
   id: string
   athlete_id: string
@@ -133,6 +144,8 @@ export interface RehabSession {
   clinician_name: string | null
   notes: string | null
   occurrence_id: string | null
+  pse: number | null
+  exercises: RehabSessionExercise[]
   created_at: string
   updated_at: string
 }
@@ -142,12 +155,14 @@ export interface RehabSession {
 // physio-visit log) and from the /rehab gate-based RTP protocol tracker.
 
 export type RehabPlanPeriod = 'morning' | 'afternoon'
+export type RehabPlanType = 'rehabilitation' | 'load_management'
 
 export interface RehabPlan {
   id: string
   athlete_id: string
   occurrence_id: string | null
   title: string
+  plan_type: RehabPlanType
   start_date: string
   expected_end_date: string | null
   is_active: boolean

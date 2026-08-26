@@ -27,7 +27,8 @@ async function getData(squadId: string | null, date: string) {
     .select(`
       id, name, shirt_number, photo_url, position, club, status,
       availability_status,
-      wellness_checkins(*), injury_events(*), score_history(*)
+      wellness_checkins(*), injury_events(*), score_history(*),
+      rehab_plans ( id, plan_type, is_active )
     `)
     .eq('active', true)
     .order('shirt_number')
@@ -178,6 +179,9 @@ export default async function Dashboard({
     // them from coaches) and lossy (availability_status is overwritten on
     // resolve/reassessment), so we intentionally show the current status here.
     const availabilityStatus = (a.availability_status as string) ?? 'available'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rehabPlans: any[] = a.rehab_plans ?? []
+    const loadManagement = rehabPlans.some((p) => p.is_active && p.plan_type === 'load_management')
 
     return {
       id: a.id as string,
@@ -191,6 +195,7 @@ export default async function Dashboard({
       score: result.score,
       scoreColor: riskColor(result.score),
       scoreLabel: riskLabel(result.score),
+      loadManagement,
     }
   })
 

@@ -7,7 +7,7 @@ import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { Plus, ChevronDown, ChevronRight, CalendarClock } from 'lucide-react'
 import { OWNER_ROLE, REHAB_ROLES } from '@/lib/roles'
 import {
-  PlanModal, PlanDetail, formatShort,
+  PlanModal, PlanDetail, formatShort, planTypeBadgeStyle, planTypeLabel,
   type RehabPlanOccurrenceOption, type RehabPlanAthleteOption,
 } from '@/components/rehab-plans/RehabPlanShared'
 import type { RehabPlan } from '@/types/athlete-profile'
@@ -76,6 +76,13 @@ function PlanRow({
             {' · '}{a?.position ?? '—'} · {formatShort(plan.start_date)}
           </div>
         </div>
+        <span style={{
+          fontSize: 10, fontFamily: 'var(--font-dm-mono)', fontWeight: 700,
+          padding: '2px 8px', borderRadius: 999, flexShrink: 0,
+          ...planTypeBadgeStyle(plan.plan_type),
+        }}>
+          {planTypeLabel(plan.plan_type)}
+        </span>
         <span style={{
           fontSize: 10, fontFamily: 'var(--font-dm-mono)', fontWeight: 700,
           padding: '2px 8px', borderRadius: 999, background: status.bg, color: status.color, flexShrink: 0,

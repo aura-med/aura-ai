@@ -100,7 +100,22 @@ function RehabRow({ s, occurrenceLabel, onEdit }: { s: RehabSession; occurrenceL
           {s.duration_minutes && (
             <span className="text-[10px]" style={{ color: 'var(--sophi-text3)' }}>{s.duration_minutes} min</span>
           )}
+          {s.pse != null && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-warn-bg)', color: 'var(--sophi-warn)' }}>
+              PSE {s.pse}
+            </span>
+          )}
         </div>
+        {s.exercises.length > 0 && (
+          <p className="text-[11px] truncate mt-0.5" style={{ color: 'var(--sophi-text3)' }}>
+            {s.exercises
+              .map((ex) => {
+                const parts = [ex.sets != null ? `${ex.sets}x` : null, ex.reps, ex.load].filter(Boolean)
+                return parts.length ? `${ex.name} (${parts.join(' ')})` : ex.name
+              })
+              .join(', ')}
+          </p>
+        )}
         {s.description && (
           <p className="text-[11px] truncate mt-0.5" style={{ color: 'var(--sophi-text3)' }}>{s.description}</p>
         )}

@@ -25,7 +25,8 @@ export default async function SquadPage({
       decel: null, md: null,
     }
     const score = calcScore(inputs)
-    return { ...a, score }
+    const loadManagement = (a.rehab_plans ?? []).some((p) => p.is_active && p.plan_type === 'load_management')
+    return { ...a, score, loadManagement }
   })
 
   const byPos: Record<string, typeof withScores> = { GK: [], DEF: [], MID: [], FWD: [] }
@@ -78,6 +79,7 @@ export default async function SquadPage({
                   score={a.score.score}
                   scoreColor={riskColor(a.score.score)}
                   scoreLabel={riskLabel(a.score.score)}
+                  loadManagement={a.loadManagement}
                 />
               ))}
             </div>
@@ -106,6 +108,7 @@ export default async function SquadPage({
                 score={a.score.score}
                 scoreColor={riskColor(a.score.score)}
                 scoreLabel={riskLabel(a.score.score)}
+                loadManagement={a.loadManagement}
               />
             ))}
           </div>

@@ -155,8 +155,10 @@ html.light {
   --sophi-danger-bg: rgba(255, 77, 109, 0.12);
   --sophi-purple: #b48dfc;
   --sophi-purple-bg: rgba(180, 141, 252, 0.12);
-  --sophi-orange: #cc5500;
-  --sophi-orange-bg: rgba(204, 85, 0, 0.12);
+  --sophi-orange: #f97316;
+  --sophi-orange-bg: rgba(249, 115, 22, 0.12);
+  --sophi-yellow: #ffd93d;
+  --sophi-yellow-bg: rgba(255, 217, 61, 0.12);
   --sophi-text:   #e8eaf2;
   --sophi-text2:  #8892a4;
   --sophi-text3:  #4a5568;

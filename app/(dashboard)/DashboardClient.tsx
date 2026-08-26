@@ -56,8 +56,8 @@ const STATUS_CONFIG: Record<AthleteAvailabilityStatus, {
   priority: number
 }> = {
   available:       { label: 'Disponível',      color: 'var(--sophi-green)',  bg: 'rgba(0,229,160,0.06)',   border: 'rgba(0,229,160,0.2)',   dot: '#00e5a0', priority: 5 },
-  evaluation:      { label: 'Em Avaliação',    color: 'var(--sophi-warn)',   bg: 'rgba(246,173,85,0.06)',  border: 'rgba(246,173,85,0.25)', dot: '#f6ad55', priority: 2 },
-  load_management: { label: 'Gestão de Carga', color: 'var(--sophi-orange)', bg: 'rgba(204,85,0,0.06)',    border: 'rgba(204,85,0,0.25)',   dot: '#cc5500', priority: 3 },
+  evaluation:      { label: 'Em Avaliação',    color: 'var(--sophi-yellow)', bg: 'rgba(255,217,61,0.06)',  border: 'rgba(255,217,61,0.3)',  dot: '#ffd93d', priority: 2 },
+  load_management: { label: 'Gestão de Carga', color: 'var(--sophi-orange)', bg: 'rgba(249,115,22,0.06)',  border: 'rgba(249,115,22,0.25)', dot: '#f97316', priority: 3 },
   unavailable:     { label: 'Indisponível',    color: 'var(--sophi-danger)', bg: 'rgba(255,77,109,0.06)',  border: 'rgba(255,77,109,0.2)',  dot: '#ff4d6d', priority: 1 },
   rtp:             { label: 'Return To Play',  color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.06)', border: 'rgba(180,141,252,0.2)', dot: '#b48dfc', priority: 4 },
 }
@@ -230,28 +230,28 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
             <div style={{
               marginBottom: 16,
               borderRadius: 12,
-              border: '1px solid rgba(246,173,85,0.35)',
-              background: 'linear-gradient(180deg, rgba(246,173,85,0.10), rgba(246,173,85,0.03))',
+              border: '1px solid rgba(255,217,61,0.35)',
+              background: 'linear-gradient(180deg, rgba(255,217,61,0.10), rgba(255,217,61,0.03))',
               padding: '14px 16px',
             }}>
               <div
                 onClick={() => setExpandedGroup((g) => (g === 'evaluation' ? null : 'evaluation'))}
                 style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, cursor: 'pointer' }}
               >
-                <Hourglass size={15} color="var(--sophi-warn)" className="animate-pulse" />
-                <span style={{ fontFamily: 'var(--font-syne)', fontSize: 13, fontWeight: 700, color: 'var(--sophi-warn)' }}>
+                <Hourglass size={15} color="var(--sophi-yellow)" className="animate-pulse" />
+                <span style={{ fontFamily: 'var(--font-syne)', fontSize: 13, fontWeight: 700, color: 'var(--sophi-yellow)' }}>
                   A Reavaliar
                 </span>
                 <span style={{
-                  fontFamily: 'var(--font-dm-mono)', fontSize: 11, fontWeight: 700, color: 'var(--sophi-warn)',
-                  background: 'rgba(246,173,85,0.18)', borderRadius: 999, padding: '1px 8px',
+                  fontFamily: 'var(--font-dm-mono)', fontSize: 11, fontWeight: 700, color: 'var(--sophi-yellow)',
+                  background: 'rgba(255,217,61,0.18)', borderRadius: 999, padding: '1px 8px',
                 }}>
                   {byStatus.evaluation.length}
                 </span>
                 <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--sophi-text3)' }}>
                   Aguardam decisão clínica
                 </span>
-                {expandedGroup === 'evaluation' ? <ChevronUp size={13} color="var(--sophi-warn)" /> : <ChevronDown size={13} color="var(--sophi-warn)" />}
+                {expandedGroup === 'evaluation' ? <ChevronUp size={13} color="var(--sophi-yellow)" /> : <ChevronDown size={13} color="var(--sophi-yellow)" />}
               </div>
               {expandedGroup === 'evaluation' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -259,7 +259,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
                     <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
                       <div style={{
                         display: 'flex', alignItems: 'center', gap: 10,
-                        background: 'var(--sophi-bg2)', border: '1px solid rgba(246,173,85,0.25)',
+                        background: 'var(--sophi-bg2)', border: '1px solid rgba(255,217,61,0.25)',
                         borderRadius: 10, padding: '6px 12px',
                       }}>
                         <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={26} />
@@ -277,7 +277,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
                     <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
                       <div style={{
                         display: 'flex', alignItems: 'center', gap: 8,
-                        background: 'var(--sophi-bg2)', border: '1px solid rgba(246,173,85,0.25)',
+                        background: 'var(--sophi-bg2)', border: '1px solid rgba(255,217,61,0.25)',
                         borderRadius: 999, padding: '4px 12px 4px 4px',
                       }}>
                         <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={26} />

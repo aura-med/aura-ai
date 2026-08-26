@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { Search, X, Loader2 } from 'lucide-react'
 import { createDiagnosis, updateDiagnosis } from '@/lib/actions/clinical'
 import { searchOsiics, OSIICS_FOOTBALL } from '@/lib/data/osiics'
+import { LoadManagementFields } from '@/components/shared/LoadManagementFields'
 import type { OsiicsEntry } from '@/lib/data/osiics'
 import type { ActiveOccurrence } from '@/types/athlete-profile'
 import type { AthleteAvailabilityStatus } from '@/types'
@@ -23,6 +24,8 @@ export interface ExistingDiagnosis {
   diagnosis_type: string | null
   custom_description: string | null
   availability_status: string | null
+  load_management_restrictions?: string[]
+  load_management_notes?: string | null
   occurrence_id: string | null
 }
 
@@ -52,6 +55,8 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
   const [diagnosisType,   setDiagnosisType]   = useState<'injury' | 'disease'>(existing?.diagnosis_type === 'disease' ? 'disease' : 'injury')
   const [customDesc,      setCustomDesc]      = useState(existing?.custom_description ?? '')
   const [status,          setStatus]          = useState(existing?.availability_status ?? 'evaluation')
+  const [restrictions,    setRestrictions]    = useState<string[]>(existing?.load_management_restrictions ?? [])
+  const [notes,           setNotes]           = useState(existing?.load_management_notes ?? '')
   // Pre-select when there's exactly one candidate (e.g. opened from a specific
   // occurrence row) so the link isn't silently dropped by an unclicked dropdown.
   const [occurrenceId,    setOccurrenceId]    = useState(existing?.occurrence_id ?? (occurrences.length === 1 ? occurrences[0].id : ''))
@@ -75,6 +80,8 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
           diagnosisType,
           customDescription:  customDesc.trim() || null,
           availabilityStatus: status as AthleteAvailabilityStatus,
+          loadManagementRestrictions: restrictions,
+          loadManagementNotes: notes.trim() || null,
           occurrenceId:       occurrenceId || null,
         })
       } else {
@@ -85,6 +92,8 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
           diagnosisType,
           customDescription:  customDesc.trim() || null,
           availabilityStatus: status as AthleteAvailabilityStatus,
+          loadManagementRestrictions: restrictions,
+          loadManagementNotes: notes.trim() || null,
           occurrenceId:       occurrenceId || null,
         })
       }
@@ -235,6 +244,15 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
             ))}
           </div>
         </div>
+
+        {status === 'load_management' && (
+          <LoadManagementFields
+            restrictions={restrictions}
+            onRestrictionsChange={setRestrictions}
+            notes={notes}
+            onNotesChange={setNotes}
+          />
+        )}
 
         {/* Link to occurrence */}
         {occurrences.length > 0 && (

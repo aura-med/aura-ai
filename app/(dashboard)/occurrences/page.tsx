@@ -33,11 +33,12 @@ async function getData(squadId: string | null, date: string) {
     .select(`
       id, athlete_id, title, occurrence_date, occurrence_type,
       subjective, objective, assessment, plan,
-      availability_status, clinician_name, clinician_role,
+      availability_status, load_management_restrictions, load_management_notes,
+      clinician_name, clinician_role,
       is_resolved, resolved_at, microcycle_number,
       athletes ( id, name, shirt_number, photo_url, position, availability_status ),
-      occurrence_records ( id, record_date, subjective, objective, assessment, plan, availability_status, clinician_name, created_at ),
-      diagnoses ( id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, is_resolved )
+      occurrence_records ( id, record_date, subjective, objective, assessment, plan, availability_status, load_management_restrictions, load_management_notes, clinician_name, created_at ),
+      diagnoses ( id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, load_management_restrictions, load_management_notes, is_resolved )
     `)
     .eq('org_id', orgId)
     .order('is_resolved', { ascending: true })

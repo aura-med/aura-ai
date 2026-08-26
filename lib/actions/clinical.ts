@@ -77,6 +77,8 @@ export interface CreateDiagnosisInput {
   diagnosisType: 'injury' | 'disease'
   customDescription: string | null
   availabilityStatus: Avail
+  loadManagementRestrictions: string[]
+  loadManagementNotes: string | null
   occurrenceId: string | null
 }
 
@@ -111,6 +113,8 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
     diagnosis_type:      input.diagnosisType,
     custom_description:  input.customDescription,
     availability_status: input.availabilityStatus,
+    load_management_restrictions: input.loadManagementRestrictions,
+    load_management_notes: input.loadManagementNotes,
     diagnosed_by:        user?.id ?? null, // authoritative author, not client-supplied
     occurrence_id:       input.occurrenceId,
   })
@@ -126,7 +130,12 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
     // diagnosis as newer than the occurrence's original creation.
     const { error: occError } = await supabase
       .from('occurrences')
-      .update({ availability_status: input.availabilityStatus, updated_at: new Date().toISOString() })
+      .update({
+        availability_status: input.availabilityStatus,
+        load_management_restrictions: input.loadManagementRestrictions,
+        load_management_notes: input.loadManagementNotes,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', input.occurrenceId)
     if (occError) throw new Error(occError.message)
   }
@@ -146,6 +155,8 @@ export interface UpdateDiagnosisInput {
   diagnosisType: 'injury' | 'disease'
   customDescription: string | null
   availabilityStatus: Avail
+  loadManagementRestrictions: string[]
+  loadManagementNotes: string | null
   occurrenceId: string | null
 }
 
@@ -178,6 +189,8 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
       diagnosis_type:      input.diagnosisType,
       custom_description:  input.customDescription,
       availability_status: input.availabilityStatus,
+      load_management_restrictions: input.loadManagementRestrictions,
+      load_management_notes: input.loadManagementNotes,
       occurrence_id:       input.occurrenceId,
     })
     .eq('id', input.diagnosisId)
@@ -191,7 +204,12 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
   if (input.occurrenceId) {
     const { error: occError } = await supabase
       .from('occurrences')
-      .update({ availability_status: input.availabilityStatus, updated_at: new Date().toISOString() })
+      .update({
+        availability_status: input.availabilityStatus,
+        load_management_restrictions: input.loadManagementRestrictions,
+        load_management_notes: input.loadManagementNotes,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', input.occurrenceId)
     if (occError) throw new Error(occError.message)
   }

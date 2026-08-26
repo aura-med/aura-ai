@@ -67,11 +67,26 @@ async function getData(squadId: string | null, date: string) {
   // per athlete with an open clinical issue, matching the club's own paper
   // form (title/description + current decision), not the full roster.
   const athleteIds = (athletes ?? []).map((a: { id: string }) => a.id)
-  let occurrences: { athlete_id: string; title: string | null; occurrence_type: string | null; subjective: string | null; availability_status: string | null; athletes: { name: string } | { name: string }[] | null }[] = []
+  let occurrences: {
+    athlete_id: string
+    title: string | null
+    occurrence_type: string | null
+    subjective: string | null
+    availability_status: string | null
+    load_management_restrictions: string[] | null
+    load_management_notes: string | null
+    athletes: { name: string } | { name: string }[] | null
+    diagnoses: { osiics_description: string | null; custom_description: string | null; is_resolved: boolean; load_management_restrictions: string[] | null; load_management_notes: string | null }[] | null
+  }[] = []
   if (athleteIds.length) {
     const { data } = await supabase
       .from('occurrences')
-      .select('athlete_id, title, occurrence_type, subjective, availability_status, athletes ( name )')
+      .select(`
+        athlete_id, title, occurrence_type, subjective, availability_status,
+        load_management_restrictions, load_management_notes,
+        athletes ( name ),
+        diagnoses ( osiics_description, custom_description, is_resolved, load_management_restrictions, load_management_notes )
+      `)
       .in('athlete_id', athleteIds)
       .eq('is_resolved', false)
       .order('occurrence_date', { ascending: false })
@@ -131,20 +146,35 @@ export default async function Dashboard({
   // reflects the athlete's actual current status, not that snapshot.
   const currentStatusByAthleteId = new Map(athletes.map((a) => [a.id, a.availability_status]))
   const seenAthleteIds = new Set<string>()
-  const clinicalOccurrences = occurrences
-    .filter((o) => {
-      if (seenAthleteIds.has(o.athlete_id)) return false
-      seenAthleteIds.add(o.athlete_id)
-      return true
-    })
-    .map((o) => {
-      const athlete = Array.isArray(o.athletes) ? o.athletes[0] : o.athletes
-      return {
-        athleteName: athlete?.name ?? '—',
-        description: o.title || o.subjective || o.occurrence_type || '—',
-        availabilityStatus: currentStatusByAthleteId.get(o.athlete_id) ?? o.availability_status ?? 'evaluation',
-      }
-    })
+  const dedupedOccurrences = occurrences.filter((o) => {
+    if (seenAthleteIds.has(o.athlete_id)) return false
+    seenAthleteIds.add(o.athlete_id)
+    return true
+  })
+  const clinicalOccurrences = dedupedOccurrences.map((o) => {
+    const athlete = Array.isArray(o.athletes) ? o.athletes[0] : o.athletes
+    return {
+      athleteName: athlete?.name ?? '—',
+      description: o.title || o.subjective || o.occurrence_type || '—',
+      availabilityStatus: currentStatusByAthleteId.get(o.athlete_id) ?? o.availability_status ?? 'evaluation',
+    }
+  })
+
+  // Reason + load-management restrictions per athlete, for the dashboard's
+  // per-status expandable groups — a diagnosis (if any, still open) takes
+  // priority over the occurrence's own title, same as OccurrenceRow's
+  // primaryLabel; restrictions/notes come from whichever of the two actually
+  // carries them for a load_management athlete.
+  const reasonByAthleteId: Record<string, { reason: string; restrictions: string[]; notes: string | null }> = {}
+  for (const o of dedupedOccurrences) {
+    const activeDiagnosis = (o.diagnoses ?? []).find((d) => !d.is_resolved)
+    const reason = (activeDiagnosis && (activeDiagnosis.osiics_description ?? activeDiagnosis.custom_description)) || o.title || '—'
+    const restrictions = activeDiagnosis?.load_management_restrictions?.length
+      ? activeDiagnosis.load_management_restrictions
+      : (o.load_management_restrictions ?? [])
+    const notes = (activeDiagnosis?.load_management_restrictions?.length ? activeDiagnosis.load_management_notes : o.load_management_notes) ?? null
+    reasonByAthleteId[o.athlete_id] = { reason, restrictions, notes }
+  }
 
   const withScores = athletes.map((a) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -219,6 +249,7 @@ export default async function Dashboard({
       isToday={isToday}
       calendarEvents={calendarEvents}
       clinicalOccurrences={clinicalOccurrences}
+      reasonByAthleteId={reasonByAthleteId}
       clinicalStaff={clinicalStaff}
       orgName={orgName}
     />

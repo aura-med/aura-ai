@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, Download, Hourglass, Search, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Download, Hourglass, Search, X } from 'lucide-react'
 import { AthleteCard } from '@/components/ui/AthleteCard'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { withSquadParam } from '@/lib/squad-url'
@@ -11,7 +11,14 @@ import { formatDisplayDate, addDays } from '@/lib/utils/microcycle'
 import type { MicrocycleStatus } from '@/lib/utils/microcycle'
 import { exportDashboardPDF, type DashboardOccurrenceRow, type ClinicalStaffMember } from '@/lib/utils/pdf-export'
 import { MonthCalendar, type MonthCalendarEvent } from '@/components/dashboard/MonthCalendar'
+import { restrictionLabels } from '@/components/shared/LoadManagementFields'
 import type { AthleteAvailabilityStatus } from '@/types'
+
+interface AthleteReason {
+  reason: string
+  restrictions: string[]
+  notes: string | null
+}
 
 interface DashboardAthlete {
   id: string
@@ -35,6 +42,7 @@ interface DashboardClientProps {
   isToday: boolean
   calendarEvents: MonthCalendarEvent[]
   clinicalOccurrences: DashboardOccurrenceRow[]
+  reasonByAthleteId: Record<string, AthleteReason>
   clinicalStaff: ClinicalStaffMember[]
   orgName: string | null
 }
@@ -63,9 +71,13 @@ const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 
 // normal training plan).
 const TRAFFIC_LIGHT_ORDER: AthleteAvailabilityStatus[] = ['available', 'load_management', 'unavailable', 'rtp']
 
-export function DashboardClient({ athletes, squadId, currentDate, microcycle, isToday, calendarEvents, clinicalOccurrences, clinicalStaff, orgName }: DashboardClientProps) {
+export function DashboardClient({ athletes, squadId, currentDate, microcycle, isToday, calendarEvents, clinicalOccurrences, reasonByAthleteId, clinicalStaff, orgName }: DashboardClientProps) {
   const [tab, setTab] = useState<'overview' | 'squad' | 'calendar'>('overview')
   const [squadQuery, setSquadQuery] = useState('')
+  // Which status group is expanded to show each athlete's reason inline —
+  // 'evaluation' covers the "A Reavaliar" strip too, sharing one toggle with
+  // the traffic-light grid below it.
+  const [expandedGroup, setExpandedGroup] = useState<AthleteAvailabilityStatus | null>(null)
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -222,7 +234,10 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
               background: 'linear-gradient(180deg, rgba(246,173,85,0.10), rgba(246,173,85,0.03))',
               padding: '14px 16px',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <div
+                onClick={() => setExpandedGroup((g) => (g === 'evaluation' ? null : 'evaluation'))}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, cursor: 'pointer' }}
+              >
                 <Hourglass size={15} color="var(--sophi-warn)" className="animate-pulse" />
                 <span style={{ fontFamily: 'var(--font-syne)', fontSize: 13, fontWeight: 700, color: 'var(--sophi-warn)' }}>
                   A Reavaliar
@@ -236,24 +251,45 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
                 <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--sophi-text3)' }}>
                   Aguardam decisão clínica
                 </span>
+                {expandedGroup === 'evaluation' ? <ChevronUp size={13} color="var(--sophi-warn)" /> : <ChevronDown size={13} color="var(--sophi-warn)" />}
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {byStatus.evaluation.map((a) => (
-                  <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: 8,
-                      background: 'var(--sophi-bg2)', border: '1px solid rgba(246,173,85,0.25)',
-                      borderRadius: 999, padding: '4px 12px 4px 4px',
-                    }}>
-                      <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={26} />
-                      <span style={{ fontSize: 12, color: 'var(--sophi-text)', fontWeight: 500 }}>{a.name}</span>
-                      <span style={{ fontSize: 10, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
-                        {a.position}
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+              {expandedGroup === 'evaluation' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {byStatus.evaluation.map((a) => (
+                    <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        background: 'var(--sophi-bg2)', border: '1px solid rgba(246,173,85,0.25)',
+                        borderRadius: 10, padding: '6px 12px',
+                      }}>
+                        <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={26} />
+                        <span style={{ fontSize: 12, color: 'var(--sophi-text)', fontWeight: 500, flexShrink: 0 }}>{a.name}</span>
+                        <span style={{ fontSize: 11, color: 'var(--sophi-text3)', flex: 1 }}>
+                          {reasonByAthleteId[a.id]?.reason ?? 'Sem motivo registado'}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {byStatus.evaluation.map((a) => (
+                    <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        background: 'var(--sophi-bg2)', border: '1px solid rgba(246,173,85,0.25)',
+                        borderRadius: 999, padding: '4px 12px 4px 4px',
+                      }}>
+                        <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={26} />
+                        <span style={{ fontSize: 12, color: 'var(--sophi-text)', fontWeight: 500 }}>{a.name}</span>
+                        <span style={{ fontSize: 10, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+                          {a.position}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -273,33 +309,70 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
                   borderRadius: 12,
                   overflow: 'hidden',
                 }}>
-                  {/* Group header */}
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    padding: '10px 14px',
-                    background: group.length > 0 ? cfg.bg : 'transparent',
-                    borderBottom: '1px solid var(--sophi-border)',
-                  }}>
+                  {/* Group header — click the label to expand and list each
+                      athlete's reason (diagnosis/occurrence) inline. */}
+                  <div
+                    onClick={() => setExpandedGroup((g) => (g === status ? null : status))}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      padding: '10px 14px', cursor: 'pointer',
+                      background: group.length > 0 ? cfg.bg : 'transparent',
+                      borderBottom: '1px solid var(--sophi-border)',
+                    }}
+                  >
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: cfg.dot, flexShrink: 0 }} />
                     <span style={{ fontFamily: 'var(--font-syne)', fontSize: 12, fontWeight: 700, color: cfg.color }}>
                       {cfg.label}
                     </span>
                     <span style={{
-                      marginLeft: 'auto', fontFamily: 'var(--font-dm-mono)', fontSize: 11,
+                      fontFamily: 'var(--font-dm-mono)', fontSize: 11,
                       fontWeight: 700, color: cfg.color,
                       background: `${cfg.dot}22`, borderRadius: 999, padding: '1px 8px',
                     }}>
                       {group.length}
                     </span>
+                    <span style={{ marginLeft: 'auto', display: 'flex' }}>
+                      {expandedGroup === status ? <ChevronUp size={13} color={cfg.color} /> : <ChevronDown size={13} color={cfg.color} />}
+                    </span>
                   </div>
 
                   {/* Athletes — "Disponível" stays as compact avatar circles (many
-                      athletes); RTP/Indisponível use the same named-pill format as
-                      the "A Reavaliar" strip above, since there are fewer of them. */}
+                      athletes); RTP/Indisponível/Gestão de Carga use the same
+                      named-pill format as the "A Reavaliar" strip above, since
+                      there are fewer of them. Expanding the header switches any
+                      group to a detailed list with each athlete's reason. */}
                   <div style={{ padding: '10px 14px', minHeight: 60 }}>
                     {group.length === 0 ? (
                       <div style={{ fontSize: 11, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)', textAlign: 'center', padding: '12px 0' }}>
                         —
+                      </div>
+                    ) : expandedGroup === status ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {group.map((a) => {
+                          const r = reasonByAthleteId[a.id]
+                          return (
+                            <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
+                              <div style={{
+                                display: 'flex', alignItems: 'center', gap: 10,
+                                background: 'var(--sophi-bg3)', border: `1px solid ${cfg.border}`,
+                                borderRadius: 10, padding: '6px 12px',
+                              }}>
+                                <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={26} />
+                                <div style={{ minWidth: 0, flex: 1 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span style={{ fontSize: 12, color: 'var(--sophi-text)', fontWeight: 500, flexShrink: 0 }}>{a.name}</span>
+                                    <span style={{ fontSize: 11, color: 'var(--sophi-text3)' }}>{r?.reason ?? 'Sem motivo registado'}</span>
+                                  </div>
+                                  {status === 'load_management' && r?.restrictions.length ? (
+                                    <div style={{ fontSize: 10, color: cfg.color, marginTop: 2 }}>
+                                      {restrictionLabels(r.restrictions)}{r.notes ? ` — ${r.notes}` : ''}
+                                    </div>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </Link>
+                          )
+                        })}
                       </div>
                     ) : isPriority ? (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>

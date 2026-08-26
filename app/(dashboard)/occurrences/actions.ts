@@ -166,6 +166,8 @@ export interface UpdateOccurrenceInput {
   assessment: string
   plan: string
   availabilityStatus: AvailabilityStatus
+  loadManagementRestrictions: string[]
+  loadManagementNotes: string | null
 }
 
 // Edits the occurrence's own record (title/date/type/SOAP/status) — distinct
@@ -185,6 +187,8 @@ export async function updateOccurrence(input: UpdateOccurrenceInput) {
       assessment: input.assessment,
       plan: input.plan,
       availability_status: input.availabilityStatus,
+      load_management_restrictions: input.loadManagementRestrictions,
+      load_management_notes: input.loadManagementNotes,
       // updated_at is set explicitly — nothing bumps it automatically — so
       // recomputeAthleteAvailability's "most recent event wins" ranking sees
       // this edit as newer than the occurrence's original creation.
@@ -262,6 +266,8 @@ export async function addOccurrenceRecord(input: {
   assessment: string
   plan: string
   availabilityStatus: AvailabilityStatus
+  loadManagementRestrictions: string[]
+  loadManagementNotes: string | null
 }) {
   const supabase = await createClient()
   const clinician = await getClinician(supabase)
@@ -289,6 +295,8 @@ export async function addOccurrenceRecord(input: {
     assessment: input.assessment,
     plan: input.plan,
     availability_status: input.availabilityStatus,
+    load_management_restrictions: input.loadManagementRestrictions,
+    load_management_notes: input.loadManagementNotes,
     created_by: clinician.userId,
     clinician_name: clinician.name,
   })
@@ -303,7 +311,12 @@ export async function addOccurrenceRecord(input: {
     // updated_at is set explicitly — nothing bumps it automatically — so
     // recomputeAthleteAvailability's "most recent event wins" ranking sees
     // this reassessment as newer than the occurrence's original creation.
-    .update({ availability_status: input.availabilityStatus, updated_at: new Date().toISOString() })
+    .update({
+      availability_status: input.availabilityStatus,
+      load_management_restrictions: input.loadManagementRestrictions,
+      load_management_notes: input.loadManagementNotes,
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', input.occurrenceId)
     .eq('is_resolved', false)
     .select('id')
@@ -333,6 +346,8 @@ export async function updateOccurrenceRecord(input: {
   assessment: string
   plan: string
   availabilityStatus: AvailabilityStatus
+  loadManagementRestrictions: string[]
+  loadManagementNotes: string | null
 }) {
   const supabase = await createClient()
 
@@ -345,6 +360,8 @@ export async function updateOccurrenceRecord(input: {
       assessment: input.assessment,
       plan: input.plan,
       availability_status: input.availabilityStatus,
+      load_management_restrictions: input.loadManagementRestrictions,
+      load_management_notes: input.loadManagementNotes,
     })
     .eq('id', input.recordId)
     .select('athlete_id, occurrence_id')

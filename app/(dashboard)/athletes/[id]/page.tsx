@@ -130,10 +130,11 @@ async function AthleteDetailContent({
   // recently-resolved rows is fetched separately for the compact history.
   const occurrenceColumns = `
     id, athlete_id, title, occurrence_date, occurrence_type, availability_status,
+    load_management_restrictions, load_management_notes,
     subjective, objective, assessment, plan, clinician_name, clinician_role,
     is_resolved, resolved_at,
-    occurrence_records ( id, record_date, subjective, objective, assessment, plan, availability_status, clinician_name, created_at ),
-    diagnoses ( id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, is_resolved )
+    occurrence_records ( id, record_date, subjective, objective, assessment, plan, availability_status, load_management_restrictions, load_management_notes, clinician_name, created_at ),
+    diagnoses ( id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, load_management_restrictions, load_management_notes, is_resolved )
   `
   const [{ data: activeOccurrences }, { data: recentResolvedOccurrences }, { data: anamnesis }] = await Promise.all([
     supabase

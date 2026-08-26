@@ -8,6 +8,7 @@ import { ChevronDown, ChevronUp, Plus, Check, Pencil, CheckCircle2, Loader2 } fr
 import { resolveOccurrence, addOccurrenceRecord, updateOccurrence, updateOccurrenceRecord } from '@/app/(dashboard)/occurrences/actions'
 import { resolveDiagnosis } from '@/lib/actions/clinical'
 import { todayStr } from '@/lib/utils/microcycle'
+import { LoadManagementFields, restrictionLabels } from '@/components/shared/LoadManagementFields'
 import type { AthleteAvailabilityStatus } from '@/types'
 
 // Shared between the Ocorrências page and the athlete profile's Overview tab
@@ -46,6 +47,8 @@ export interface OccurrenceRecord {
   assessment: string | null
   plan: string | null
   availability_status: AthleteAvailabilityStatus | null
+  load_management_restrictions?: string[]
+  load_management_notes?: string | null
   clinician_name: string | null
   created_at: string
 }
@@ -57,6 +60,8 @@ export interface OccurrenceDiagnosis {
   diagnosis_type: string | null
   custom_description: string | null
   availability_status: AthleteAvailabilityStatus | null
+  load_management_restrictions?: string[]
+  load_management_notes?: string | null
   is_resolved: boolean
 }
 
@@ -71,6 +76,8 @@ export interface Occurrence {
   assessment: string | null
   plan: string | null
   availability_status: AthleteAvailabilityStatus
+  load_management_restrictions?: string[]
+  load_management_notes?: string | null
   clinician_name: string | null
   clinician_role: string | null
   is_resolved: boolean
@@ -105,6 +112,8 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
   const [reevalData, setReevalData] = useState({
     observations: '',
     availability_status: occ.availability_status as AthleteAvailabilityStatus,
+    restrictions: [] as string[],
+    notes: '',
   })
   const [editData, setEditData] = useState({
     title: occ.title ?? '',
@@ -115,6 +124,8 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
     assessment: occ.assessment ?? '',
     plan: occ.plan ?? '',
     availability_status: occ.availability_status as AthleteAvailabilityStatus,
+    restrictions: occ.load_management_restrictions ?? [],
+    notes: occ.load_management_notes ?? '',
   })
   const [resolvingDiagnosis, setResolvingDiagnosis] = useState(false)
   const [confirmResolveDiagnosis, setConfirmResolveDiagnosis] = useState(false)
@@ -126,6 +137,8 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
     assessment: '',
     plan: '',
     availability_status: 'available' as AthleteAvailabilityStatus,
+    restrictions: [] as string[],
+    notes: '',
   })
 
   const a = occ.athletes
@@ -157,9 +170,11 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
         assessment: reevalData.observations,
         plan: '',
         availabilityStatus: reevalData.availability_status,
+        loadManagementRestrictions: reevalData.restrictions,
+        loadManagementNotes: reevalData.notes.trim() || null,
       })
       setShowReeval(false)
-      setReevalData({ observations: '', availability_status: occ.availability_status })
+      setReevalData({ observations: '', availability_status: occ.availability_status, restrictions: [], notes: '' })
       onRevalidate()
     })
   }
@@ -176,6 +191,8 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
         assessment: editData.assessment,
         plan: editData.plan,
         availabilityStatus: editData.availability_status,
+        loadManagementRestrictions: editData.restrictions,
+        loadManagementNotes: editData.notes.trim() || null,
       })
       setShowEdit(false)
       onRevalidate()
@@ -203,6 +220,8 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
       assessment: r.assessment ?? '',
       plan: r.plan ?? '',
       availability_status: (r.availability_status ?? 'available') as AthleteAvailabilityStatus,
+      restrictions: r.load_management_restrictions ?? [],
+      notes: r.load_management_notes ?? '',
     })
     setEditingRecordId(r.id)
   }
@@ -218,6 +237,8 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
         assessment: recordEditData.assessment,
         plan: recordEditData.plan,
         availabilityStatus: recordEditData.availability_status,
+        loadManagementRestrictions: recordEditData.restrictions,
+        loadManagementNotes: recordEditData.notes.trim() || null,
       })
       setEditingRecordId(null)
       onRevalidate()
@@ -283,6 +304,23 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
             ))}
           </div>
 
+          {/* Restrições de Gestão de Carga */}
+          {occ.availability_status === 'load_management' && (occ.load_management_restrictions?.length || occ.load_management_notes) && (
+            <div style={{ marginBottom: 12, background: 'var(--sophi-orange-bg)', border: '1px solid var(--sophi-orange)', borderRadius: 6, padding: '8px 10px' }}>
+              <div style={{ fontSize: 9, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-orange)', fontWeight: 700, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                Restrições de Gestão de Carga
+              </div>
+              {occ.load_management_restrictions?.length ? (
+                <div style={{ fontSize: 12, color: 'var(--sophi-text)', marginBottom: occ.load_management_notes ? 4 : 0 }}>
+                  {restrictionLabels(occ.load_management_restrictions)}
+                </div>
+              ) : null}
+              {occ.load_management_notes && (
+                <div style={{ fontSize: 11, color: 'var(--sophi-text2)' }}>{occ.load_management_notes}</div>
+              )}
+            </div>
+          )}
+
           {/* Diagnóstico */}
           {activeDiagnosis && (
             <div style={{ marginBottom: 12, background: 'var(--sophi-bg3)', borderRadius: 6, padding: '8px 10px' }}>
@@ -314,6 +352,12 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                   </button>
                 )}
               </div>
+              {activeDiagnosis.availability_status === 'load_management' && (activeDiagnosis.load_management_restrictions?.length || activeDiagnosis.load_management_notes) && (
+                <div style={{ marginTop: 6, fontSize: 11, color: 'var(--sophi-orange)' }}>
+                  {restrictionLabels(activeDiagnosis.load_management_restrictions)}
+                  {activeDiagnosis.load_management_notes ? ` — ${activeDiagnosis.load_management_notes}` : ''}
+                </div>
+              )}
               {confirmResolveDiagnosis && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, borderRadius: 6, border: '1px solid var(--sophi-green)', background: 'var(--sophi-green-bg)', padding: '6px 8px' }}>
                   <p style={{ fontSize: 10, flex: 1, color: 'var(--sophi-text2)' }}>
@@ -375,6 +419,14 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                         </select>
                       </div>
                     </div>
+                    {recordEditData.availability_status === 'load_management' && (
+                      <LoadManagementFields
+                        restrictions={recordEditData.restrictions}
+                        onRestrictionsChange={(next) => setRecordEditData((d) => ({ ...d, restrictions: next }))}
+                        notes={recordEditData.notes}
+                        onNotesChange={(next) => setRecordEditData((d) => ({ ...d, notes: next }))}
+                      />
+                    )}
                     {([
                       ['subjective', 'Subjetivo'],
                       ['objective', 'Objetivo'],
@@ -410,17 +462,25 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                     </div>
                   </div>
                 ) : (
-                  <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid var(--sophi-border)' }}>
-                    <span style={{ fontSize: 11, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)', flexShrink: 0 }}>{r.record_date}</span>
-                    <span style={{ fontSize: 11, color: 'var(--sophi-text2)', flex: 1 }}>{r.assessment ?? r.subjective ?? '—'}</span>
-                    {r.availability_status && <StatusBadge status={r.availability_status} />}
-                    <span style={{ fontSize: 10, color: 'var(--sophi-text3)' }}>{r.clinician_name}</span>
-                    <button
-                      onClick={() => startEditRecord(r)}
-                      style={{ display: 'flex', alignItems: 'center', padding: 3, borderRadius: 6, border: 'none', background: 'transparent', color: 'var(--sophi-text3)', cursor: 'pointer', flexShrink: 0 }}
-                    >
-                      <Pencil size={11} />
-                    </button>
+                  <div key={r.id} style={{ padding: '6px 0', borderBottom: '1px solid var(--sophi-border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 11, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)', flexShrink: 0 }}>{r.record_date}</span>
+                      <span style={{ fontSize: 11, color: 'var(--sophi-text2)', flex: 1 }}>{r.assessment ?? r.subjective ?? '—'}</span>
+                      {r.availability_status && <StatusBadge status={r.availability_status} />}
+                      <span style={{ fontSize: 10, color: 'var(--sophi-text3)' }}>{r.clinician_name}</span>
+                      <button
+                        onClick={() => startEditRecord(r)}
+                        style={{ display: 'flex', alignItems: 'center', padding: 3, borderRadius: 6, border: 'none', background: 'transparent', color: 'var(--sophi-text3)', cursor: 'pointer', flexShrink: 0 }}
+                      >
+                        <Pencil size={11} />
+                      </button>
+                    </div>
+                    {r.availability_status === 'load_management' && (r.load_management_restrictions?.length || r.load_management_notes) && (
+                      <div style={{ fontSize: 10, color: 'var(--sophi-orange)', marginTop: 2 }}>
+                        {restrictionLabels(r.load_management_restrictions)}
+                        {r.load_management_notes ? ` — ${r.load_management_notes}` : ''}
+                      </div>
+                    )}
                   </div>
                 )
               ))}
@@ -464,6 +524,14 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                   ))}
                 </select>
               </div>
+              {reevalData.availability_status === 'load_management' && (
+                <LoadManagementFields
+                  restrictions={reevalData.restrictions}
+                  onRestrictionsChange={(next) => setReevalData((d) => ({ ...d, restrictions: next }))}
+                  notes={reevalData.notes}
+                  onNotesChange={(next) => setReevalData((d) => ({ ...d, notes: next }))}
+                />
+              )}
               <div style={{ display: 'flex', gap: 6 }}>
                 <button
                   onClick={handleAddRecord}
@@ -579,6 +647,14 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                   ))}
                 </select>
               </div>
+              {editData.availability_status === 'load_management' && (
+                <LoadManagementFields
+                  restrictions={editData.restrictions}
+                  onRestrictionsChange={(next) => setEditData((d) => ({ ...d, restrictions: next }))}
+                  notes={editData.notes}
+                  onNotesChange={(next) => setEditData((d) => ({ ...d, notes: next }))}
+                />
+              )}
               <div style={{ display: 'flex', gap: 6 }}>
                 <button
                   onClick={handleUpdate}
@@ -662,6 +738,8 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
             diagnosis_type:      activeDiagnosis.diagnosis_type,
             custom_description:  activeDiagnosis.custom_description,
             availability_status: activeDiagnosis.availability_status,
+            load_management_restrictions: activeDiagnosis.load_management_restrictions,
+            load_management_notes: activeDiagnosis.load_management_notes,
             occurrence_id:       occ.id,
           }}
           onClose={() => setShowEditDiagnosis(false)}

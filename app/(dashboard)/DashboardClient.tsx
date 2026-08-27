@@ -1,13 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Download, Hourglass, Search, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, Download, Hourglass, Search, X } from 'lucide-react'
 import { AthleteCard } from '@/components/ui/AthleteCard'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { withSquadParam } from '@/lib/squad-url'
-import { formatDisplayDate, addDays } from '@/lib/utils/microcycle'
 import type { MicrocycleStatus } from '@/lib/utils/microcycle'
 import { exportDashboardPDF, type DashboardOccurrenceRow, type ClinicalStaffMember } from '@/lib/utils/pdf-export'
 import { MonthCalendar, type MonthCalendarEvent } from '@/components/dashboard/MonthCalendar'
@@ -39,7 +37,6 @@ interface DashboardClientProps {
   squadId: string | null
   currentDate: string
   microcycle: MicrocycleStatus
-  isToday: boolean
   calendarEvents: MonthCalendarEvent[]
   clinicalOccurrences: DashboardOccurrenceRow[]
   reasonByAthleteId: Record<string, AthleteReason>
@@ -71,30 +68,13 @@ const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 
 // normal training plan).
 const TRAFFIC_LIGHT_ORDER: AthleteAvailabilityStatus[] = ['available', 'load_management', 'unavailable', 'rtp']
 
-export function DashboardClient({ athletes, squadId, currentDate, microcycle, isToday, calendarEvents, clinicalOccurrences, reasonByAthleteId, clinicalStaff, orgName }: DashboardClientProps) {
+export function DashboardClient({ athletes, squadId, currentDate, microcycle, calendarEvents, clinicalOccurrences, reasonByAthleteId, clinicalStaff, orgName }: DashboardClientProps) {
   const [tab, setTab] = useState<'overview' | 'squad' | 'calendar'>('overview')
   const [squadQuery, setSquadQuery] = useState('')
   // Which status group is expanded to show each athlete's reason inline —
   // 'evaluation' covers the "A Reavaliar" strip too, sharing one toggle with
   // the traffic-light grid below it.
   const [expandedGroup, setExpandedGroup] = useState<AthleteAvailabilityStatus | null>(null)
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-
-  function navigateDate(direction: -1 | 1) {
-    const newDate = addDays(currentDate, direction)
-    const params = new URLSearchParams(searchParams.toString())
-    params.set('date', newDate)
-    router.push(`${pathname}?${params.toString()}`, { scroll: false })
-  }
-
-  function goToToday() {
-    const params = new URLSearchParams(searchParams.toString())
-    params.delete('date')
-    router.push(`${pathname}?${params.toString()}`, { scroll: false })
-  }
-
   const byStatus = STATUS_ORDER.reduce<Record<AthleteAvailabilityStatus, DashboardAthlete[]>>(
     (acc, s) => ({ ...acc, [s]: athletes.filter((a) => a.availability_status === s) }),
     { available: [], evaluation: [], load_management: [], unavailable: [], rtp: [] }
@@ -164,42 +144,6 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
             <Download size={13} />
             Exportar PDF
           </button>
-        </div>
-
-        {/* Date navigation */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <button
-            onClick={() => navigateDate(-1)}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 6, border: '1px solid var(--sophi-border2)', background: 'var(--sophi-bg3)', color: 'var(--sophi-text2)', cursor: 'pointer' }}
-            aria-label="Dia anterior"
-          >
-            <ChevronLeft size={14} />
-          </button>
-          <div
-            className="min-w-[140px] sm:min-w-[180px]"
-            style={{
-              fontFamily: 'var(--font-dm-mono)', fontSize: 12, color: 'var(--sophi-text)',
-              padding: '5px 12px', borderRadius: 6, border: '1px solid var(--sophi-border2)',
-              background: 'var(--sophi-bg3)', textAlign: 'center',
-            }}
-          >
-            {formatDisplayDate(currentDate)}
-          </div>
-          <button
-            onClick={() => navigateDate(1)}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 6, border: '1px solid var(--sophi-border2)', background: 'var(--sophi-bg3)', color: 'var(--sophi-text2)', cursor: 'pointer' }}
-            aria-label="Próximo dia"
-          >
-            <ChevronRight size={14} />
-          </button>
-          {!isToday && (
-            <button
-              onClick={goToToday}
-              style={{ fontSize: 11, fontFamily: 'var(--font-dm-mono)', padding: '5px 10px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-green)', cursor: 'pointer' }}
-            >
-              Hoje
-            </button>
-          )}
         </div>
       </div>
 

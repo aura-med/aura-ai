@@ -123,17 +123,10 @@ export default async function Dashboard({
   await connection()
   const params = searchParams ? await searchParams : {}
   const squadId = getSquadIdParam(params)
-  const today = todayStr()
-  const rawDate = params?.date
-  // Only accept a well-formed, parseable YYYY-MM-DD — a malformed ?date= would
-  // make addDays() throw on an Invalid Date and 500 the dashboard.
-  const currentDate =
-    typeof rawDate === 'string' &&
-    /^\d{4}-\d{2}-\d{2}$/.test(rawDate) &&
-    !Number.isNaN(new Date(`${rawDate}T00:00:00`).getTime())
-      ? rawDate
-      : today
-  const isToday = currentDate === today
+  // The dashboard always shows today — there's no more date-navigation UI to
+  // request a historical day (the reconstructed "as of that day" snapshot
+  // was inherently unreliable; see the calendar tab for actual day history).
+  const currentDate = todayStr()
 
   const { athletes, microcycle, calendarEvents, occurrences, clinicalStaff, orgName } = await getData(squadId, currentDate)
 
@@ -246,7 +239,6 @@ export default async function Dashboard({
       squadId={squadId}
       currentDate={currentDate}
       microcycle={microcycle}
-      isToday={isToday}
       calendarEvents={calendarEvents}
       clinicalOccurrences={clinicalOccurrences}
       reasonByAthleteId={reasonByAthleteId}

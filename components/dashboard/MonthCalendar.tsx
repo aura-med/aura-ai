@@ -7,11 +7,15 @@
 // the same rows that drive the microcycle/MD badge and the occurrences page.
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, ChevronRight, X, Plus, Trash2 } from 'lucide-react'
+import Link from 'next/link'
+import { ChevronLeft, ChevronRight, X, Plus, Trash2, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUiStore } from '@/stores/uiStore'
-import { todayStr } from '@/lib/utils/microcycle'
+import { todayStr, formatDisplayDate } from '@/lib/utils/microcycle'
 import { isOwner } from '@/lib/roles'
+import { STATUS_CONFIG } from '@/components/occurrences/OccurrenceRow'
+import { withSquadParam } from '@/lib/squad-url'
+import type { AthleteAvailabilityStatus } from '@/types'
 
 export interface MonthCalendarEvent {
   id: string
@@ -69,6 +73,7 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
   // Local copy so edits reflect immediately without waiting for a full reload.
   const [items, setItems] = useState<MonthCalendarEvent[]>(events)
   const [editor, setEditor] = useState<{ date: string; event: MonthCalendarEvent | null } | null>(null)
+  const [historyDate, setHistoryDate] = useState<string | null>(null)
 
   // Re-sync when the source events change (squad switch, date-range refresh, or
   // router.refresh() after a write); otherwise the calendar keeps rendering and
@@ -181,7 +186,7 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
           return (
             <div
               key={cell.key}
-              onClick={canManage && effectiveSquadId ? () => setEditor({ date: cell.key!, event: null }) : undefined}
+              onClick={() => setHistoryDate(cell.key!)}
               style={{
                 minHeight: 84,
                 borderRadius: 8,
@@ -193,10 +198,22 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
                 flexDirection: 'column',
                 gap: 3,
                 overflow: 'hidden',
-                cursor: canManage && effectiveSquadId ? 'pointer' : 'default',
+                cursor: 'pointer',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                {canManage && effectiveSquadId ? (
+                  <button
+                    onClick={(ev) => { ev.stopPropagation(); setEditor({ date: cell.key!, event: null }) }}
+                    aria-label="Adicionar evento"
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16,
+                      borderRadius: 4, border: 'none', background: 'transparent', color: 'var(--sophi-text3)', cursor: 'pointer',
+                    }}
+                  >
+                    <Plus size={11} />
+                  </button>
+                ) : <span />}
                 <span
                   style={{
                     fontSize: 10,
@@ -265,12 +282,16 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
             </span>
           )
         })}
-        {canManage && (
-          <span style={{ fontSize: 9, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', marginLeft: 'auto' }}>
-            Clica num dia para adicionar · num evento para editar
-          </span>
-        )}
+        <span style={{ fontSize: 9, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', marginLeft: 'auto' }}>
+          {canManage
+            ? 'Clica num dia para ver o histórico · no + para adicionar evento'
+            : 'Clica num dia para ver o histórico'}
+        </span>
       </div>
+
+      {historyDate && (
+        <DayHistoryPanel date={historyDate} squadId={effectiveSquadId} onClose={() => setHistoryDate(null)} />
+      )}
 
       {editor && effectiveSquadId && (
         <EventEditor
@@ -430,6 +451,143 @@ function EventEditor({
               </button>
             )}
           </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Day history panel ─────────────────────────────────────────────────────
+// Clicking a day shows what actually happened clinically that day: new
+// occurrences opened, reassessments logged, and diagnoses made — each with
+// the availability decision recorded at the time. Not a reconstruction of
+// "everyone's status as of that day" (the app has no reliable status-history
+// source for that — see app/(dashboard)/page.tsx's own note on this), just
+// the dated clinical events themselves.
+
+interface DayHistoryRow {
+  id: string
+  athleteId: string
+  athleteName: string
+  kind: 'occurrence' | 'reassessment' | 'diagnosis'
+  description: string
+  status: AthleteAvailabilityStatus | null
+}
+
+function DayHistoryPanel({ date, squadId, onClose }: { date: string; squadId: string | null; onClose: () => void }) {
+  const [rows, setRows] = useState<DayHistoryRow[] | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      const supabase = createClient()
+
+      let occQuery = supabase
+        .from('occurrences')
+        .select('id, athlete_id, title, occurrence_type, availability_status, athletes ( name )')
+        .eq('occurrence_date', date)
+      if (squadId) occQuery = occQuery.eq('squad_id', squadId)
+
+      const recQuery = supabase
+        .from('occurrence_records')
+        .select('id, athlete_id, assessment, availability_status, athletes ( name, squad_id )')
+        .eq('record_date', date)
+
+      const diagQuery = supabase
+        .from('diagnoses')
+        .select('id, athlete_id, osiics_description, custom_description, availability_status, athletes ( name, squad_id )')
+        .gte('diagnosed_at', `${date}T00:00:00`)
+        .lt('diagnosed_at', `${date}T23:59:59.999`)
+
+      const [{ data: occ }, { data: rec }, { data: diag }] = await Promise.all([occQuery, recQuery, diagQuery])
+      if (cancelled) return
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const athleteOf = (a: any): { name: string; squad_id?: string | null } | null => (Array.isArray(a) ? a[0] ?? null : a ?? null)
+
+      const occRows: DayHistoryRow[] = (occ ?? []).map((o) => ({
+        id: o.id, athleteId: o.athlete_id,
+        athleteName: athleteOf(o.athletes)?.name ?? '—',
+        kind: 'occurrence',
+        description: o.title || o.occurrence_type || '—',
+        status: o.availability_status as AthleteAvailabilityStatus | null,
+      }))
+      const recRows: DayHistoryRow[] = (rec ?? [])
+        .filter((r) => !squadId || athleteOf(r.athletes)?.squad_id === squadId)
+        .map((r) => ({
+          id: r.id, athleteId: r.athlete_id,
+          athleteName: athleteOf(r.athletes)?.name ?? '—',
+          kind: 'reassessment',
+          description: r.assessment || '—',
+          status: r.availability_status as AthleteAvailabilityStatus | null,
+        }))
+      const diagRows: DayHistoryRow[] = (diag ?? [])
+        .filter((d) => !squadId || athleteOf(d.athletes)?.squad_id === squadId)
+        .map((d) => ({
+          id: d.id, athleteId: d.athlete_id,
+          athleteName: athleteOf(d.athletes)?.name ?? '—',
+          kind: 'diagnosis',
+          description: d.osiics_description || d.custom_description || '—',
+          status: d.availability_status as AthleteAvailabilityStatus | null,
+        }))
+
+      setRows([...occRows, ...recRows, ...diagRows])
+    }
+    load()
+    return () => { cancelled = true }
+  }, [date, squadId])
+
+  const KIND_LABELS: Record<DayHistoryRow['kind'], string> = {
+    occurrence: 'Nova ocorrência', reassessment: 'Reavaliação', diagnosis: 'Diagnóstico',
+  }
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div style={{ background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', borderRadius: 14, padding: 20, width: '100%', maxWidth: 480, maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexShrink: 0 }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+            {formatDisplayDate(date)}
+          </span>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sophi-text3)' }}>
+            <X size={16} />
+          </button>
+        </div>
+
+        <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {rows === null ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: 20 }}>
+              <Loader2 size={18} className="animate-spin" style={{ color: 'var(--sophi-text3)' }} />
+            </div>
+          ) : rows.length === 0 ? (
+            <p style={{ fontSize: 12, color: 'var(--sophi-text3)', textAlign: 'center', padding: '16px 0' }}>
+              Sem ocorrências, reavaliações ou diagnósticos registados neste dia
+            </p>
+          ) : (
+            rows.map((r) => {
+              const cfg = r.status ? STATUS_CONFIG[r.status] : null
+              return (
+                <Link key={`${r.kind}-${r.id}`} href={withSquadParam(`/athletes/${r.athleteId}`, squadId)} style={{ textDecoration: 'none' }}>
+                  <div style={{ borderRadius: 8, border: '1px solid var(--sophi-border)', background: 'var(--sophi-bg3)', padding: '8px 10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sophi-text)' }}>{r.athleteName}</span>
+                      <span style={{ fontSize: 9, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        {KIND_LABELS[r.kind]}
+                      </span>
+                      {cfg && (
+                        <span style={{ marginLeft: 'auto', fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 999, background: cfg.bg, color: cfg.color }}>
+                          {cfg.label}
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ fontSize: 11, color: 'var(--sophi-text2)' }}>{r.description}</p>
+                  </div>
+                </Link>
+              )
+            })
+          )}
         </div>
       </div>
     </div>

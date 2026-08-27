@@ -157,11 +157,29 @@ function utcOffsetAt(instant: Date): string {
 // club's configured timezone — not the viewer's browser timezone, which can
 // differ from the club's (a clinician traveling, or just a misconfigured
 // OS clock) and would otherwise misplace a diagnosis/reassessment logged
-// near either day boundary under the adjacent calendar day. The reference
-// instant used to read the offset is noon UTC on `dateStr`, safely clear of
-// the pre-dawn hours almost all real-world DST transitions fall in, so it
-// reflects the offset actually in effect at that day's local midnight.
+// near either day boundary under the adjacent calendar day.
+//
+// Sampling the offset at a fixed reference time (e.g. noon) and applying it
+// to midnight breaks specifically on the two DST-transition days each year:
+// Europe/Lisbon's transitions happen at 01:00 UTC, so midnight and noon can
+// straddle the transition and land in DIFFERENT offset regimes. Applying
+// noon's offset to midnight on the March transition shifts the boundary an
+// hour early (pulling in an hour of the preceding day); on the October
+// transition it shifts an hour late (dropping the selected day's first
+// hour).
+//
+// Self-correct instead: treat the date string as if it were already UTC to
+// get a first guess (off from the true instant by at most one day's worth
+// of offset — for any real timezone, nowhere near a full extra day), read
+// the offset actually in effect AT that guess, and rebuild. On an ordinary
+// day the offset doesn't change between guess and result, so one pass is a
+// no-op; on a transition day the guess still lands close enough to the true
+// local midnight (within one UTC day) to read the correct pre-transition
+// offset on the first try, and rebuilding with it lands exactly on the
+// right instant — verified for both of Lisbon's transition dates and for
+// half-hour-offset zones (Asia/Kolkata).
 export function clubMidnightUTC(dateStr: string): Date {
-  const offset = utcOffsetAt(new Date(`${dateStr}T12:00:00Z`))
+  const guess = new Date(`${dateStr}T00:00:00Z`)
+  const offset = utcOffsetAt(guess)
   return new Date(`${dateStr}T00:00:00${offset}`)
 }

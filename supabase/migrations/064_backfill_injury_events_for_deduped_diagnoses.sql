@@ -1,64 +1,36 @@
--- Migration 064 — Backfill injury_events for diagnoses 061 resolved directly.
+-- Migration 064 — (Corrected) do NOT backfill injury_events for diagnoses
+-- 061's dedup resolved.
 --
--- 061's dedup step resolved every non-newest diagnosis in a duplicate group
--- with a direct UPDATE (is_resolved = true, resolved_at = now()), bypassing
--- resolveDiagnosis (lib/actions/clinical.ts) — which, for an 'injury'
--- diagnosis, also inserts a matching injury_events row so the athlete's
--- injury history/timeline (built from injury_events, not from raw diagnoses
--- rows) doesn't lose it. Any 'injury' diagnosis 061 resolved this way is now
--- invisible in the app despite still existing in the database.
+-- This migration originally treated every diagnosis 061's dedup resolved
+-- (is_resolved = true, resolved_by IS NULL — 061's raw UPDATE, never set
+-- by the real resolveDiagnosis action) as a separately concluded injury,
+-- inserting a matching injury_events row for each one. That premise was
+-- wrong: 061's own ranking (PARTITION BY occurrence_id ... ROW_NUMBER())
+-- always keeps exactly one diagnosis active per occurrence and resolves
+-- every OTHER duplicate — meaning every diagnosis this migration targeted
+-- necessarily has a sibling diagnosis on the SAME occurrence that is still
+-- open. The injury was never actually over; the duplicate rows are
+-- redundant records of the SAME still-ongoing injury the surviving
+-- diagnosis already represents, not N separate ones.
 --
--- resolved_by IS NULL identifies these rows precisely: resolveDiagnosis
--- always sets resolved_by from the authenticated session (possibly NULL
--- only in a genuinely unauthenticated call, which this app's RLS doesn't
--- allow for clinical writes), so an is_resolved diagnosis with no
--- resolved_by can only have been resolved by 061's raw UPDATE.
+-- Backfilling here was actively harmful two ways: it recorded a fake
+-- "return to play" (the discarded duplicate's resolved_at, or NOW() at
+-- migration time) for an injury that was still active via the surviving
+-- diagnosis; and when that survivor was later resolved for real through
+-- resolveDiagnosis (lib/actions/clinical.ts), its own — correct —
+-- injury_events insert would create a SECOND entry for the same injury,
+-- duplicating it on the athlete's timeline and inflating the injury-
+-- history risk input the dashboard scoring reads from. The original
+-- NOT EXISTS guard didn't prevent this either: a single INSERT ... SELECT
+-- evaluates every row's subquery against the SAME pre-statement snapshot,
+-- so two-or-more duplicates with identical (athlete_id, injury_date,
+-- diagnosis) sharing one INSERT statement could all pass it and insert
+-- their own copies.
 --
--- Mirrors resolveDiagnosis's own field derivation exactly (injury_date from
--- the linked occurrence's occurrence_date, falling back to diagnosed_at;
--- severity approximated from days_absent). confirmed_by is left NULL —
--- there's no clinician to attribute a migration-driven resolution to.
--- Guarded by NOT EXISTS on (athlete_id, injury_date, diagnosis) so this is
--- safe to run more than once — qualified as derived.injury_date/
--- derived.diagnosis_text explicitly, since injury_events itself has columns
--- named injury_date/diagnosis that would otherwise shadow the lateral
--- alias's and silently turn the date half of the guard into a tautology.
-
-INSERT INTO injury_events (
-  athlete_id, injury_date, return_date, diagnosis, osiics_code,
-  severity, days_absent, is_recurrence, confirmed_by
-)
-SELECT
-  d.athlete_id,
-  injury_date,
-  return_date,
-  diagnosis_text,
-  d.osiics_code,
-  CASE
-    WHEN (return_date - injury_date) > 84 THEN 'severe'
-    WHEN (return_date - injury_date) > 28 THEN 'major'
-    WHEN (return_date - injury_date) > 7 THEN 'moderate'
-    ELSE 'minor'
-  END,
-  GREATEST(0, return_date - injury_date),
-  false,
-  NULL
-FROM diagnoses d
-LEFT JOIN occurrences o ON o.id = d.occurrence_id
-CROSS JOIN LATERAL (
-  SELECT
-    COALESCE(o.occurrence_date, d.diagnosed_at::date) AS injury_date,
-    COALESCE(d.resolved_at::date, now()::date) AS return_date,
-    COALESCE(d.osiics_description, d.custom_description, 'Diagnóstico sem descrição') AS diagnosis_text
-) derived
-WHERE d.is_resolved = true
-  AND d.resolved_by IS NULL
-  AND d.resolved_at IS NOT NULL
-  AND d.diagnosis_type = 'injury'
-  AND d.occurrence_id IS NOT NULL
-  AND NOT EXISTS (
-    SELECT 1 FROM injury_events ie
-    WHERE ie.athlete_id = d.athlete_id
-      AND ie.injury_date = derived.injury_date
-      AND ie.diagnosis = derived.diagnosis_text
-  );
+-- No backfill is actually needed: resolveDiagnosis already creates exactly
+-- one injury_events row, correctly, whenever the surviving diagnosis is
+-- genuinely resolved — before or after this migration runs. This file is
+-- kept (rather than deleted) to preserve that record for anyone who
+-- already ran its original version in a non-production environment; it is
+-- intentionally a no-op here.
+SELECT 1;

@@ -22,7 +22,7 @@ async function recomputeAvailability(
 ): Promise<Avail> {
   const [occResult, diagResult, rehabResult] = await Promise.all([
     supabase.from('occurrences').select('availability_status, created_at, updated_at').eq('athlete_id', athleteId).eq('is_resolved', false),
-    supabase.from('diagnoses').select('availability_status, diagnosed_at').eq('athlete_id', athleteId).eq('is_resolved', false),
+    supabase.from('diagnoses').select('availability_status, diagnosed_at, updated_at').eq('athlete_id', athleteId).eq('is_resolved', false),
     // SECURITY DEFINER RPC so the rehab floor is seen regardless of role.
     supabase.rpc('athlete_in_active_rehab', { p_athlete_id: athleteId }),
   ])
@@ -44,9 +44,9 @@ async function recomputeAvailability(
         r.availability_status != null && r.availability_status in SEVERITY)
       .map((r) => ({ status: r.availability_status, at: r.updated_at ?? r.created_at })),
     ...(diag ?? [])
-      .filter((r): r is { availability_status: Avail; diagnosed_at: string } =>
+      .filter((r): r is { availability_status: Avail; diagnosed_at: string; updated_at: string | null } =>
         r.availability_status != null && r.availability_status in SEVERITY)
-      .map((r) => ({ status: r.availability_status, at: r.diagnosed_at })),
+      .map((r) => ({ status: r.availability_status, at: r.updated_at ?? r.diagnosed_at })),
   ]
 
   // ISO 8601 timestamps compare correctly as strings.
@@ -192,6 +192,11 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
       load_management_restrictions: input.loadManagementRestrictions,
       load_management_notes: input.loadManagementNotes,
       occurrence_id:       input.occurrenceId,
+      // diagnosed_at is set once, at creation — recomputeAvailability ranks
+      // open diagnoses by recency, so an edit needs its own timestamp to move
+      // up in that ranking (matches how occurrences already track updated_at
+      // separately from created_at).
+      updated_at:          new Date().toISOString(),
     })
     .eq('id', input.diagnosisId)
     .eq('is_resolved', false)

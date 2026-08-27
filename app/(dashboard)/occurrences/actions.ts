@@ -32,7 +32,7 @@ async function recomputeAthleteAvailability(
       .eq('is_resolved', false),
     supabase
       .from('diagnoses')
-      .select('availability_status, diagnosed_at')
+      .select('availability_status, diagnosed_at, updated_at')
       .eq('athlete_id', athleteId)
       .eq('is_resolved', false),
     // SECURITY DEFINER RPC — reads rehab_sessions/injury_events regardless of the
@@ -59,9 +59,9 @@ async function recomputeAthleteAvailability(
         r.availability_status != null && r.availability_status in STATUS_SEVERITY)
       .map((r) => ({ status: r.availability_status, at: r.updated_at ?? r.created_at })),
     ...(diag ?? [])
-      .filter((r): r is { availability_status: AvailabilityStatus; diagnosed_at: string } =>
+      .filter((r): r is { availability_status: AvailabilityStatus; diagnosed_at: string; updated_at: string | null } =>
         r.availability_status != null && r.availability_status in STATUS_SEVERITY)
-      .map((r) => ({ status: r.availability_status, at: r.diagnosed_at })),
+      .map((r) => ({ status: r.availability_status, at: r.updated_at ?? r.diagnosed_at })),
   ]
 
   // ISO 8601 timestamps compare correctly as strings.
@@ -403,8 +403,10 @@ export async function updateOccurrenceRecord(input: {
 
   // Even when this record is the latest reassessment, an occurrence can carry
   // at most one active diagnosis, and createDiagnosis/updateDiagnosis mirror
-  // it onto the occurrence at diagnosis time. If that diagnosis was made
-  // AFTER this reassessment, it has already superseded it as the athlete's
+  // it onto the occurrence whenever the diagnosis is created OR edited. If
+  // that last mirror (updated_at ?? diagnosed_at — diagnosed_at alone only
+  // reflects creation, not later edits) is more recent than this
+  // reassessment, the diagnosis has already superseded it as the athlete's
   // current decision — resyncing here would stamp the occurrence's
   // updated_at to right now (the edit time) and wrongly outrank that later
   // diagnosis in recomputeAthleteAvailability's most-recent-wins ranking.
@@ -412,12 +414,12 @@ export async function updateOccurrenceRecord(input: {
   if (latest?.id === input.recordId) {
     const { data: diagnosis, error: diagnosisError } = await supabase
       .from('diagnoses')
-      .select('diagnosed_at')
+      .select('diagnosed_at, updated_at')
       .eq('occurrence_id', updated.occurrence_id)
       .eq('is_resolved', false)
       .maybeSingle()
     if (diagnosisError) throw new Error(diagnosisError.message)
-    supersededByDiagnosis = !!diagnosis && diagnosis.diagnosed_at > latest.created_at
+    supersededByDiagnosis = !!diagnosis && (diagnosis.updated_at ?? diagnosis.diagnosed_at) > latest.created_at
   }
 
   if (latest?.id === input.recordId && !supersededByDiagnosis) {

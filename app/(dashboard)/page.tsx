@@ -86,7 +86,7 @@ async function getData(squadId: string | null, date: string) {
     created_at: string
     updated_at: string | null
     athletes: { name: string } | { name: string }[] | null
-    diagnoses: { id: string; osiics_description: string | null; custom_description: string | null; is_resolved: boolean; availability_status: string | null; load_management_restrictions: string[] | null; load_management_notes: string | null; diagnosed_at: string }[] | null
+    diagnoses: { id: string; osiics_description: string | null; custom_description: string | null; is_resolved: boolean; availability_status: string | null; load_management_restrictions: string[] | null; load_management_notes: string | null; diagnosed_at: string; updated_at: string | null }[] | null
   }[] = []
   if (athleteIds.length) {
     const { data } = await supabase
@@ -95,12 +95,40 @@ async function getData(squadId: string | null, date: string) {
         id, athlete_id, title, occurrence_type, subjective, availability_status,
         load_management_restrictions, load_management_notes, created_at, updated_at,
         athletes ( name ),
-        diagnoses ( id, osiics_description, custom_description, is_resolved, availability_status, load_management_restrictions, load_management_notes, diagnosed_at )
+        diagnoses ( id, osiics_description, custom_description, is_resolved, availability_status, load_management_restrictions, load_management_notes, diagnosed_at, updated_at )
       `)
       .in('athlete_id', athleteIds)
       .eq('is_resolved', false)
       .order('occurrence_date', { ascending: false })
     occurrences = data ?? []
+  }
+
+  // Latest reassessment per occurrence — addOccurrenceRecord always syncs the
+  // parent occurrence's status/updated_at on insert, so a reassessment can be
+  // the true current source of an occurrence's decision even when an open
+  // diagnosis also exists (if the reassessment was logged after the
+  // diagnosis). Needed to pick the right description below instead of always
+  // preferring the diagnosis.
+  const occurrenceIds = occurrences.map((o) => o.id)
+  let latestRecordByOccurrenceId = new Map<string, { description: string; restrictions: string[]; notes: string | null; status: string | null; at: string }>()
+  if (occurrenceIds.length) {
+    const { data } = await supabase
+      .from('occurrence_records')
+      .select('occurrence_id, assessment, availability_status, load_management_restrictions, load_management_notes, created_at')
+      .in('occurrence_id', occurrenceIds)
+      .order('created_at', { ascending: false })
+    latestRecordByOccurrenceId = new Map()
+    for (const r of data ?? []) {
+      // Ordered desc, so the first row seen per occurrence_id is its latest.
+      if (latestRecordByOccurrenceId.has(r.occurrence_id)) continue
+      latestRecordByOccurrenceId.set(r.occurrence_id, {
+        description: r.assessment || '—',
+        restrictions: r.load_management_restrictions ?? [],
+        notes: r.load_management_notes,
+        status: r.availability_status,
+        at: r.created_at,
+      })
+    }
   }
 
   // All active diagnoses for these athletes — not just occurrence_id IS NULL
@@ -120,6 +148,7 @@ async function getData(squadId: string | null, date: string) {
     load_management_restrictions: string[] | null
     load_management_notes: string | null
     diagnosed_at: string
+    updated_at: string | null
     athletes: { name: string } | { name: string }[] | null
   }[] = []
   if (athleteIds.length) {
@@ -127,7 +156,7 @@ async function getData(squadId: string | null, date: string) {
       .from('diagnoses')
       .select(`
         id, athlete_id, occurrence_id, osiics_description, custom_description,
-        availability_status, load_management_restrictions, load_management_notes, diagnosed_at,
+        availability_status, load_management_restrictions, load_management_notes, diagnosed_at, updated_at,
         athletes ( name )
       `)
       .in('athlete_id', athleteIds)
@@ -155,7 +184,7 @@ async function getData(squadId: string | null, date: string) {
       .sort((a, b) => (ROLE_ORDER[a.role] ?? 9) - (ROLE_ORDER[b.role] ?? 9))
   }
 
-  return { athletes: athletes ?? [], microcycle, calendarEvents: calendarEvents ?? [], occurrences, looseDiagnoses, clinicalStaff, orgName, canReadClinical }
+  return { athletes: athletes ?? [], microcycle, calendarEvents: calendarEvents ?? [], occurrences, looseDiagnoses, latestRecordByOccurrenceId, clinicalStaff, orgName, canReadClinical }
 }
 
 export default async function Dashboard({
@@ -174,7 +203,7 @@ export default async function Dashboard({
   // was inherently unreliable; see the calendar tab for actual day history).
   const currentDate = todayStr()
 
-  const { athletes, microcycle, calendarEvents, occurrences, looseDiagnoses, clinicalStaff, orgName, canReadClinical } = await getData(squadId, currentDate)
+  const { athletes, microcycle, calendarEvents, occurrences, looseDiagnoses, latestRecordByOccurrenceId, clinicalStaff, orgName, canReadClinical } = await getData(squadId, currentDate)
 
   // One row per athlete, not per occurrence — an athlete with several open
   // occurrences previously produced one export row each, sometimes with
@@ -208,32 +237,48 @@ export default async function Dashboard({
     const athlete = Array.isArray(o.athletes) ? o.athletes[0] : o.athletes
     const athleteName = athlete?.name ?? '—'
     // createDiagnosis/updateDiagnosis mirror an open diagnosis's status onto
-    // its parent occurrence and stamp the occurrence's updated_at afterwards,
-    // so the occurrence's own timestamp is always >= the diagnosis's — a
-    // naive "most recent wins" comparison between the two would always pick
-    // the occurrence's own (less specific) title over the diagnosis that
-    // actually produced the decision. They carry the same mirrored status,
-    // so prefer the diagnosis's description whenever one is open, but keep
-    // the occurrence's own timestamp for ranking against this athlete's
-    // other issues (an occurrence can carry at most one active diagnosis).
+    // its parent occurrence (create OR edit — see diagnoses.updated_at), and
+    // addOccurrenceRecord mirrors a new reassessment the same way, so the
+    // occurrence's own timestamp is always >= whichever of those last touched
+    // it. The occurrence's own title/subjective is only the right
+    // description when NEITHER a diagnosis nor a reassessment has ever
+    // superseded it — otherwise compare the diagnosis's and the latest
+    // reassessment's own timestamps directly to know which one actually
+    // produced the current (mirrored) decision.
     const openDiagnosis = (o.diagnoses ?? []).find((d) => !d.is_resolved) ?? null
-    const candidate: WinningEvent = openDiagnosis
-      ? {
-          athleteName,
-          description: openDiagnosis.osiics_description || openDiagnosis.custom_description || '—',
-          restrictions: openDiagnosis.load_management_restrictions ?? [],
-          notes: openDiagnosis.load_management_notes,
-          at: o.updated_at ?? o.created_at,
-          status: openDiagnosis.availability_status,
-        }
-      : {
-          athleteName,
-          description: o.title || o.subjective || o.occurrence_type || '—',
-          restrictions: o.load_management_restrictions ?? [],
-          notes: o.load_management_notes,
-          at: o.updated_at ?? o.created_at,
-          status: o.availability_status,
-        }
+    const diagAt = openDiagnosis ? (openDiagnosis.updated_at ?? openDiagnosis.diagnosed_at) : null
+    const latestRecord = latestRecordByOccurrenceId.get(o.id) ?? null
+    const recAt = latestRecord?.at ?? null
+
+    let candidate: WinningEvent
+    if (diagAt && (!recAt || diagAt > recAt)) {
+      candidate = {
+        athleteName,
+        description: openDiagnosis!.osiics_description || openDiagnosis!.custom_description || '—',
+        restrictions: openDiagnosis!.load_management_restrictions ?? [],
+        notes: openDiagnosis!.load_management_notes,
+        at: o.updated_at ?? o.created_at,
+        status: openDiagnosis!.availability_status,
+      }
+    } else if (latestRecord) {
+      candidate = {
+        athleteName,
+        description: latestRecord.description,
+        restrictions: latestRecord.restrictions,
+        notes: latestRecord.notes,
+        at: o.updated_at ?? o.created_at,
+        status: latestRecord.status,
+      }
+    } else {
+      candidate = {
+        athleteName,
+        description: o.title || o.subjective || o.occurrence_type || '—',
+        restrictions: o.load_management_restrictions ?? [],
+        notes: o.load_management_notes,
+        at: o.updated_at ?? o.created_at,
+        status: o.availability_status,
+      }
+    }
     const current = winningEventByAthleteId.get(o.athlete_id)
     if (!current || candidate.at > current.at) winningEventByAthleteId.set(o.athlete_id, candidate)
   }
@@ -249,7 +294,7 @@ export default async function Dashboard({
       description: d.osiics_description || d.custom_description || '—',
       restrictions: d.load_management_restrictions ?? [],
       notes: d.load_management_notes,
-      at: d.diagnosed_at,
+      at: d.updated_at ?? d.diagnosed_at,
       status: d.availability_status,
     }
     const current = winningEventByAthleteId.get(d.athlete_id)

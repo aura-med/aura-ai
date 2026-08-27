@@ -112,8 +112,13 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
   const [reevalData, setReevalData] = useState({
     observations: '',
     availability_status: occ.availability_status as AthleteAvailabilityStatus,
-    restrictions: [] as string[],
-    notes: '',
+    // Defaults to the occurrence's own current restrictions/notes — a
+    // reassessment that keeps the status as load_management (the common
+    // case: logging progress without changing the decision) must not
+    // silently blank out the athlete's real restrictions just because the
+    // clinician didn't re-check every box.
+    restrictions: occ.load_management_restrictions ?? [] as string[],
+    notes: occ.load_management_notes ?? '',
   })
   const [editData, setEditData] = useState({
     title: occ.title ?? '',
@@ -168,7 +173,12 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
         loadManagementNotes: reevalData.notes.trim() || null,
       })
       setShowReeval(false)
-      setReevalData({ observations: '', availability_status: occ.availability_status, restrictions: [], notes: '' })
+      setReevalData({
+        observations: '',
+        availability_status: occ.availability_status,
+        restrictions: occ.load_management_restrictions ?? [],
+        notes: occ.load_management_notes ?? '',
+      })
       onRevalidate()
     })
   }
@@ -654,7 +664,21 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
             {!occ.is_resolved && (
               <>
                 <button
-                  onClick={() => { setShowReeval((v) => !v); setShowEdit(false) }}
+                  onClick={() => {
+                    // Re-seed from the occurrence's current data every time
+                    // the form is opened, not just at first mount — this row
+                    // can stay mounted (e.g. via router.refresh() after some
+                    // other action changed this same occurrence) for a while
+                    // before "Reavaliar" gets clicked.
+                    setReevalData((d) => (showReeval ? d : {
+                      observations: '',
+                      availability_status: occ.availability_status as AthleteAvailabilityStatus,
+                      restrictions: occ.load_management_restrictions ?? [],
+                      notes: occ.load_management_notes ?? '',
+                    }))
+                    setShowReeval((v) => !v)
+                    setShowEdit(false)
+                  }}
                   style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
                 >
                   <Plus size={11} />

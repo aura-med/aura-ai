@@ -164,7 +164,7 @@ async function getData(squadId: string | null, date: string) {
     athletes: { name: string } | { name: string }[] | null
   }[] = []
   if (athleteIds.length) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('diagnoses')
       .select(`
         id, athlete_id, occurrence_id, osiics_description, custom_description,
@@ -173,6 +173,11 @@ async function getData(squadId: string | null, date: string) {
       `)
       .in('athlete_id', athleteIds)
       .eq('is_resolved', false)
+    // A silently-dropped failure here would fall back to "no active
+    // diagnoses" — standalone diagnoses and ones attached to a resolved
+    // occurrence would vanish from the expanded reasons/PDF even though the
+    // athlete's stored availability is still restricted by them.
+    if (error) throw new Error(`Não foi possível carregar os diagnósticos: ${error.message}`)
     allActiveDiagnoses = data ?? []
   }
   const openOccurrenceIds = new Set(occurrences.map((o) => o.id))

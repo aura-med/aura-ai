@@ -78,10 +78,11 @@ export interface RehabPlanAthleteOption {
 // real async work rather than a bare pass-through to a state-setting callback.
 export async function fetchPlanDetail(planId: string) {
   const supabase = createClient()
-  const [{ data: phaseRows }, { data: dayRows }] = await Promise.all([
+  const [{ data: phaseRows, error: phaseError }, { data: dayRows, error: dayError }] = await Promise.all([
     supabase.from('rehab_plan_phases').select('*').eq('plan_id', planId).order('phase_number', { ascending: true }),
     supabase.from('rehab_plan_days').select('*').eq('plan_id', planId).order('entry_date', { ascending: true }),
   ])
+  if (phaseError || dayError) throw phaseError ?? dayError
   return {
     phases: (phaseRows ?? []) as RehabPlanPhase[],
     days: (dayRows ?? []) as RehabPlanDay[],
@@ -624,6 +625,7 @@ export function PlanDetail({
   const [phases, setPhases] = useState<RehabPlanPhase[]>([])
   const [days, setDays] = useState<RehabPlanDay[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [detailVersion, setDetailVersion] = useState(0)
   const [extraDays, setExtraDays] = useState(0)
 
@@ -655,7 +657,9 @@ export function PlanDetail({
       setLoading(true)
       try {
         const { phases: phaseRows, days: dayRows } = await fetchPlanDetail(plan.id)
-        if (!cancelled) { setPhases(phaseRows); setDays(dayRows) }
+        if (!cancelled) { setPhases(phaseRows); setDays(dayRows); setLoadError(false) }
+      } catch {
+        if (!cancelled) setLoadError(true)
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -844,6 +848,14 @@ export function PlanDetail({
       {/* Calendar */}
       {loading ? (
         <div className="flex justify-center py-8"><Loader2 size={18} className="animate-spin" style={{ color: 'var(--sophi-text3)' }} /></div>
+      ) : loadError ? (
+        <div className="flex flex-col items-center gap-2 py-8">
+          <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>Não foi possível carregar o calendário do plano.</p>
+          <button type="button" onClick={loadDetail}
+            className="text-[11px] font-medium px-3 py-1.5 rounded-lg hover:bg-white/5" style={{ color: 'var(--sophi-text2)' }}>
+            Tentar novamente
+          </button>
+        </div>
       ) : (
         <div className="space-y-3">
           {Array.from({ length: weekCount }, (_, i) => addDays(startMonday, i * 7)).map((monday, i) => (

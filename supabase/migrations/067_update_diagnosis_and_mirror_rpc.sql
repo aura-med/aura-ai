@@ -46,6 +46,22 @@
 -- path via a transaction-local flag set right before the UPDATE below — a
 -- raw Data API caller has no way to set it, so the original protection is
 -- unchanged for anyone else.
+--
+-- The occurrence(s) this diagnosis touches (old and/or new) are locked
+-- FOR UPDATE right after the diagnosis row itself, BEFORE deriving
+-- v_rec_at — mirroring the pattern 069/070 already use. Without that lock,
+-- this function could read v_rec_at, decide the diagnosis is still latest,
+-- then block on the occurrence UPDATE behind a concurrent
+-- add_occurrence_record_and_mirror (070) call for the same occurrence;
+-- once 070 commits its newer, genuinely-latest reassessment, this
+-- function's stale "still latest" decision would resume and overwrite it
+-- with the older diagnosis's values. Locking both candidate occurrence
+-- rows up front (sorted by id, in one statement, to avoid deadlocking
+-- against another concurrent 067 call touching the same two rows in the
+-- opposite order) serializes against 069/070's own occurrence-first locks,
+-- so whichever call acquires the lock first fully completes — including
+-- its own mirror decision and commit — before the other proceeds and reads
+-- fresh, post-commit data.
 
 CREATE OR REPLACE FUNCTION update_diagnosis_and_mirror(
   p_diagnosis_id uuid,
@@ -81,6 +97,17 @@ BEGIN
 
   IF NOT FOUND THEN
     RETURN;
+  END IF;
+
+  -- Lock both candidate occurrence rows (the one being detached from, if
+  -- any, and the one being attached to, if any) before deriving anything
+  -- about their recency — sorted by id so a concurrent 067 call touching
+  -- the same pair in the opposite order can't deadlock against this one.
+  IF v_old_occurrence_id IS NOT NULL OR p_occurrence_id IS NOT NULL THEN
+    PERFORM 1 FROM occurrences
+    WHERE id = ANY(ARRAY_REMOVE(ARRAY[v_old_occurrence_id, p_occurrence_id], NULL))
+    ORDER BY id
+    FOR UPDATE;
   END IF;
 
   v_decision_changed :=

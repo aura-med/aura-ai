@@ -13,6 +13,7 @@ import {
   STATUS_CONFIG, OCCURRENCE_TYPES, OccurrenceRow,
   type Athlete, type Occurrence,
 } from '@/components/occurrences/OccurrenceRow'
+import { LoadManagementFields } from '@/components/shared/LoadManagementFields'
 
 interface OccurrencesClientProps {
   occurrences: Occurrence[]
@@ -51,6 +52,8 @@ function RegisterModal({
     occurrenceType: 'complaint' as 'complaint' | 'trauma' | 'disease' | 'other',
     observations: '',
     availabilityStatus: 'evaluation' as AthleteAvailabilityStatus,
+    restrictions: [] as string[],
+    notes: '',
   })
   const [error, setError] = useState<string | null>(null)
 
@@ -74,6 +77,8 @@ function RegisterModal({
         assessment: form.observations,
         plan: '',
         availabilityStatus: form.availabilityStatus,
+        loadManagementRestrictions: form.restrictions,
+        loadManagementNotes: form.notes.trim() || null,
         clinicianName,
         clinicianRole,
       })
@@ -166,6 +171,17 @@ function RegisterModal({
             </select>
           </div>
         </div>
+
+        {form.availabilityStatus === 'load_management' && (
+          <div style={{ marginBottom: 10 }}>
+            <LoadManagementFields
+              restrictions={form.restrictions}
+              onRestrictionsChange={(next) => setForm((f) => ({ ...f, restrictions: next }))}
+              notes={form.notes}
+              onNotesChange={(next) => setForm((f) => ({ ...f, notes: next }))}
+            />
+          </div>
+        )}
 
         {/* Título */}
         <div style={{ marginBottom: 10 }}>

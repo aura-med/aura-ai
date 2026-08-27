@@ -38,6 +38,24 @@ export interface MedicalHistory {
 
 // ── Clinical Module Types (migration 009) ────────────────────────────────────
 
+// A diagnosis with no occurrence_id — the schema allows it (ON DELETE SET
+// NULL, and the DiagnosisModal historically offered "Nenhuma" as a valid
+// occurrence link), so a handful of pre-existing records can be orphaned.
+// Shown in their own small fallback section since they can't be reached via
+// an occurrence's inline diagnosis block.
+export interface ActiveDiagnosis {
+  id: string
+  osiics_code: string | null
+  osiics_description: string | null
+  diagnosis_type: string | null
+  custom_description: string | null
+  availability_status: string | null
+  load_management_restrictions?: string[]
+  load_management_notes?: string | null
+  diagnosed_at: string
+  is_resolved: boolean
+  occurrence_id: string | null
+}
 
 // Covers both active and recently-resolved occurrences — the Overview tab
 // renders both through the same OccurrenceRow used on the Ocorrências page
@@ -494,6 +512,8 @@ export interface AthleteProfileData {
   activeOccurrences: ActiveOccurrence[]
   // Short history for the Overview compact summary (migration 026)
   recentResolvedOccurrences: ActiveOccurrence[]
+  // Diagnoses with no occurrence_id — a rare fallback case, see ActiveDiagnosis
+  orphanDiagnoses: ActiveDiagnosis[]
   // Documents count (not full list — fetched lazily)
   documentCount: number
   consultationCount: number

@@ -96,14 +96,16 @@ export function Sidebar() {
       )}
       style={{ background: 'var(--sophi-bg)', borderColor: 'var(--sophi-border)' }}
     >
-      {/* Collapse toggle — desktop only, mobile always shows the full drawer */}
+      {/* Collapse toggle — desktop only, mobile always shows the full drawer.
+          Vertically centered on the sidebar's edge so it reads as part of
+          the border, not a stray floating control. */}
       <button
         onClick={toggleSidebar}
         aria-label={collapsed ? t('nav.expand_sidebar') : t('nav.collapse_sidebar')}
-        className="hidden md:flex items-center justify-center absolute -right-3 top-4 w-6 h-6 rounded-full border z-50"
+        className="hidden md:flex items-center justify-center absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border shadow-sm z-50 transition-colors hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
         style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}
       >
-        {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
+        {collapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
       </button>
 
       {/* Mobile-only org + squad header */}

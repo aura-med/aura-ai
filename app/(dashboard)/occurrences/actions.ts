@@ -105,6 +105,8 @@ export interface RegisterOccurrenceInput {
   assessment: string
   plan: string
   availabilityStatus: AvailabilityStatus
+  loadManagementRestrictions: string[]
+  loadManagementNotes: string | null
   clinicianName: string
   clinicianRole: string
 }
@@ -138,6 +140,8 @@ export async function registerOccurrence(input: RegisterOccurrenceInput) {
     assessment: input.assessment,
     plan: input.plan,
     availability_status: input.availabilityStatus,
+    load_management_restrictions: input.loadManagementRestrictions,
+    load_management_notes: input.loadManagementNotes,
     created_by: clinician.userId,
     clinician_name: clinician.name,
     clinician_role: clinician.role,
@@ -355,6 +359,40 @@ export async function updateOccurrenceRecord(input: {
     .select('athlete_id, occurrence_id')
     .maybeSingle()
   if (error || !updated?.athlete_id) throw new Error(error?.message ?? 'Reavaliação não encontrada')
+
+  // A correction only needs to leave the athlete's current status alone when
+  // it's fixing OLD history. If this record is the most recently *created*
+  // reassessment for its occurrence, it's the one that last wrote the
+  // occurrence's own status (addOccurrenceRecord always syncs on insert,
+  // regardless of the record's own record_date), so it's still driving the
+  // athlete's live status today — correcting it must also correct that.
+  const { data: latest } = await supabase
+    .from('occurrence_records')
+    .select('id')
+    .eq('occurrence_id', updated.occurrence_id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (latest?.id === input.recordId) {
+    const { data: occUpdated } = await supabase
+      .from('occurrences')
+      .update({
+        availability_status: input.availabilityStatus,
+        load_management_restrictions: input.loadManagementRestrictions,
+        load_management_notes: input.loadManagementNotes,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', updated.occurrence_id)
+      .eq('is_resolved', false)
+      .select('id')
+      .maybeSingle()
+
+    if (occUpdated) {
+      const nextStatus = await recomputeAthleteAvailability(supabase, updated.athlete_id, input.availabilityStatus)
+      await persistAvailability(supabase, updated.athlete_id, nextStatus)
+    }
+  }
 
   revalidatePath('/occurrences')
   revalidatePath('/')

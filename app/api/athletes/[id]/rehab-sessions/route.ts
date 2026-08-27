@@ -27,6 +27,25 @@ function sanitizePse(input: unknown): number | null {
   return Math.min(10, Math.max(0, Math.round(n)))
 }
 
+// The FK on rehab_sessions.rehab_plan_id only checks the plan exists, not
+// that it belongs to this session's athlete — without this, a client could
+// link a session to another athlete's plan since both athletes may be
+// visible to the same clinician/squad.
+async function validateRehabPlanOwnership(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  rehabPlanId: unknown,
+  athleteId: string,
+): Promise<string | null> {
+  if (typeof rehabPlanId !== 'string' || !rehabPlanId) return null
+  const { data, error } = await supabase
+    .from('rehab_plans')
+    .select('athlete_id')
+    .eq('id', rehabPlanId)
+    .maybeSingle()
+  if (error || !data || data.athlete_id !== athleteId) return 'Plano de reabilitação inválido para este atleta'
+  return null
+}
+
 // GET /api/athletes/[id]/rehab-sessions
 export async function GET(_req: Request, { params }: Ctx) {
   const { id } = await params
@@ -48,6 +67,9 @@ export async function POST(req: Request, { params }: Ctx) {
   const { id } = await params
   const supabase = await createClient()
   const body = await req.json()
+
+  const planError = await validateRehabPlanOwnership(supabase, body.rehab_plan_id, id)
+  if (planError) return NextResponse.json({ error: planError }, { status: 400 })
 
   const { data, error } = await supabase
     .from('rehab_sessions')
@@ -79,6 +101,9 @@ export async function PATCH(req: Request, { params }: Ctx) {
   const { sessionId, ...rest } = body
 
   if (!sessionId) return NextResponse.json({ error: 'sessionId required' }, { status: 400 })
+
+  const planError = await validateRehabPlanOwnership(supabase, rest.rehab_plan_id, id)
+  if (planError) return NextResponse.json({ error: planError }, { status: 400 })
 
   const { data, error } = await supabase
     .from('rehab_sessions')

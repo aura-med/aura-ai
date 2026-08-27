@@ -12,7 +12,7 @@ import { ChevronLeft, ChevronRight, X, Plus, Trash2, Loader2 } from 'lucide-reac
 import { createClient } from '@/lib/supabase/client'
 import { useUiStore } from '@/stores/uiStore'
 import { todayStr, formatDisplayDate } from '@/lib/utils/microcycle'
-import { isOwner } from '@/lib/roles'
+import { isOwner, CLINICAL_ROLES } from '@/lib/roles'
 import { STATUS_CONFIG } from '@/components/occurrences/OccurrenceRow'
 import { withSquadParam } from '@/lib/squad-url'
 import type { AthleteAvailabilityStatus } from '@/types'
@@ -69,6 +69,10 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
   const selectedSquadId = useUiStore((s) => s.selectedSquadId)
   const effectiveSquadId = selectedSquadId ?? squads[0]?.id ?? null
   const canManage = isOwner(role) || role === 'coach'
+  // Only roles the occurrences/occurrence_records/diagnoses RLS policies
+  // (018) actually grant SELECT to — offering the history panel to anyone
+  // else would just show a misleading "no activity" on days that do have it.
+  const canReadClinical = isOwner(role) || CLINICAL_ROLES.includes(role)
 
   // Local copy so edits reflect immediately without waiting for a full reload.
   const [items, setItems] = useState<MonthCalendarEvent[]>(events)
@@ -186,7 +190,7 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
           return (
             <div
               key={cell.key}
-              onClick={() => setHistoryDate(cell.key!)}
+              onClick={canReadClinical ? () => setHistoryDate(cell.key!) : undefined}
               style={{
                 minHeight: 84,
                 borderRadius: 8,
@@ -198,7 +202,7 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
                 flexDirection: 'column',
                 gap: 3,
                 overflow: 'hidden',
-                cursor: 'pointer',
+                cursor: canReadClinical ? 'pointer' : 'default',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -282,14 +286,16 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
             </span>
           )
         })}
-        <span style={{ fontSize: 9, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', marginLeft: 'auto' }}>
-          {canManage
-            ? 'Clica num dia para ver o histórico · no + para adicionar evento'
-            : 'Clica num dia para ver o histórico'}
-        </span>
+        {canReadClinical && (
+          <span style={{ fontSize: 9, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', marginLeft: 'auto' }}>
+            {canManage
+              ? 'Clica num dia para ver o histórico · no + para adicionar evento'
+              : 'Clica num dia para ver o histórico'}
+          </span>
+        )}
       </div>
 
-      {historyDate && (
+      {historyDate && canReadClinical && (
         <DayHistoryPanel date={historyDate} squadId={effectiveSquadId} onClose={() => setHistoryDate(null)} />
       )}
 

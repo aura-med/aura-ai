@@ -11,7 +11,7 @@ import { AthleteProfileClient } from '@/components/athlete-profile/AthleteProfil
 import { getLatestRecommendations } from '@/lib/actions/recommendations'
 import { getViewerContext } from '@/lib/data/auth'
 import type { UserRole } from '@/types'
-import type { AthleteProfileData, TabId, InjuryEventSummary, ActiveOccurrence, AthleteAnamnesis } from '@/types/athlete-profile'
+import type { AthleteProfileData, TabId, InjuryEventSummary, ActiveOccurrence, ActiveDiagnosis, AthleteAnamnesis } from '@/types/athlete-profile'
 
 const VALID_TABS: TabId[] = [
   'overview', 'medical', 'injuries', 'treatments',
@@ -125,9 +125,13 @@ async function AthleteDetailContent({
   // ── Occurrences (clinical module) ──────────────────────────────────────────
   // Occurrences carry the full SOAP + title, plus their own diagnosis inline,
   // so the Overview tab can expand a row (and its diagnosis) without a
-  // separate, easily-desynced "active diagnoses" list — in practice a
-  // diagnosis never exists without an occurrence. A short window of
-  // recently-resolved rows is fetched separately for the compact history.
+  // separate, easily-desynced "active diagnoses" list — for the normal case
+  // (a diagnosis attached to an occurrence). The schema still allows a
+  // diagnosis with no occurrence_id (older records made that way, or created
+  // through the API directly), so those are fetched separately below and
+  // shown in their own small fallback section — otherwise they'd become
+  // invisible/unmanageable from the profile. A short window of
+  // recently-resolved occurrences is fetched separately for the compact history.
   const occurrenceColumns = `
     id, athlete_id, title, occurrence_date, occurrence_type, availability_status,
     load_management_restrictions, load_management_notes,
@@ -136,7 +140,7 @@ async function AthleteDetailContent({
     occurrence_records ( id, record_date, subjective, objective, assessment, plan, availability_status, load_management_restrictions, load_management_notes, clinician_name, created_at ),
     diagnoses ( id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, load_management_restrictions, load_management_notes, is_resolved )
   `
-  const [{ data: activeOccurrences }, { data: recentResolvedOccurrences }, { data: anamnesis }] = await Promise.all([
+  const [{ data: activeOccurrences }, { data: recentResolvedOccurrences }, { data: anamnesis }, { data: orphanDiagnoses }] = await Promise.all([
     supabase
       .from('occurrences')
       .select(occurrenceColumns)
@@ -157,6 +161,13 @@ async function AthleteDetailContent({
       .order('season', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from('diagnoses')
+      .select('id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, load_management_restrictions, load_management_notes, diagnosed_at, is_resolved, occurrence_id')
+      .eq('athlete_id', id)
+      .eq('is_resolved', false)
+      .is('occurrence_id', null)
+      .order('diagnosed_at', { ascending: false }),
   ])
 
   // ── Document + consultation counts ────────────────────────────────────────
@@ -280,6 +291,7 @@ async function AthleteDetailContent({
     injuryEvents,
     activeOccurrences: (activeOccurrences ?? []) as ActiveOccurrence[],
     recentResolvedOccurrences: (recentResolvedOccurrences ?? []) as ActiveOccurrence[],
+    orphanDiagnoses: (orphanDiagnoses ?? []) as ActiveDiagnosis[],
     documentCount:     documentCount ?? 0,
     consultationCount: consultationCount ?? 0,
     recommendations,

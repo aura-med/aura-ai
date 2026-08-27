@@ -75,17 +75,19 @@ async function getData(squadId: string | null, date: string) {
     availability_status: string | null
     load_management_restrictions: string[] | null
     load_management_notes: string | null
+    created_at: string
+    updated_at: string | null
     athletes: { name: string } | { name: string }[] | null
-    diagnoses: { osiics_description: string | null; custom_description: string | null; is_resolved: boolean; load_management_restrictions: string[] | null; load_management_notes: string | null }[] | null
+    diagnoses: { osiics_description: string | null; custom_description: string | null; is_resolved: boolean; load_management_restrictions: string[] | null; load_management_notes: string | null; diagnosed_at: string }[] | null
   }[] = []
   if (athleteIds.length) {
     const { data } = await supabase
       .from('occurrences')
       .select(`
         athlete_id, title, occurrence_type, subjective, availability_status,
-        load_management_restrictions, load_management_notes,
+        load_management_restrictions, load_management_notes, created_at, updated_at,
         athletes ( name ),
-        diagnoses ( osiics_description, custom_description, is_resolved, load_management_restrictions, load_management_notes )
+        diagnoses ( osiics_description, custom_description, is_resolved, load_management_restrictions, load_management_notes, diagnosed_at )
       `)
       .in('athlete_id', athleteIds)
       .eq('is_resolved', false)
@@ -138,35 +140,58 @@ export default async function Dashboard({
   // most recent (used for the description); the decision column always
   // reflects the athlete's actual current status, not that snapshot.
   const currentStatusByAthleteId = new Map(athletes.map((a) => [a.id, a.availability_status]))
-  const seenAthleteIds = new Set<string>()
-  const dedupedOccurrences = occurrences.filter((o) => {
-    if (seenAthleteIds.has(o.athlete_id)) return false
-    seenAthleteIds.add(o.athlete_id)
-    return true
-  })
-  const clinicalOccurrences = dedupedOccurrences.map((o) => {
-    const athlete = Array.isArray(o.athletes) ? o.athletes[0] : o.athletes
-    return {
-      athleteName: athlete?.name ?? '—',
-      description: o.title || o.subjective || o.occurrence_type || '—',
-      availabilityStatus: currentStatusByAthleteId.get(o.athlete_id) ?? o.availability_status ?? 'evaluation',
-    }
-  })
 
-  // Reason + load-management restrictions per athlete, for the dashboard's
-  // per-status expandable groups — a diagnosis (if any, still open) takes
-  // priority over the occurrence's own title, same as OccurrenceRow's
-  // primaryLabel; restrictions/notes come from whichever of the two actually
-  // carries them for a load_management athlete.
+  // Per athlete, find the clinical event that's actually driving their
+  // current status — the same "most recent write wins" rule
+  // recomputeAthleteAvailability uses (occurrence.updated_at ?? created_at,
+  // or a diagnosis's diagnosed_at, whichever is later) — not just "the first
+  // occurrence returned". Picking by occurrence_date/array-order instead
+  // could show an unrelated occurrence's title/restrictions when an older
+  // occurrence was the one most recently reassessed.
+  type WinningEvent = {
+    athleteName: string
+    description: string
+    restrictions: string[]
+    notes: string | null
+    at: string
+  }
+  const winningEventByAthleteId = new Map<string, WinningEvent>()
+  for (const o of occurrences) {
+    const athlete = Array.isArray(o.athletes) ? o.athletes[0] : o.athletes
+    const athleteName = athlete?.name ?? '—'
+    const candidates: WinningEvent[] = [
+      {
+        athleteName,
+        description: o.title || o.subjective || o.occurrence_type || '—',
+        restrictions: o.load_management_restrictions ?? [],
+        notes: o.load_management_notes,
+        at: o.updated_at ?? o.created_at,
+      },
+      ...(o.diagnoses ?? [])
+        .filter((d) => !d.is_resolved)
+        .map((d) => ({
+          athleteName,
+          description: d.osiics_description || d.custom_description || '—',
+          restrictions: d.load_management_restrictions ?? [],
+          notes: d.load_management_notes,
+          at: d.diagnosed_at,
+        })),
+    ]
+    for (const candidate of candidates) {
+      const current = winningEventByAthleteId.get(o.athlete_id)
+      if (!current || candidate.at > current.at) winningEventByAthleteId.set(o.athlete_id, candidate)
+    }
+  }
+
+  const clinicalOccurrences = Array.from(winningEventByAthleteId.entries()).map(([athleteId, event]) => ({
+    athleteName: event.athleteName,
+    description: event.description,
+    availabilityStatus: currentStatusByAthleteId.get(athleteId) ?? 'evaluation',
+  }))
+
   const reasonByAthleteId: Record<string, { reason: string; restrictions: string[]; notes: string | null }> = {}
-  for (const o of dedupedOccurrences) {
-    const activeDiagnosis = (o.diagnoses ?? []).find((d) => !d.is_resolved)
-    const reason = (activeDiagnosis && (activeDiagnosis.osiics_description ?? activeDiagnosis.custom_description)) || o.title || '—'
-    const restrictions = activeDiagnosis?.load_management_restrictions?.length
-      ? activeDiagnosis.load_management_restrictions
-      : (o.load_management_restrictions ?? [])
-    const notes = (activeDiagnosis?.load_management_restrictions?.length ? activeDiagnosis.load_management_notes : o.load_management_notes) ?? null
-    reasonByAthleteId[o.athlete_id] = { reason, restrictions, notes }
+  for (const [athleteId, event] of winningEventByAthleteId) {
+    reasonByAthleteId[athleteId] = { reason: event.description, restrictions: event.restrictions, notes: event.notes }
   }
 
   const withScores = athletes.map((a) => {

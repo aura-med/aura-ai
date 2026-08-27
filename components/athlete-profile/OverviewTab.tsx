@@ -1,9 +1,15 @@
 'use client'
 
-import { AlertTriangle } from 'lucide-react'
+import { useState } from 'react'
+import dynamic from 'next/dynamic'
+import { AlertTriangle, CheckCircle2, Loader2, Pencil } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { OccurrenceRow as SharedOccurrenceRow, type Athlete as SharedRowAthlete } from '@/components/occurrences/OccurrenceRow'
-import type { AthleteProfileData, InjuryEventSummary, ActiveOccurrence } from '@/types/athlete-profile'
+import { resolveDiagnosis } from '@/lib/actions/clinical'
+import { OccurrenceRow as SharedOccurrenceRow, StatusBadge, type Athlete as SharedRowAthlete } from '@/components/occurrences/OccurrenceRow'
+import type { AthleteProfileData, InjuryEventSummary, ActiveOccurrence, ActiveDiagnosis } from '@/types/athlete-profile'
+import type { AthleteAvailabilityStatus } from '@/types'
+
+const DiagnosisModal = dynamic(() => import('./DiagnosisModal').then((m) => m.DiagnosisModal))
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -32,13 +38,14 @@ function scoreLabel(score: number | null) {
 }
 
 const STATUS_CONFIG = {
-  available:   { label: '🟢 Disponível',   color: 'var(--sophi-green)',  bg: 'var(--sophi-green-bg)'           },
-  evaluation:  { label: '🟡 Em Avaliação', color: 'var(--sophi-warn)',   bg: 'var(--sophi-warn-bg)'            },
-  unavailable: { label: '🔴 Indisponível', color: 'var(--sophi-danger)', bg: 'var(--sophi-danger-bg)'          },
-  rtp:         { label: '🟣 Em RTP',        color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.12)'         },
+  available:       { label: '🟢 Disponível',      color: 'var(--sophi-green)',  bg: 'var(--sophi-green-bg)'  },
+  evaluation:      { label: '🟡 Em Avaliação',    color: 'var(--sophi-warn)',   bg: 'var(--sophi-warn-bg)'   },
+  load_management: { label: '🟠 Gestão de Carga', color: 'var(--sophi-orange)', bg: 'var(--sophi-orange-bg)' },
+  unavailable:     { label: '🔴 Indisponível',    color: 'var(--sophi-danger)', bg: 'var(--sophi-danger-bg)' },
+  rtp:             { label: '🟣 Em RTP',           color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.12)' },
   // Legacy values — fallback
-  modified:    { label: '🟡 Treino Modificado', color: 'var(--sophi-warn)',   bg: 'var(--sophi-warn-bg)'        },
-  rehab:       { label: '🟣 Em Reabilitação',   color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.12)'    },
+  modified:        { label: '🟡 Treino Modificado', color: 'var(--sophi-warn)',   bg: 'var(--sophi-warn-bg)'   },
+  rehab:           { label: '🟣 Em Reabilitação',    color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.12)' },
 }
 
 type InjuryTimelinePoint = { label: string; injuries: number; severity: number }
@@ -220,6 +227,98 @@ function InjuryTimeline({ injuries }: { injuries: InjuryEventSummary[] }) {
   )
 }
 
+// ── Orphan diagnoses (no occurrence_id) ─────────────────────────────────────
+// The normal case (a diagnosis attached to an occurrence) shows and is
+// managed entirely inline within OccurrenceRow above. The schema still
+// allows occurrence_id = null (older records, or ones created directly via
+// the API), so this small fallback keeps those reachable/editable/
+// resolvable instead of silently disappearing from the profile.
+
+function OrphanDiagnosisRow({
+  diag, athleteId, canEdit, onChanged,
+}: {
+  diag: ActiveDiagnosis
+  athleteId: string
+  canEdit: boolean
+  onChanged: () => void
+}) {
+  const [showEdit, setShowEdit] = useState(false)
+  const [resolving, setResolving] = useState(false)
+  const [confirming, setConfirming] = useState(false)
+  const title = diag.osiics_description ?? diag.custom_description ?? 'Diagnóstico sem descrição'
+
+  async function handleResolve() {
+    setResolving(true)
+    try {
+      await resolveDiagnosis(diag.id, athleteId)
+      onChanged()
+    } finally {
+      setResolving(false)
+      setConfirming(false)
+    }
+  }
+
+  return (
+    <div className="rounded-lg border p-3 space-y-2" style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border)' }}>
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-semibold flex-1" style={{ color: 'var(--sophi-text)' }}>{title}</span>
+        {diag.availability_status && <StatusBadge status={diag.availability_status as AthleteAvailabilityStatus} />}
+        {canEdit && !confirming && (
+          <>
+            <button type="button" onClick={() => setShowEdit(true)} className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80" style={{ color: 'var(--sophi-text2)' }}>
+              <Pencil size={10} /> Editar
+            </button>
+            <button type="button" onClick={() => setConfirming(true)} disabled={resolving} className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80" style={{ color: 'var(--sophi-green)' }}>
+              <CheckCircle2 size={10} /> Resolver
+            </button>
+          </>
+        )}
+      </div>
+      {confirming && (
+        <div className="flex items-center gap-2 rounded-lg border px-2 py-1.5" style={{ background: 'var(--sophi-green-bg)', borderColor: 'var(--sophi-green)' }}>
+          <p className="text-[10px] flex-1" style={{ color: 'var(--sophi-text2)' }}>Confirma que este diagnóstico fica resolvido?</p>
+          <button type="button" onClick={() => setConfirming(false)} disabled={resolving} className="text-[10px] font-medium hover:opacity-80 shrink-0" style={{ color: 'var(--sophi-text3)' }}>Cancelar</button>
+          <button type="button" onClick={handleResolve} disabled={resolving} className="flex items-center gap-1 text-[10px] font-bold hover:opacity-80 shrink-0" style={{ color: 'var(--sophi-green)' }}>
+            {resolving ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle2 size={10} />} Confirmar
+          </button>
+        </div>
+      )}
+      {showEdit && (
+        <DiagnosisModal
+          athleteId={athleteId}
+          occurrences={[]}
+          existing={diag}
+          onClose={() => setShowEdit(false)}
+          onSaved={() => { setShowEdit(false); onChanged() }}
+        />
+      )}
+    </div>
+  )
+}
+
+function OrphanDiagnosesSection({ diagnoses, athleteId, canEdit }: { diagnoses: ActiveDiagnosis[]; athleteId: string; canEdit: boolean }) {
+  const router = useRouter()
+  if (diagnoses.length === 0) return null
+
+  return (
+    <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+      <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
+        <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>
+          Diagnósticos sem ocorrência associada
+        </p>
+        <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}>
+          {diagnoses.length}
+        </span>
+      </div>
+      <div className="p-4 space-y-2">
+        {diagnoses.map((d) => (
+          <OrphanDiagnosisRow key={d.id} diag={d} athleteId={athleteId} canEdit={canEdit} onChanged={() => router.refresh()} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export function OverviewTab({ profile }: { profile: AthleteProfileData }) {
@@ -244,6 +343,7 @@ export function OverviewTab({ profile }: { profile: AthleteProfileData }) {
         }}
         canCreateDiagnosis={canCreateDiagnosis}
       />
+      <OrphanDiagnosesSection diagnoses={profile.orphanDiagnoses} athleteId={profile.id} canEdit={canCreateDiagnosis} />
 
       {/* Injury timeline */}
       <InjuryTimeline injuries={profile.injuryEvents} />

@@ -175,13 +175,19 @@ async function AthleteDetailContent({
       .order('diagnosed_at', { ascending: false }),
   ])
 
-  // Diagnoses already shown inline under an open occurrence (activeOccurrences'
-  // own nested `diagnoses`) are excluded here to avoid listing them twice —
-  // everything else (occurrence_id null, or pointing at a resolved/missing
-  // occurrence) falls back to this section.
-  const openOccurrenceIds = new Set((activeOccurrences ?? []).map((o) => o.id))
+  // Diagnoses already shown inline under an occurrence row (either an open
+  // one, or one of the 5 recently-resolved ones — both render their own
+  // nested `diagnoses`) are excluded here to avoid listing them twice. An
+  // active diagnosis can outlive its parent occurrence being resolved, so
+  // without also covering recentResolvedOccurrences, one linked to a
+  // recently-resolved occurrence would show up both under that occurrence's
+  // row AND again here as if it had no occurrence at all.
+  const shownInlineOccurrenceIds = new Set([
+    ...(activeOccurrences ?? []).map((o) => o.id),
+    ...(recentResolvedOccurrences ?? []).map((o) => o.id),
+  ])
   const orphanDiagnoses = (allActiveDiagnoses ?? []).filter(
-    (d) => !d.occurrence_id || !openOccurrenceIds.has(d.occurrence_id)
+    (d) => !d.occurrence_id || !shownInlineOccurrenceIds.has(d.occurrence_id)
   )
 
   // ── Document + consultation counts ────────────────────────────────────────

@@ -68,6 +68,7 @@ DECLARE
   v_old_occurrence_id uuid;
   v_decision_changed boolean;
   v_diagnosis diagnoses;
+  v_rec_at timestamptz;
 BEGIN
   -- Serialization point: locks this diagnosis row, blocking until any
   -- concurrent update to it completes, then reads its guaranteed-current
@@ -133,14 +134,31 @@ BEGIN
   -- profile renders this diagnosis nested under it.
   IF p_occurrence_id IS NOT NULL
      AND (v_decision_changed OR v_old_occurrence_id IS DISTINCT FROM p_occurrence_id) THEN
-    UPDATE occurrences
-    SET
-      availability_status = p_availability_status,
-      load_management_restrictions = p_load_management_restrictions,
-      load_management_notes = p_load_management_notes,
-      updated_at = now(),
-      decision_source = 'diagnosis'
-    WHERE id = p_occurrence_id;
+    SELECT MAX(created_at) INTO v_rec_at
+    FROM occurrence_records
+    WHERE occurrence_id = p_occurrence_id;
+
+    -- Only actually mirror if this diagnosis is still the most recent
+    -- source for the target occurrence — otherwise
+    -- validate_occurrence_decision_source (065) would reject
+    -- decision_source = 'diagnosis' outright (a later reassessment exists
+    -- there), rolling back this ENTIRE transaction, including the
+    -- diagnosis's own update/attachment that had nothing wrong with it.
+    -- This matters most when attaching an orphan diagnosis whose own
+    -- values didn't change (v_decision_changed false, so 047/051's trigger
+    -- left updated_at at its old value) onto an occurrence that already
+    -- has a newer reassessment — skip the mirror silently instead,
+    -- matching create_diagnosis_and_mirror's (069) same proactive check.
+    IF v_rec_at IS NULL OR v_diagnosis.updated_at >= v_rec_at THEN
+      UPDATE occurrences
+      SET
+        availability_status = p_availability_status,
+        load_management_restrictions = p_load_management_restrictions,
+        load_management_notes = p_load_management_notes,
+        updated_at = now(),
+        decision_source = 'diagnosis'
+      WHERE id = p_occurrence_id;
+    END IF;
   END IF;
 
   RETURN NEXT v_diagnosis;

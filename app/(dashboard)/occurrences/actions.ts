@@ -186,7 +186,7 @@ export async function updateOccurrence(input: UpdateOccurrenceInput) {
 
   const { data: existing, error: fetchError } = await supabase
     .from('occurrences')
-    .select('availability_status, load_management_restrictions, load_management_notes')
+    .select('availability_status, load_management_restrictions, load_management_notes, is_resolved')
     .eq('id', input.occurrenceId)
     .maybeSingle()
   if (fetchError || !existing) throw new Error(fetchError?.message ?? 'Ocorrência não encontrada')
@@ -225,12 +225,19 @@ export async function updateOccurrence(input: UpdateOccurrenceInput) {
 
   const targetAthleteId = updated.athlete_id
 
-  // Recompute from all active occurrences/diagnoses so editing this one's
-  // status doesn't wrongly override a still-active issue elsewhere (or, if
-  // this occurrence is already resolved, doesn't affect availability at all —
-  // recomputeAthleteAvailability only reads still-open rows).
-  const nextStatus = await recomputeAthleteAvailability(supabase, targetAthleteId, input.availabilityStatus)
-  await persistAvailability(supabase, targetAthleteId, nextStatus)
+  // A resolved occurrence's status is historical record-keeping, not a live
+  // clinical decision — it must never touch the athlete's current
+  // availability. Skipping this matters specifically when nothing else is
+  // open: recomputeAthleteAvailability would then have no events at all and
+  // fall back to `input.availabilityStatus`, so correcting a closed
+  // occurrence's old status field would otherwise silently overwrite the
+  // athlete's actual current availability.
+  if (!existing.is_resolved) {
+    // Recompute from all active occurrences/diagnoses so editing this one's
+    // status doesn't wrongly override a still-active issue elsewhere.
+    const nextStatus = await recomputeAthleteAvailability(supabase, targetAthleteId, input.availabilityStatus)
+    await persistAvailability(supabase, targetAthleteId, nextStatus)
+  }
 
   revalidatePath('/occurrences')
   revalidatePath('/')

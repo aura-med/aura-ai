@@ -105,41 +105,30 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
     if (existing) throw new Error('Esta ocorrência já tem um diagnóstico ativo.')
   }
 
-  const { error } = await supabase.from('diagnoses').insert({
-    athlete_id:          input.athleteId,
-    org_id:              prof?.org_id ?? null,
-    osiics_code:         input.osiicsCode,
-    osiics_description:  input.osiicsDescription,
-    diagnosis_type:      input.diagnosisType,
-    custom_description:  input.customDescription,
-    availability_status: input.availabilityStatus,
-    load_management_restrictions: input.loadManagementRestrictions,
-    load_management_notes: input.loadManagementNotes,
-    diagnosed_by:        user?.id ?? null, // authoritative author, not client-supplied
-    occurrence_id:       input.occurrenceId,
+  // create_diagnosis_and_mirror (069) inserts the diagnosis and, only when
+  // it's still the most recent source for its occurrence, mirrors it onto
+  // the occurrence's own status — all in one transaction. Doing this as two
+  // separate calls (insert, then a separate mirror update) risked a race
+  // with a concurrent addOccurrenceRecord on the same occurrence: whichever
+  // mirror update ran second could get rejected by
+  // validate_occurrence_decision_source (065) because the other source was
+  // now genuinely newer, even though this diagnosis had already been
+  // permanently saved — reporting failure and skipping availability
+  // recomputation for real clinical data that did save.
+  const { error } = await supabase.rpc('create_diagnosis_and_mirror', {
+    p_athlete_id: input.athleteId,
+    p_org_id: prof?.org_id ?? null,
+    p_osiics_code: input.osiicsCode,
+    p_osiics_description: input.osiicsDescription,
+    p_diagnosis_type: input.diagnosisType,
+    p_custom_description: input.customDescription,
+    p_availability_status: input.availabilityStatus,
+    p_load_management_restrictions: input.loadManagementRestrictions,
+    p_load_management_notes: input.loadManagementNotes,
+    p_diagnosed_by: user?.id ?? null, // authoritative author, not client-supplied
+    p_occurrence_id: input.occurrenceId,
   })
   if (error) throw new Error(error.message)
-
-  // The occurrence's own availability_status is a separate stored value from
-  // the diagnosis — without this, the occurrence keeps showing its pre-
-  // diagnosis status even though the athlete's overall status (recomputed
-  // below) is correct.
-  if (input.occurrenceId) {
-    // updated_at is set explicitly — nothing bumps it automatically — so
-    // recomputeAvailability's "most recent event wins" ranking sees this
-    // diagnosis as newer than the occurrence's original creation.
-    const { error: occError } = await supabase
-      .from('occurrences')
-      .update({
-        availability_status: input.availabilityStatus,
-        load_management_restrictions: input.loadManagementRestrictions,
-        load_management_notes: input.loadManagementNotes,
-        updated_at: new Date().toISOString(),
-        decision_source: 'diagnosis',
-      })
-      .eq('id', input.occurrenceId)
-    if (occError) throw new Error(occError.message)
-  }
 
   const next = await recomputeAvailability(supabase, input.athleteId, input.availabilityStatus)
   await persistAvailability(supabase, input.athleteId, next)

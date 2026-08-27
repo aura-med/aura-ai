@@ -282,67 +282,39 @@ export async function addOccurrenceRecord(input: {
   const supabase = await createClient()
   const clinician = await getClinician(supabase)
 
-  // Reassessments only apply to a still-open occurrence. Verify (read-only) first
-  // and use the row's own athlete_id, not the client-supplied one.
-  const { data: openOcc, error: occErr } = await supabase
-    .from('occurrences')
-    .select('athlete_id, is_resolved')
-    .eq('id', input.occurrenceId)
-    .single()
-  if (occErr || !openOcc?.athlete_id || openOcc.is_resolved) {
-    throw new Error(occErr?.message ?? 'Ocorrência já resolvida ou inexistente')
-  }
-  const targetAthleteId = openOcc.athlete_id
-
-  // Insert the reassessment record BEFORE mutating the occurrence status, so a
-  // rejected insert can't leave the status changed with no audit entry.
-  const { error: recordError } = await supabase.from('occurrence_records').insert({
-    occurrence_id: input.occurrenceId,
-    athlete_id: targetAthleteId,
-    record_date: input.recordDate,
-    subjective: input.subjective,
-    objective: input.objective,
-    assessment: input.assessment,
-    plan: input.plan,
-    availability_status: input.availabilityStatus,
-    load_management_restrictions: input.loadManagementRestrictions,
-    load_management_notes: input.loadManagementNotes,
-    created_by: clinician.userId,
-    clinician_name: clinician.name,
+  // add_occurrence_record_and_mirror (070) inserts the reassessment and,
+  // only when it's still the most recent source for its occurrence, mirrors
+  // it onto the occurrence's own status — all in one transaction, deriving
+  // athlete_id from the (locked) occurrence row itself and rejecting a
+  // resolved/missing occurrence, same as the app used to do with a separate
+  // read. Doing the insert and mirror as two separate calls risked a race
+  // with a concurrent createDiagnosis on the same occurrence: whichever
+  // mirror update ran second could get rejected by
+  // validate_occurrence_decision_source (065) because the other source was
+  // now genuinely newer, even though this reassessment had already been
+  // permanently saved — reporting failure and skipping availability
+  // recomputation, and risking a duplicate reassessment on retry.
+  const { data: rows, error } = await supabase.rpc('add_occurrence_record_and_mirror', {
+    p_occurrence_id: input.occurrenceId,
+    p_record_date: input.recordDate,
+    p_subjective: input.subjective,
+    p_objective: input.objective,
+    p_assessment: input.assessment,
+    p_plan: input.plan,
+    p_availability_status: input.availabilityStatus,
+    p_load_management_restrictions: input.loadManagementRestrictions,
+    p_load_management_notes: input.loadManagementNotes,
+    p_created_by: clinician.userId,
+    p_clinician_name: clinician.name,
   })
-  if (recordError) throw new Error(recordError.message)
-
-  // Now update the occurrence's own status (still guarded on is_resolved=false).
-  // If it matched no row, the occurrence was resolved concurrently between our
-  // SELECT and here — in that case this occurrence's status must NOT be the
-  // recompute fallback (it would wrongly re-open the athlete).
-  const { data: statusUpdated, error: statusError } = await supabase
-    .from('occurrences')
-    // updated_at is set explicitly — nothing bumps it automatically — so
-    // recomputeAthleteAvailability's "most recent event wins" ranking sees
-    // this reassessment as newer than the occurrence's original creation.
-    .update({
-      availability_status: input.availabilityStatus,
-      load_management_restrictions: input.loadManagementRestrictions,
-      load_management_notes: input.loadManagementNotes,
-      updated_at: new Date().toISOString(),
-      decision_source: 'reassessment',
-    })
-    .eq('id', input.occurrenceId)
-    .eq('is_resolved', false)
-    .select('id')
-    .maybeSingle()
-  // A genuine failure here (as opposed to legitimately matching no row,
-  // e.g. the occurrence was resolved concurrently) must not be treated the
-  // same as "nothing to update" — that would silently leave the occurrence
-  // and athlete on their old status while the reassessment itself was still
-  // saved, and the action would still report success.
-  if (statusError) throw new Error(statusError.message)
+  if (error) throw new Error(error.message)
+  const record = rows?.[0]
+  if (!record?.athlete_id) throw new Error('Ocorrência já resolvida ou inexistente')
+  const targetAthleteId = record.athlete_id
 
   // Recompute from all active occurrences/diagnoses so a less-restrictive
   // reassessment on one issue doesn't clear a still-active one elsewhere.
-  const fallback = statusUpdated ? input.availabilityStatus : 'available'
-  const nextStatus = await recomputeAthleteAvailability(supabase, targetAthleteId, fallback)
+  const nextStatus = await recomputeAthleteAvailability(supabase, targetAthleteId, input.availabilityStatus)
   await persistAvailability(supabase, targetAthleteId, nextStatus)
 
   revalidatePath('/occurrences')

@@ -52,14 +52,15 @@ DECLARE
   v_old_status text;
   v_old_restrictions text[];
   v_old_notes text;
+  v_old_occurrence_id uuid;
   v_decision_changed boolean;
   v_diagnosis diagnoses;
 BEGIN
   -- Serialization point: locks this diagnosis row, blocking until any
   -- concurrent update to it completes, then reads its guaranteed-current
   -- values (not a stale earlier snapshot).
-  SELECT availability_status, load_management_restrictions, load_management_notes
-  INTO v_old_status, v_old_restrictions, v_old_notes
+  SELECT availability_status, load_management_restrictions, load_management_notes, occurrence_id
+  INTO v_old_status, v_old_restrictions, v_old_notes, v_old_occurrence_id
   FROM diagnoses
   WHERE id = p_diagnosis_id AND is_resolved = false
   FOR UPDATE;
@@ -87,7 +88,13 @@ BEGIN
   WHERE id = p_diagnosis_id AND is_resolved = false
   RETURNING * INTO v_diagnosis;
 
-  IF p_occurrence_id IS NOT NULL AND v_decision_changed THEN
+  -- Attaching/moving the diagnosis to a (new) occurrence must mirror
+  -- regardless of whether the decision VALUES also changed — that new
+  -- parent has never had this diagnosis's data mirrored onto it before, so
+  -- it would otherwise keep its own prior, conflicting status while the
+  -- profile renders this diagnosis nested under it.
+  IF p_occurrence_id IS NOT NULL
+     AND (v_decision_changed OR v_old_occurrence_id IS DISTINCT FROM p_occurrence_id) THEN
     UPDATE occurrences
     SET
       availability_status = p_availability_status,

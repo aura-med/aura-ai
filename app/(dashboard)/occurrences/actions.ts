@@ -171,13 +171,6 @@ export interface UpdateOccurrenceInput {
   loadManagementNotes: string | null
 }
 
-function sameStringSet(a: string[], b: string[]): boolean {
-  if (a.length !== b.length) return false
-  const sortedA = [...a].sort()
-  const sortedB = [...b].sort()
-  return sortedA.every((v, i) => v === sortedB[i])
-}
-
 // Edits the occurrence's own record (title/date/type/observations/status) —
 // distinct from addOccurrenceRecord, which appends a new reassessment entry.
 // This corrects the original entry itself rather than logging a new event.
@@ -373,74 +366,38 @@ export async function updateOccurrenceRecord(input: {
 }) {
   const supabase = await createClient()
 
-  const { data: existingRecord, error: existingRecordError } = await supabase
-    .from('occurrence_records')
-    .select('availability_status, load_management_restrictions, load_management_notes')
-    .eq('id', input.recordId)
-    .maybeSingle()
-  if (existingRecordError || !existingRecord) {
-    throw new Error(existingRecordError?.message ?? 'Reavaliação não encontrada')
-  }
-  // A pure record_date/assessment-text correction must not re-rank this
-  // occurrence above a genuinely newer decision elsewhere — same reasoning as
-  // updateOccurrence's decisionChanged guard.
-  const decisionChanged =
-    existingRecord.availability_status !== input.availabilityStatus ||
-    !sameStringSet(existingRecord.load_management_restrictions ?? [], input.loadManagementRestrictions) ||
-    (existingRecord.load_management_notes ?? null) !== (input.loadManagementNotes ?? null)
-
-  const { data: updated, error } = await supabase
-    .from('occurrence_records')
-    .update({
-      record_date: input.recordDate,
-      assessment: input.assessment,
-      availability_status: input.availabilityStatus,
-      load_management_restrictions: input.loadManagementRestrictions,
-      load_management_notes: input.loadManagementNotes,
-    })
-    .eq('id', input.recordId)
-    .select('athlete_id, occurrence_id')
-    .maybeSingle()
-  if (error || !updated?.athlete_id) throw new Error(error?.message ?? 'Reavaliação não encontrada')
-
-  // A correction only needs to leave the athlete's current status alone when
-  // it's fixing OLD history — the mirror only applies while this record is
+  // update_occurrence_record_and_mirror (063) locks the record first, so
+  // decisionChanged (whether to advance the parent occurrence's updated_at)
+  // is derived from a guaranteed-current snapshot rather than a SELECT taken
+  // before the update. It then updates the record and, only while it's
   // still the most recently *created* reassessment for its occurrence AND a
   // reassessment is still the occurrence's decision_source (a direct edit or
-  // a diagnosis may have taken over since). Both checks and the mirroring
-  // update must happen atomically: doing them as separate SELECTs first left
-  // a window where another clinician's concurrent addOccurrenceRecord call
-  // on the same occurrence could log a genuinely newer reassessment in
-  // between — this correction to older history would still pass the
-  // already-cached checks and overwrite the parent with its own, now stale,
-  // values. resync_occurrence_from_latest_reassessment (063) re-derives
-  // "still latest" against the same snapshot its UPDATE commits against, so
-  // there's no gap left for a concurrent insert to land in.
-  const { data: occUpdated, error: occError } = await supabase.rpc(
-    'resync_occurrence_from_latest_reassessment',
-    {
-      p_occurrence_id: updated.occurrence_id,
-      p_record_id: input.recordId,
-      p_availability_status: input.availabilityStatus,
-      p_load_management_restrictions: input.loadManagementRestrictions,
-      p_load_management_notes: input.loadManagementNotes,
-      // Only advance the parent's timestamp when the decision itself
-      // changed — a pure record_date/assessment-text correction must not
-      // re-rank this occurrence above a genuinely newer event elsewhere.
-      p_bump_updated_at: decisionChanged,
-    }
-  )
-  if (occError) throw new Error(occError.message)
+  // a diagnosis may have taken over since), mirrors the record's own
+  // just-committed values onto the parent occurrence/athlete — all inside
+  // one function, so there's no gap for a concurrent addOccurrenceRecord (a
+  // genuinely newer reassessment) or another correction to this same record
+  // to land in unnoticed.
+  const { data: rows, error } = await supabase.rpc('update_occurrence_record_and_mirror', {
+    p_record_id: input.recordId,
+    p_record_date: input.recordDate,
+    p_assessment: input.assessment,
+    p_availability_status: input.availabilityStatus,
+    p_load_management_restrictions: input.loadManagementRestrictions,
+    p_load_management_notes: input.loadManagementNotes,
+  })
+  if (error) throw new Error(error.message)
+  const result = rows?.[0]
+  if (!result?.out_athlete_id) throw new Error('Reavaliação não encontrada')
 
-  // occUpdated is legitimately empty (not an error) when this record is no
-  // longer the latest reassessment, a reassessment is no longer the
-  // occurrence's decision source, or the occurrence has since been resolved.
-  if (occUpdated && occUpdated.length > 0) {
-    const nextStatus = await recomputeAthleteAvailability(supabase, updated.athlete_id, input.availabilityStatus)
-    await persistAvailability(supabase, updated.athlete_id, nextStatus)
+  // out_mirrored is false (not an error) when this record is no longer the
+  // latest reassessment, a reassessment is no longer the occurrence's
+  // decision source, or the occurrence has since been resolved.
+  if (result.out_mirrored) {
+    const nextStatus = await recomputeAthleteAvailability(supabase, result.out_athlete_id, input.availabilityStatus)
+    await persistAvailability(supabase, result.out_athlete_id, nextStatus)
   }
 
   revalidatePath('/occurrences')
   revalidatePath('/')
-  revalidatePath(`/athletes/${updated.athlete_id}`)
+  revalidatePath(`/athletes/${result.out_athlete_id}`)
 }

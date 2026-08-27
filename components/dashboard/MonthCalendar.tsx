@@ -110,9 +110,17 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
   // would trigger an extra render pass.
   const [prevEvents, setPrevEvents] = useState(events)
   const [prevSquadId, setPrevSquadId] = useState(effectiveSquadId)
+  // Bumped whenever the squad changes so an ensureMonthLoaded fetch already
+  // in flight for the previous squad can tell, once it resolves, that it's
+  // stale — the synchronous reset below only clears what's already in state,
+  // it can't cancel a pending network request. Plain mutable object (like
+  // loadedMonths below) rather than useRef — the lint rule against reading/
+  // writing refs during render doesn't apply to state-held plain objects.
+  const [squadEpoch] = useState(() => ({ current: 0, bump() { this.current += 1 } }))
   if (effectiveSquadId !== prevSquadId) {
     setPrevSquadId(effectiveSquadId)
     setPrevEvents(events)
+    squadEpoch.bump()
     loadedMonths.clear()
     setItems(events)
   } else if (events !== prevEvents) {
@@ -126,6 +134,7 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
   async function ensureMonthLoaded(y: number, m: number) {
     const key = `${y}-${m}`
     if (loadedMonths.has(key)) return
+    const requestSquadEpoch = squadEpoch.current
     const supabase = createClient()
     const start = dateKey(y, m, 1)
     const end = dateKey(y, m, new Date(y, m + 1, 0).getDate())
@@ -136,6 +145,11 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
       .lte('event_date', end)
     if (effectiveSquadId) q = q.eq('squad_id', effectiveSquadId)
     const { data, error } = await q
+    // Discard a response that resolved after the user switched squads — it
+    // was fetched under the squad this closure captured at call time, which
+    // may no longer be the current one, and the render-time reset above has
+    // no way to cancel an in-flight request.
+    if (requestSquadEpoch !== squadEpoch.current) return
     // Only mark the month loaded once the fetch actually succeeds — a
     // transient DB/network failure must not permanently block retrying it;
     // marking it upfront (before the request completed) would leave the

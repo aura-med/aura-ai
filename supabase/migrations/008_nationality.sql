@@ -11,6 +11,13 @@ ALTER TABLE athletes
 -- Renumbering it to run later was tried and reverted: 018_squad_scoped_access.sql (still at 018) replaces this file's global authenticated-only rehab_sessions policies — replaying them after 018 would re-widen access across squads.
 -- Merging into the file that already holds this version preserves the exact
 -- original ordering relative to every other migration.
+--
+-- Caveat (Codex): if this version is ever marked "applied" via `migration
+-- repair` (or any path other than actually running this exact file) on a
+-- database that doesn't already have both halves' objects, this file will
+-- be silently skipped by `db push` forever after and the missing objects
+-- will never get created. Only safe to repair-baseline this version once
+-- you've confirmed the target database already has everything below.
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- ─────────────────────────────────────────────────────────────────────────────

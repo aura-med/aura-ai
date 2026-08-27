@@ -175,6 +175,13 @@ CREATE POLICY "auth_update_rtp"             ON rtp_protocol_tracking      FOR UP
 -- Renumbering it to run later was tried and reverted: 007_fix_rls.sql (unchanged, still at 007) references recommendation_log directly — it must exist by the time 007 runs, not after.
 -- Merging into the file that already holds this version preserves the exact
 -- original ordering relative to every other migration.
+--
+-- Caveat (Codex): if this version is ever marked "applied" via `migration
+-- repair` (or any path other than actually running this exact file) on a
+-- database that doesn't already have both halves' objects, this file will
+-- be silently skipped by `db push` forever after and the missing objects
+-- will never get created. Only safe to repair-baseline this version once
+-- you've confirmed the target database already has everything below.
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- ─────────────────────────────────────────────────────────────────────────────

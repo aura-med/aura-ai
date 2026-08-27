@@ -80,6 +80,13 @@ CREATE POLICY rehab_clinical_write ON rehab_sessions FOR ALL
 -- Renumbering it to run later was tried and reverted: same reasoning as the 002 pair.
 -- Merging into the file that already holds this version preserves the exact
 -- original ordering relative to every other migration.
+--
+-- Caveat (Codex): if this version is ever marked "applied" via `migration
+-- repair` (or any path other than actually running this exact file) on a
+-- database that doesn't already have both halves' objects, this file will
+-- be silently skipped by `db push` forever after and the missing objects
+-- will never get created. Only safe to repair-baseline this version once
+-- you've confirmed the target database already has everything below.
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- ─────────────────────────────────────────────────────────────────────────────

@@ -170,16 +170,22 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
 
 export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
-  // resolve_diagnosis_and_cleanup (080) resolves the diagnosis and, only
-  // while it's still the open occurrence's decision source, re-derives that
-  // occurrence's status from its own latest reassessment (or resets
-  // decision_source to 'own' if there isn't one) — otherwise the occurrence
-  // would keep this now-resolved diagnosis's mirrored status indefinitely,
-  // and recompute_and_persist_athlete_availability below would keep
-  // surfacing it as the athlete's live restriction. resolved_by is derived
-  // from auth.uid() inside the RPC, not passed here.
+  // resolve_diagnosis_and_cleanup (080) does all of this atomically, in one
+  // transaction: resolves the diagnosis; while it's still the open
+  // occurrence's decision source, re-derives that occurrence's status from
+  // its own latest reassessment (or resets decision_source to 'own' if
+  // there isn't one) — otherwise the occurrence would keep this
+  // now-resolved diagnosis's mirrored status indefinitely, and
+  // recompute_and_persist_athlete_availability below would keep surfacing
+  // it as the athlete's live restriction; and, for 'injury' diagnoses,
+  // preserves the injury permanently in the athlete's history
+  // (injury_events) — folded into the same transaction rather than a
+  // separate follow-up insert, so a failure there rolls back the
+  // resolution too instead of leaving the diagnosis permanently resolved
+  // with no way to retry the now-lost history row. resolved_by/
+  // confirmed_by are derived from auth.uid() inside the RPC, not passed
+  // here.
   const { data: rows, error } = await supabase.rpc('resolve_diagnosis_and_cleanup', {
     p_diagnosis_id: diagnosisId,
   })
@@ -192,47 +198,6 @@ export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
   // means the athlete is available (rehab floor still applies inside the helper).
   const targetAthleteId = resolved.athlete_id
   await recomputeAndPersistAvailability(supabase, targetAthleteId, 'available')
-
-  // A resolved diagnosis is never just discarded — it's preserved permanently
-  // in the athlete's injury history (histórico de lesões) so the clinical
-  // record is never lost. 'disease' diagnoses are excluded: injury_events'
-  // location/severity fields describe musculoskeletal injuries, not illness.
-  if (resolved.diagnosis_type === 'injury') {
-    // occurrence_date comes straight from resolve_diagnosis_and_cleanup
-    // (080) itself now, not a separate follow-up query — that query's
-    // error was easy to drop silently (Supabase resolves a failed query as
-    // { data: null, error }), which would fall back to diagnosed_at and
-    // record a wrong injury_date irrecoverably, since the diagnosis is
-    // already resolved by this point.
-    const injuryDate = resolved.occurrence_date ?? (resolved.diagnosed_at ?? new Date().toISOString()).slice(0, 10)
-    const returnDate = (resolved.resolved_at ?? new Date().toISOString()).slice(0, 10)
-    const daysAbsent = Math.max(0, Math.round(
-      (new Date(returnDate).getTime() - new Date(injuryDate).getTime()) / 86_400_000,
-    ))
-    // diagnoses carries no severity field — approximate it from days absent,
-    // the same signal clinicians use to classify injury severity in practice.
-    const severity: 'minor' | 'moderate' | 'major' | 'severe' =
-      daysAbsent > 84 ? 'severe' : daysAbsent > 28 ? 'major' : daysAbsent > 7 ? 'moderate' : 'minor'
-
-    const { data: clinician } = await supabase
-      .from('profiles')
-      .select('full_name')
-      .eq('id', user?.id ?? '')
-      .maybeSingle()
-
-    const { error: injuryError } = await supabase.from('injury_events').insert({
-      athlete_id:    targetAthleteId,
-      injury_date:   injuryDate,
-      return_date:   returnDate,
-      diagnosis:     resolved.osiics_description ?? resolved.custom_description ?? 'Diagnóstico sem descrição',
-      osiics_code:   resolved.osiics_code,
-      severity,
-      days_absent:   daysAbsent,
-      is_recurrence: false,
-      confirmed_by:  clinician?.full_name ?? null,
-    })
-    if (injuryError) throw new Error(`Diagnóstico resolvido, mas falhou a migração para o histórico de lesões: ${injuryError.message}`)
-  }
 
   revalidatePath(`/athletes/${targetAthleteId}`)
   revalidatePath('/')

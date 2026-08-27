@@ -353,11 +353,12 @@ export async function addOccurrenceRecord(input: {
   revalidatePath(`/athletes/${targetAthleteId}`)
 }
 
-// Corrects an existing reassessment's own content (typo, wrong status picked at
-// the time) — unlike addOccurrenceRecord, this is not a new clinical event, so
-// it deliberately does NOT touch the parent occurrence's current status or
-// trigger a recompute. To actually change the athlete's current status, log a
-// new reassessment via addOccurrenceRecord instead.
+// Corrects an existing reassessment's own content (typo, wrong status picked
+// at the time) — unlike addOccurrenceRecord, this is not logging a new
+// clinical event. It only resyncs the parent occurrence/athlete status when
+// this record is the most recently *created* one for its occurrence (see
+// below) — a correction to older history leaves the athlete's live status
+// alone. To log a genuinely new reassessment, use addOccurrenceRecord instead.
 export async function updateOccurrenceRecord(input: {
   recordId: string
   recordDate: string
@@ -388,16 +389,20 @@ export async function updateOccurrenceRecord(input: {
   // occurrence's own status (addOccurrenceRecord always syncs on insert,
   // regardless of the record's own record_date), so it's still driving the
   // athlete's live status today — correcting it must also correct that.
-  const { data: latest } = await supabase
+  const { data: latest, error: latestError } = await supabase
     .from('occurrence_records')
     .select('id')
     .eq('occurrence_id', updated.occurrence_id)
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
+  // An unchecked failure here would silently fall through to "not the latest
+  // record" below, skipping a resync that was actually needed — leave the
+  // athlete's status stale while reporting success.
+  if (latestError) throw new Error(latestError.message)
 
   if (latest?.id === input.recordId) {
-    const { data: occUpdated } = await supabase
+    const { data: occUpdated, error: occError } = await supabase
       .from('occurrences')
       .update({
         availability_status: input.availabilityStatus,
@@ -409,7 +414,11 @@ export async function updateOccurrenceRecord(input: {
       .eq('is_resolved', false)
       .select('id')
       .maybeSingle()
+    if (occError) throw new Error(occError.message)
 
+    // occUpdated is legitimately null (not an error) when the occurrence has
+    // since been resolved — .eq('is_resolved', false) excludes it, and a
+    // resolved occurrence's status isn't driven by reassessments anymore.
     if (occUpdated) {
       const nextStatus = await recomputeAthleteAvailability(supabase, updated.athlete_id, input.availabilityStatus)
       await persistAvailability(supabase, updated.athlete_id, nextStatus)

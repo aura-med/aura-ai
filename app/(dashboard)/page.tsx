@@ -207,30 +207,35 @@ export default async function Dashboard({
   for (const o of occurrences) {
     const athlete = Array.isArray(o.athletes) ? o.athletes[0] : o.athletes
     const athleteName = athlete?.name ?? '—'
-    const candidates: WinningEvent[] = [
-      {
-        athleteName,
-        description: o.title || o.subjective || o.occurrence_type || '—',
-        restrictions: o.load_management_restrictions ?? [],
-        notes: o.load_management_notes,
-        at: o.updated_at ?? o.created_at,
-        status: o.availability_status,
-      },
-      ...(o.diagnoses ?? [])
-        .filter((d) => !d.is_resolved)
-        .map((d) => ({
+    // createDiagnosis/updateDiagnosis mirror an open diagnosis's status onto
+    // its parent occurrence and stamp the occurrence's updated_at afterwards,
+    // so the occurrence's own timestamp is always >= the diagnosis's — a
+    // naive "most recent wins" comparison between the two would always pick
+    // the occurrence's own (less specific) title over the diagnosis that
+    // actually produced the decision. They carry the same mirrored status,
+    // so prefer the diagnosis's description whenever one is open, but keep
+    // the occurrence's own timestamp for ranking against this athlete's
+    // other issues (an occurrence can carry at most one active diagnosis).
+    const openDiagnosis = (o.diagnoses ?? []).find((d) => !d.is_resolved) ?? null
+    const candidate: WinningEvent = openDiagnosis
+      ? {
           athleteName,
-          description: d.osiics_description || d.custom_description || '—',
-          restrictions: d.load_management_restrictions ?? [],
-          notes: d.load_management_notes,
-          at: d.diagnosed_at,
-          status: d.availability_status,
-        })),
-    ]
-    for (const candidate of candidates) {
-      const current = winningEventByAthleteId.get(o.athlete_id)
-      if (!current || candidate.at > current.at) winningEventByAthleteId.set(o.athlete_id, candidate)
-    }
+          description: openDiagnosis.osiics_description || openDiagnosis.custom_description || '—',
+          restrictions: openDiagnosis.load_management_restrictions ?? [],
+          notes: openDiagnosis.load_management_notes,
+          at: o.updated_at ?? o.created_at,
+          status: openDiagnosis.availability_status,
+        }
+      : {
+          athleteName,
+          description: o.title || o.subjective || o.occurrence_type || '—',
+          restrictions: o.load_management_restrictions ?? [],
+          notes: o.load_management_notes,
+          at: o.updated_at ?? o.created_at,
+          status: o.availability_status,
+        }
+    const current = winningEventByAthleteId.get(o.athlete_id)
+    if (!current || candidate.at > current.at) winningEventByAthleteId.set(o.athlete_id, candidate)
   }
 
   // Diagnoses not already covered by an open occurrence above (orphaned, or

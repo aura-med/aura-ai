@@ -15,6 +15,25 @@ async function currentUserId(supabase: Awaited<ReturnType<typeof createClient>>)
   return user?.id ?? null
 }
 
+// The FK on rehab_plans.occurrence_id only checks the occurrence exists,
+// not that it belongs to this plan's own athlete — without this, a crafted
+// request could link a plan for athlete A to athlete B's occurrence. Same
+// pattern as validateOccurrenceOwnership in
+// app/api/athletes/[id]/rehab-sessions/route.ts.
+async function validateOccurrenceOwnership(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  occurrenceId: string | null,
+  athleteId: string,
+): Promise<void> {
+  if (!occurrenceId) return
+  const { data, error } = await supabase
+    .from('occurrences')
+    .select('athlete_id')
+    .eq('id', occurrenceId)
+    .maybeSingle()
+  if (error || !data || data.athlete_id !== athleteId) throw new Error('Ocorrência inválida para este atleta')
+}
+
 // ── Plans ────────────────────────────────────────────────────────────────────
 
 export interface CreateRehabPlanInput {
@@ -52,6 +71,8 @@ export async function createRehabPlan(input: CreateRehabPlanInput) {
   if (existingError) throw new Error(existingError.message)
   if (existingActive) throw new Error('Este atleta já tem um plano de reabilitação ativo. Termina-o antes de criar um novo.')
 
+  await validateOccurrenceOwnership(supabase, input.occurrenceId, input.athleteId)
+
   const { data, error } = await supabase.from('rehab_plans').insert({
     athlete_id:        input.athleteId,
     org_id:            profile?.org_id ?? null,
@@ -84,6 +105,17 @@ export interface UpdateRehabPlanInput {
 
 export async function updateRehabPlan(input: UpdateRehabPlanInput) {
   const supabase = await createClient()
+
+  // Need the plan's own athlete_id to validate the new occurrenceId
+  // against — RLS already scopes this read to plans the caller can see.
+  const { data: existing, error: existingError } = await supabase
+    .from('rehab_plans')
+    .select('athlete_id')
+    .eq('id', input.planId)
+    .maybeSingle()
+  if (existingError || !existing?.athlete_id) throw new Error(existingError?.message ?? 'Plano não encontrado')
+
+  await validateOccurrenceOwnership(supabase, input.occurrenceId, existing.athlete_id)
 
   const { data, error } = await supabase
     .from('rehab_plans')

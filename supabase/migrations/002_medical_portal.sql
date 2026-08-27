@@ -81,3 +81,61 @@ CREATE POLICY "model_weights_read" ON model_weights
 
 COMMENT ON COLUMN rehab_sessions.clinical_data IS
   'JSONB store: { notes: [{text, created_at, author}], phase_progress: { [phaseId]: boolean[] } }';
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Merged in: originally a separate file also numbered "002" (002_notifications.sql).
+-- Two migrations shared the same leading version number, which the Supabase
+-- migration history table can't represent (version is its primary key) —
+-- db push failed with a duplicate-key error trying to record the second one.
+-- Renumbering it to run later was tried and reverted: Codex found it broke fresh installs (007_fix_rls depends on recommendation_log existing early for the 006 case) and reintroduced pre-hardening RLS policies (017/018/021) for others.
+-- Merging into the file that already holds this version preserves the exact
+-- original ordering relative to every other migration.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id      uuid REFERENCES organizations(id) ON DELETE CASCADE,
+  squad_id    uuid REFERENCES squads(id) ON DELETE SET NULL,
+  athlete_id  uuid REFERENCES athletes(id) ON DELETE SET NULL,
+  type        text NOT NULL CHECK (type IN (
+    'score_critical', 'score_high', 'injury_new',
+    'rehab_update', 'checkin_missing', 'rtp_ready', 'readiness_drop'
+  )),
+  title       text NOT NULL,
+  body        text,
+  metadata    jsonb DEFAULT '{}',
+  read_by     uuid[] DEFAULT '{}',
+  created_at  timestamptz DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_org_created
+  ON notifications (org_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_athlete
+  ON notifications (athlete_id);
+
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+-- Allow authenticated users to read notifications for their org
+DROP POLICY IF EXISTS "Users can read org notifications" ON notifications;
+CREATE POLICY "Users can read org notifications"
+  ON notifications FOR SELECT
+  USING (
+    org_id IN (
+      SELECT org_id FROM profiles WHERE id = auth.uid()
+    )
+  );
+
+-- Allow service role / admin to insert notifications
+DROP POLICY IF EXISTS "Authenticated users can insert notifications" ON notifications;
+CREATE POLICY "Authenticated users can insert notifications"
+  ON notifications FOR INSERT
+  WITH CHECK (auth.role() = 'authenticated');
+
+-- Allow users to update read_by (mark as read)
+DROP POLICY IF EXISTS "Users can mark notifications read" ON notifications;
+CREATE POLICY "Users can mark notifications read"
+  ON notifications FOR UPDATE
+  USING (auth.role() = 'authenticated')
+  WITH CHECK (auth.role() = 'authenticated');

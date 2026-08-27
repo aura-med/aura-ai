@@ -113,7 +113,6 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
   async function ensureMonthLoaded(y: number, m: number) {
     const key = `${y}-${m}`
     if (loadedMonths.has(key)) return
-    loadedMonths.add(key)
     const supabase = createClient()
     const start = dateKey(y, m, 1)
     const end = dateKey(y, m, new Date(y, m + 1, 0).getDate())
@@ -124,7 +123,13 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
       .lte('event_date', end)
     if (effectiveSquadId) q = q.eq('squad_id', effectiveSquadId)
     const { data, error } = await q
+    // Only mark the month loaded once the fetch actually succeeds — a
+    // transient DB/network failure must not permanently block retrying it;
+    // marking it upfront (before the request completed) would leave the
+    // month showing an empty calendar for the rest of the session even
+    // after the failure clears.
     if (error || !data) return
+    loadedMonths.add(key)
     setItems((prev) => {
       const ids = new Set(prev.map((e) => e.id))
       const fresh = data.filter((e) => !ids.has(e.id))

@@ -48,20 +48,34 @@
 -- unchanged for anyone else.
 --
 -- The occurrence(s) this diagnosis touches (old and/or new) are locked
--- FOR UPDATE right after the diagnosis row itself, BEFORE deriving
--- v_rec_at — mirroring the pattern 069/070 already use. Without that lock,
--- this function could read v_rec_at, decide the diagnosis is still latest,
--- then block on the occurrence UPDATE behind a concurrent
--- add_occurrence_record_and_mirror (070) call for the same occurrence;
--- once 070 commits its newer, genuinely-latest reassessment, this
--- function's stale "still latest" decision would resume and overwrite it
--- with the older diagnosis's values. Locking both candidate occurrence
--- rows up front (sorted by id, in one statement, to avoid deadlocking
--- against another concurrent 067 call touching the same two rows in the
--- opposite order) serializes against 069/070's own occurrence-first locks,
--- so whichever call acquires the lock first fully completes — including
--- its own mirror decision and commit — before the other proceeds and reads
--- fresh, post-commit data.
+-- FOR UPDATE before deriving v_rec_at — mirroring the pattern 069/070
+-- already use. Without that lock, this function could read v_rec_at,
+-- decide the diagnosis is still latest, then block on the occurrence
+-- UPDATE behind a concurrent add_occurrence_record_and_mirror (070) call
+-- for the same occurrence; once 070 commits its newer, genuinely-latest
+-- reassessment, this function's stale "still latest" decision would resume
+-- and overwrite it with the older diagnosis's values.
+--
+-- Those occurrence locks are acquired BEFORE the diagnosis row lock below,
+-- not after — occurrence-then-diagnosis, matching 069/070's own order, not
+-- the reverse. create_diagnosis_and_mirror (069) locks its target
+-- occurrence first, then INSERTs a diagnosis there; 061's partial unique
+-- index makes that INSERT's conflict check implicitly wait on whichever
+-- diagnosis row currently holds that occurrence, i.e. diagnosis-after-
+-- occurrence. If this function instead locked the diagnosis first and the
+-- occurrence second (the order it used to use), a 067 call moving a
+-- diagnosis away from occurrence A (holding D, waiting for A) and a
+-- concurrent direct 069 call targeting A (holding A, waiting for D via the
+-- unique index) would deadlock — Postgres aborts one, failing an otherwise
+-- legitimate clinical write. Since this function still needs the
+-- diagnosis's occurrence_id to know which occurrence(s) to lock, it takes
+-- an unlocked, best-effort read first purely to pick candidates for the
+-- occurrence-first lock — then locks the diagnosis for the authoritative
+-- value and additionally locks its actual old occurrence afterward on the
+-- rare chance a concurrent 067 call on this same diagnosis changed it
+-- between the two reads (see below); that residual race is already
+-- reduced to an occasional deadlock-abort-and-retry by the diagnosis row
+-- lock itself, never a silently wrong mirror.
 
 CREATE OR REPLACE FUNCTION update_diagnosis_and_mirror(
   p_diagnosis_id uuid,
@@ -78,6 +92,7 @@ RETURNS SETOF diagnoses
 LANGUAGE plpgsql
 AS $$
 DECLARE
+  v_predicted_occurrence_id uuid;
   v_old_status text;
   v_old_restrictions text[];
   v_old_notes text;
@@ -86,9 +101,24 @@ DECLARE
   v_diagnosis diagnoses;
   v_rec_at timestamptz;
 BEGIN
+  -- Unlocked, best-effort read: used only to pick which occurrence row(s)
+  -- to lock BEFORE the diagnosis row (occurrence-then-diagnosis — see
+  -- header comment), never trusted for any actual decision below.
+  SELECT occurrence_id INTO v_predicted_occurrence_id
+  FROM diagnoses
+  WHERE id = p_diagnosis_id;
+
+  IF v_predicted_occurrence_id IS NOT NULL OR p_occurrence_id IS NOT NULL THEN
+    PERFORM 1 FROM occurrences
+    WHERE id = ANY(ARRAY_REMOVE(ARRAY[v_predicted_occurrence_id, p_occurrence_id], NULL))
+    ORDER BY id
+    FOR UPDATE;
+  END IF;
+
   -- Serialization point: locks this diagnosis row, blocking until any
   -- concurrent update to it completes, then reads its guaranteed-current
-  -- values (not a stale earlier snapshot).
+  -- values (not a stale earlier snapshot, and not the unlocked prediction
+  -- above).
   SELECT availability_status, load_management_restrictions, load_management_notes, occurrence_id
   INTO v_old_status, v_old_restrictions, v_old_notes, v_old_occurrence_id
   FROM diagnoses
@@ -99,15 +129,14 @@ BEGIN
     RETURN;
   END IF;
 
-  -- Lock both candidate occurrence rows (the one being detached from, if
-  -- any, and the one being attached to, if any) before deriving anything
-  -- about their recency — sorted by id so a concurrent 067 call touching
-  -- the same pair in the opposite order can't deadlock against this one.
-  IF v_old_occurrence_id IS NOT NULL OR p_occurrence_id IS NOT NULL THEN
-    PERFORM 1 FROM occurrences
-    WHERE id = ANY(ARRAY_REMOVE(ARRAY[v_old_occurrence_id, p_occurrence_id], NULL))
-    ORDER BY id
-    FOR UPDATE;
+  -- A concurrent 067 call on this same diagnosis (the only path that ever
+  -- changes its occurrence_id) could have moved it between the two reads
+  -- above, in or out of the set already locked. Lock its actual old
+  -- occurrence too if so — needed below regardless of prediction accuracy.
+  IF v_old_occurrence_id IS NOT NULL
+     AND v_old_occurrence_id IS DISTINCT FROM v_predicted_occurrence_id
+     AND v_old_occurrence_id IS DISTINCT FROM p_occurrence_id THEN
+    PERFORM 1 FROM occurrences WHERE id = v_old_occurrence_id FOR UPDATE;
   END IF;
 
   v_decision_changed :=

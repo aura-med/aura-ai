@@ -235,10 +235,11 @@ function InjuryTimeline({ injuries }: { injuries: InjuryEventSummary[] }) {
 // resolvable instead of silently disappearing from the profile.
 
 function OrphanDiagnosisRow({
-  diag, athleteId, canEdit, onChanged,
+  diag, athleteId, occurrences, canEdit, onChanged,
 }: {
   diag: ActiveDiagnosis
   athleteId: string
+  occurrences: ActiveOccurrence[]
   canEdit: boolean
   onChanged: () => void
 }) {
@@ -286,7 +287,7 @@ function OrphanDiagnosisRow({
       {showEdit && (
         <DiagnosisModal
           athleteId={athleteId}
-          occurrences={[]}
+          occurrences={occurrences}
           existing={diag}
           onClose={() => setShowEdit(false)}
           onSaved={() => { setShowEdit(false); onChanged() }}
@@ -296,7 +297,7 @@ function OrphanDiagnosisRow({
   )
 }
 
-function OrphanDiagnosesSection({ diagnoses, athleteId, canEdit }: { diagnoses: ActiveDiagnosis[]; athleteId: string; canEdit: boolean }) {
+function OrphanDiagnosesSection({ diagnoses, athleteId, occurrences, canEdit }: { diagnoses: ActiveDiagnosis[]; athleteId: string; occurrences: ActiveOccurrence[]; canEdit: boolean }) {
   const router = useRouter()
   const [showCreate, setShowCreate] = useState(false)
   // A standalone diagnosis (no occurrence link) is only otherwise creatable
@@ -330,14 +331,14 @@ function OrphanDiagnosesSection({ diagnoses, athleteId, canEdit }: { diagnoses: 
       {diagnoses.length > 0 && (
         <div className="p-4 space-y-2">
           {diagnoses.map((d) => (
-            <OrphanDiagnosisRow key={d.id} diag={d} athleteId={athleteId} canEdit={canEdit} onChanged={() => router.refresh()} />
+            <OrphanDiagnosisRow key={d.id} diag={d} athleteId={athleteId} occurrences={occurrences} canEdit={canEdit} onChanged={() => router.refresh()} />
           ))}
         </div>
       )}
       {showCreate && (
         <DiagnosisModal
           athleteId={athleteId}
-          occurrences={[]}
+          occurrences={occurrences}
           onClose={() => setShowCreate(false)}
           onSaved={() => { setShowCreate(false); router.refresh() }}
         />
@@ -370,7 +371,7 @@ export function OverviewTab({ profile }: { profile: AthleteProfileData }) {
         }}
         canCreateDiagnosis={canCreateDiagnosis}
       />
-      <OrphanDiagnosesSection diagnoses={profile.orphanDiagnoses} athleteId={profile.id} canEdit={canCreateDiagnosis} />
+      <OrphanDiagnosesSection diagnoses={profile.orphanDiagnoses} athleteId={profile.id} occurrences={profile.activeOccurrences} canEdit={canCreateDiagnosis} />
 
       {/* Injury timeline */}
       <InjuryTimeline injuries={profile.injuryEvents} />

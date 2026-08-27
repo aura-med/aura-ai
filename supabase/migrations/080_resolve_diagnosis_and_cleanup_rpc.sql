@@ -53,6 +53,16 @@
 -- injury_events row — irrecoverably, since the diagnosis is already
 -- resolved by that point. Returning it here means there's no separate
 -- query left to fail.
+--
+-- RETURNS TABLE declares id/occurrence_id/is_resolved/created_at (etc.) as
+-- OUT parameters, which PL/pgSQL treats as variables visible everywhere in
+-- the function body — including inside embedded SQL. Any bare reference to
+-- a same-named column in a query against diagnoses/occurrences/
+-- occurrence_records is therefore ambiguous between "the OUT parameter"
+-- and "the table column" and fails at runtime (plpgsql.variable_conflict
+-- defaults to error), which made every call to this function fail before
+-- resolving anything. Every table in the body is now aliased and every
+-- such column reference qualified by that alias.
 
 CREATE OR REPLACE FUNCTION resolve_diagnosis_and_cleanup(p_diagnosis_id uuid)
 RETURNS TABLE (
@@ -72,18 +82,18 @@ DECLARE
   v_fallback_record occurrence_records;
   v_occurrence_date date;
 BEGIN
-  SELECT occurrence_id INTO v_predicted_occurrence_id
-  FROM diagnoses
-  WHERE id = p_diagnosis_id;
+  SELECT d.occurrence_id INTO v_predicted_occurrence_id
+  FROM diagnoses d
+  WHERE d.id = p_diagnosis_id;
 
   IF v_predicted_occurrence_id IS NOT NULL THEN
-    PERFORM 1 FROM occurrences WHERE id = v_predicted_occurrence_id FOR UPDATE;
+    PERFORM 1 FROM occurrences o WHERE o.id = v_predicted_occurrence_id FOR UPDATE;
   END IF;
 
-  UPDATE diagnoses
+  UPDATE diagnoses d
   SET is_resolved = true, resolved_at = now(), resolved_by = auth.uid()
-  WHERE id = p_diagnosis_id AND is_resolved = false
-  RETURNING * INTO v_diagnosis;
+  WHERE d.id = p_diagnosis_id AND d.is_resolved = false
+  RETURNING d.* INTO v_diagnosis;
 
   IF NOT FOUND THEN
     RETURN;
@@ -95,7 +105,7 @@ BEGIN
   -- actual occurrence too if so.
   IF v_diagnosis.occurrence_id IS NOT NULL
      AND v_diagnosis.occurrence_id IS DISTINCT FROM v_predicted_occurrence_id THEN
-    PERFORM 1 FROM occurrences WHERE id = v_diagnosis.occurrence_id FOR UPDATE;
+    PERFORM 1 FROM occurrences o WHERE o.id = v_diagnosis.occurrence_id FOR UPDATE;
   END IF;
 
   IF v_diagnosis.occurrence_id IS NOT NULL THEN
@@ -104,28 +114,28 @@ BEGIN
     WHERE o.id = v_diagnosis.occurrence_id;
 
     SELECT * INTO v_fallback_record
-    FROM occurrence_records
-    WHERE occurrence_id = v_diagnosis.occurrence_id
-    ORDER BY created_at DESC
+    FROM occurrence_records r
+    WHERE r.occurrence_id = v_diagnosis.occurrence_id
+    ORDER BY r.created_at DESC
     LIMIT 1;
 
     IF FOUND THEN
-      UPDATE occurrences
+      UPDATE occurrences o
       SET
         availability_status = v_fallback_record.availability_status,
         load_management_restrictions = v_fallback_record.load_management_restrictions,
         load_management_notes = v_fallback_record.load_management_notes,
         updated_at = v_fallback_record.created_at,
         decision_source = 'reassessment'
-      WHERE id = v_diagnosis.occurrence_id AND decision_source = 'diagnosis' AND is_resolved = false;
+      WHERE o.id = v_diagnosis.occurrence_id AND o.decision_source = 'diagnosis' AND o.is_resolved = false;
     ELSE
-      UPDATE occurrences
+      UPDATE occurrences o
       SET
         availability_status = 'available',
         load_management_restrictions = '{}',
         load_management_notes = NULL,
         decision_source = 'own'
-      WHERE id = v_diagnosis.occurrence_id AND decision_source = 'diagnosis' AND is_resolved = false;
+      WHERE o.id = v_diagnosis.occurrence_id AND o.decision_source = 'diagnosis' AND o.is_resolved = false;
     END IF;
   END IF;
 

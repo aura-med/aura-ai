@@ -192,11 +192,11 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
       load_management_restrictions: input.loadManagementRestrictions,
       load_management_notes: input.loadManagementNotes,
       occurrence_id:       input.occurrenceId,
-      // diagnosed_at is set once, at creation — recomputeAvailability ranks
-      // open diagnoses by recency, so an edit needs its own timestamp to move
-      // up in that ranking (matches how occurrences already track updated_at
-      // separately from created_at).
-      updated_at:          new Date().toISOString(),
+      // updated_at is deliberately NOT set here — a trigger derives it
+      // server-side (only advancing when availability_status/restrictions/
+      // notes actually change), so a description-only correction can't
+      // outrank a genuinely newer clinical decision, and a Data API caller
+      // can't forge this timestamp directly. See migration 047.
     })
     .eq('id', input.diagnosisId)
     .eq('is_resolved', false)

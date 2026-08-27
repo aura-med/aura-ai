@@ -238,35 +238,47 @@ export default async function Dashboard({
     const athleteName = athlete?.name ?? '—'
     // createDiagnosis/updateDiagnosis mirror an open diagnosis's status onto
     // its parent occurrence (create OR edit — see diagnoses.updated_at), and
-    // addOccurrenceRecord mirrors a new reassessment the same way, so the
-    // occurrence's own timestamp is always >= whichever of those last touched
-    // it. The occurrence's own title/subjective is only the right
-    // description when NEITHER a diagnosis nor a reassessment has ever
-    // superseded it — otherwise compare the diagnosis's and the latest
-    // reassessment's own timestamps directly to know which one actually
-    // produced the current (mirrored) decision.
+    // addOccurrenceRecord mirrors a new reassessment the same way — both set
+    // the occurrence's own updated_at to essentially the same instant as
+    // their own timestamp (two sequential writes within one server action,
+    // normally well under a second apart). updateOccurrence (a DIRECT edit of
+    // the occurrence's own title/status/restrictions/notes) does the same,
+    // but with no mirrored source to compare against — so a plain "which
+    // timestamp is bigger" comparison can't tell "occurrence.updated_at was
+    // just set by this diagnosis/reassessment's own mirror" from "the
+    // occurrence was edited directly, genuinely afterward". Require the
+    // occurrence's own timestamp to lead a mirrored source by more than this
+    // margin before trusting it as an independent, later event.
+    const MIRROR_SYNC_TOLERANCE_MS = 5000
+    const occAt = o.updated_at ?? o.created_at
+    const occAtMs = new Date(occAt).getTime()
+
     const openDiagnosis = (o.diagnoses ?? []).find((d) => !d.is_resolved) ?? null
     const diagAt = openDiagnosis ? (openDiagnosis.updated_at ?? openDiagnosis.diagnosed_at) : null
     const latestRecord = latestRecordByOccurrenceId.get(o.id) ?? null
     const recAt = latestRecord?.at ?? null
 
+    const occIsIndependentEdit =
+      (!diagAt || occAtMs - new Date(diagAt).getTime() > MIRROR_SYNC_TOLERANCE_MS) &&
+      (!recAt || occAtMs - new Date(recAt).getTime() > MIRROR_SYNC_TOLERANCE_MS)
+
     let candidate: WinningEvent
-    if (diagAt && (!recAt || diagAt > recAt)) {
+    if (!occIsIndependentEdit && diagAt && (!recAt || diagAt > recAt)) {
       candidate = {
         athleteName,
         description: openDiagnosis!.osiics_description || openDiagnosis!.custom_description || '—',
         restrictions: openDiagnosis!.load_management_restrictions ?? [],
         notes: openDiagnosis!.load_management_notes,
-        at: o.updated_at ?? o.created_at,
+        at: occAt,
         status: openDiagnosis!.availability_status,
       }
-    } else if (latestRecord) {
+    } else if (!occIsIndependentEdit && latestRecord) {
       candidate = {
         athleteName,
         description: latestRecord.description,
         restrictions: latestRecord.restrictions,
         notes: latestRecord.notes,
-        at: o.updated_at ?? o.created_at,
+        at: occAt,
         status: latestRecord.status,
       }
     } else {
@@ -275,7 +287,7 @@ export default async function Dashboard({
         description: o.title || o.subjective || o.occurrence_type || '—',
         restrictions: o.load_management_restrictions ?? [],
         notes: o.load_management_notes,
-        at: o.updated_at ?? o.created_at,
+        at: occAt,
         status: o.availability_status,
       }
     }

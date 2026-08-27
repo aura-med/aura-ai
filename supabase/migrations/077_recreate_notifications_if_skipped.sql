@@ -101,11 +101,18 @@ LANGUAGE sql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+  -- read_by is nullable (the column default only applies when the insert
+  -- omits it, and nothing stops an explicit NULL) — `auth.uid() = ANY(NULL)`
+  -- evaluates to NULL, and `NOT NULL` is NULL too, which WHERE treats as
+  -- false. Without the COALESCEs, a row with read_by IS NULL would never
+  -- match this predicate and could never be marked read at all, even
+  -- though the DTO layer already normalizes NULL to an empty (unread) list
+  -- for display.
   UPDATE notifications
-  SET read_by = array_append(read_by, auth.uid())
+  SET read_by = array_append(COALESCE(read_by, '{}'), auth.uid())
   WHERE id = ANY(p_notification_ids)
     AND org_id IN (SELECT org_id FROM profiles WHERE id = auth.uid() AND org_id IS NOT NULL)
-    AND NOT (auth.uid() = ANY(read_by));
+    AND NOT (auth.uid() = ANY(COALESCE(read_by, '{}')));
 $$;
 
 GRANT EXECUTE ON FUNCTION mark_notifications_read(uuid[]) TO authenticated;

@@ -28,6 +28,12 @@ async function RehabContent({
       .from('rehab_sessions')
       .select('*, rehab_protocols(*)')
       .eq('athlete_id', id)
+      // rehab_sessions is shared, by name only, with the unrelated physio/
+      // rehab session log (008/027/033/035/074) — without this, an ordinary
+      // treatment log row (protocol_id IS NULL) could be the latest by
+      // created_at, rendering a broken placeholder protocol (undefined
+      // name, day 1/42) instead of the athlete's real RTP record.
+      .not('protocol_id', 'is', null)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle(),

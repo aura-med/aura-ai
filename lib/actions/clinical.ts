@@ -231,18 +231,23 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
 
   const targetAthleteId = updated.athlete_id
 
-  if (input.occurrenceId) {
+  // Skip the mirror entirely for a pure description/metadata correction (no
+  // change to availability_status/restrictions/notes) — writing those same
+  // (possibly stale, if a later reassessment has since taken over) fields to
+  // the occurrence while leaving its updated_at/decision_source untouched
+  // would desync the two: the occurrence's status could end up reflecting
+  // this diagnosis's values while decision_source still (correctly) points
+  // elsewhere, and recomputeAvailability reads availability_status paired
+  // with whatever updated_at the occurrence already has.
+  if (input.occurrenceId && decisionChanged) {
     const { error: occError } = await supabase
       .from('occurrences')
       .update({
         availability_status: input.availabilityStatus,
         load_management_restrictions: input.loadManagementRestrictions,
         load_management_notes: input.loadManagementNotes,
-        // Only advance the parent's decision timestamp/source when the
-        // decision itself changed — otherwise a pure description correction
-        // on an older diagnosis would still make its parent occurrence
-        // outrank a genuinely newer event elsewhere.
-        ...(decisionChanged ? { updated_at: new Date().toISOString(), decision_source: 'diagnosis' } : {}),
+        updated_at: new Date().toISOString(),
+        decision_source: 'diagnosis',
       })
       .eq('id', input.occurrenceId)
     if (occError) throw new Error(occError.message)

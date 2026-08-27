@@ -334,7 +334,11 @@ export function exportRehabPlanPDF(
 
     autoTable(doc, {
       startY: y,
-      head: [['', ...weekDates.map((d, i) => `${WEEKDAY_LABELS[i].slice(0, 3)} ${d.slice(8, 10)}/${d.slice(5, 7)}`)]],
+      head: [['', ...weekDates.map((d, i) => {
+        const label = `${WEEKDAY_LABELS[i].slice(0, 3)} ${d.slice(8, 10)}/${d.slice(5, 7)}`
+        const testPhase = phases.find((ph) => ph.test_date === d)
+        return testPhase ? `${label}\nTeste F${testPhase.phase_number}` : label
+      })]],
       body: (['morning', 'afternoon'] as const).map((period) => [
         PERIOD_LABELS[period],
         ...weekDates.map((date) => {

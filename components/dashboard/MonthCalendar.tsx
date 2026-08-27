@@ -501,7 +501,7 @@ function DayHistoryPanel({ date, squadId, onClose }: { date: string; squadId: st
 
       const recQuery = supabase
         .from('occurrence_records')
-        .select('id, athlete_id, assessment, availability_status, athletes ( name, squad_id )')
+        .select('id, athlete_id, assessment, athletes ( name, squad_id )')
         .eq('record_date', date)
 
       // `new Date("YYYY-MM-DDTHH:mm:ss")` (no timezone suffix) parses as the
@@ -518,7 +518,7 @@ function DayHistoryPanel({ date, squadId, onClose }: { date: string; squadId: st
 
       const diagQuery = supabase
         .from('diagnoses')
-        .select('id, athlete_id, osiics_description, custom_description, availability_status, athletes ( name, squad_id )')
+        .select('id, athlete_id, osiics_description, custom_description, athletes ( name, squad_id )')
         .gte('diagnosed_at', dayStart.toISOString())
         .lt('diagnosed_at', dayEnd.toISOString())
 
@@ -557,7 +557,11 @@ function DayHistoryPanel({ date, squadId, onClose }: { date: string; squadId: st
           athleteName: athleteOf(r.athletes)?.name ?? '—',
           kind: 'reassessment',
           description: r.assessment || '—',
-          status: r.availability_status as AthleteAvailabilityStatus | null,
+          // updateOccurrenceRecord can edit both this record's own status and
+          // its record_date after the fact, independent of each other — so,
+          // like the occurrence row above, this is not a reliable point-in-
+          // time snapshot of what was decided on this specific day.
+          status: null,
         }))
       const diagRows: DayHistoryRow[] = (diag ?? [])
         .filter((d) => !squadId || athleteOf(d.athletes)?.squad_id === squadId)
@@ -566,7 +570,11 @@ function DayHistoryPanel({ date, squadId, onClose }: { date: string; squadId: st
           athleteName: athleteOf(d.athletes)?.name ?? '—',
           kind: 'diagnosis',
           description: d.osiics_description || d.custom_description || '—',
-          status: d.availability_status as AthleteAvailabilityStatus | null,
+          // updateDiagnosis can change availability_status well after
+          // diagnosed_at (the immutable creation day used to select this
+          // row) — showing it here would attribute a later decision to the
+          // original day.
+          status: null,
         }))
 
       setRows([...occRows, ...recRows, ...diagRows])

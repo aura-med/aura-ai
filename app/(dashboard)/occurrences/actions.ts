@@ -381,6 +381,22 @@ export async function updateOccurrenceRecord(input: {
 }) {
   const supabase = await createClient()
 
+  const { data: existingRecord, error: existingRecordError } = await supabase
+    .from('occurrence_records')
+    .select('availability_status, load_management_restrictions, load_management_notes')
+    .eq('id', input.recordId)
+    .maybeSingle()
+  if (existingRecordError || !existingRecord) {
+    throw new Error(existingRecordError?.message ?? 'Reavaliação não encontrada')
+  }
+  // A pure record_date/assessment-text correction must not re-rank this
+  // occurrence above a genuinely newer decision elsewhere — same reasoning as
+  // updateOccurrence's decisionChanged guard.
+  const decisionChanged =
+    existingRecord.availability_status !== input.availabilityStatus ||
+    !sameStringSet(existingRecord.load_management_restrictions ?? [], input.loadManagementRestrictions) ||
+    (existingRecord.load_management_notes ?? null) !== (input.loadManagementNotes ?? null)
+
   const { data: updated, error } = await supabase
     .from('occurrence_records')
     .update({
@@ -436,7 +452,10 @@ export async function updateOccurrenceRecord(input: {
         availability_status: input.availabilityStatus,
         load_management_restrictions: input.loadManagementRestrictions,
         load_management_notes: input.loadManagementNotes,
-        updated_at: new Date().toISOString(),
+        // Only advance the parent's timestamp when the decision itself
+        // changed — a pure record_date/assessment-text correction must not
+        // re-rank this occurrence above a genuinely newer event elsewhere.
+        ...(decisionChanged ? { updated_at: new Date().toISOString() } : {}),
         decision_source: 'reassessment',
       })
       .eq('id', updated.occurrence_id)

@@ -108,6 +108,24 @@ BEGIN
   WHERE id = p_diagnosis_id AND is_resolved = false
   RETURNING * INTO v_diagnosis;
 
+  -- Detaching/moving the diagnosis AWAY from its previous occurrence: 071
+  -- made occurrence_id actually reassignable (071's own header explains
+  -- why it wasn't before), so the old occurrence can no longer be assumed
+  -- to still be backed by this diagnosis. If that occurrence's
+  -- decision_source still says 'diagnosis' (it was this one — 061 allows
+  -- only one active diagnosis per occurrence), reset it to 'own' so it
+  -- stops being misattributed to a diagnosis it no longer has. Deliberately
+  -- doesn't touch availability_status/restrictions/notes — there's no
+  -- recoverable "true own" value to fall back to, so leave the athlete's
+  -- displayed status as-is and only correct the attribution pointer; a
+  -- clinician revisiting that occurrence will see it's now 'own' and can
+  -- update it for real if it no longer reflects reality.
+  IF v_old_occurrence_id IS NOT NULL AND v_old_occurrence_id IS DISTINCT FROM p_occurrence_id THEN
+    UPDATE occurrences
+    SET decision_source = 'own'
+    WHERE id = v_old_occurrence_id AND decision_source = 'diagnosis' AND is_resolved = false;
+  END IF;
+
   -- Attaching/moving the diagnosis to a (new) occurrence must mirror
   -- regardless of whether the decision VALUES also changed — that new
   -- parent has never had this diagnosis's data mirrored onto it before, so

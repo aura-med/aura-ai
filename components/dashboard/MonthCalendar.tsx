@@ -575,6 +575,22 @@ function DayHistoryPanel({ date, squadId, onClose }: { date: string; squadId: st
   const [rows, setRows] = useState<DayHistoryRow[] | null>(null)
   const [loadError, setLoadError] = useState(false)
 
+  // Reset immediately when date/squadId change, before the fetch below even
+  // starts — otherwise switching squads (or reopening for a different date)
+  // keeps showing the previous squad's athlete names/rows, or a stale
+  // error, until the new request resolves. Adjusted during render (same
+  // prop->state sync pattern MonthCalendar's own squad-change reset uses)
+  // rather than at the top of the effect, which a request to synchronize
+  // external state, not to reset local state as a side effect of a prop
+  // change.
+  const [prevKey, setPrevKey] = useState(`${date}:${squadId}`)
+  const key = `${date}:${squadId}`
+  if (key !== prevKey) {
+    setPrevKey(key)
+    setRows(null)
+    setLoadError(false)
+  }
+
   useEffect(() => {
     let cancelled = false
     const load = async () => {

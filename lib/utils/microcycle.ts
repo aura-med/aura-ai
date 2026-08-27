@@ -168,18 +168,27 @@ function utcOffsetAt(instant: Date): string {
 // transition it shifts an hour late (dropping the selected day's first
 // hour).
 //
-// Self-correct instead: treat the date string as if it were already UTC to
-// get a first guess (off from the true instant by at most one day's worth
-// of offset — for any real timezone, nowhere near a full extra day), read
-// the offset actually in effect AT that guess, and rebuild. On an ordinary
-// day the offset doesn't change between guess and result, so one pass is a
-// no-op; on a transition day the guess still lands close enough to the true
-// local midnight (within one UTC day) to read the correct pre-transition
-// offset on the first try, and rebuilding with it lands exactly on the
-// right instant — verified for both of Lisbon's transition dates and for
-// half-hour-offset zones (Asia/Kolkata).
+// Self-correct instead, iterating to a fixed point: treat the date string
+// as if it were already UTC to get a first guess, read the offset actually
+// in effect AT that guess, and rebuild — repeating until the offset stops
+// changing. A single correction pass (read the offset once, rebuild once)
+// is NOT enough for an east-of-UTC zone with a large positive offset (e.g.
+// Australia/Sydney, UTC+10/+11): the initial guess can land clean on the
+// WRONG side of a transition that, in absolute UTC terms, falls many hours
+// before local midnight — reading an offset that's actually correct for a
+// LATER instant than the true local midnight, not for local midnight
+// itself. Each iteration's rebuilt candidate is a strictly better estimate
+// of the true instant, so this converges in at most a couple of passes;
+// capped at 5 as a safety margin. Verified by brute-force ground truth
+// against Lisbon, New York, Sydney (both transitions each), Kolkata's
+// half-hour offset, and Pacific/Chatham's 45-minute one.
 export function clubMidnightUTC(dateStr: string): Date {
-  const guess = new Date(`${dateStr}T00:00:00Z`)
-  const offset = utcOffsetAt(guess)
-  return new Date(`${dateStr}T00:00:00${offset}`)
+  let candidate = new Date(`${dateStr}T00:00:00Z`)
+  for (let i = 0; i < 5; i++) {
+    const offset = utcOffsetAt(candidate)
+    const next = new Date(`${dateStr}T00:00:00${offset}`)
+    if (next.getTime() === candidate.getTime()) return next
+    candidate = next
+  }
+  return candidate
 }

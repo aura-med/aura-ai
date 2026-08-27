@@ -11,7 +11,7 @@ import Link from 'next/link'
 import { ChevronLeft, ChevronRight, X, Plus, Trash2, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUiStore } from '@/stores/uiStore'
-import { todayStr, formatDisplayDate } from '@/lib/utils/microcycle'
+import { todayStr, formatDisplayDate, addDays } from '@/lib/utils/microcycle'
 import { isOwner, CLINICAL_ROLES } from '@/lib/roles'
 import { STATUS_CONFIG } from '@/components/occurrences/OccurrenceRow'
 import { withSquadParam } from '@/lib/squad-url'
@@ -79,25 +79,36 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
   const [editor, setEditor] = useState<{ date: string; event: MonthCalendarEvent | null } | null>(null)
   const [historyDate, setHistoryDate] = useState<string | null>(null)
 
+  // The server only preloads a fixed window (-90/+180 days from today — see
+  // app/(dashboard)/page.tsx's own eventsQuery, mirrored here since both call
+  // the same addDays/todayStr helpers) — flipping months with the arrows is
+  // otherwise unrestricted and never refetches, so a month outside that
+  // window would silently render with no events even when some genuinely
+  // exist. Fetch a month's events on demand the first time it's navigated
+  // to; loadedMonths avoids re-fetching a month (e.g. one already covered by
+  // the initial window) more than once per mount.
+  const [loadedMonths] = useState(() => new Set<string>())
+  const serverWindowStart = addDays(today, -90)
+  const serverWindowEnd = addDays(today, 180)
+
   // Re-sync when the source events change (squad switch, date-range refresh, or
-  // router.refresh() after a write); otherwise the calendar keeps rendering and
-  // editing the previous squad/window's stale events until a full remount.
-  // Adjusted during render (React's recommended prop->state sync pattern)
-  // rather than in an effect, which would trigger an extra render pass.
+  // router.refresh() after a write) — but MERGE rather than replace: a blind
+  // replace would also discard any on-demand-fetched out-of-window events
+  // (including one just saved/deleted in a month outside the server's own
+  // window), even though loadedMonths still thinks that month is loaded, so
+  // it wouldn't be refetched until the component remounts. Keep whatever the
+  // fresh server props say about the window (in case a squad switch changed
+  // what's in it) and preserve on-demand items outside it. Adjusted during
+  // render (React's recommended prop->state sync pattern) rather than in an
+  // effect, which would trigger an extra render pass.
   const [prevEvents, setPrevEvents] = useState(events)
   if (events !== prevEvents) {
     setPrevEvents(events)
-    setItems(events)
+    setItems((prev) => [
+      ...events,
+      ...prev.filter((e) => (e.event_date < serverWindowStart || e.event_date > serverWindowEnd) && !events.some((fresh) => fresh.id === e.id)),
+    ])
   }
-
-  // The server only preloads a fixed window (-90/+180 days from today, see
-  // app/(dashboard)/page.tsx) — flipping months with the arrows is otherwise
-  // unrestricted and never refetches, so a month outside that window would
-  // silently render with no events even when some genuinely exist. Fetch a
-  // month's events on demand the first time it's navigated to; loadedMonths
-  // avoids re-fetching a month (e.g. one already covered by the initial
-  // window) more than once per mount.
-  const [loadedMonths] = useState(() => new Set<string>())
 
   async function ensureMonthLoaded(y: number, m: number) {
     const key = `${y}-${m}`

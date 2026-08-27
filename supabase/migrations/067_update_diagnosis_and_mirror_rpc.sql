@@ -182,8 +182,13 @@ BEGIN
   -- status indefinitely. Only when there's truly no reassessment to fall
   -- back on does this leave the stale values in place (nothing else to
   -- show) and just correct the attribution pointer to 'own'; a clinician
-  -- revisiting that occurrence will see it's now 'own' and can update it
-  -- for real if it no longer reflects reality.
+  -- revisiting that occurrence will see it's back to 'available' and can
+  -- update it for real if it no longer reflects reality — same fallback
+  -- resolve_diagnosis_and_cleanup (080) uses for its own no-fallback case,
+  -- and for the same reason: leaving the diagnosis's stale values in place
+  -- with decision_source merely flipped to 'own' would still misrepresent
+  -- this occurrence's own state as a genuine independent decision, when
+  -- it's really just an orphaned copy of a diagnosis that no longer backs it.
   IF v_old_occurrence_id IS NOT NULL AND v_old_occurrence_id IS DISTINCT FROM p_occurrence_id THEN
     SELECT * INTO v_fallback_record
     FROM occurrence_records
@@ -216,8 +221,20 @@ BEGIN
         decision_source = 'reassessment'
       WHERE id = v_old_occurrence_id AND decision_source = 'diagnosis' AND is_resolved = false;
     ELSE
+      -- No reassessment to fall back on either: reset to 'available' with
+      -- restrictions cleared, same as 080's own no-fallback branch — not
+      -- just flipping decision_source, which would leave this diagnosis's
+      -- stale values misrepresented as a genuine 'own' decision. updated_at
+      -- deliberately untouched (not now()) — same reasoning as the FOUND
+      -- branch above: if this occurrence's already-old timestamp still wins
+      -- 078's ranking, 'available' is exactly correct (nothing more recent
+      -- exists); if it doesn't, whatever's genuinely newer wins instead.
       UPDATE occurrences
-      SET decision_source = 'own'
+      SET
+        availability_status = 'available',
+        load_management_restrictions = '{}',
+        load_management_notes = NULL,
+        decision_source = 'own'
       WHERE id = v_old_occurrence_id AND decision_source = 'diagnosis' AND is_resolved = false;
     END IF;
   END IF;

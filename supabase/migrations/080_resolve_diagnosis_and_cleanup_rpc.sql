@@ -17,9 +17,26 @@
 -- occurrence's own latest reassessment (verbatim, timestamped with the
 -- reassessment's own created_at rather than now() — same reasoning as 067,
 -- so this administrative cleanup can never outrank a genuinely later
--- clinical event for the athlete). Falls back to resetting decision_source
--- to 'own' (leaving the stale values as the only remaining record) when
--- there's truly no reassessment to derive from.
+-- clinical event for the athlete).
+--
+-- When there's no reassessment to fall back on, this is actually WORSE
+-- than 067's own no-fallback case: there, the diagnosis is only moving
+-- (still active, still a legitimate competing event elsewhere in 078's
+-- ranking), so a stale leftover copy is merely a duplicate. Here the
+-- diagnosis is being RESOLVED — permanently excluded from that ranking —
+-- so a stale 'unavailable' left in place has NO live source behind it at
+-- all; the athlete could stay restricted indefinitely by a diagnosis that
+-- no longer exists as an open issue. Reset to 'available' (the same
+-- no-open-issues fallback resolveDiagnosis's own athlete-level recompute
+-- already uses) with restrictions/notes cleared — but deliberately leave
+-- updated_at untouched rather than stamping now(): if this occurrence's
+-- (unchanged, already-old) timestamp still wins 078's ranking, 'available'
+-- is exactly correct (nothing else is currently more recent); if it
+-- doesn't win, whatever genuinely-newer event exists correctly takes over
+-- instead. Stamping now() here would risk the same bug 067's header
+-- documents for its own reassessment-fallback branch — this administrative
+-- update looking like the newest clinical event and wrongly outranking a
+-- still-active, more-restrictive one elsewhere for the same athlete.
 --
 -- Locks the occurrence (via an unlocked prediction read, occurrence-first,
 -- re-verified after locking the diagnosis) before the diagnosis row, same
@@ -80,7 +97,11 @@ BEGIN
       WHERE id = v_diagnosis.occurrence_id AND decision_source = 'diagnosis' AND is_resolved = false;
     ELSE
       UPDATE occurrences
-      SET decision_source = 'own'
+      SET
+        availability_status = 'available',
+        load_management_restrictions = '{}',
+        load_management_notes = NULL,
+        decision_source = 'own'
       WHERE id = v_diagnosis.occurrence_id AND decision_source = 'diagnosis' AND is_resolved = false;
     END IF;
   END IF;

@@ -758,7 +758,7 @@ export function PlanDetail({
             </p>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <button type="button" onClick={handleExportPDF} disabled={loading}
+            <button type="button" onClick={handleExportPDF} disabled={loading || loadError}
               className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-white/5 disabled:opacity-40 disabled:hover:bg-transparent" style={{ color: 'var(--sophi-text2)' }}>
               <Download size={10} /> Exportar PDF
             </button>

@@ -171,11 +171,35 @@ export interface UpdateOccurrenceInput {
   loadManagementNotes: string | null
 }
 
+function sameStringSet(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false
+  const sortedA = [...a].sort()
+  const sortedB = [...b].sort()
+  return sortedA.every((v, i) => v === sortedB[i])
+}
+
 // Edits the occurrence's own record (title/date/type/observations/status) —
 // distinct from addOccurrenceRecord, which appends a new reassessment entry.
 // This corrects the original entry itself rather than logging a new event.
 export async function updateOccurrence(input: UpdateOccurrenceInput) {
   const supabase = await createClient()
+
+  const { data: existing, error: fetchError } = await supabase
+    .from('occurrences')
+    .select('availability_status, load_management_restrictions, load_management_notes')
+    .eq('id', input.occurrenceId)
+    .maybeSingle()
+  if (fetchError || !existing) throw new Error(fetchError?.message ?? 'Ocorrência não encontrada')
+
+  // A pure metadata correction (title/date/observations, decision untouched)
+  // must not re-rank this occurrence above a genuinely newer decision
+  // elsewhere — recomputeAthleteAvailability picks whichever open
+  // occurrence/diagnosis has the most recent timestamp, so updated_at should
+  // only move forward when the clinical decision itself actually changes here.
+  const decisionChanged =
+    existing.availability_status !== input.availabilityStatus ||
+    !sameStringSet(existing.load_management_restrictions ?? [], input.loadManagementRestrictions) ||
+    (existing.load_management_notes ?? null) !== (input.loadManagementNotes ?? null)
 
   const { data: updated, error } = await supabase
     .from('occurrences')
@@ -187,10 +211,8 @@ export async function updateOccurrence(input: UpdateOccurrenceInput) {
       availability_status: input.availabilityStatus,
       load_management_restrictions: input.loadManagementRestrictions,
       load_management_notes: input.loadManagementNotes,
-      // updated_at is set explicitly — nothing bumps it automatically — so
-      // recomputeAthleteAvailability's "most recent event wins" ranking sees
-      // this edit as newer than the occurrence's original creation.
-      updated_at: new Date().toISOString(),
+      // Only bump updated_at when the decision itself changed — see above.
+      ...(decisionChanged ? { updated_at: new Date().toISOString() } : {}),
     })
     .eq('id', input.occurrenceId)
     .select('athlete_id')

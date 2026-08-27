@@ -243,6 +243,29 @@ export default async function Dashboard({
     if (!current || candidate.at > current.at) winningEventByAthleteId.set(d.athlete_id, candidate)
   }
 
+  // recomputeAthleteAvailability treats active rehab (rehab_sessions/
+  // injury_events, via the athlete_in_active_rehab RPC) as an RTP floor that
+  // can win even with no open occurrence/diagnosis at all — such an athlete
+  // never enters winningEventByAthleteId above, so the expanded RTP group
+  // would show "Sem motivo registado" and the athlete would be missing from
+  // the clinical PDF. Fall back to their open injury (already fetched below
+  // for the score calc) for a description in that case.
+  for (const a of athletes) {
+    if (a.availability_status !== 'rtp' || winningEventByAthleteId.has(a.id)) continue
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const injuries: any[] = a.injury_events ?? []
+    const openInjury = injuries
+      .filter((i) => !i.return_date)
+      .sort((x, y) => new Date(y.injury_date).getTime() - new Date(x.injury_date).getTime())[0]
+    winningEventByAthleteId.set(a.id, {
+      athleteName: a.name,
+      description: openInjury?.diagnosis || 'Reabilitação em curso',
+      restrictions: [],
+      notes: null,
+      at: openInjury?.injury_date ?? currentDate,
+    })
+  }
+
   const clinicalOccurrences = Array.from(winningEventByAthleteId.entries()).map(([athleteId, event]) => ({
     athleteName: event.athleteName,
     description: event.description,

@@ -176,12 +176,16 @@ CREATE POLICY "auth_update_rtp"             ON rtp_protocol_tracking      FOR UP
 -- Merging into the file that already holds this version preserves the exact
 -- original ordering relative to every other migration.
 --
--- Caveat (Codex): if this version is ever marked "applied" via `migration
--- repair` (or any path other than actually running this exact file) on a
--- database that doesn't already have both halves' objects, this file will
--- be silently skipped by `db push` forever after and the missing objects
--- will never get created. Only safe to repair-baseline this version once
--- you've confirmed the target database already has everything below.
+-- Caveat (Codex) resolved: see 077's header for the full reasoning — only
+-- the lowest-numbered of these six pairs ("002") could ever have had its
+-- version pre-recorded from just one half before this branch's merge fix
+-- existed; db push stops at the first failure, so "006" and every higher
+-- pair here could only be reached (and hence recorded) AFTER the merge
+-- fix already made both halves part of the same file. Not at risk — and
+-- 007 (immediately after) directly depends on recommendation_log existing,
+-- so if 006 had been skipped, 007 would have failed too, stalling the
+-- entire push long before it ever reached 034/061 as it's now confirmed to
+-- have.
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- ─────────────────────────────────────────────────────────────────────────────

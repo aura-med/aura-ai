@@ -42,12 +42,16 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs (action,  created
 -- Merging into the file that already holds this version preserves the exact
 -- original ordering relative to every other migration.
 --
--- Caveat (Codex): if this version is ever marked "applied" via `migration
--- repair` (or any path other than actually running this exact file) on a
--- database that doesn't already have both halves' objects, this file will
--- be silently skipped by `db push` forever after and the missing objects
--- will never get created. Only safe to repair-baseline this version once
--- you've confirmed the target database already has everything below.
+-- Caveat (Codex) resolved: see 077's header for the full reasoning — only
+-- the lowest-numbered of these six pairs ("002") could ever have had its
+-- version pre-recorded from just one half before this branch's merge fix
+-- existed; db push stops at the first failure, so "009" (the highest of
+-- the six) could only be reached — and hence recorded — AFTER the merge
+-- fix already made both halves part of the same file. Not at risk, and
+-- this one is the most directly confirmed of all: occurrences/diagnoses/
+-- occurrence_records (created below) are the foundation nearly every
+-- later migration in this repo builds on, so their existence in
+-- production is already proven by everything built on top of them.
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- ─────────────────────────────────────────────────────────────────────────────

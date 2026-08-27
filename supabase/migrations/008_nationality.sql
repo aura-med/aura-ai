@@ -12,12 +12,14 @@ ALTER TABLE athletes
 -- Merging into the file that already holds this version preserves the exact
 -- original ordering relative to every other migration.
 --
--- Caveat (Codex): if this version is ever marked "applied" via `migration
--- repair` (or any path other than actually running this exact file) on a
--- database that doesn't already have both halves' objects, this file will
--- be silently skipped by `db push` forever after and the missing objects
--- will never get created. Only safe to repair-baseline this version once
--- you've confirmed the target database already has everything below.
+-- Caveat (Codex) resolved: see 077's header for the full reasoning — only
+-- the lowest-numbered of these six pairs ("002") could ever have had its
+-- version pre-recorded from just one half before this branch's merge fix
+-- existed; db push stops at the first failure, so "008" and every higher
+-- pair here could only be reached (and hence recorded) AFTER the merge
+-- fix already made both halves part of the same file. Not at risk — and
+-- 027/033's own comments already independently confirm this file's
+-- rehab_sessions columns/policies genuinely exist in production.
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- ─────────────────────────────────────────────────────────────────────────────

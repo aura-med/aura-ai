@@ -314,9 +314,11 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
                                     <span style={{ fontSize: 12, color: 'var(--sophi-text)', fontWeight: 500, flexShrink: 0 }}>{a.name}</span>
                                     <span style={{ fontSize: 11, color: 'var(--sophi-text3)' }}>{r?.reason ?? 'Sem motivo registado'}</span>
                                   </div>
-                                  {status === 'load_management' && r?.restrictions.length ? (
+                                  {status === 'load_management' && (r?.restrictions.length || r?.notes) ? (
                                     <div style={{ fontSize: 10, color: cfg.color, marginTop: 2 }}>
-                                      {restrictionLabels(r.restrictions)}{r.notes ? ` — ${r.notes}` : ''}
+                                      {r.restrictions.length ? restrictionLabels(r.restrictions) : null}
+                                      {r.restrictions.length && r.notes ? ' — ' : ''}
+                                      {r.notes ?? ''}
                                     </div>
                                   ) : null}
                                 </div>

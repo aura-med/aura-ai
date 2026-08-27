@@ -23,6 +23,7 @@ CREATE INDEX IF NOT EXISTS idx_notifications_athlete
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
 -- Allow authenticated users to read notifications for their org
+DROP POLICY IF EXISTS "Users can read org notifications" ON notifications;
 CREATE POLICY "Users can read org notifications"
   ON notifications FOR SELECT
   USING (
@@ -32,11 +33,13 @@ CREATE POLICY "Users can read org notifications"
   );
 
 -- Allow service role / admin to insert notifications
+DROP POLICY IF EXISTS "Authenticated users can insert notifications" ON notifications;
 CREATE POLICY "Authenticated users can insert notifications"
   ON notifications FOR INSERT
   WITH CHECK (auth.role() = 'authenticated');
 
 -- Allow users to update read_by (mark as read)
+DROP POLICY IF EXISTS "Users can mark notifications read" ON notifications;
 CREATE POLICY "Users can mark notifications read"
   ON notifications FOR UPDATE
   USING (auth.role() = 'authenticated')

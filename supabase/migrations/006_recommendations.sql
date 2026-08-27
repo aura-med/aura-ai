@@ -170,6 +170,7 @@ ALTER TABLE org_recommendation_overrides ENABLE ROW LEVEL SECURITY;
 ALTER TABLE recommendation_log           ENABLE ROW LEVEL SECURITY;
 
 -- org_recommendation_config: org staff can read their own config
+DROP POLICY IF EXISTS "org staff read own rec config" ON org_recommendation_config;
 CREATE POLICY "org staff read own rec config"
   ON org_recommendation_config FOR SELECT
   USING (
@@ -179,6 +180,7 @@ CREATE POLICY "org staff read own rec config"
   );
 
 -- org_recommendation_overrides: org staff can read their own overrides
+DROP POLICY IF EXISTS "org staff read own rec overrides" ON org_recommendation_overrides;
 CREATE POLICY "org staff read own rec overrides"
   ON org_recommendation_overrides FOR SELECT
   USING (
@@ -188,6 +190,7 @@ CREATE POLICY "org staff read own rec overrides"
   );
 
 -- recommendation_log: clinical + coaching staff can read their org's logs
+DROP POLICY IF EXISTS "clinical staff read own org rec logs" ON recommendation_log;
 CREATE POLICY "clinical staff read own org rec logs"
   ON recommendation_log FOR SELECT
   USING (
@@ -201,6 +204,7 @@ CREATE POLICY "clinical staff read own org rec logs"
 
 -- recommendation_log: acknowledgment update (non-destructive — only timestamp columns)
 -- Physio/doctor can acknowledge clinical recs; coach can acknowledge coach recs
+DROP POLICY IF EXISTS "clinical staff acknowledge recs" ON recommendation_log;
 CREATE POLICY "clinical staff acknowledge recs"
   ON recommendation_log FOR UPDATE
   USING (
@@ -215,6 +219,7 @@ CREATE POLICY "clinical staff acknowledge recs"
     clinical_acknowledged_at IS NOT NULL OR coach_acknowledged_at IS NOT NULL
   );
 
+DROP POLICY IF EXISTS "coach staff acknowledge recs" ON recommendation_log;
 CREATE POLICY "coach staff acknowledge recs"
   ON recommendation_log FOR UPDATE
   USING (

@@ -21,18 +21,22 @@ CREATE TABLE IF NOT EXISTS rehab_sessions (
 
 ALTER TABLE rehab_sessions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "auth_read_rehab_sessions" ON rehab_sessions;
 CREATE POLICY "auth_read_rehab_sessions"
   ON rehab_sessions FOR SELECT
   USING (auth.role() = 'authenticated');
 
+DROP POLICY IF EXISTS "auth_insert_rehab_sessions" ON rehab_sessions;
 CREATE POLICY "auth_insert_rehab_sessions"
   ON rehab_sessions FOR INSERT
   WITH CHECK (auth.role() = 'authenticated');
 
+DROP POLICY IF EXISTS "auth_update_rehab_sessions" ON rehab_sessions;
 CREATE POLICY "auth_update_rehab_sessions"
   ON rehab_sessions FOR UPDATE
   USING (auth.role() = 'authenticated');
 
+DROP POLICY IF EXISTS "auth_delete_rehab_sessions" ON rehab_sessions;
 CREATE POLICY "auth_delete_rehab_sessions"
   ON rehab_sessions FOR DELETE
   USING (auth.role() = 'authenticated');

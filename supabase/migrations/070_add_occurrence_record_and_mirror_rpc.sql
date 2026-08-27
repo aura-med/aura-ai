@@ -23,6 +23,12 @@
 -- to a still-open occurrence (returns no row if resolved or missing, which
 -- the caller treats as "not found"), and athlete_id is derived from the
 -- occurrence row itself, never trusted from the caller.
+--
+-- created_by/clinician_name are derived from auth.uid()/profiles here, not
+-- taken as parameters — same reasoning as 069's diagnosed_by: this function
+-- is directly callable via the Data API by any caller RLS lets INSERT an
+-- occurrence_record, and parameters would let them attribute the
+-- reassessment to an arbitrary other user's identity and display name.
 
 CREATE OR REPLACE FUNCTION add_occurrence_record_and_mirror(
   p_occurrence_id uuid,
@@ -33,9 +39,7 @@ CREATE OR REPLACE FUNCTION add_occurrence_record_and_mirror(
   p_plan text,
   p_availability_status text,
   p_load_management_restrictions text[],
-  p_load_management_notes text,
-  p_created_by uuid,
-  p_clinician_name text
+  p_load_management_notes text
 )
 RETURNS SETOF occurrence_records
 LANGUAGE plpgsql
@@ -43,6 +47,7 @@ AS $$
 DECLARE
   v_athlete_id uuid;
   v_is_resolved boolean;
+  v_clinician_name text;
   v_record occurrence_records;
   v_diag_at timestamptz;
 BEGIN
@@ -57,6 +62,10 @@ BEGIN
     RETURN;
   END IF;
 
+  SELECT COALESCE(full_name, '') INTO v_clinician_name
+  FROM profiles
+  WHERE id = auth.uid();
+
   INSERT INTO occurrence_records (
     occurrence_id, athlete_id, record_date, subjective, objective, assessment,
     plan, availability_status, load_management_restrictions,
@@ -64,7 +73,7 @@ BEGIN
   ) VALUES (
     p_occurrence_id, v_athlete_id, p_record_date, p_subjective, p_objective, p_assessment,
     p_plan, p_availability_status, p_load_management_restrictions,
-    p_load_management_notes, p_created_by, p_clinician_name
+    p_load_management_notes, auth.uid(), COALESCE(v_clinician_name, '')
   )
   RETURNING * INTO v_record;
 

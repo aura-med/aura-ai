@@ -25,6 +25,15 @@
 -- check for the identical occurrence, so both converge on whichever source
 -- is genuinely later — never an exception, never an orphaned unmirrored
 -- source.
+--
+-- diagnosed_by is derived from auth.uid() here, not taken as a parameter —
+-- this function is directly callable via the Data API by any caller RLS
+-- lets INSERT a diagnosis (admin/doctor), and a parameter would let them
+-- attribute the diagnosis to an arbitrary other user's uuid. The original
+-- server action already only ever passed the authenticated caller's own id
+-- (see lib/actions/clinical.ts's header comment on authorship fields), but
+-- an RPC parameter can't enforce that the same way plain server-side code
+-- can — it must be derived inside the trusted boundary instead.
 
 CREATE OR REPLACE FUNCTION create_diagnosis_and_mirror(
   p_athlete_id uuid,
@@ -36,7 +45,6 @@ CREATE OR REPLACE FUNCTION create_diagnosis_and_mirror(
   p_availability_status text,
   p_load_management_restrictions text[],
   p_load_management_notes text,
-  p_diagnosed_by uuid,
   p_occurrence_id uuid
 )
 RETURNS SETOF diagnoses
@@ -59,7 +67,7 @@ BEGIN
   ) VALUES (
     p_athlete_id, p_org_id, p_osiics_code, p_osiics_description, p_diagnosis_type,
     p_custom_description, p_availability_status, p_load_management_restrictions,
-    p_load_management_notes, p_diagnosed_by, p_occurrence_id
+    p_load_management_notes, auth.uid(), p_occurrence_id
   )
   RETURNING * INTO v_diagnosis;
 

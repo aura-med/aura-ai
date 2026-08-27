@@ -115,6 +115,10 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
   // now genuinely newer, even though this diagnosis had already been
   // permanently saved — reporting failure and skipping availability
   // recomputation for real clinical data that did save.
+  // diagnosed_by is derived from auth.uid() inside the RPC itself (069) —
+  // not passed here — since this function is directly callable via the
+  // Data API and a parameter couldn't stop a caller from attributing the
+  // diagnosis to someone else.
   const { error } = await supabase.rpc('create_diagnosis_and_mirror', {
     p_athlete_id: input.athleteId,
     p_org_id: prof?.org_id ?? null,
@@ -125,7 +129,6 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
     p_availability_status: input.availabilityStatus,
     p_load_management_restrictions: input.loadManagementRestrictions,
     p_load_management_notes: input.loadManagementNotes,
-    p_diagnosed_by: user?.id ?? null, // authoritative author, not client-supplied
     p_occurrence_id: input.occurrenceId,
   })
   if (error) throw new Error(error.message)

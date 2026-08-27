@@ -280,7 +280,6 @@ export async function addOccurrenceRecord(input: {
   loadManagementNotes: string | null
 }) {
   const supabase = await createClient()
-  const clinician = await getClinician(supabase)
 
   // add_occurrence_record_and_mirror (070) inserts the reassessment and,
   // only when it's still the most recent source for its occurrence, mirrors
@@ -294,6 +293,10 @@ export async function addOccurrenceRecord(input: {
   // now genuinely newer, even though this reassessment had already been
   // permanently saved — reporting failure and skipping availability
   // recomputation, and risking a duplicate reassessment on retry.
+  // created_by/clinician_name are derived from auth.uid()/profiles inside
+  // the RPC itself, not passed here — this function is directly callable
+  // via the Data API and a parameter couldn't stop a caller from
+  // attributing the reassessment to someone else.
   const { data: rows, error } = await supabase.rpc('add_occurrence_record_and_mirror', {
     p_occurrence_id: input.occurrenceId,
     p_record_date: input.recordDate,
@@ -304,8 +307,6 @@ export async function addOccurrenceRecord(input: {
     p_availability_status: input.availabilityStatus,
     p_load_management_restrictions: input.loadManagementRestrictions,
     p_load_management_notes: input.loadManagementNotes,
-    p_created_by: clinician.userId,
-    p_clinician_name: clinician.name,
   })
   if (error) throw new Error(error.message)
   const record = rows?.[0]

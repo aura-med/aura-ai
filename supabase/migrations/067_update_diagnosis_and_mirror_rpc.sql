@@ -33,6 +33,19 @@
 -- function's diagnoses UPDATE is an earlier statement in the same
 -- transaction, the occurrence trigger's fresh read afterward sees it
 -- (read-your-own-writes holds regardless of isolation level).
+--
+-- osiics_code/osiics_description/diagnosis_type/custom_description/
+-- occurrence_id are frozen on every diagnoses UPDATE by
+-- freeze_diagnosis_immutable() (016, long since applied) — it was written
+-- to stop a direct Data API caller from rewriting OSIICS data or moving a
+-- diagnosis to another occurrence, but that froze this function's own
+-- correction of those exact fields too, silently reverting them while this
+-- RPC still reported success (and, worse, could mirror onto a NEW
+-- occurrence the diagnosis was never actually re-linked to). See 071,
+-- which teaches that trigger to trust this specific, already-RLS-checked
+-- path via a transaction-local flag set right before the UPDATE below — a
+-- raw Data API caller has no way to set it, so the original protection is
+-- unchanged for anyone else.
 
 CREATE OR REPLACE FUNCTION update_diagnosis_and_mirror(
   p_diagnosis_id uuid,
@@ -74,6 +87,13 @@ BEGIN
     OR ARRAY(SELECT unnest(v_old_restrictions) ORDER BY 1)
        IS DISTINCT FROM ARRAY(SELECT unnest(p_load_management_restrictions) ORDER BY 1)
     OR v_old_notes IS DISTINCT FROM p_load_management_notes;
+
+  -- Transaction-local flag (auto-clears at commit/rollback): tells
+  -- freeze_diagnosis_immutable() (071) this specific UPDATE is coming from
+  -- this already-RLS-checked, trusted correction path, so it should let the
+  -- OSIICS/type/description/occurrence_id fields through instead of
+  -- reverting them to OLD.
+  PERFORM set_config('app.trusted_diagnosis_edit', 'true', true);
 
   UPDATE diagnoses
   SET

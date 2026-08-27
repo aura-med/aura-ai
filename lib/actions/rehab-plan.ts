@@ -327,17 +327,45 @@ export async function moveRehabPlanDay(input: MoveRehabPlanDayInput) {
   // (after a successful write) leaves the content duplicated in both cells
   // rather than moved. Judged an acceptable, narrow residual risk over the
   // added complexity of a transactional RPC for this action.
-  const { error: upsertError } = await supabase.from('rehab_plan_days').upsert({
-    plan_id:     input.planId,
-    entry_date:  input.toDate,
-    period:      input.toPeriod,
-    content:     source.content,
-    is_rest_day: source.is_rest_day,
-    phase_id:    source.phase_id,
-    created_by:  source.created_by,
-    updated_by:  userId,
-  }, { onConflict: 'plan_id,entry_date,period' })
-  if (upsertError) throw new Error(upsertError.message)
+  //
+  // The destination occupancy check above is read-only and non-atomic: two
+  // clinicians moving different source days onto the same empty cell could
+  // both pass it, and an upsert's ON CONFLICT DO UPDATE would let whichever
+  // one commits second silently overwrite the first's content — even
+  // though both requested overwrite: false, permanently losing the first
+  // mover's content (it was already deleted from its source). A plain
+  // INSERT has no such gap: the same unique constraint upsert's onConflict
+  // targets makes it fail atomically if the destination is now occupied,
+  // so only overwrite: true ever risks replacing existing content, and
+  // only because the caller explicitly asked for that.
+  if (input.overwrite) {
+    const { error: upsertError } = await supabase.from('rehab_plan_days').upsert({
+      plan_id:     input.planId,
+      entry_date:  input.toDate,
+      period:      input.toPeriod,
+      content:     source.content,
+      is_rest_day: source.is_rest_day,
+      phase_id:    source.phase_id,
+      created_by:  source.created_by,
+      updated_by:  userId,
+    }, { onConflict: 'plan_id,entry_date,period' })
+    if (upsertError) throw new Error(upsertError.message)
+  } else {
+    const { error: insertError } = await supabase.from('rehab_plan_days').insert({
+      plan_id:     input.planId,
+      entry_date:  input.toDate,
+      period:      input.toPeriod,
+      content:     source.content,
+      is_rest_day: source.is_rest_day,
+      phase_id:    source.phase_id,
+      created_by:  source.created_by,
+      updated_by:  userId,
+    })
+    if (insertError) {
+      if (insertError.code === '23505') throw new Error(REHAB_DAY_OCCUPIED_ERROR)
+      throw new Error(insertError.message)
+    }
+  }
 
   const { error: deleteError } = await supabase.from('rehab_plan_days').delete().eq('id', source.id)
   if (deleteError) throw new Error(deleteError.message)

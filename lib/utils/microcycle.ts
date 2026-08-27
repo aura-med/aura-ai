@@ -189,16 +189,37 @@ function utcOffsetAt(instant: Date): string {
 // before local midnight — reading an offset that's actually correct for a
 // LATER instant than the true local midnight, not for local midnight
 // itself. Each iteration's rebuilt candidate is a strictly better estimate
-// of the true instant, so this converges in at most a couple of passes;
-// capped at 5 as a safety margin. Verified by brute-force ground truth
-// against Lisbon, New York, Sydney (both transitions each), Kolkata's
-// half-hour offset, and Pacific/Chatham's 45-minute one.
+// of the true instant, so this converges in at most a couple of passes.
+// Verified by brute-force ground truth against Lisbon, New York, Sydney
+// (both transitions each), Kolkata's half-hour offset, and
+// Pacific/Chatham's 45-minute one.
+//
+// A zone whose spring-forward transition lands exactly at local midnight
+// (e.g. Asia/Beirut, which jumps 00:00 -> 01:00) has no fixed point to
+// converge to at all: local 00:00 on that date is a genuine gap — it never
+// occurs on the clock — so applying the pre-transition offset overshoots
+// PAST the transition (landing on an instant the post-transition offset
+// disagrees with) while applying the post-transition offset undershoots
+// BEFORE it (landing on an instant the pre-transition offset disagrees
+// with). The iteration oscillates between exactly those two instants
+// forever instead of converging, and a fixed iteration cap would just
+// return whichever one it happened to land on last. Detect the repeat and
+// resolve it directly instead: a gap can only be created by the clock
+// jumping FORWARD, so the pre-transition offset is always the smaller of
+// the two, and applying the SMALLER offset to local midnight always
+// produces the LATER of the two UTC candidates — which is exactly the
+// transition instant itself (the first genuinely valid moment of this
+// calendar date, e.g. Beirut's 01:00 local right after the jump). Take the
+// later (max) of the two colliding candidates.
 export function clubMidnightUTC(dateStr: string): Date {
   let candidate = new Date(`${dateStr}T00:00:00Z`)
+  const seen = new Set<number>()
   for (let i = 0; i < 5; i++) {
     const offset = utcOffsetAt(candidate)
     const next = new Date(`${dateStr}T00:00:00${offset}`)
     if (next.getTime() === candidate.getTime()) return next
+    if (seen.has(next.getTime())) return new Date(Math.max(next.getTime(), candidate.getTime()))
+    seen.add(candidate.getTime())
     candidate = next
   }
   return candidate

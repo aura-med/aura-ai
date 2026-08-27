@@ -19,7 +19,10 @@
 -- severity approximated from days_absent). confirmed_by is left NULL —
 -- there's no clinician to attribute a migration-driven resolution to.
 -- Guarded by NOT EXISTS on (athlete_id, injury_date, diagnosis) so this is
--- safe to run more than once.
+-- safe to run more than once — qualified as derived.injury_date/
+-- derived.diagnosis_text explicitly, since injury_events itself has columns
+-- named injury_date/diagnosis that would otherwise shadow the lateral
+-- alias's and silently turn the date half of the guard into a tautology.
 
 INSERT INTO injury_events (
   athlete_id, injury_date, return_date, diagnosis, osiics_code,
@@ -56,6 +59,6 @@ WHERE d.is_resolved = true
   AND NOT EXISTS (
     SELECT 1 FROM injury_events ie
     WHERE ie.athlete_id = d.athlete_id
-      AND ie.injury_date = injury_date
-      AND ie.diagnosis = diagnosis_text
+      AND ie.injury_date = derived.injury_date
+      AND ie.diagnosis = derived.diagnosis_text
   );

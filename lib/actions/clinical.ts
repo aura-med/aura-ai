@@ -172,21 +172,20 @@ export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // resolved_by derived from the session, not the client payload. Guard on
-  // is_resolved=false so a stale/double resolve doesn't overwrite the original
-  // resolved_at/resolved_by on an already-resolved diagnosis.
-  const { data: resolved, error } = await supabase
-    .from('diagnoses')
-    .update({ is_resolved: true, resolved_at: new Date().toISOString(), resolved_by: user?.id ?? null })
-    .eq('id', diagnosisId)
-    .eq('is_resolved', false)
-    .select(`
-      athlete_id, diagnosis_type, osiics_code, osiics_description, custom_description,
-      diagnosed_at, resolved_at, occurrence_id,
-      occurrences ( occurrence_date )
-    `)
-    .maybeSingle()
-  if (error || !resolved?.athlete_id) throw new Error(error?.message ?? 'Diagnóstico já resolvido ou inexistente')
+  // resolve_diagnosis_and_cleanup (080) resolves the diagnosis and, only
+  // while it's still the open occurrence's decision source, re-derives that
+  // occurrence's status from its own latest reassessment (or resets
+  // decision_source to 'own' if there isn't one) — otherwise the occurrence
+  // would keep this now-resolved diagnosis's mirrored status indefinitely,
+  // and recompute_and_persist_athlete_availability below would keep
+  // surfacing it as the athlete's live restriction. resolved_by is derived
+  // from auth.uid() inside the RPC, not passed here.
+  const { data: rows, error } = await supabase.rpc('resolve_diagnosis_and_cleanup', {
+    p_diagnosis_id: diagnosisId,
+  })
+  if (error) throw new Error(error.message)
+  const resolved = rows?.[0]
+  if (!resolved?.athlete_id) throw new Error('Diagnóstico já resolvido ou inexistente')
 
   // Recompute for the diagnosis row's own athlete, not the client-supplied id.
   // 'available' fallback: with this diagnosis now resolved, nothing else open
@@ -199,8 +198,16 @@ export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
   // record is never lost. 'disease' diagnoses are excluded: injury_events'
   // location/severity fields describe musculoskeletal injuries, not illness.
   if (resolved.diagnosis_type === 'injury') {
-    const occurrence = Array.isArray(resolved.occurrences) ? resolved.occurrences[0] : resolved.occurrences
-    const injuryDate = occurrence?.occurrence_date ?? (resolved.diagnosed_at ?? new Date().toISOString()).slice(0, 10)
+    let occurrenceDate: string | null = null
+    if (resolved.occurrence_id) {
+      const { data: occurrence } = await supabase
+        .from('occurrences')
+        .select('occurrence_date')
+        .eq('id', resolved.occurrence_id)
+        .maybeSingle()
+      occurrenceDate = occurrence?.occurrence_date ?? null
+    }
+    const injuryDate = occurrenceDate ?? (resolved.diagnosed_at ?? new Date().toISOString()).slice(0, 10)
     const returnDate = (resolved.resolved_at ?? new Date().toISOString()).slice(0, 10)
     const daysAbsent = Math.max(0, Math.round(
       (new Date(returnDate).getTime() - new Date(injuryDate).getTime()) / 86_400_000,

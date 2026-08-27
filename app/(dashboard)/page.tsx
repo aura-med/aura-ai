@@ -23,6 +23,20 @@ async function getData(squadId: string | null, date: string) {
   // them (it would just read as "nothing happened" instead of "no access").
   const viewerRole = viewerProfile?.role ?? null
   const canReadClinical = viewerRole === OWNER_ROLE || (viewerRole !== null && CLINICAL_ROLES.includes(viewerRole))
+  // coach/fitness_coach can't read occurrences/diagnoses at all (RLS, same
+  // as above), but 040's own header names them as the intended audience for
+  // the load-management restrictions checklist — they need to know WHAT to
+  // restrict even though they can't see WHY. get_squad_load_management_
+  // restrictions (081) exposes only that narrow projection.
+  const canApplyLoadManagement = viewerRole === 'coach' || viewerRole === 'fitness_coach'
+  let loadManagementRestrictionsByAthleteId: Record<string, { restrictions: string[]; notes: string | null }> = {}
+  if (canApplyLoadManagement) {
+    const { data } = await supabase.rpc('get_squad_load_management_restrictions')
+    loadManagementRestrictionsByAthleteId = Object.fromEntries(
+      (data ?? []).map((row: { athlete_id: string; restrictions: string[] | null; notes: string | null }) =>
+        [row.athlete_id, { restrictions: row.restrictions ?? [], notes: row.notes ?? null }]),
+    )
+  }
 
   let orgName: string | null = null
   if (orgId) {
@@ -201,7 +215,11 @@ async function getData(squadId: string | null, date: string) {
       .sort((a, b) => (ROLE_ORDER[a.role] ?? 9) - (ROLE_ORDER[b.role] ?? 9))
   }
 
-  return { athletes: athletes ?? [], microcycle, calendarEvents: calendarEvents ?? [], occurrences, looseDiagnoses, latestRecordByOccurrenceId, clinicalStaff, orgName, canReadClinical }
+  return {
+    athletes: athletes ?? [], microcycle, calendarEvents: calendarEvents ?? [], occurrences, looseDiagnoses,
+    latestRecordByOccurrenceId, clinicalStaff, orgName, canReadClinical, canApplyLoadManagement,
+    loadManagementRestrictionsByAthleteId,
+  }
 }
 
 export default async function Dashboard({
@@ -220,7 +238,10 @@ export default async function Dashboard({
   // was inherently unreliable; see the calendar tab for actual day history).
   const currentDate = todayStr()
 
-  const { athletes, microcycle, calendarEvents, occurrences, looseDiagnoses, latestRecordByOccurrenceId, clinicalStaff, orgName, canReadClinical } = await getData(squadId, currentDate)
+  const {
+    athletes, microcycle, calendarEvents, occurrences, looseDiagnoses, latestRecordByOccurrenceId,
+    clinicalStaff, orgName, canReadClinical, canApplyLoadManagement, loadManagementRestrictionsByAthleteId,
+  } = await getData(squadId, currentDate)
 
   // One row per athlete, not per occurrence — an athlete with several open
   // occurrences previously produced one export row each, sometimes with
@@ -349,9 +370,19 @@ export default async function Dashboard({
     availabilityStatus: currentStatusByAthleteId.get(athleteId) ?? 'evaluation',
   }))
 
-  const reasonByAthleteId: Record<string, { reason: string; restrictions: string[]; notes: string | null }> = {}
+  const reasonByAthleteId: Record<string, { reason?: string; restrictions: string[]; notes: string | null }> = {}
   for (const [athleteId, event] of winningEventByAthleteId) {
     reasonByAthleteId[athleteId] = { reason: event.description, restrictions: event.restrictions, notes: event.notes }
+  }
+  // coach/fitness_coach never populate winningEventByAthleteId above (RLS
+  // hides occurrences/diagnoses from them entirely) — merge in their
+  // narrower, restrictions-only projection instead. No `reason`: that field
+  // is clinical text (diagnosis/occurrence description) these roles can't
+  // see, so DashboardClient must never render it for these entries.
+  for (const [athleteId, lm] of Object.entries(loadManagementRestrictionsByAthleteId)) {
+    if (!reasonByAthleteId[athleteId]) {
+      reasonByAthleteId[athleteId] = { restrictions: lm.restrictions, notes: lm.notes }
+    }
   }
 
   const withScores = athletes.map((a) => {
@@ -428,6 +459,7 @@ export default async function Dashboard({
       clinicalOccurrences={clinicalOccurrences}
       reasonByAthleteId={reasonByAthleteId}
       canReadClinical={canReadClinical}
+      canApplyLoadManagement={canApplyLoadManagement}
       clinicalStaff={clinicalStaff}
       orgName={orgName}
     />

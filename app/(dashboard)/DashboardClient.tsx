@@ -13,7 +13,10 @@ import { restrictionLabels } from '@/components/shared/LoadManagementFields'
 import type { AthleteAvailabilityStatus } from '@/types'
 
 interface AthleteReason {
-  reason: string
+  // Omitted (not just empty) for entries built from get_squad_load_
+  // management_restrictions (081) for coach/fitness_coach — that RPC never
+  // exposes clinical text, only the restrictions/notes checklist.
+  reason?: string
   restrictions: string[]
   notes: string | null
 }
@@ -45,6 +48,12 @@ interface DashboardClientProps {
   // the expand-to-see-reason affordance must not be offered to them (it
   // would read as "nothing happened" instead of "no access").
   canReadClinical: boolean
+  // coach/fitness_coach can't read clinical data (canReadClinical is false
+  // for them) but 040's own header names them as the intended audience for
+  // the load-management restrictions checklist — they need to know WHAT to
+  // restrict, not WHY. Lets them expand *just* the load_management group;
+  // reasonByAthleteId entries populated for them (081) never carry `reason`.
+  canApplyLoadManagement: boolean
   clinicalStaff: ClinicalStaffMember[]
   orgName: string | null
 }
@@ -73,7 +82,7 @@ const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 
 // normal training plan).
 const TRAFFIC_LIGHT_ORDER: AthleteAvailabilityStatus[] = ['available', 'load_management', 'unavailable', 'rtp']
 
-export function DashboardClient({ athletes, squadId, currentDate, microcycle, calendarEvents, clinicalOccurrences, reasonByAthleteId, canReadClinical, clinicalStaff, orgName }: DashboardClientProps) {
+export function DashboardClient({ athletes, squadId, currentDate, microcycle, calendarEvents, clinicalOccurrences, reasonByAthleteId, canReadClinical, canApplyLoadManagement, clinicalStaff, orgName }: DashboardClientProps) {
   const [tab, setTab] = useState<'overview' | 'squad' | 'calendar'>('overview')
   const [squadQuery, setSquadQuery] = useState('')
   // Which status group is expanded to show each athlete's reason inline —
@@ -251,6 +260,10 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
               const cfg = STATUS_CONFIG[status]
               const group = byStatus[status]
               const isPriority = status === 'unavailable' || status === 'rtp' || status === 'load_management'
+              // Only load_management gets a second path in: coach/fitness_coach
+              // can't read any other group's clinical reason, but they're the
+              // intended audience for this one group's restrictions checklist.
+              const canExpand = canReadClinical || (status === 'load_management' && canApplyLoadManagement)
               return (
                 <div key={status} style={{
                   background: 'var(--sophi-bg2)',
@@ -261,10 +274,10 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
                   {/* Group header — click the label to expand and list each
                       athlete's reason (diagnosis/occurrence) inline. */}
                   <div
-                    onClick={canReadClinical ? () => setExpandedGroup((g) => (g === status ? null : status)) : undefined}
+                    onClick={canExpand ? () => setExpandedGroup((g) => (g === status ? null : status)) : undefined}
                     style={{
                       display: 'flex', alignItems: 'center', gap: 8,
-                      padding: '10px 14px', cursor: canReadClinical ? 'pointer' : 'default',
+                      padding: '10px 14px', cursor: canExpand ? 'pointer' : 'default',
                       background: group.length > 0 ? cfg.bg : 'transparent',
                       borderBottom: '1px solid var(--sophi-border)',
                     }}
@@ -280,7 +293,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
                     }}>
                       {group.length}
                     </span>
-                    {canReadClinical && (
+                    {canExpand && (
                       <span style={{ marginLeft: 'auto', display: 'flex' }}>
                         {expandedGroup === status ? <ChevronUp size={13} color={cfg.color} /> : <ChevronDown size={13} color={cfg.color} />}
                       </span>
@@ -312,7 +325,13 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
                                 <div style={{ minWidth: 0, flex: 1 }}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <span style={{ fontSize: 12, color: 'var(--sophi-text)', fontWeight: 500, flexShrink: 0 }}>{a.name}</span>
-                                    <span style={{ fontSize: 11, color: 'var(--sophi-text3)' }}>{r?.reason ?? 'Sem motivo registado'}</span>
+                                    {/* canReadClinical-only text — reasonByAthleteId entries built
+                                        for coach/fitness_coach (081) never carry `reason` at all, so
+                                        this must not fall back to a "no reason" message that would
+                                        misreport a genuinely-recorded but deliberately withheld one. */}
+                                    {canReadClinical && (
+                                      <span style={{ fontSize: 11, color: 'var(--sophi-text3)' }}>{r?.reason ?? 'Sem motivo registado'}</span>
+                                    )}
                                   </div>
                                   {status === 'load_management' && (r?.restrictions.length || r?.notes) ? (
                                     <div style={{ fontSize: 10, color: cfg.color, marginTop: 2 }}>

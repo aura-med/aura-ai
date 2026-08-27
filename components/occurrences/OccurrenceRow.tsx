@@ -655,7 +655,26 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
           {/* Actions */}
           <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
             <button
-              onClick={() => { setShowEdit((v) => !v); setShowReeval(false) }}
+              onClick={() => {
+                // Re-seed from the occurrence's current data every time the
+                // form is opened, not just at first mount — same reasoning
+                // as "Reavaliar" below: this row can stay mounted across a
+                // reassessment/diagnosis elsewhere refreshing this same
+                // occurrence's status/restrictions/notes, and submitting
+                // stale mount-time values through updateOccurrence would
+                // overwrite that newer decision.
+                setEditData((d) => (showEdit ? d : {
+                  title: occ.title ?? '',
+                  occurrenceDate: occ.occurrence_date,
+                  occurrenceType: (occ.occurrence_type ?? 'complaint') as 'complaint' | 'trauma' | 'disease' | 'other',
+                  observations: occ.assessment ?? '',
+                  availability_status: occ.availability_status as AthleteAvailabilityStatus,
+                  restrictions: occ.load_management_restrictions ?? [],
+                  notes: occ.load_management_notes ?? '',
+                }))
+                setShowEdit((v) => !v)
+                setShowReeval(false)
+              }}
               style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
             >
               <Pencil size={11} />

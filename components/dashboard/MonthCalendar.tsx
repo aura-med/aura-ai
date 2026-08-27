@@ -495,7 +495,7 @@ function DayHistoryPanel({ date, squadId, onClose }: { date: string; squadId: st
 
       let occQuery = supabase
         .from('occurrences')
-        .select('id, athlete_id, title, occurrence_type, availability_status, athletes ( name )')
+        .select('id, athlete_id, title, occurrence_type, athletes ( name )')
         .eq('occurrence_date', date)
       if (squadId) occQuery = occQuery.eq('squad_id', squadId)
 
@@ -530,7 +530,13 @@ function DayHistoryPanel({ date, squadId, onClose }: { date: string; squadId: st
         athleteName: athleteOf(o.athletes)?.name ?? '—',
         kind: 'occurrence',
         description: o.title || o.occurrence_type || '—',
-        status: o.availability_status as AthleteAvailabilityStatus | null,
+        // Unlike a reassessment/diagnosis row (each an immutable snapshot of
+        // what was decided that day), an occurrence's own availability_status
+        // gets overwritten by any LATER reassessment or diagnosis — so it can
+        // no longer be trusted to reflect what was actually decided on this
+        // occurrence's opening day. Omit rather than show a possibly much
+        // later status as if it were recorded here.
+        status: null,
       }))
       const recRows: DayHistoryRow[] = (rec ?? [])
         .filter((r) => !squadId || athleteOf(r.athletes)?.squad_id === squadId)

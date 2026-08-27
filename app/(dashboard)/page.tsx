@@ -85,6 +85,12 @@ async function getData(squadId: string | null, date: string) {
     load_management_notes: string | null
     created_at: string
     updated_at: string | null
+    // Which of the 3 write paths (updateOccurrence's direct edit,
+    // createDiagnosis/updateDiagnosis's mirror, addOccurrenceRecord's mirror)
+    // last decided this occurrence's status — set explicitly by each of
+    // them, so the dashboard doesn't have to (unreliably) infer it from
+    // comparing timestamps across tables.
+    decision_source: 'own' | 'diagnosis' | 'reassessment'
     athletes: { name: string } | { name: string }[] | null
     diagnoses: { id: string; osiics_description: string | null; custom_description: string | null; is_resolved: boolean; availability_status: string | null; load_management_restrictions: string[] | null; load_management_notes: string | null; diagnosed_at: string; updated_at: string | null }[] | null
   }[] = []
@@ -94,6 +100,7 @@ async function getData(squadId: string | null, date: string) {
       .select(`
         id, athlete_id, title, occurrence_type, subjective, availability_status,
         load_management_restrictions, load_management_notes, created_at, updated_at,
+        decision_source,
         athletes ( name ),
         diagnoses ( id, osiics_description, custom_description, is_resolved, availability_status, load_management_restrictions, load_management_notes, diagnosed_at, updated_at )
       `)
@@ -236,43 +243,28 @@ export default async function Dashboard({
   for (const o of occurrences) {
     const athlete = Array.isArray(o.athletes) ? o.athletes[0] : o.athletes
     const athleteName = athlete?.name ?? '—'
-    // createDiagnosis/updateDiagnosis mirror an open diagnosis's status onto
-    // its parent occurrence (create OR edit — see diagnoses.updated_at), and
-    // addOccurrenceRecord mirrors a new reassessment the same way — both set
-    // the occurrence's own updated_at to essentially the same instant as
-    // their own timestamp (two sequential writes within one server action,
-    // normally well under a second apart). updateOccurrence (a DIRECT edit of
-    // the occurrence's own title/status/restrictions/notes) does the same,
-    // but with no mirrored source to compare against — so a plain "which
-    // timestamp is bigger" comparison can't tell "occurrence.updated_at was
-    // just set by this diagnosis/reassessment's own mirror" from "the
-    // occurrence was edited directly, genuinely afterward". Require the
-    // occurrence's own timestamp to lead a mirrored source by more than this
-    // margin before trusting it as an independent, later event.
-    const MIRROR_SYNC_TOLERANCE_MS = 5000
+    // decision_source says exactly which of the 3 write paths last decided
+    // this occurrence's status — no need to infer it from comparing
+    // timestamps across tables (which broke down whenever a genuinely later
+    // direct edit landed within the same few seconds as an unrelated mirror
+    // write). Each branch falls back to the occurrence's own data if its
+    // named source turns out to be unavailable (e.g. decision_source is
+    // 'diagnosis' but that diagnosis has since been resolved).
     const occAt = o.updated_at ?? o.created_at
-    const occAtMs = new Date(occAt).getTime()
-
     const openDiagnosis = (o.diagnoses ?? []).find((d) => !d.is_resolved) ?? null
-    const diagAt = openDiagnosis ? (openDiagnosis.updated_at ?? openDiagnosis.diagnosed_at) : null
     const latestRecord = latestRecordByOccurrenceId.get(o.id) ?? null
-    const recAt = latestRecord?.at ?? null
-
-    const occIsIndependentEdit =
-      (!diagAt || occAtMs - new Date(diagAt).getTime() > MIRROR_SYNC_TOLERANCE_MS) &&
-      (!recAt || occAtMs - new Date(recAt).getTime() > MIRROR_SYNC_TOLERANCE_MS)
 
     let candidate: WinningEvent
-    if (!occIsIndependentEdit && diagAt && (!recAt || diagAt > recAt)) {
+    if (o.decision_source === 'diagnosis' && openDiagnosis) {
       candidate = {
         athleteName,
-        description: openDiagnosis!.osiics_description || openDiagnosis!.custom_description || '—',
-        restrictions: openDiagnosis!.load_management_restrictions ?? [],
-        notes: openDiagnosis!.load_management_notes,
+        description: openDiagnosis.osiics_description || openDiagnosis.custom_description || '—',
+        restrictions: openDiagnosis.load_management_restrictions ?? [],
+        notes: openDiagnosis.load_management_notes,
         at: occAt,
-        status: openDiagnosis!.availability_status,
+        status: openDiagnosis.availability_status,
       }
-    } else if (!occIsIndependentEdit && latestRecord) {
+    } else if (o.decision_source === 'reassessment' && latestRecord) {
       candidate = {
         athleteName,
         description: latestRecord.description,

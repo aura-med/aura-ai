@@ -212,7 +212,11 @@ export async function updateOccurrence(input: UpdateOccurrenceInput) {
       load_management_restrictions: input.loadManagementRestrictions,
       load_management_notes: input.loadManagementNotes,
       // Only bump updated_at when the decision itself changed — see above.
-      ...(decisionChanged ? { updated_at: new Date().toISOString() } : {}),
+      // decision_source marks this as the occurrence's OWN direct edit (not a
+      // mirror from a diagnosis/reassessment), so the dashboard can tell
+      // which of the three actually produced the current decision instead of
+      // guessing from timestamps.
+      ...(decisionChanged ? { updated_at: new Date().toISOString(), decision_source: 'own' } : {}),
     })
     .eq('id', input.occurrenceId)
     .select('athlete_id')
@@ -336,6 +340,7 @@ export async function addOccurrenceRecord(input: {
       load_management_restrictions: input.loadManagementRestrictions,
       load_management_notes: input.loadManagementNotes,
       updated_at: new Date().toISOString(),
+      decision_source: 'reassessment',
     })
     .eq('id', input.occurrenceId)
     .eq('is_resolved', false)
@@ -401,28 +406,23 @@ export async function updateOccurrenceRecord(input: {
   // athlete's status stale while reporting success.
   if (latestError) throw new Error(latestError.message)
 
-  // Even when this record is the latest reassessment, an occurrence can carry
-  // at most one active diagnosis, and createDiagnosis/updateDiagnosis mirror
-  // it onto the occurrence whenever the diagnosis is created OR edited. If
-  // that last mirror (updated_at ?? diagnosed_at — diagnosed_at alone only
-  // reflects creation, not later edits) is more recent than this
-  // reassessment, the diagnosis has already superseded it as the athlete's
-  // current decision — resyncing here would stamp the occurrence's
-  // updated_at to right now (the edit time) and wrongly outrank that later
-  // diagnosis in recomputeAthleteAvailability's most-recent-wins ranking.
-  let supersededByDiagnosis = false
+  // Even when this record is the latest reassessment, something else (a
+  // direct edit via updateOccurrence, or a diagnosis create/edit) may have
+  // taken over as the occurrence's decision source since — decision_source
+  // says exactly which, so this resync only applies while a reassessment is
+  // still the one actually driving the occurrence's current status.
+  let isCurrentDecisionSource = false
   if (latest?.id === input.recordId) {
-    const { data: diagnosis, error: diagnosisError } = await supabase
-      .from('diagnoses')
-      .select('diagnosed_at, updated_at')
-      .eq('occurrence_id', updated.occurrence_id)
-      .eq('is_resolved', false)
+    const { data: occSource, error: occSourceError } = await supabase
+      .from('occurrences')
+      .select('decision_source')
+      .eq('id', updated.occurrence_id)
       .maybeSingle()
-    if (diagnosisError) throw new Error(diagnosisError.message)
-    supersededByDiagnosis = !!diagnosis && (diagnosis.updated_at ?? diagnosis.diagnosed_at) > latest.created_at
+    if (occSourceError) throw new Error(occSourceError.message)
+    isCurrentDecisionSource = occSource?.decision_source === 'reassessment'
   }
 
-  if (latest?.id === input.recordId && !supersededByDiagnosis) {
+  if (latest?.id === input.recordId && isCurrentDecisionSource) {
     const { data: occUpdated, error: occError } = await supabase
       .from('occurrences')
       .update({
@@ -430,6 +430,7 @@ export async function updateOccurrenceRecord(input: {
         load_management_restrictions: input.loadManagementRestrictions,
         load_management_notes: input.loadManagementNotes,
         updated_at: new Date().toISOString(),
+        decision_source: 'reassessment',
       })
       .eq('id', updated.occurrence_id)
       .eq('is_resolved', false)

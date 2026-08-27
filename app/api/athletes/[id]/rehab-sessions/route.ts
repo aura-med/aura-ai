@@ -14,7 +14,7 @@ function sanitizeExercises(input: unknown): RehabSessionExercise[] {
     .filter((e): e is Record<string, unknown> => !!e && typeof e === 'object')
     .map((e) => ({
       name: typeof e.name === 'string' ? e.name.trim() : '',
-      sets: typeof e.sets === 'number' && Number.isFinite(e.sets) ? e.sets : null,
+      sets: typeof e.sets === 'number' && Number.isFinite(e.sets) ? Math.max(0, Math.round(e.sets)) : null,
       reps: typeof e.reps === 'string' && e.reps.trim() ? e.reps.trim() : null,
       load: typeof e.load === 'string' && e.load.trim() ? e.load.trim() : null,
     }))

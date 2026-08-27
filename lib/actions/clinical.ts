@@ -135,6 +135,7 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
         load_management_restrictions: input.loadManagementRestrictions,
         load_management_notes: input.loadManagementNotes,
         updated_at: new Date().toISOString(),
+        decision_source: 'diagnosis',
       })
       .eq('id', input.occurrenceId)
     if (occError) throw new Error(occError.message)
@@ -214,6 +215,7 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
         load_management_restrictions: input.loadManagementRestrictions,
         load_management_notes: input.loadManagementNotes,
         updated_at: new Date().toISOString(),
+        decision_source: 'diagnosis',
       })
       .eq('id', input.occurrenceId)
     if (occError) throw new Error(occError.message)

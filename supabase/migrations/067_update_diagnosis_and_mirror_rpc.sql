@@ -262,12 +262,22 @@ BEGIN
     -- has a newer reassessment — skip the mirror silently instead,
     -- matching create_diagnosis_and_mirror's (069) same proactive check.
     IF v_rec_at IS NULL OR v_diagnosis.updated_at >= v_rec_at THEN
+      -- Stamp the diagnosis's OWN updated_at, not now(): when this is a
+      -- pure relink with no actual decision change (v_decision_changed
+      -- false), 047/051's trigger left v_diagnosis.updated_at at its old,
+      -- unchanged value — using that here (instead of now()) means this
+      -- administrative attach can never make a stale diagnosis look like
+      -- the athlete's newest event in 078's timestamp-only ranking, wrongly
+      -- outranking a genuinely later one elsewhere. When the decision DID
+      -- change, v_diagnosis.updated_at IS now() (same transaction, so
+      -- now()/transaction_timestamp() is identical to a fresh call here),
+      -- so genuine edits are stamped exactly as before.
       UPDATE occurrences
       SET
         availability_status = p_availability_status,
         load_management_restrictions = p_load_management_restrictions,
         load_management_notes = p_load_management_notes,
-        updated_at = now(),
+        updated_at = v_diagnosis.updated_at,
         decision_source = 'diagnosis'
       WHERE id = p_occurrence_id;
     END IF;

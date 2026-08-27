@@ -11,6 +11,7 @@ import {
   LayoutDashboard, Activity, Calendar,
   Heart, Gauge, BookOpen, Settings,
   ClipboardList, TrendingUp, FileText, AlertCircle, UserCircle, Pill, Apple,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react'
 
 // Rehab protocols / RTP are physio & doctor work; rehab_sessions RLS and the
@@ -60,8 +61,9 @@ export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const t = useTranslations('sidebar')
-  const { mobileSidebarOpen, setMobileSidebarOpen, squads, selectedSquadId, setSquad, selectedOrg, role, athleteId } = useUiStore()
+  const { mobileSidebarOpen, setMobileSidebarOpen, squads, selectedSquadId, setSquad, selectedOrg, role, athleteId, sidebarCollapsed, toggleSidebar } = useUiStore()
   const isAthlete = role === 'athlete'
+  const collapsed = sidebarCollapsed
 
   function close() { setMobileSidebarOpen(false) }
 
@@ -88,11 +90,22 @@ export function Sidebar() {
     <aside
       className={cn(
         'fixed left-0 top-14 bottom-0 w-60 flex flex-col border-r overflow-y-auto z-40',
-        'transition-transform duration-200 md:translate-x-0',
+        'transition-[transform,width] duration-200 md:translate-x-0',
         mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full',
+        collapsed ? 'md:w-16' : 'md:w-60',
       )}
       style={{ background: 'var(--sophi-bg)', borderColor: 'var(--sophi-border)' }}
     >
+      {/* Collapse toggle — desktop only, mobile always shows the full drawer */}
+      <button
+        onClick={toggleSidebar}
+        aria-label={collapsed ? t('nav.expand_sidebar') : t('nav.collapse_sidebar')}
+        className="hidden md:flex items-center justify-center absolute -right-3 top-4 w-6 h-6 rounded-full border z-50"
+        style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}
+      >
+        {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
+      </button>
+
       {/* Mobile-only org + squad header */}
       <div
         className="md:hidden border-b px-4 py-3"
@@ -141,8 +154,10 @@ export function Sidebar() {
                 <Link
                   href={`/athletes/${athleteId}`}
                   onClick={close}
+                  title={collapsed ? t('nav.my_profile') : undefined}
                   className={cn(
                     'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors group',
+                    collapsed && 'md:justify-center md:px-0',
                     pathname.startsWith('/athletes')
                       ? 'text-[var(--sophi-green)] font-medium'
                       : 'text-[var(--sophi-text2)] hover:text-[var(--sophi-text)] hover:bg-[var(--sophi-bg3)]'
@@ -153,7 +168,7 @@ export function Sidebar() {
                     size={15}
                     className={cn('shrink-0', pathname.startsWith('/athletes') ? 'text-[var(--sophi-green)]' : 'text-[var(--sophi-text3)] group-hover:text-[var(--sophi-text2)]')}
                   />
-                  <span className="flex-1 truncate">{t('nav.my_profile')}</span>
+                  <span className={cn('flex-1 truncate', collapsed && 'md:hidden')}>{t('nav.my_profile')}</span>
                 </Link>
               </li>
             </ul>
@@ -164,7 +179,7 @@ export function Sidebar() {
           return (
             <div key={sectionKey}>
               <p
-                className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest"
+                className={cn('px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest', collapsed && 'md:hidden')}
                 style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-mono)' }}
               >
                 {t(`sections.${sectionKey}`)}
@@ -180,8 +195,10 @@ export function Sidebar() {
                       <Link
                         href={item.href}
                         onClick={close}
+                        title={collapsed ? label : undefined}
                         className={cn(
                           'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors group',
+                          collapsed && 'md:justify-center md:px-0',
                           item.inDevelopment
                             ? 'opacity-50 cursor-default pointer-events-none'
                             : isActive
@@ -205,10 +222,13 @@ export function Sidebar() {
                               : 'text-[var(--sophi-text3)] group-hover:text-[var(--sophi-text2)]'
                           )}
                         />
-                        <span className="flex-1 truncate">{label}</span>
+                        <span className={cn('flex-1 truncate', collapsed && 'md:hidden')}>{label}</span>
                         {item.inDevelopment && (
                           <span
-                            className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full"
+                            className={cn(
+                              'text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full',
+                              collapsed && 'md:hidden',
+                            )}
                             style={{
                               background: 'var(--sophi-bg3)',
                               color: 'var(--sophi-text3)',
@@ -220,7 +240,10 @@ export function Sidebar() {
                         )}
                         {item.badge && !item.inDevelopment ? (
                           <span
-                            className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full"
+                            className={cn(
+                              'text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full',
+                              collapsed && 'md:hidden',
+                            )}
                             style={{
                               background: 'var(--sophi-danger-bg)',
                               color: 'var(--sophi-danger)',
@@ -241,7 +264,7 @@ export function Sidebar() {
 
       {/* Version tag */}
       <div
-        className="px-6 py-3 text-[10px]"
+        className={cn('px-6 py-3 text-[10px]', collapsed && 'md:hidden')}
         style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-mono)' }}
       >
         {t('version')}

@@ -337,7 +337,7 @@ export async function addOccurrenceRecord(input: {
   // If it matched no row, the occurrence was resolved concurrently between our
   // SELECT and here — in that case this occurrence's status must NOT be the
   // recompute fallback (it would wrongly re-open the athlete).
-  const { data: statusUpdated } = await supabase
+  const { data: statusUpdated, error: statusError } = await supabase
     .from('occurrences')
     // updated_at is set explicitly — nothing bumps it automatically — so
     // recomputeAthleteAvailability's "most recent event wins" ranking sees
@@ -353,6 +353,12 @@ export async function addOccurrenceRecord(input: {
     .eq('is_resolved', false)
     .select('id')
     .maybeSingle()
+  // A genuine failure here (as opposed to legitimately matching no row,
+  // e.g. the occurrence was resolved concurrently) must not be treated the
+  // same as "nothing to update" — that would silently leave the occurrence
+  // and athlete on their old status while the reassessment itself was still
+  // saved, and the action would still report success.
+  if (statusError) throw new Error(statusError.message)
 
   // Recompute from all active occurrences/diagnoses so a less-restrictive
   // reassessment on one issue doesn't clear a still-active one elsewhere.

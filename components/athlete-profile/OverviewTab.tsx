@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
-import { AlertTriangle, CheckCircle2, Loader2, Pencil } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Loader2, Pencil, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { resolveDiagnosis } from '@/lib/actions/clinical'
 import { OccurrenceRow as SharedOccurrenceRow, StatusBadge, type Athlete as SharedRowAthlete } from '@/components/occurrences/OccurrenceRow'
@@ -298,7 +298,12 @@ function OrphanDiagnosisRow({
 
 function OrphanDiagnosesSection({ diagnoses, athleteId, canEdit }: { diagnoses: ActiveDiagnosis[]; athleteId: string; canEdit: boolean }) {
   const router = useRouter()
-  if (diagnoses.length === 0) return null
+  const [showCreate, setShowCreate] = useState(false)
+  // A standalone diagnosis (no occurrence link) is only otherwise creatable
+  // from inside an occurrence's own row — an athlete with no open occurrence
+  // at all would have no way to record one without this control, even though
+  // DiagnosisModal/createDiagnosis fully support occurrenceId: null.
+  if (diagnoses.length === 0 && !canEdit) return null
 
   return (
     <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
@@ -306,15 +311,37 @@ function OrphanDiagnosesSection({ diagnoses, athleteId, canEdit }: { diagnoses: 
         <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>
           Diagnósticos sem ocorrência associada
         </p>
-        <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}>
-          {diagnoses.length}
-        </span>
+        {diagnoses.length > 0 && (
+          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}>
+            {diagnoses.length}
+          </span>
+        )}
+        {canEdit && (
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-md"
+            style={{ border: '1px solid var(--sophi-border)', color: 'var(--sophi-text2)' }}
+          >
+            <Plus size={11} />
+            Adicionar Diagnóstico
+          </button>
+        )}
       </div>
-      <div className="p-4 space-y-2">
-        {diagnoses.map((d) => (
-          <OrphanDiagnosisRow key={d.id} diag={d} athleteId={athleteId} canEdit={canEdit} onChanged={() => router.refresh()} />
-        ))}
-      </div>
+      {diagnoses.length > 0 && (
+        <div className="p-4 space-y-2">
+          {diagnoses.map((d) => (
+            <OrphanDiagnosisRow key={d.id} diag={d} athleteId={athleteId} canEdit={canEdit} onChanged={() => router.refresh()} />
+          ))}
+        </div>
+      )}
+      {showCreate && (
+        <DiagnosisModal
+          athleteId={athleteId}
+          occurrences={[]}
+          onClose={() => setShowCreate(false)}
+          onSaved={() => { setShowCreate(false); router.refresh() }}
+        />
+      )}
     </div>
   )
 }

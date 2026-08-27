@@ -94,6 +94,15 @@ CREATE POLICY "Authenticated users can insert notifications"
 -- clinical/readiness alerts for the whole org. Mark-as-read goes through
 -- mark_notifications_read() below instead, which only ever appends
 -- auth.uid() to read_by; RLS leaves UPDATE unreachable any other way.
+--
+-- CREATE TABLE IF NOT EXISTS above is a no-op wherever 002's merged-in
+-- notifications table already exists — which includes its own "Users can
+-- mark notifications read" policy, since a table's existing policies
+-- aren't touched by a skipped CREATE TABLE. Explicitly drop it: without
+-- this, the old unrestricted policy stays active on every database that
+-- already has this table, silently coexisting with (and undermining) the
+-- RPC-only path this migration establishes.
+DROP POLICY IF EXISTS "Users can mark notifications read" ON notifications;
 
 CREATE OR REPLACE FUNCTION mark_notifications_read(p_notification_ids uuid[])
 RETURNS void

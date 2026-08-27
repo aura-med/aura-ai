@@ -120,7 +120,11 @@ export async function markAllNotificationsRead(orgId: string) {
     .from('notifications')
     .select('id')
     .eq('org_id', orgId)
-    .not('read_by', 'cs', `{${viewer.userId}}`)
+    // read_by is nullable — `.not('read_by', 'cs', ...)` alone evaluates
+    // to NULL (not true) for a row with read_by IS NULL, silently
+    // excluding it from this list forever, even though mark_notifications_
+    // read (077) already handles a null array correctly once given the id.
+    .or(`read_by.is.null,read_by.not.cs.{${viewer.userId}}`)
 
   const ids = asRecordArray(data).map((row) => asString(row.id)).filter((id): id is string => !!id)
   if (ids.length) {

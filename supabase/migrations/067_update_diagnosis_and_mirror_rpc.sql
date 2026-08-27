@@ -19,6 +19,20 @@
 -- current snapshot, then update and conditionally mirror in the same
 -- transaction. No SECURITY DEFINER — every statement still runs under the
 -- caller's own RLS, exactly as the separate calls did before.
+--
+-- Update the diagnosis BEFORE mirroring onto the occurrence, not after: the
+-- occurrence UPDATE fires validate_occurrence_decision_source (065), which
+-- reads the diagnosis's own current availability_status/restrictions/
+-- notes/updated_at to decide whether the mirror is plausible and to compare
+-- values. Mirroring first would make that trigger see the diagnosis's OLD
+-- (pre-update) state — an older diagnosis timestamp could make a
+-- coincidentally later reassessment look newer and reject the mirror
+-- outright, and the value-match check would see the diagnosis's old values
+-- against the occurrence's new ones and "correct" decision_source to 'own'
+-- even though this genuinely is the diagnosis's own doing. Since this
+-- function's diagnoses UPDATE is an earlier statement in the same
+-- transaction, the occurrence trigger's fresh read afterward sees it
+-- (read-your-own-writes holds regardless of isolation level).
 
 CREATE OR REPLACE FUNCTION update_diagnosis_and_mirror(
   p_diagnosis_id uuid,
@@ -39,6 +53,7 @@ DECLARE
   v_old_restrictions text[];
   v_old_notes text;
   v_decision_changed boolean;
+  v_diagnosis diagnoses;
 BEGIN
   -- Serialization point: locks this diagnosis row, blocking until any
   -- concurrent update to it completes, then reads its guaranteed-current
@@ -59,18 +74,6 @@ BEGIN
        IS DISTINCT FROM ARRAY(SELECT unnest(p_load_management_restrictions) ORDER BY 1)
     OR v_old_notes IS DISTINCT FROM p_load_management_notes;
 
-  IF p_occurrence_id IS NOT NULL AND v_decision_changed THEN
-    UPDATE occurrences
-    SET
-      availability_status = p_availability_status,
-      load_management_restrictions = p_load_management_restrictions,
-      load_management_notes = p_load_management_notes,
-      updated_at = now(),
-      decision_source = 'diagnosis'
-    WHERE id = p_occurrence_id;
-  END IF;
-
-  RETURN QUERY
   UPDATE diagnoses
   SET
     osiics_code = p_osiics_code,
@@ -82,6 +85,19 @@ BEGIN
     load_management_notes = p_load_management_notes,
     occurrence_id = p_occurrence_id
   WHERE id = p_diagnosis_id AND is_resolved = false
-  RETURNING *;
+  RETURNING * INTO v_diagnosis;
+
+  IF p_occurrence_id IS NOT NULL AND v_decision_changed THEN
+    UPDATE occurrences
+    SET
+      availability_status = p_availability_status,
+      load_management_restrictions = p_load_management_restrictions,
+      load_management_notes = p_load_management_notes,
+      updated_at = now(),
+      decision_source = 'diagnosis'
+    WHERE id = p_occurrence_id;
+  END IF;
+
+  RETURN NEXT v_diagnosis;
 END;
 $$;

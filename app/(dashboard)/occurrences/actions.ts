@@ -184,44 +184,30 @@ function sameStringSet(a: string[], b: string[]): boolean {
 export async function updateOccurrence(input: UpdateOccurrenceInput) {
   const supabase = await createClient()
 
-  const { data: existing, error: fetchError } = await supabase
-    .from('occurrences')
-    .select('availability_status, load_management_restrictions, load_management_notes, is_resolved')
-    .eq('id', input.occurrenceId)
-    .maybeSingle()
-  if (fetchError || !existing) throw new Error(fetchError?.message ?? 'Ocorrência não encontrada')
-
-  // A pure metadata correction (title/date/observations, decision untouched)
-  // must not re-rank this occurrence above a genuinely newer decision
-  // elsewhere — recomputeAthleteAvailability picks whichever open
-  // occurrence/diagnosis has the most recent timestamp, so updated_at should
-  // only move forward when the clinical decision itself actually changes here.
-  const decisionChanged =
-    existing.availability_status !== input.availabilityStatus ||
-    !sameStringSet(existing.load_management_restrictions ?? [], input.loadManagementRestrictions) ||
-    (existing.load_management_notes ?? null) !== (input.loadManagementNotes ?? null)
-
-  const { data: updated, error } = await supabase
-    .from('occurrences')
-    .update({
-      title: input.title,
-      occurrence_date: input.occurrenceDate,
-      occurrence_type: input.occurrenceType,
-      assessment: input.observations,
-      availability_status: input.availabilityStatus,
-      load_management_restrictions: input.loadManagementRestrictions,
-      load_management_notes: input.loadManagementNotes,
-      // Only bump updated_at when the decision itself changed — see above.
-      // decision_source marks this as the occurrence's OWN direct edit (not a
-      // mirror from a diagnosis/reassessment), so the dashboard can tell
-      // which of the three actually produced the current decision instead of
-      // guessing from timestamps.
-      ...(decisionChanged ? { updated_at: new Date().toISOString(), decision_source: 'own' } : {}),
-    })
-    .eq('id', input.occurrenceId)
-    .select('athlete_id')
-    .maybeSingle()
-  if (error || !updated?.athlete_id) throw new Error(error?.message ?? 'Ocorrência não encontrada')
+  // update_occurrence_own_edit (068) locks the row first, so decisionChanged
+  // (whether to bump updated_at / mark decision_source: 'own') is derived
+  // from a guaranteed-current snapshot rather than a SELECT taken before the
+  // update — closing a race where a concurrent reassessment/diagnosis
+  // mirror could land in between and get silently overwritten by this
+  // edit's older values while still being credited as the decision source.
+  // A pure metadata correction (title/date/observations, decision
+  // untouched) must not re-rank this occurrence above a genuinely newer
+  // decision elsewhere — recomputeAthleteAvailability picks whichever open
+  // occurrence/diagnosis has the most recent timestamp, so updated_at only
+  // moves forward when the clinical decision itself actually changes here.
+  const { data: updatedRows, error } = await supabase.rpc('update_occurrence_own_edit', {
+    p_occurrence_id: input.occurrenceId,
+    p_title: input.title,
+    p_occurrence_date: input.occurrenceDate,
+    p_occurrence_type: input.occurrenceType,
+    p_assessment: input.observations,
+    p_availability_status: input.availabilityStatus,
+    p_load_management_restrictions: input.loadManagementRestrictions,
+    p_load_management_notes: input.loadManagementNotes,
+  })
+  if (error) throw new Error(error.message)
+  const updated = updatedRows?.[0]
+  if (!updated?.athlete_id) throw new Error('Ocorrência não encontrada')
 
   const targetAthleteId = updated.athlete_id
 
@@ -232,7 +218,7 @@ export async function updateOccurrence(input: UpdateOccurrenceInput) {
   // fall back to `input.availabilityStatus`, so correcting a closed
   // occurrence's old status field would otherwise silently overwrite the
   // athlete's actual current availability.
-  if (!existing.is_resolved) {
+  if (!updated.is_resolved) {
     // Recompute from all active occurrences/diagnoses so editing this one's
     // status doesn't wrongly override a still-active issue elsewhere.
     const nextStatus = await recomputeAthleteAvailability(supabase, targetAthleteId, input.availabilityStatus)

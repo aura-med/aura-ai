@@ -43,15 +43,34 @@
 -- order as 067/069/070 — see 067's header for why diagnosis-first would
 -- risk a deadlock against a concurrent create_diagnosis_and_mirror (069)
 -- call on the same occurrence.
+--
+-- Also returns the linked occurrence's own occurrence_date (NULL when
+-- there isn't one), rather than making the caller (resolveDiagnosis,
+-- lib/actions/clinical.ts) fetch it separately afterward: that follow-up
+-- query's error was easy to drop silently (Supabase resolves a failed
+-- query as { data: null, error }, not a throw), which would fall back to
+-- diagnosed_at and record a wrong injury_date/days_absent/severity on the
+-- injury_events row — irrecoverably, since the diagnosis is already
+-- resolved by that point. Returning it here means there's no separate
+-- query left to fail.
 
 CREATE OR REPLACE FUNCTION resolve_diagnosis_and_cleanup(p_diagnosis_id uuid)
-RETURNS SETOF diagnoses
+RETURNS TABLE (
+  id uuid, athlete_id uuid, occurrence_id uuid, org_id uuid,
+  osiics_code text, osiics_description text, diagnosis_type text, custom_description text,
+  availability_status text, load_management_restrictions text[], load_management_notes text,
+  diagnosed_by uuid, diagnosed_at timestamptz,
+  is_resolved boolean, resolved_at timestamptz, resolved_by uuid, resolution_status text,
+  notes text, created_at timestamptz, updated_at timestamptz,
+  occurrence_date date
+)
 LANGUAGE plpgsql
 AS $$
 DECLARE
   v_predicted_occurrence_id uuid;
   v_diagnosis diagnoses;
   v_fallback_record occurrence_records;
+  v_occurrence_date date;
 BEGIN
   SELECT occurrence_id INTO v_predicted_occurrence_id
   FROM diagnoses
@@ -80,6 +99,10 @@ BEGIN
   END IF;
 
   IF v_diagnosis.occurrence_id IS NOT NULL THEN
+    SELECT o.occurrence_date INTO v_occurrence_date
+    FROM occurrences o
+    WHERE o.id = v_diagnosis.occurrence_id;
+
     SELECT * INTO v_fallback_record
     FROM occurrence_records
     WHERE occurrence_id = v_diagnosis.occurrence_id
@@ -106,6 +129,13 @@ BEGIN
     END IF;
   END IF;
 
-  RETURN NEXT v_diagnosis;
+  RETURN QUERY SELECT
+    v_diagnosis.id, v_diagnosis.athlete_id, v_diagnosis.occurrence_id, v_diagnosis.org_id,
+    v_diagnosis.osiics_code, v_diagnosis.osiics_description, v_diagnosis.diagnosis_type, v_diagnosis.custom_description,
+    v_diagnosis.availability_status, v_diagnosis.load_management_restrictions, v_diagnosis.load_management_notes,
+    v_diagnosis.diagnosed_by, v_diagnosis.diagnosed_at,
+    v_diagnosis.is_resolved, v_diagnosis.resolved_at, v_diagnosis.resolved_by, v_diagnosis.resolution_status,
+    v_diagnosis.notes, v_diagnosis.created_at, v_diagnosis.updated_at,
+    v_occurrence_date;
 END;
 $$;

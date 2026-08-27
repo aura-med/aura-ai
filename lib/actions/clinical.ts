@@ -198,16 +198,13 @@ export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
   // record is never lost. 'disease' diagnoses are excluded: injury_events'
   // location/severity fields describe musculoskeletal injuries, not illness.
   if (resolved.diagnosis_type === 'injury') {
-    let occurrenceDate: string | null = null
-    if (resolved.occurrence_id) {
-      const { data: occurrence } = await supabase
-        .from('occurrences')
-        .select('occurrence_date')
-        .eq('id', resolved.occurrence_id)
-        .maybeSingle()
-      occurrenceDate = occurrence?.occurrence_date ?? null
-    }
-    const injuryDate = occurrenceDate ?? (resolved.diagnosed_at ?? new Date().toISOString()).slice(0, 10)
+    // occurrence_date comes straight from resolve_diagnosis_and_cleanup
+    // (080) itself now, not a separate follow-up query — that query's
+    // error was easy to drop silently (Supabase resolves a failed query as
+    // { data: null, error }), which would fall back to diagnosed_at and
+    // record a wrong injury_date irrecoverably, since the diagnosis is
+    // already resolved by this point.
+    const injuryDate = resolved.occurrence_date ?? (resolved.diagnosed_at ?? new Date().toISOString()).slice(0, 10)
     const returnDate = (resolved.resolved_at ?? new Date().toISOString()).slice(0, 10)
     const daysAbsent = Math.max(0, Math.round(
       (new Date(returnDate).getTime() - new Date(injuryDate).getTime()) / 86_400_000,

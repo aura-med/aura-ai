@@ -75,6 +75,7 @@ async function getData(squadId: string | null, date: string) {
   // form (title/description + current decision), not the full roster.
   const athleteIds = (athletes ?? []).map((a: { id: string }) => a.id)
   let occurrences: {
+    id: string
     athlete_id: string
     title: string | null
     occurrence_type: string | null
@@ -85,16 +86,16 @@ async function getData(squadId: string | null, date: string) {
     created_at: string
     updated_at: string | null
     athletes: { name: string } | { name: string }[] | null
-    diagnoses: { osiics_description: string | null; custom_description: string | null; is_resolved: boolean; load_management_restrictions: string[] | null; load_management_notes: string | null; diagnosed_at: string }[] | null
+    diagnoses: { id: string; osiics_description: string | null; custom_description: string | null; is_resolved: boolean; load_management_restrictions: string[] | null; load_management_notes: string | null; diagnosed_at: string }[] | null
   }[] = []
   if (athleteIds.length) {
     const { data } = await supabase
       .from('occurrences')
       .select(`
-        athlete_id, title, occurrence_type, subjective, availability_status,
+        id, athlete_id, title, occurrence_type, subjective, availability_status,
         load_management_restrictions, load_management_notes, created_at, updated_at,
         athletes ( name ),
-        diagnoses ( osiics_description, custom_description, is_resolved, load_management_restrictions, load_management_notes, diagnosed_at )
+        diagnoses ( id, osiics_description, custom_description, is_resolved, load_management_restrictions, load_management_notes, diagnosed_at )
       `)
       .in('athlete_id', athleteIds)
       .eq('is_resolved', false)
@@ -102,12 +103,17 @@ async function getData(squadId: string | null, date: string) {
     occurrences = data ?? []
   }
 
-  // Standalone diagnoses (occurrence_id IS NULL) — a diagnosis can drive an
-  // athlete's current status without any occurrence, so these must be
-  // merged into the same winning-event pool below or an athlete whose status
-  // came only from one of these shows an empty reason/PDF row.
-  let orphanDiagnoses: {
+  // All active diagnoses for these athletes — not just occurrence_id IS NULL
+  // ones. A diagnosis stays active after its parent occurrence is resolved,
+  // so relying on occurrence_id alone would miss it (the occurrence's
+  // is_resolved=false filter above already excludes it from `occurrences`,
+  // and it's not orphaned either since occurrence_id is still set). Anything
+  // already nested under one of the open occurrences fetched above is
+  // excluded below to avoid feeding it into the winning-event pool twice.
+  let allActiveDiagnoses: {
+    id: string
     athlete_id: string
+    occurrence_id: string | null
     osiics_description: string | null
     custom_description: string | null
     load_management_restrictions: string[] | null
@@ -119,15 +125,18 @@ async function getData(squadId: string | null, date: string) {
     const { data } = await supabase
       .from('diagnoses')
       .select(`
-        athlete_id, osiics_description, custom_description,
+        id, athlete_id, occurrence_id, osiics_description, custom_description,
         load_management_restrictions, load_management_notes, diagnosed_at,
         athletes ( name )
       `)
       .in('athlete_id', athleteIds)
       .eq('is_resolved', false)
-      .is('occurrence_id', null)
-    orphanDiagnoses = data ?? []
+    allActiveDiagnoses = data ?? []
   }
+  const openOccurrenceIds = new Set(occurrences.map((o) => o.id))
+  const looseDiagnoses = allActiveDiagnoses.filter(
+    (d) => !d.occurrence_id || !openOccurrenceIds.has(d.occurrence_id)
+  )
 
   // Clinical staff roster ("D.Clínico:") for the export header — physios/
   // masseurs before doctors, matching the club's own form.
@@ -145,7 +154,7 @@ async function getData(squadId: string | null, date: string) {
       .sort((a, b) => (ROLE_ORDER[a.role] ?? 9) - (ROLE_ORDER[b.role] ?? 9))
   }
 
-  return { athletes: athletes ?? [], microcycle, calendarEvents: calendarEvents ?? [], occurrences, orphanDiagnoses, clinicalStaff, orgName, canReadClinical }
+  return { athletes: athletes ?? [], microcycle, calendarEvents: calendarEvents ?? [], occurrences, looseDiagnoses, clinicalStaff, orgName, canReadClinical }
 }
 
 export default async function Dashboard({
@@ -164,7 +173,7 @@ export default async function Dashboard({
   // was inherently unreliable; see the calendar tab for actual day history).
   const currentDate = todayStr()
 
-  const { athletes, microcycle, calendarEvents, occurrences, orphanDiagnoses, clinicalStaff, orgName, canReadClinical } = await getData(squadId, currentDate)
+  const { athletes, microcycle, calendarEvents, occurrences, looseDiagnoses, clinicalStaff, orgName, canReadClinical } = await getData(squadId, currentDate)
 
   // One row per athlete, not per occurrence — an athlete with several open
   // occurrences previously produced one export row each, sometimes with
@@ -217,10 +226,11 @@ export default async function Dashboard({
     }
   }
 
-  // Standalone diagnoses compete in the same winning-event pool — an athlete
-  // whose status is driven only by one of these (no open occurrence at all)
-  // would otherwise be missing from clinicalOccurrences/reasonByAthleteId.
-  for (const d of orphanDiagnoses) {
+  // Diagnoses not already covered by an open occurrence above (orphaned, or
+  // attached to a now-resolved one) compete in the same winning-event pool —
+  // an athlete whose status is driven only by one of these would otherwise
+  // be missing from clinicalOccurrences/reasonByAthleteId.
+  for (const d of looseDiagnoses) {
     const athlete = Array.isArray(d.athletes) ? d.athletes[0] : d.athletes
     const candidate: WinningEvent = {
       athleteName: athlete?.name ?? '—',

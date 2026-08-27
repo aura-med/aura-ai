@@ -140,7 +140,7 @@ async function AthleteDetailContent({
     occurrence_records ( id, record_date, subjective, objective, assessment, plan, availability_status, load_management_restrictions, load_management_notes, clinician_name, created_at ),
     diagnoses ( id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, load_management_restrictions, load_management_notes, is_resolved )
   `
-  const [{ data: activeOccurrences }, { data: recentResolvedOccurrences }, { data: anamnesis }, { data: orphanDiagnoses }] = await Promise.all([
+  const [{ data: activeOccurrences }, { data: recentResolvedOccurrences }, { data: anamnesis }, { data: allActiveDiagnoses }] = await Promise.all([
     supabase
       .from('occurrences')
       .select(occurrenceColumns)
@@ -161,14 +161,28 @@ async function AthleteDetailContent({
       .order('season', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    // All active diagnoses, not just occurrence_id IS NULL ones — a diagnosis
+    // stays active after its parent occurrence is resolved, and that parent
+    // then drops out of activeOccurrences (and eventually out of the 5-row
+    // recentResolvedOccurrences window too), so filtering by occurrence_id
+    // alone would make the diagnosis disappear from the profile entirely
+    // even though availability recomputation still considers it live.
     supabase
       .from('diagnoses')
       .select('id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, load_management_restrictions, load_management_notes, diagnosed_at, is_resolved, occurrence_id')
       .eq('athlete_id', id)
       .eq('is_resolved', false)
-      .is('occurrence_id', null)
       .order('diagnosed_at', { ascending: false }),
   ])
+
+  // Diagnoses already shown inline under an open occurrence (activeOccurrences'
+  // own nested `diagnoses`) are excluded here to avoid listing them twice —
+  // everything else (occurrence_id null, or pointing at a resolved/missing
+  // occurrence) falls back to this section.
+  const openOccurrenceIds = new Set((activeOccurrences ?? []).map((o) => o.id))
+  const orphanDiagnoses = (allActiveDiagnoses ?? []).filter(
+    (d) => !d.occurrence_id || !openOccurrenceIds.has(d.occurrence_id)
+  )
 
   // ── Document + consultation counts ────────────────────────────────────────
   const [{ count: documentCount }, { count: consultationCount }] = await Promise.all([

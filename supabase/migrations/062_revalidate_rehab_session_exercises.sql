@@ -16,6 +16,15 @@
 -- constraint so ADD CONSTRAINT's own validation pass (which, unlike
 -- replacing the function, DOES scan every existing row) confirms nothing
 -- violates it anymore.
+--
+-- Known narrow gap (Codex): this cleanup runs after 053, so on a database
+-- where 053's own ADD CONSTRAINT fails outright against pre-existing data
+-- that isn't even array-of-objects shaped (e.g. exercises = [1]), migration
+-- application aborts at 053 and never reaches this file. Not a risk for
+-- this deployment — 053 already applied cleanly here — but a from-scratch
+-- environment with such data already present before running 053 would need
+-- manual cleanup first; 053 itself can't be edited in place since it's
+-- already applied.
 
 UPDATE rehab_sessions
 SET exercises = COALESCE((

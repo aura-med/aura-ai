@@ -679,11 +679,19 @@ export function PlanDetail({
     return () => { cancelled = true }
   }, [plan.athlete_id])
 
-  // The visible range always starts at the earlier of the plan's start_date
-  // and its earliest planned day — editing start_date later than existing
-  // entries (via PlanModal) must never hide days that already have content.
+  // The visible range always starts at the earliest of the plan's
+  // start_date, its earliest planned day, and any phase's criteria test
+  // date — editing start_date later than existing content (via PlanModal),
+  // or picking a test date before the plan start (the date input and
+  // database both allow it), must never hide days that already have
+  // content. Test dates otherwise only ever extend defaultDayCount's END
+  // below, so a pre-start one would fall outside WeekBlock's rendered range
+  // and never appear in the calendar or PDF.
   const earliestEntryDate = days.length ? days.reduce((a, d) => (d.entry_date < a ? d.entry_date : a), days[0].entry_date) : null
-  const rangeStart = earliestEntryDate && earliestEntryDate < plan.start_date ? earliestEntryDate : plan.start_date
+  const earliestTestDate = phases.reduce<string | null>((a, ph) => (ph.test_date && (!a || ph.test_date < a) ? ph.test_date : a), null)
+  const rangeStart = [earliestEntryDate, earliestTestDate, plan.start_date]
+    .filter((d): d is string => !!d)
+    .reduce((a, b) => (b < a ? b : a))
   const startMonday = mondayOf(rangeStart)
 
   // Default visible range covers rangeStart through whichever is later: the

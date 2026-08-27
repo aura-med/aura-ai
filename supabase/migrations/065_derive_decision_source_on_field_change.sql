@@ -26,6 +26,23 @@
 -- source — reset decision_source to 'own' rather than reject the write
 -- outright, matching how updateOccurrence attributes any direct decision
 -- change today.
+--
+-- load_management_restrictions comparisons use same_string_set (below), not
+-- plain array (in)equality: unchecking and rechecking an existing
+-- restriction re-appends it at the end (LoadManagementFields) rather than
+-- restoring its original position, reordering the array without changing
+-- its contents. Plain `IS DISTINCT FROM` is order-sensitive and would treat
+-- that as a real field change, and — worse — as a mismatch against the
+-- source's own (differently-ordered) array, wrongly resetting
+-- decision_source to 'own' for a save that changed nothing.
+
+CREATE OR REPLACE FUNCTION same_string_set(a text[], b text[])
+RETURNS boolean
+LANGUAGE sql
+IMMUTABLE
+AS $$
+  SELECT ARRAY(SELECT unnest(a) ORDER BY 1) IS NOT DISTINCT FROM ARRAY(SELECT unnest(b) ORDER BY 1)
+$$;
 
 CREATE OR REPLACE FUNCTION validate_occurrence_decision_source()
 RETURNS trigger
@@ -41,7 +58,7 @@ BEGIN
   decision_fields_changed :=
     TG_OP = 'INSERT'
     OR NEW.availability_status IS DISTINCT FROM OLD.availability_status
-    OR NEW.load_management_restrictions IS DISTINCT FROM OLD.load_management_restrictions
+    OR NOT same_string_set(NEW.load_management_restrictions, OLD.load_management_restrictions)
     OR NEW.load_management_notes IS DISTINCT FROM OLD.load_management_notes;
 
   IF TG_OP = 'UPDATE'
@@ -91,13 +108,13 @@ BEGIN
   IF decision_fields_changed THEN
     IF NEW.decision_source = 'diagnosis' AND (
       v_diag.availability_status IS DISTINCT FROM NEW.availability_status OR
-      v_diag.load_management_restrictions IS DISTINCT FROM NEW.load_management_restrictions OR
+      NOT same_string_set(v_diag.load_management_restrictions, NEW.load_management_restrictions) OR
       v_diag.load_management_notes IS DISTINCT FROM NEW.load_management_notes
     ) THEN
       NEW.decision_source := 'own';
     ELSIF NEW.decision_source = 'reassessment' AND (
       v_rec.availability_status IS DISTINCT FROM NEW.availability_status OR
-      v_rec.load_management_restrictions IS DISTINCT FROM NEW.load_management_restrictions OR
+      NOT same_string_set(v_rec.load_management_restrictions, NEW.load_management_restrictions) OR
       v_rec.load_management_notes IS DISTINCT FROM NEW.load_management_notes
     ) THEN
       NEW.decision_source := 'own';

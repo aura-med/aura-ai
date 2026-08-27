@@ -84,11 +84,28 @@ CREATE POLICY "Authenticated users can insert notifications"
     AND (athlete_id IS NULL OR athlete_id IN (SELECT id FROM athletes WHERE org_id = notifications.org_id))
   );
 
--- Same org-scoping fix as the INSERT policy above — the original allowed
--- any authenticated user to mark ANY org's notifications read, an
--- unauthorized cross-org write this recreation shouldn't reintroduce.
-DROP POLICY IF EXISTS "Users can mark notifications read" ON notifications;
-CREATE POLICY "Users can mark notifications read"
-  ON notifications FOR UPDATE
-  USING (org_id IN (SELECT org_id FROM profiles WHERE id = auth.uid() AND org_id IS NOT NULL))
-  WITH CHECK (org_id IN (SELECT org_id FROM profiles WHERE id = auth.uid() AND org_id IS NOT NULL));
+-- No general UPDATE policy: the original 002_notifications.sql's "Users
+-- can mark notifications read" policy was USING/WITH CHECK
+-- (auth.role() = 'authenticated') — even scoped to the caller's own org,
+-- a blanket UPDATE grant lets any org member rewrite type/title/body/
+-- metadata/subject-references on every notification, not just append
+-- their own id to read_by as the policy's name implies. Any authenticated
+-- staff member (including a non-clinical role) could rewrite official
+-- clinical/readiness alerts for the whole org. Mark-as-read goes through
+-- mark_notifications_read() below instead, which only ever appends
+-- auth.uid() to read_by; RLS leaves UPDATE unreachable any other way.
+
+CREATE OR REPLACE FUNCTION mark_notifications_read(p_notification_ids uuid[])
+RETURNS void
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  UPDATE notifications
+  SET read_by = array_append(read_by, auth.uid())
+  WHERE id = ANY(p_notification_ids)
+    AND org_id IN (SELECT org_id FROM profiles WHERE id = auth.uid() AND org_id IS NOT NULL)
+    AND NOT (auth.uid() = ANY(read_by));
+$$;
+
+GRANT EXECUTE ON FUNCTION mark_notifications_read(uuid[]) TO authenticated;

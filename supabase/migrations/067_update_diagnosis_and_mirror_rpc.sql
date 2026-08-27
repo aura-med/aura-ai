@@ -100,6 +100,7 @@ DECLARE
   v_decision_changed boolean;
   v_diagnosis diagnoses;
   v_rec_at timestamptz;
+  v_fallback_record occurrence_records;
 BEGIN
   -- Unlocked, best-effort read: used only to pick which occurrence row(s)
   -- to lock BEFORE the diagnosis row (occurrence-then-diagnosis — see
@@ -170,17 +171,40 @@ BEGIN
   -- why it wasn't before), so the old occurrence can no longer be assumed
   -- to still be backed by this diagnosis. If that occurrence's
   -- decision_source still says 'diagnosis' (it was this one — 061 allows
-  -- only one active diagnosis per occurrence), reset it to 'own' so it
-  -- stops being misattributed to a diagnosis it no longer has. Deliberately
-  -- doesn't touch availability_status/restrictions/notes — there's no
-  -- recoverable "true own" value to fall back to, so leave the athlete's
-  -- displayed status as-is and only correct the attribution pointer; a
-  -- clinician revisiting that occurrence will see it's now 'own' and can
-  -- update it for real if it no longer reflects reality.
+  -- only one active diagnosis per occurrence), it needs a new source of
+  -- truth. Prefer the occurrence's own latest reassessment, if it has one
+  -- — re-derive availability_status/restrictions/notes from that record's
+  -- own columns (verbatim, so validate_occurrence_decision_source (065)
+  -- sees a plausible match) rather than leaving the diagnosis's now-
+  -- disowned values in place, where recompute_and_persist_athlete_
+  -- availability (078) — which ranks by timestamp only, not
+  -- decision_source — could keep surfacing them as the athlete's live
+  -- status indefinitely. Only when there's truly no reassessment to fall
+  -- back on does this leave the stale values in place (nothing else to
+  -- show) and just correct the attribution pointer to 'own'; a clinician
+  -- revisiting that occurrence will see it's now 'own' and can update it
+  -- for real if it no longer reflects reality.
   IF v_old_occurrence_id IS NOT NULL AND v_old_occurrence_id IS DISTINCT FROM p_occurrence_id THEN
-    UPDATE occurrences
-    SET decision_source = 'own'
-    WHERE id = v_old_occurrence_id AND decision_source = 'diagnosis' AND is_resolved = false;
+    SELECT * INTO v_fallback_record
+    FROM occurrence_records
+    WHERE occurrence_id = v_old_occurrence_id
+    ORDER BY created_at DESC
+    LIMIT 1;
+
+    IF FOUND THEN
+      UPDATE occurrences
+      SET
+        availability_status = v_fallback_record.availability_status,
+        load_management_restrictions = v_fallback_record.load_management_restrictions,
+        load_management_notes = v_fallback_record.load_management_notes,
+        updated_at = now(),
+        decision_source = 'reassessment'
+      WHERE id = v_old_occurrence_id AND decision_source = 'diagnosis' AND is_resolved = false;
+    ELSE
+      UPDATE occurrences
+      SET decision_source = 'own'
+      WHERE id = v_old_occurrence_id AND decision_source = 'diagnosis' AND is_resolved = false;
+    END IF;
   END IF;
 
   -- Attaching/moving the diagnosis to a (new) occurrence must mirror

@@ -7,66 +7,28 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 type Avail = 'available' | 'evaluation' | 'unavailable' | 'rtp' | 'load_management'
-const SEVERITY: Record<Avail, number> = { available: 0, evaluation: 1, load_management: 2, rtp: 3, unavailable: 4 }
 
-// The athlete's status is whatever the MOST RECENTLY recorded open
-// occurrence/diagnosis says — not the most restrictive of all open issues.
-// A newer clinical call supersedes an older one, even if less restrictive.
-// Active rehab still acts as a floor (an ongoing RTP protocol isn't silently
-// overridden by an unrelated occurrence that happens to have a newer
-// timestamp).
-async function recomputeAvailability(
+// Recompute the athlete's availability from their still-open occurrences/
+// diagnoses/active-rehab state and persist it — atomically:
+// recompute_and_persist_athlete_availability (078) locks the athletes row
+// first, so a concurrent write to a DIFFERENT occurrence/diagnosis for the
+// same athlete can't interleave with this one and have its own,
+// actually-newer result overwritten by a stale one that merely happened to
+// persist last (the previous shape read+decided in TypeScript, then
+// persisted via a separate call, with no lock spanning the gap). The
+// athlete's status is whatever the MOST RECENTLY recorded open occurrence/
+// diagnosis says — not the most restrictive of all open issues; active
+// rehab still acts as a floor. Falls back to `fallback` when nothing else
+// is open.
+async function recomputeAndPersistAvailability(
   supabase: Awaited<ReturnType<typeof createClient>>,
   athleteId: string,
   fallback: Avail,
-): Promise<Avail> {
-  const [occResult, diagResult, rehabResult] = await Promise.all([
-    supabase.from('occurrences').select('availability_status, created_at, updated_at').eq('athlete_id', athleteId).eq('is_resolved', false),
-    supabase.from('diagnoses').select('availability_status, diagnosed_at, updated_at').eq('athlete_id', athleteId).eq('is_resolved', false),
-    // SECURITY DEFINER RPC so the rehab floor is seen regardless of role.
-    supabase.rpc('athlete_in_active_rehab', { p_athlete_id: athleteId }),
-  ])
-  // A failed read resolves as { data: null, error }, not a throw. Ignoring it
-  // would drop a restrictive open issue/rehab floor and persist a wrongly
-  // permissive status — abort instead of recomputing from partial data.
-  const sourceError = occResult.error ?? diagResult.error ?? rehabResult.error
-  if (sourceError) {
-    throw new Error(`Não foi possível recalcular a disponibilidade: ${sourceError.message}`)
-  }
-  const occ = occResult.data
-  const diag = diagResult.data
-  const inActiveRehab = rehabResult.data
-
-  type TimedStatus = { status: Avail; at: string }
-  const events: TimedStatus[] = [
-    ...(occ ?? [])
-      .filter((r): r is { availability_status: Avail; created_at: string; updated_at: string | null } =>
-        r.availability_status != null && r.availability_status in SEVERITY)
-      .map((r) => ({ status: r.availability_status, at: r.updated_at ?? r.created_at })),
-    ...(diag ?? [])
-      .filter((r): r is { availability_status: Avail; diagnosed_at: string; updated_at: string | null } =>
-        r.availability_status != null && r.availability_status in SEVERITY)
-      .map((r) => ({ status: r.availability_status, at: r.updated_at ?? r.diagnosed_at })),
-  ]
-
-  // ISO 8601 timestamps compare correctly as strings.
-  let result: Avail = events.length
-    ? events.reduce((latest, e) => (e.at > latest.at ? e : latest)).status
-    : fallback
-
-  if (inActiveRehab === true && SEVERITY.rtp > SEVERITY[result]) result = 'rtp'
-
-  return result
-}
-
-// Persist availability, throwing on a structured RPC error so a transient
-// failure doesn't silently leave the athlete's status stale after a write.
-async function persistAvailability(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  athleteId: string,
-  status: Avail,
-) {
-  const { error } = await supabase.rpc('update_athlete_availability', { p_athlete_id: athleteId, p_status: status })
+): Promise<void> {
+  const { error } = await supabase.rpc('recompute_and_persist_athlete_availability', {
+    p_athlete_id: athleteId,
+    p_fallback: fallback,
+  })
   if (error) throw new Error(`Não foi possível atualizar a disponibilidade: ${error.message}`)
 }
 
@@ -133,8 +95,7 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
   })
   if (error) throw new Error(error.message)
 
-  const next = await recomputeAvailability(supabase, input.athleteId, input.availabilityStatus)
-  await persistAvailability(supabase, input.athleteId, next)
+  await recomputeAndPersistAvailability(supabase, input.athleteId, input.availabilityStatus)
 
   revalidatePath(`/athletes/${input.athleteId}`)
   revalidatePath('/occurrences')
@@ -200,8 +161,7 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
 
   const targetAthleteId = updated.athlete_id
 
-  const next = await recomputeAvailability(supabase, targetAthleteId, input.availabilityStatus)
-  await persistAvailability(supabase, targetAthleteId, next)
+  await recomputeAndPersistAvailability(supabase, targetAthleteId, input.availabilityStatus)
 
   revalidatePath(`/athletes/${targetAthleteId}`)
   revalidatePath('/occurrences')
@@ -232,8 +192,7 @@ export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
   // 'available' fallback: with this diagnosis now resolved, nothing else open
   // means the athlete is available (rehab floor still applies inside the helper).
   const targetAthleteId = resolved.athlete_id
-  const next = await recomputeAvailability(supabase, targetAthleteId, 'available')
-  await persistAvailability(supabase, targetAthleteId, next)
+  await recomputeAndPersistAvailability(supabase, targetAthleteId, 'available')
 
   // A resolved diagnosis is never just discarded — it's preserved permanently
   // in the athlete's injury history (histórico de lesões) so the clinical

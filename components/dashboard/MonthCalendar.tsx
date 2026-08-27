@@ -123,6 +123,18 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
     squadEpoch.bump()
     loadedMonths.clear()
     setItems(events)
+    // The editor form caches the event/date it was opened for, but its
+    // squadId prop always tracks the current squad — saving after a squad
+    // switch would submit the NEW squad's id for an event that belongs to
+    // the OLD one, silently moving it. Close it; the day-history panel
+    // doesn't need the same treatment since it re-fetches by squadId itself.
+    setEditor(null)
+    // The currently displayed month may be outside the server's preload
+    // window (e.g. the user navigated forward before switching squads) —
+    // the reset above cleared it from `items`/`loadedMonths`, but nothing
+    // else re-fetches it for the new squad until the user navigates away
+    // and back. Queue it now.
+    void ensureMonthLoaded(year, month)
   } else if (events !== prevEvents) {
     setPrevEvents(events)
     setItems((prev) => [

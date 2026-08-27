@@ -55,6 +55,13 @@ export async function GET(_req: Request, { params }: Ctx) {
     .from('rehab_sessions')
     .select(COLUMNS)
     .eq('athlete_id', id)
+    // rehab_sessions is shared, by name only, with the unrelated RTP
+    // protocol tracker (001_initial_schema.sql) — its rows always set
+    // protocol_id, which this route's own inserts never do (see POST
+    // below). Without this filter, an RTP protocol row would appear in
+    // TreatmentsTab as an undated physio session, editable/deletable from
+    // that UI and destroying the athlete's active protocol.
+    .is('protocol_id', null)
     .order('session_date', { ascending: false })
     .limit(200)
 
@@ -133,6 +140,9 @@ export async function PATCH(req: Request, { params }: Ctx) {
     .update(updateData)
     .eq('id', sessionId)
     .eq('athlete_id', id)
+    // Same reasoning as GET's filter above — never let this route touch
+    // an RTP protocol tracker row, even given a stray/forged sessionId.
+    .is('protocol_id', null)
     .select(COLUMNS)
     .single()
 
@@ -153,6 +163,9 @@ export async function DELETE(req: Request, { params }: Ctx) {
     .delete()
     .eq('id', sessionId)
     .eq('athlete_id', id)
+    // Same reasoning as GET's filter above — never let this route delete
+    // an RTP protocol tracker row, even given a stray/forged sessionId.
+    .is('protocol_id', null)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return new Response(null, { status: 204 })

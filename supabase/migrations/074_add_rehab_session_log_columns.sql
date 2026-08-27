@@ -25,10 +25,20 @@
 -- used to relax start_date: this table's RTP-protocol rows (feature 1)
 -- never set session_date, so a table-wide NOT NULL is meaningless for a
 -- column that only feature 2 actually populates.
+--
+-- session_type is left plain nullable too — NOT explicitly NULL DEFAULT
+-- 'physio' as 008_treatments.sql originally declared it, and not NOT NULL
+-- at all: a NOT NULL DEFAULT backfills every existing row, including every
+-- pre-existing RTP-protocol row, with 'physio' — mislabelling feature 1's
+-- rows as feature 2's on a fresh install the moment this migration runs,
+-- before any real physio-log row ever exists. The route layer already
+-- supplies 'physio' explicitly on every physio-log insert
+-- (app/api/athletes/[id]/rehab-sessions/route.ts's POST handler), so the
+-- column doesn't need a table-wide default to do its job.
 
 ALTER TABLE rehab_sessions
   ADD COLUMN IF NOT EXISTS session_date     DATE,
-  ADD COLUMN IF NOT EXISTS session_type     TEXT NOT NULL DEFAULT 'physio',
+  ADD COLUMN IF NOT EXISTS session_type     TEXT,
   ADD COLUMN IF NOT EXISTS duration_minutes INT,
   ADD COLUMN IF NOT EXISTS description      TEXT,
   ADD COLUMN IF NOT EXISTS clinician_name   TEXT,

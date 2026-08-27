@@ -67,13 +67,28 @@ CREATE POLICY "Users can read org notifications"
     )
   );
 
+-- Scoped to the caller's own org (and, if set, a squad/athlete that
+-- genuinely belongs to it) — the original 002_notifications.sql's
+-- `WITH CHECK (auth.role() = 'authenticated')` let ANY authenticated user
+-- insert a notification claiming ANY org_id, which the SELECT policy above
+-- then trusts at face value: that other org's members would receive a
+-- forged injury/readiness/RTP alert. Faithfully reproducing that original
+-- policy here would reintroduce a real vulnerability into a freshly
+-- (re)created table, not just restore old behavior.
 DROP POLICY IF EXISTS "Authenticated users can insert notifications" ON notifications;
 CREATE POLICY "Authenticated users can insert notifications"
   ON notifications FOR INSERT
-  WITH CHECK (auth.role() = 'authenticated');
+  WITH CHECK (
+    org_id IN (SELECT org_id FROM profiles WHERE id = auth.uid() AND org_id IS NOT NULL)
+    AND (squad_id IS NULL OR squad_id IN (SELECT id FROM squads WHERE org_id = notifications.org_id))
+    AND (athlete_id IS NULL OR athlete_id IN (SELECT id FROM athletes WHERE org_id = notifications.org_id))
+  );
 
+-- Same org-scoping fix as the INSERT policy above — the original allowed
+-- any authenticated user to mark ANY org's notifications read, an
+-- unauthorized cross-org write this recreation shouldn't reintroduce.
 DROP POLICY IF EXISTS "Users can mark notifications read" ON notifications;
 CREATE POLICY "Users can mark notifications read"
   ON notifications FOR UPDATE
-  USING (auth.role() = 'authenticated')
-  WITH CHECK (auth.role() = 'authenticated');
+  USING (org_id IN (SELECT org_id FROM profiles WHERE id = auth.uid() AND org_id IS NOT NULL))
+  WITH CHECK (org_id IN (SELECT org_id FROM profiles WHERE id = auth.uid() AND org_id IS NOT NULL));

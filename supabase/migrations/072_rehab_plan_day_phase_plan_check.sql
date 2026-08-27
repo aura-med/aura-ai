@@ -9,6 +9,23 @@
 -- resolve the foreign phase from plan A's own phase list, leaving
 -- inconsistent clinical-plan data. Mirrors 052's same trigger-based pattern
 -- for rehab_sessions.rehab_plan_id/athlete_id.
+--
+-- A BEFORE INSERT OR UPDATE trigger alone only stops NEW mismatches — any
+-- row that already links phase_id to a phase from a different plan (the
+-- exact gap this migration closes existed since 034 shipped, so a Data API
+-- caller could already have created one) would stay broken forever, with
+-- the calendar never able to resolve that phase label. Null out any such
+-- existing mismatch first — same "clean before constraining" shape as
+-- 061's dedup step before its unique index — rather than deleting the day
+-- itself, which is real (if now unlabelled) planned content.
+
+UPDATE rehab_plan_days d
+SET phase_id = NULL
+WHERE d.phase_id IS NOT NULL
+  AND NOT EXISTS (
+    SELECT 1 FROM rehab_plan_phases p
+    WHERE p.id = d.phase_id AND p.plan_id = d.plan_id
+  );
 
 CREATE OR REPLACE FUNCTION enforce_rehab_plan_day_phase_plan()
 RETURNS trigger

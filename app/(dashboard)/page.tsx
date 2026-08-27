@@ -86,7 +86,7 @@ async function getData(squadId: string | null, date: string) {
     created_at: string
     updated_at: string | null
     athletes: { name: string } | { name: string }[] | null
-    diagnoses: { id: string; osiics_description: string | null; custom_description: string | null; is_resolved: boolean; load_management_restrictions: string[] | null; load_management_notes: string | null; diagnosed_at: string }[] | null
+    diagnoses: { id: string; osiics_description: string | null; custom_description: string | null; is_resolved: boolean; availability_status: string | null; load_management_restrictions: string[] | null; load_management_notes: string | null; diagnosed_at: string }[] | null
   }[] = []
   if (athleteIds.length) {
     const { data } = await supabase
@@ -95,7 +95,7 @@ async function getData(squadId: string | null, date: string) {
         id, athlete_id, title, occurrence_type, subjective, availability_status,
         load_management_restrictions, load_management_notes, created_at, updated_at,
         athletes ( name ),
-        diagnoses ( id, osiics_description, custom_description, is_resolved, load_management_restrictions, load_management_notes, diagnosed_at )
+        diagnoses ( id, osiics_description, custom_description, is_resolved, availability_status, load_management_restrictions, load_management_notes, diagnosed_at )
       `)
       .in('athlete_id', athleteIds)
       .eq('is_resolved', false)
@@ -116,6 +116,7 @@ async function getData(squadId: string | null, date: string) {
     occurrence_id: string | null
     osiics_description: string | null
     custom_description: string | null
+    availability_status: string | null
     load_management_restrictions: string[] | null
     load_management_notes: string | null
     diagnosed_at: string
@@ -126,7 +127,7 @@ async function getData(squadId: string | null, date: string) {
       .from('diagnoses')
       .select(`
         id, athlete_id, occurrence_id, osiics_description, custom_description,
-        load_management_restrictions, load_management_notes, diagnosed_at,
+        availability_status, load_management_restrictions, load_management_notes, diagnosed_at,
         athletes ( name )
       `)
       .in('athlete_id', athleteIds)
@@ -197,6 +198,10 @@ export default async function Dashboard({
     restrictions: string[]
     notes: string | null
     at: string
+    // The event's own availability_status — distinct from the athlete's
+    // actual current status (currentStatusByAthleteId), which can differ
+    // when the active-rehab RTP floor overrides this event's status below.
+    status: string | null
   }
   const winningEventByAthleteId = new Map<string, WinningEvent>()
   for (const o of occurrences) {
@@ -209,6 +214,7 @@ export default async function Dashboard({
         restrictions: o.load_management_restrictions ?? [],
         notes: o.load_management_notes,
         at: o.updated_at ?? o.created_at,
+        status: o.availability_status,
       },
       ...(o.diagnoses ?? [])
         .filter((d) => !d.is_resolved)
@@ -218,6 +224,7 @@ export default async function Dashboard({
           restrictions: d.load_management_restrictions ?? [],
           notes: d.load_management_notes,
           at: d.diagnosed_at,
+          status: d.availability_status,
         })),
     ]
     for (const candidate of candidates) {
@@ -238,20 +245,25 @@ export default async function Dashboard({
       restrictions: d.load_management_restrictions ?? [],
       notes: d.load_management_notes,
       at: d.diagnosed_at,
+      status: d.availability_status,
     }
     const current = winningEventByAthleteId.get(d.athlete_id)
     if (!current || candidate.at > current.at) winningEventByAthleteId.set(d.athlete_id, candidate)
   }
 
   // recomputeAthleteAvailability treats active rehab (rehab_sessions/
-  // injury_events, via the athlete_in_active_rehab RPC) as an RTP floor that
-  // can win even with no open occurrence/diagnosis at all — such an athlete
-  // never enters winningEventByAthleteId above, so the expanded RTP group
-  // would show "Sem motivo registado" and the athlete would be missing from
-  // the clinical PDF. Fall back to their open injury (already fetched below
-  // for the score calc) for a description in that case.
+  // injury_events, via the athlete_in_active_rehab RPC) as an RTP floor: it
+  // can raise the athlete to 'rtp' even when the winning occurrence/diagnosis
+  // above carries a lower-severity status (or there's no open one at all).
+  // In both cases that event's own description is not why the athlete is
+  // RTP, so it must not be shown/exported as the reason — only an event whose
+  // OWN status is already 'rtp' genuinely explains it. Fall back to the
+  // athlete's open injury (already fetched below for the score calc) for a
+  // description whenever the floor is what's actually driving the status.
   for (const a of athletes) {
-    if (a.availability_status !== 'rtp' || winningEventByAthleteId.has(a.id)) continue
+    if (a.availability_status !== 'rtp') continue
+    const current = winningEventByAthleteId.get(a.id)
+    if (current?.status === 'rtp') continue
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const injuries: any[] = a.injury_events ?? []
     const openInjury = injuries
@@ -263,6 +275,7 @@ export default async function Dashboard({
       restrictions: [],
       notes: null,
       at: openInjury?.injury_date ?? currentDate,
+      status: 'rtp',
     })
   }
 

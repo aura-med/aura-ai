@@ -141,3 +141,27 @@ export function todayStr(): string {
   // en-CA renders as YYYY-MM-DD; timeZone pins it to the club's calendar day.
   return new Intl.DateTimeFormat('en-CA', { timeZone: CLUB_TIMEZONE }).format(new Date())
 }
+
+// Reads the UTC offset in effect for CLUB_TIMEZONE at a given instant, e.g.
+// "+01:00". `longOffset` is a real Intl.DateTimeFormat option (not a custom
+// format), widely supported in evergreen runtimes.
+function utcOffsetAt(instant: Date): string {
+  const part = new Intl.DateTimeFormat('en-US', { timeZone: CLUB_TIMEZONE, timeZoneName: 'longOffset' })
+    .formatToParts(instant)
+    .find((p) => p.type === 'timeZoneName')?.value ?? 'GMT+00:00'
+  const match = part.match(/GMT([+-]\d{2}):?(\d{2})?/)
+  return `${match?.[1] ?? '+00'}:${match?.[2] ?? '00'}`
+}
+
+// The UTC instant for local midnight at the START of `dateStr` in the
+// club's configured timezone — not the viewer's browser timezone, which can
+// differ from the club's (a clinician traveling, or just a misconfigured
+// OS clock) and would otherwise misplace a diagnosis/reassessment logged
+// near either day boundary under the adjacent calendar day. The reference
+// instant used to read the offset is noon UTC on `dateStr`, safely clear of
+// the pre-dawn hours almost all real-world DST transitions fall in, so it
+// reflects the offset actually in effect at that day's local midnight.
+export function clubMidnightUTC(dateStr: string): Date {
+  const offset = utcOffsetAt(new Date(`${dateStr}T12:00:00Z`))
+  return new Date(`${dateStr}T00:00:00${offset}`)
+}

@@ -11,7 +11,7 @@ import Link from 'next/link'
 import { ChevronLeft, ChevronRight, X, Plus, Trash2, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUiStore } from '@/stores/uiStore'
-import { todayStr, formatDisplayDate, addDays } from '@/lib/utils/microcycle'
+import { todayStr, formatDisplayDate, addDays, clubMidnightUTC } from '@/lib/utils/microcycle'
 import { isOwner, CLINICAL_ROLES } from '@/lib/roles'
 import { STATUS_CONFIG } from '@/components/occurrences/OccurrenceRow'
 import { withSquadParam } from '@/lib/squad-url'
@@ -624,17 +624,19 @@ function DayHistoryPanel({ date, squadId, onClose }: { date: string; squadId: st
         .select('id, athlete_id, assessment, athletes ( name, squad_id )')
         .eq('record_date', date)
 
-      // `new Date("YYYY-MM-DDTHH:mm:ss")` (no timezone suffix) parses as the
-      // viewer's LOCAL time per the JS spec, so these bounds are the
-      // clicked calendar day's actual local midnight-to-midnight window —
-      // .toISOString() then converts to the correct UTC instant for the
-      // comparison, regardless of the viewer's timezone or the DB's own.
-      // Naive "YYYY-MM-DDT00:00:00" strings sent directly to PostgREST, by
-      // contrast, get interpreted in the database's timezone, misplacing
-      // diagnoses logged near local midnight under the adjacent day.
-      const dayStart = new Date(`${date}T00:00:00`)
-      const dayEnd = new Date(dayStart)
-      dayEnd.setDate(dayEnd.getDate() + 1)
+      // `date` is a CLUB-calendar day (todayStr()/the calendar grid are both
+      // built from NEXT_PUBLIC_CLUB_TIMEZONE, not the viewer's own) — bounds
+      // must be that day's midnight-to-midnight window in the CLUB's
+      // timezone, not the viewer's browser timezone (which can differ: a
+      // clinician traveling, or just a misconfigured OS clock). A plain
+      // `new Date("YYYY-MM-DDTHH:mm:ss")` parses in the VIEWER's local time,
+      // which would misplace a diagnosis logged near either boundary under
+      // the adjacent day whenever the two timezones don't match. Naive
+      // "YYYY-MM-DDT00:00:00" strings sent directly to PostgREST have the
+      // same problem in the database's own timezone. clubMidnightUTC pins
+      // both bounds to the club's configured timezone specifically.
+      const dayStart = clubMidnightUTC(date)
+      const dayEnd = clubMidnightUTC(addDays(date, 1))
 
       const diagQuery = supabase
         .from('diagnoses')

@@ -123,10 +123,21 @@ export function formatDisplayDate(dateStr: string, locale = 'pt-PT'): string {
   return `${table[weekday]}, ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`
 }
 
+// Pure calendar-date arithmetic, entirely independent of any local
+// timezone: parsing at local noon and re-extracting via toISOString()
+// (the previous approach) round-trips through whichever runtime's local
+// offset is in effect, which silently drops a day for a viewer in
+// UTC+13/+14 (Pacific/Chatham, Pacific/Kiritimati) — noon's 12-hour buffer
+// isn't enough to survive an offset past 12 hours, so toISOString() can
+// still land on the ORIGINAL UTC date after advancing by a full day. Only
+// ever constructing/reading via Date.UTC()/getUTCFullYear() etc. below has
+// no local timezone in the computation at all, so it can't be wrong in
+// any timezone — and, as a side effect, gives the same result whether run
+// on the server or in any viewer's browser.
 export function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr + 'T12:00:00')
-  d.setDate(d.getDate() + days)
-  return d.toISOString().split('T')[0]
+  const [y, m, d] = dateStr.split('-').map(Number)
+  const next = new Date(Date.UTC(y, m - 1, d + days))
+  return next.toISOString().split('T')[0]
 }
 
 // The club's local timezone defines the "today" boundary. Server components run

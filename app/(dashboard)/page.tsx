@@ -31,7 +31,14 @@ async function getData(squadId: string | null, date: string) {
   const canApplyLoadManagement = viewerRole === 'coach' || viewerRole === 'fitness_coach'
   let loadManagementRestrictionsByAthleteId: Record<string, { restrictions: string[]; notes: string | null }> = {}
   if (canApplyLoadManagement) {
-    const { data } = await supabase.rpc('get_squad_load_management_restrictions')
+    const { data, error } = await supabase.rpc('get_squad_load_management_restrictions')
+    // A silently-dropped failure here would fall back to an empty map, and
+    // every restricted athlete would render as if they had no restrictions
+    // at all — the coach/fitness_coach audience this RPC exists for (081)
+    // would see a normal-looking, expandable Gestão de Carga group with
+    // nothing to actually apply, indistinguishable from a genuinely
+    // unrestricted athlete.
+    if (error) throw new Error(`Não foi possível carregar as restrições de gestão de carga: ${error.message}`)
     loadManagementRestrictionsByAthleteId = Object.fromEntries(
       (data ?? []).map((row: { athlete_id: string; restrictions: string[] | null; notes: string | null }) =>
         [row.athlete_id, { restrictions: row.restrictions ?? [], notes: row.notes ?? null }]),

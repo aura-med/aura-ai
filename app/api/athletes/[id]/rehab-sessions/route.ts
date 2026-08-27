@@ -102,24 +102,35 @@ export async function PATCH(req: Request, { params }: Ctx) {
 
   if (!sessionId) return NextResponse.json({ error: 'sessionId required' }, { status: 400 })
 
-  const planError = await validateRehabPlanOwnership(supabase, rest.rehab_plan_id, id)
-  if (planError) return NextResponse.json({ error: planError }, { status: 400 })
+  // rehab_plan_id is only re-validated when the caller actually sent it —
+  // a partial PATCH that never mentions it shouldn't be blocked by
+  // validating undefined against ownership.
+  if ('rehab_plan_id' in rest) {
+    const planError = await validateRehabPlanOwnership(supabase, rest.rehab_plan_id, id)
+    if (planError) return NextResponse.json({ error: planError }, { status: 400 })
+  }
+
+  // PATCH means partial update — only touch fields the caller actually
+  // included in the body. Unconditionally writing every column (defaulting
+  // an omitted one to null/[]) would silently erase data set by someone
+  // else since this client last loaded the session, e.g. another clinician
+  // populating pse/exercises/rehab_plan_id moments earlier. A field IS
+  // still clearable by explicitly sending it as null.
+  const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() }
+  if ('session_date' in rest) updateData.session_date = rest.session_date
+  if ('session_type' in rest) updateData.session_type = rest.session_type
+  if ('duration_minutes' in rest) updateData.duration_minutes = rest.duration_minutes ? Number(rest.duration_minutes) : null
+  if ('description' in rest) updateData.description = rest.description ?? null
+  if ('clinician_name' in rest) updateData.clinician_name = rest.clinician_name ?? null
+  if ('notes' in rest) updateData.notes = rest.notes ?? null
+  if ('occurrence_id' in rest) updateData.occurrence_id = rest.occurrence_id ?? null
+  if ('rehab_plan_id' in rest) updateData.rehab_plan_id = rest.rehab_plan_id ?? null
+  if ('pse' in rest) updateData.pse = sanitizePse(rest.pse)
+  if ('exercises' in rest) updateData.exercises = sanitizeExercises(rest.exercises)
 
   const { data, error } = await supabase
     .from('rehab_sessions')
-    .update({
-      session_date:     rest.session_date,
-      session_type:     rest.session_type,
-      duration_minutes: rest.duration_minutes ? Number(rest.duration_minutes) : null,
-      description:      rest.description ?? null,
-      clinician_name:   rest.clinician_name ?? null,
-      notes:            rest.notes ?? null,
-      occurrence_id:    rest.occurrence_id ?? null,
-      rehab_plan_id:    rest.rehab_plan_id ?? null,
-      pse:              sanitizePse(rest.pse),
-      exercises:        sanitizeExercises(rest.exercises),
-      updated_at:       new Date().toISOString(),
-    })
+    .update(updateData)
     .eq('id', sessionId)
     .eq('athlete_id', id)
     .select(COLUMNS)

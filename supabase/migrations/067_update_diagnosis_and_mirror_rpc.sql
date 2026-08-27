@@ -192,12 +192,27 @@ BEGIN
     LIMIT 1;
 
     IF FOUND THEN
+      -- updated_at is stamped with the fallback record's OWN created_at,
+      -- not now(): this is administrative cleanup (re-attributing the
+      -- occurrence after its diagnosis moved away), not a fresh clinical
+      -- decision. This diagnosis (v_diagnosis) may still be active,
+      -- possibly attached elsewhere or orphaned, and its own row remains
+      -- an independent candidate event in recompute_and_persist_athlete_
+      -- availability (078), which ranks purely by timestamp. Stamping
+      -- now() here would make this administrative update look like the
+      -- newest clinical event for the athlete, letting a stale, less-
+      -- restrictive reassessment outrank the diagnosis's own genuinely
+      -- still-active (and possibly more restrictive) status. Since
+      -- decision_source = 'diagnosis' only held here while this diagnosis
+      -- was validated (065) as at least as recent as this reassessment,
+      -- the reassessment's own created_at is guaranteed no later than the
+      -- diagnosis's own event timestamp — so this can never outrank it.
       UPDATE occurrences
       SET
         availability_status = v_fallback_record.availability_status,
         load_management_restrictions = v_fallback_record.load_management_restrictions,
         load_management_notes = v_fallback_record.load_management_notes,
-        updated_at = now(),
+        updated_at = v_fallback_record.created_at,
         decision_source = 'reassessment'
       WHERE id = v_old_occurrence_id AND decision_source = 'diagnosis' AND is_resolved = false;
     ELSE

@@ -82,9 +82,13 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
   // Re-sync when the source events change (squad switch, date-range refresh, or
   // router.refresh() after a write); otherwise the calendar keeps rendering and
   // editing the previous squad/window's stale events until a full remount.
-  useEffect(() => {
+  // Adjusted during render (React's recommended prop->state sync pattern)
+  // rather than in an effect, which would trigger an extra render pass.
+  const [prevEvents, setPrevEvents] = useState(events)
+  if (events !== prevEvents) {
+    setPrevEvents(events)
     setItems(events)
-  }, [events])
+  }
 
   function navigate(delta: number) {
     const next = new Date(year, month + delta, 1)

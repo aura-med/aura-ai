@@ -4,6 +4,7 @@ import { getSquadIdParam } from '@/lib/squad-url'
 import { calcScore, riskColor, riskLabel } from '@/lib/scoring'
 import { calculateMDStatus, todayStr, addDays } from '@/lib/utils/microcycle'
 import { DashboardClient } from './DashboardClient'
+import { OWNER_ROLE, CLINICAL_ROLES } from '@/lib/roles'
 import type { AthleteAvailabilityStatus } from '@/types'
 
 async function getData(squadId: string | null, date: string) {
@@ -12,10 +13,16 @@ async function getData(squadId: string | null, date: string) {
   const { data: { user } } = await supabase.auth.getUser()
   const { data: viewerProfile } = await supabase
     .from('profiles')
-    .select('org_id')
+    .select('org_id, role')
     .eq('id', user?.id ?? '')
     .single()
   const orgId = viewerProfile?.org_id ?? null
+  // occurrences/occurrence_records/diagnoses RLS (018) only grants SELECT to
+  // owner/doctor/physio/masseur — reasonByAthleteId is empty for anyone else,
+  // so the dashboard must not offer the expand-to-see-reason affordance to
+  // them (it would just read as "nothing happened" instead of "no access").
+  const viewerRole = viewerProfile?.role ?? null
+  const canReadClinical = viewerRole === OWNER_ROLE || (viewerRole !== null && CLINICAL_ROLES.includes(viewerRole))
 
   let orgName: string | null = null
   if (orgId) {
@@ -111,7 +118,7 @@ async function getData(squadId: string | null, date: string) {
       .sort((a, b) => (ROLE_ORDER[a.role] ?? 9) - (ROLE_ORDER[b.role] ?? 9))
   }
 
-  return { athletes: athletes ?? [], microcycle, calendarEvents: calendarEvents ?? [], occurrences, clinicalStaff, orgName }
+  return { athletes: athletes ?? [], microcycle, calendarEvents: calendarEvents ?? [], occurrences, clinicalStaff, orgName, canReadClinical }
 }
 
 export default async function Dashboard({
@@ -130,7 +137,7 @@ export default async function Dashboard({
   // was inherently unreliable; see the calendar tab for actual day history).
   const currentDate = todayStr()
 
-  const { athletes, microcycle, calendarEvents, occurrences, clinicalStaff, orgName } = await getData(squadId, currentDate)
+  const { athletes, microcycle, calendarEvents, occurrences, clinicalStaff, orgName, canReadClinical } = await getData(squadId, currentDate)
 
   // One row per athlete, not per occurrence — an athlete with several open
   // occurrences previously produced one export row each, sometimes with
@@ -267,6 +274,7 @@ export default async function Dashboard({
       calendarEvents={calendarEvents}
       clinicalOccurrences={clinicalOccurrences}
       reasonByAthleteId={reasonByAthleteId}
+      canReadClinical={canReadClinical}
       clinicalStaff={clinicalStaff}
       orgName={orgName}
     />

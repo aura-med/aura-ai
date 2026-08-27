@@ -40,6 +40,11 @@ interface DashboardClientProps {
   calendarEvents: MonthCalendarEvent[]
   clinicalOccurrences: DashboardOccurrenceRow[]
   reasonByAthleteId: Record<string, AthleteReason>
+  // RLS (018) only grants owner/doctor/physio/masseur read access to
+  // occurrences/diagnoses — reasonByAthleteId is empty for everyone else, so
+  // the expand-to-see-reason affordance must not be offered to them (it
+  // would read as "nothing happened" instead of "no access").
+  canReadClinical: boolean
   clinicalStaff: ClinicalStaffMember[]
   orgName: string | null
 }
@@ -68,7 +73,7 @@ const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 
 // normal training plan).
 const TRAFFIC_LIGHT_ORDER: AthleteAvailabilityStatus[] = ['available', 'load_management', 'unavailable', 'rtp']
 
-export function DashboardClient({ athletes, squadId, currentDate, microcycle, calendarEvents, clinicalOccurrences, reasonByAthleteId, clinicalStaff, orgName }: DashboardClientProps) {
+export function DashboardClient({ athletes, squadId, currentDate, microcycle, calendarEvents, clinicalOccurrences, reasonByAthleteId, canReadClinical, clinicalStaff, orgName }: DashboardClientProps) {
   const [tab, setTab] = useState<'overview' | 'squad' | 'calendar'>('overview')
   const [squadQuery, setSquadQuery] = useState('')
   // Which status group is expanded to show each athlete's reason inline —
@@ -179,8 +184,8 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
               padding: '14px 16px',
             }}>
               <div
-                onClick={() => setExpandedGroup((g) => (g === 'evaluation' ? null : 'evaluation'))}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, cursor: 'pointer' }}
+                onClick={canReadClinical ? () => setExpandedGroup((g) => (g === 'evaluation' ? null : 'evaluation')) : undefined}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, cursor: canReadClinical ? 'pointer' : 'default' }}
               >
                 <Hourglass size={15} color="var(--sophi-yellow)" className="animate-pulse" />
                 <span style={{ fontFamily: 'var(--font-syne)', fontSize: 13, fontWeight: 700, color: 'var(--sophi-yellow)' }}>
@@ -195,9 +200,9 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
                 <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--sophi-text3)' }}>
                   Aguardam decisão clínica
                 </span>
-                {expandedGroup === 'evaluation' ? <ChevronUp size={13} color="var(--sophi-yellow)" /> : <ChevronDown size={13} color="var(--sophi-yellow)" />}
+                {canReadClinical && (expandedGroup === 'evaluation' ? <ChevronUp size={13} color="var(--sophi-yellow)" /> : <ChevronDown size={13} color="var(--sophi-yellow)" />)}
               </div>
-              {expandedGroup === 'evaluation' ? (
+              {canReadClinical && expandedGroup === 'evaluation' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {byStatus.evaluation.map((a) => (
                     <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
@@ -256,10 +261,10 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
                   {/* Group header — click the label to expand and list each
                       athlete's reason (diagnosis/occurrence) inline. */}
                   <div
-                    onClick={() => setExpandedGroup((g) => (g === status ? null : status))}
+                    onClick={canReadClinical ? () => setExpandedGroup((g) => (g === status ? null : status)) : undefined}
                     style={{
                       display: 'flex', alignItems: 'center', gap: 8,
-                      padding: '10px 14px', cursor: 'pointer',
+                      padding: '10px 14px', cursor: canReadClinical ? 'pointer' : 'default',
                       background: group.length > 0 ? cfg.bg : 'transparent',
                       borderBottom: '1px solid var(--sophi-border)',
                     }}
@@ -275,9 +280,11 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
                     }}>
                       {group.length}
                     </span>
-                    <span style={{ marginLeft: 'auto', display: 'flex' }}>
-                      {expandedGroup === status ? <ChevronUp size={13} color={cfg.color} /> : <ChevronDown size={13} color={cfg.color} />}
-                    </span>
+                    {canReadClinical && (
+                      <span style={{ marginLeft: 'auto', display: 'flex' }}>
+                        {expandedGroup === status ? <ChevronUp size={13} color={cfg.color} /> : <ChevronDown size={13} color={cfg.color} />}
+                      </span>
+                    )}
                   </div>
 
                   {/* Athletes — "Disponível" stays as compact avatar circles (many

@@ -89,7 +89,7 @@ export function Sidebar() {
       )}
     <aside
       className={cn(
-        'fixed left-0 top-14 bottom-0 w-60 flex flex-col border-r overflow-y-auto z-40',
+        'fixed left-0 top-14 bottom-0 w-60 flex flex-col border-r z-40',
         'transition-[transform,width] duration-200 md:translate-x-0',
         mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full',
         collapsed ? 'md:w-16' : 'md:w-60',
@@ -98,16 +98,21 @@ export function Sidebar() {
     >
       {/* Collapse toggle — desktop only, mobile always shows the full drawer.
           Vertically centered on the sidebar's edge so it reads as part of
-          the border, not a stray floating control. */}
+          the border, not a stray floating control. Lives outside the
+          overflow-y-auto content wrapper below: nesting it inside a
+          scrollable box would force overflow-x to "auto" too (per the CSS
+          overflow spec) and clip this button, which pokes out past the
+          aside's right edge. */}
       <button
         onClick={toggleSidebar}
         aria-label={collapsed ? t('nav.expand_sidebar') : t('nav.collapse_sidebar')}
-        className="hidden md:flex items-center justify-center absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border shadow-sm z-50 transition-colors hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
-        style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}
+        className="hidden md:flex items-center justify-center absolute -right-3.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full border-2 z-50 transition-colors hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
+        style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)', boxShadow: '0 1px 6px rgba(0,0,0,0.35)' }}
       >
-        {collapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
+        {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
       </button>
 
+      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
       {/* Mobile-only org + squad header */}
       <div
         className="md:hidden border-b px-4 py-3"
@@ -270,6 +275,7 @@ export function Sidebar() {
         style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-mono)' }}
       >
         {t('version')}
+      </div>
       </div>
     </aside>
     </>

@@ -90,10 +90,42 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
     setItems(events)
   }
 
+  // The server only preloads a fixed window (-90/+180 days from today, see
+  // app/(dashboard)/page.tsx) — flipping months with the arrows is otherwise
+  // unrestricted and never refetches, so a month outside that window would
+  // silently render with no events even when some genuinely exist. Fetch a
+  // month's events on demand the first time it's navigated to; loadedMonths
+  // avoids re-fetching a month (e.g. one already covered by the initial
+  // window) more than once per mount.
+  const [loadedMonths] = useState(() => new Set<string>())
+
+  async function ensureMonthLoaded(y: number, m: number) {
+    const key = `${y}-${m}`
+    if (loadedMonths.has(key)) return
+    loadedMonths.add(key)
+    const supabase = createClient()
+    const start = dateKey(y, m, 1)
+    const end = dateKey(y, m, new Date(y, m + 1, 0).getDate())
+    let q = supabase
+      .from('calendar_events')
+      .select('id, event_date, event_type, label, is_match_day, opponent, venue')
+      .gte('event_date', start)
+      .lte('event_date', end)
+    if (effectiveSquadId) q = q.eq('squad_id', effectiveSquadId)
+    const { data, error } = await q
+    if (error || !data) return
+    setItems((prev) => {
+      const ids = new Set(prev.map((e) => e.id))
+      const fresh = data.filter((e) => !ids.has(e.id))
+      return fresh.length ? [...prev, ...fresh] : prev
+    })
+  }
+
   function navigate(delta: number) {
     const next = new Date(year, month + delta, 1)
     setYear(next.getFullYear())
     setMonth(next.getMonth())
+    void ensureMonthLoaded(next.getFullYear(), next.getMonth())
   }
 
   function handleSaved(saved: MonthCalendarEvent) {

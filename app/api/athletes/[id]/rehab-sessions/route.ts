@@ -46,6 +46,25 @@ async function validateRehabPlanOwnership(
   return null
 }
 
+// Same gap as rehab_plan_id above: the FK on rehab_sessions.occurrence_id
+// only checks the occurrence exists, and the RLS write policy scopes only
+// athlete_id — without this, a crafted request could link this session to
+// another athlete's occurrence.
+async function validateOccurrenceOwnership(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  occurrenceId: unknown,
+  athleteId: string,
+): Promise<string | null> {
+  if (typeof occurrenceId !== 'string' || !occurrenceId) return null
+  const { data, error } = await supabase
+    .from('occurrences')
+    .select('athlete_id')
+    .eq('id', occurrenceId)
+    .maybeSingle()
+  if (error || !data || data.athlete_id !== athleteId) return 'Ocorrência inválida para este atleta'
+  return null
+}
+
 // GET /api/athletes/[id]/rehab-sessions
 export async function GET(_req: Request, { params }: Ctx) {
   const { id } = await params
@@ -77,6 +96,8 @@ export async function POST(req: Request, { params }: Ctx) {
 
   const planError = await validateRehabPlanOwnership(supabase, body.rehab_plan_id, id)
   if (planError) return NextResponse.json({ error: planError }, { status: 400 })
+  const occurrenceError = await validateOccurrenceOwnership(supabase, body.occurrence_id, id)
+  if (occurrenceError) return NextResponse.json({ error: occurrenceError }, { status: 400 })
 
   const { data, error } = await supabase
     .from('rehab_sessions')
@@ -115,6 +136,10 @@ export async function PATCH(req: Request, { params }: Ctx) {
   if ('rehab_plan_id' in rest) {
     const planError = await validateRehabPlanOwnership(supabase, rest.rehab_plan_id, id)
     if (planError) return NextResponse.json({ error: planError }, { status: 400 })
+  }
+  if ('occurrence_id' in rest) {
+    const occurrenceError = await validateOccurrenceOwnership(supabase, rest.occurrence_id, id)
+    if (occurrenceError) return NextResponse.json({ error: occurrenceError }, { status: 400 })
   }
 
   // PATCH means partial update — only touch fields the caller actually

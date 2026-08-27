@@ -31,6 +31,15 @@
 -- Ranking logic (most-recently-timestamped open occurrence/diagnosis
 -- wins; active rehab is a floor, not just another candidate) is ported
 -- verbatim from the TypeScript it replaces.
+--
+-- Role check and scoping are ported from 018's version of
+-- update_athlete_availability (013's original, pre-018 shape used 'admin'
+-- — removed by 017's owner rename — and org-only scoping, no squad
+-- check). Copying 013's shape here instead of 018's would have let a
+-- doctor/physio/masseur recompute and overwrite availability for an
+-- athlete outside their own squad(s), and would have rejected every
+-- owner outright with 'Insufficient permissions' since 'admin' no longer
+-- matches any real role.
 
 CREATE OR REPLACE FUNCTION recompute_and_persist_athlete_availability(
   p_athlete_id uuid,
@@ -45,13 +54,19 @@ DECLARE
   v_result text;
   v_in_active_rehab boolean;
 BEGIN
-  IF get_user_role() IS NULL OR get_user_role() NOT IN ('admin', 'doctor', 'physio', 'masseur') THEN
+  IF get_user_role() IS NULL OR get_user_role() NOT IN ('owner', 'doctor', 'physio', 'masseur') THEN
     RAISE EXCEPTION 'Insufficient permissions';
   END IF;
 
   -- Serialization point: locks the athlete row, blocking any concurrent
-  -- recompute-and-persist call for the same athlete until this one commits.
-  PERFORM 1 FROM athletes WHERE id = p_athlete_id AND org_id = get_user_org_id() FOR UPDATE;
+  -- recompute-and-persist call for the same athlete until this one
+  -- commits. Owners see every athlete in their org; other clinical roles
+  -- are scoped to their own assigned squad(s).
+  PERFORM 1 FROM athletes
+  WHERE id = p_athlete_id
+    AND org_id = get_user_org_id()
+    AND (get_user_role() = 'owner' OR squad_id IN (SELECT get_user_squad_ids()))
+  FOR UPDATE;
   IF NOT FOUND THEN
     RAISE EXCEPTION 'Athlete not found';
   END IF;
@@ -86,7 +101,11 @@ BEGIN
     v_result := 'rtp';
   END IF;
 
-  UPDATE athletes SET availability_status = v_result WHERE id = p_athlete_id;
+  UPDATE athletes
+  SET availability_status = v_result
+  WHERE id = p_athlete_id
+    AND org_id = get_user_org_id()
+    AND (get_user_role() = 'owner' OR squad_id IN (SELECT get_user_squad_ids()));
 
   RETURN v_result;
 END;

@@ -504,11 +504,23 @@ function DayHistoryPanel({ date, squadId, onClose }: { date: string; squadId: st
         .select('id, athlete_id, assessment, availability_status, athletes ( name, squad_id )')
         .eq('record_date', date)
 
+      // `new Date("YYYY-MM-DDTHH:mm:ss")` (no timezone suffix) parses as the
+      // viewer's LOCAL time per the JS spec, so these bounds are the
+      // clicked calendar day's actual local midnight-to-midnight window —
+      // .toISOString() then converts to the correct UTC instant for the
+      // comparison, regardless of the viewer's timezone or the DB's own.
+      // Naive "YYYY-MM-DDT00:00:00" strings sent directly to PostgREST, by
+      // contrast, get interpreted in the database's timezone, misplacing
+      // diagnoses logged near local midnight under the adjacent day.
+      const dayStart = new Date(`${date}T00:00:00`)
+      const dayEnd = new Date(dayStart)
+      dayEnd.setDate(dayEnd.getDate() + 1)
+
       const diagQuery = supabase
         .from('diagnoses')
         .select('id, athlete_id, osiics_description, custom_description, availability_status, athletes ( name, squad_id )')
-        .gte('diagnosed_at', `${date}T00:00:00`)
-        .lt('diagnosed_at', `${date}T23:59:59.999`)
+        .gte('diagnosed_at', dayStart.toISOString())
+        .lt('diagnosed_at', dayEnd.toISOString())
 
       const [{ data: occ, error: occErr }, { data: rec, error: recErr }, { data: diag, error: diagErr }] =
         await Promise.all([occQuery, recQuery, diagQuery])

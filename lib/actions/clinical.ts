@@ -165,6 +165,13 @@ export interface UpdateDiagnosisInput {
 // which closes it out. Only reachable while unresolved: once resolved, the
 // diagnosis has already migrated into the athlete's injury history and the UI
 // never renders an edit affordance for it, but the guard is repeated here too.
+function sameStringSet(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false
+  const sortedA = [...a].sort()
+  const sortedB = [...b].sort()
+  return sortedA.every((v, i) => v === sortedB[i])
+}
+
 export async function updateDiagnosis(input: UpdateDiagnosisInput) {
   const supabase = await createClient()
 
@@ -181,6 +188,23 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
     if (existingError) throw new Error(existingError.message)
     if (existing) throw new Error('Esta ocorrência já tem um diagnóstico ativo.')
   }
+
+  // Fetched before the update so the occurrence mirror below can tell a real
+  // decision change apart from a description-only correction — migration 047
+  // already makes diagnoses.updated_at itself conditional this way, but the
+  // separate mirror write onto the parent occurrence needs its own check.
+  const { data: existingDiagnosis, error: existingDiagnosisError } = await supabase
+    .from('diagnoses')
+    .select('availability_status, load_management_restrictions, load_management_notes')
+    .eq('id', input.diagnosisId)
+    .maybeSingle()
+  if (existingDiagnosisError || !existingDiagnosis) {
+    throw new Error(existingDiagnosisError?.message ?? 'Diagnóstico não encontrado')
+  }
+  const decisionChanged =
+    existingDiagnosis.availability_status !== input.availabilityStatus ||
+    !sameStringSet(existingDiagnosis.load_management_restrictions ?? [], input.loadManagementRestrictions) ||
+    (existingDiagnosis.load_management_notes ?? null) !== (input.loadManagementNotes ?? null)
 
   const { data: updated, error } = await supabase
     .from('diagnoses')
@@ -214,8 +238,11 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
         availability_status: input.availabilityStatus,
         load_management_restrictions: input.loadManagementRestrictions,
         load_management_notes: input.loadManagementNotes,
-        updated_at: new Date().toISOString(),
-        decision_source: 'diagnosis',
+        // Only advance the parent's decision timestamp/source when the
+        // decision itself changed — otherwise a pure description correction
+        // on an older diagnosis would still make its parent occurrence
+        // outrank a genuinely newer event elsewhere.
+        ...(decisionChanged ? { updated_at: new Date().toISOString(), decision_source: 'diagnosis' } : {}),
       })
       .eq('id', input.occurrenceId)
     if (occError) throw new Error(occError.message)

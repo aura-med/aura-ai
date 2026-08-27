@@ -119,11 +119,16 @@ async function getData(squadId: string | null, date: string) {
   const occurrenceIds = occurrences.map((o) => o.id)
   let latestRecordByOccurrenceId = new Map<string, { description: string; restrictions: string[]; notes: string | null; status: string | null; at: string }>()
   if (occurrenceIds.length) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('occurrence_records')
       .select('occurrence_id, assessment, availability_status, load_management_restrictions, load_management_notes, created_at')
       .in('occurrence_id', occurrenceIds)
       .order('created_at', { ascending: false })
+    // A silently-dropped failure here would fall back to `data: null`, and
+    // every occurrence whose decision_source is 'reassessment' would then
+    // wrongly show its own stale title instead of the actual reassessment —
+    // a misattributed reason/PDF row that looks like a successful page load.
+    if (error) throw new Error(`Não foi possível carregar as reavaliações: ${error.message}`)
     latestRecordByOccurrenceId = new Map()
     for (const r of data ?? []) {
       // Ordered desc, so the first row seen per occurrence_id is its latest.

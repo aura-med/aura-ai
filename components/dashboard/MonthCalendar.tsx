@@ -568,11 +568,15 @@ function DayHistoryPanel({ date, squadId, onClose }: { date: string; squadId: st
     const load = async () => {
       const supabase = createClient()
 
-      let occQuery = supabase
+      // occurrences.squad_id is frozen at creation (016) — filtering on it
+      // directly would miss (or wrongly include) an athlete's occurrences
+      // after a later squad transfer. Filter through the athletes relation
+      // instead, same as the reassessment/diagnosis queries below, so all
+      // three rely on the one authoritative, current squad_id.
+      const occQuery = supabase
         .from('occurrences')
-        .select('id, athlete_id, title, occurrence_type, athletes ( name )')
+        .select('id, athlete_id, title, occurrence_type, athletes ( name, squad_id )')
         .eq('occurrence_date', date)
-      if (squadId) occQuery = occQuery.eq('squad_id', squadId)
 
       const recQuery = supabase
         .from('occurrence_records')
@@ -612,19 +616,22 @@ function DayHistoryPanel({ date, squadId, onClose }: { date: string; squadId: st
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const athleteOf = (a: any): { name: string; squad_id?: string | null } | null => (Array.isArray(a) ? a[0] ?? null : a ?? null)
 
-      const occRows: DayHistoryRow[] = (occ ?? []).map((o) => ({
-        id: o.id, athleteId: o.athlete_id,
-        athleteName: athleteOf(o.athletes)?.name ?? '—',
-        kind: 'occurrence',
-        description: o.title || o.occurrence_type || '—',
-        // Unlike a reassessment/diagnosis row (each an immutable snapshot of
-        // what was decided that day), an occurrence's own availability_status
-        // gets overwritten by any LATER reassessment or diagnosis — so it can
-        // no longer be trusted to reflect what was actually decided on this
-        // occurrence's opening day. Omit rather than show a possibly much
-        // later status as if it were recorded here.
-        status: null,
-      }))
+      const occRows: DayHistoryRow[] = (occ ?? [])
+        .filter((o) => !squadId || athleteOf(o.athletes)?.squad_id === squadId)
+        .map((o) => ({
+          id: o.id, athleteId: o.athlete_id,
+          athleteName: athleteOf(o.athletes)?.name ?? '—',
+          kind: 'occurrence',
+          description: o.title || o.occurrence_type || '—',
+          // Unlike a reassessment/diagnosis row (each an immutable snapshot
+          // of what was decided that day), an occurrence's own
+          // availability_status gets overwritten by any LATER reassessment
+          // or diagnosis — so it can no longer be trusted to reflect what
+          // was actually decided on this occurrence's opening day. Omit
+          // rather than show a possibly much later status as if it were
+          // recorded here.
+          status: null,
+        }))
       const recRows: DayHistoryRow[] = (rec ?? [])
         .filter((r) => !squadId || athleteOf(r.athletes)?.squad_id === squadId)
         .map((r) => ({

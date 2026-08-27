@@ -418,65 +418,40 @@ export async function updateOccurrenceRecord(input: {
   if (error || !updated?.athlete_id) throw new Error(error?.message ?? 'Reavaliação não encontrada')
 
   // A correction only needs to leave the athlete's current status alone when
-  // it's fixing OLD history. If this record is the most recently *created*
-  // reassessment for its occurrence, it's the one that last wrote the
-  // occurrence's own status (addOccurrenceRecord always syncs on insert,
-  // regardless of the record's own record_date), so it's still driving the
-  // athlete's live status today — correcting it must also correct that.
-  const { data: latest, error: latestError } = await supabase
-    .from('occurrence_records')
-    .select('id, created_at')
-    .eq('occurrence_id', updated.occurrence_id)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-  // An unchecked failure here would silently fall through to "not the latest
-  // record" below, skipping a resync that was actually needed — leave the
-  // athlete's status stale while reporting success.
-  if (latestError) throw new Error(latestError.message)
-
-  // Even when this record is the latest reassessment, something else (a
-  // direct edit via updateOccurrence, or a diagnosis create/edit) may have
-  // taken over as the occurrence's decision source since — decision_source
-  // says exactly which, so this resync only applies while a reassessment is
-  // still the one actually driving the occurrence's current status.
-  let isCurrentDecisionSource = false
-  if (latest?.id === input.recordId) {
-    const { data: occSource, error: occSourceError } = await supabase
-      .from('occurrences')
-      .select('decision_source')
-      .eq('id', updated.occurrence_id)
-      .maybeSingle()
-    if (occSourceError) throw new Error(occSourceError.message)
-    isCurrentDecisionSource = occSource?.decision_source === 'reassessment'
-  }
-
-  if (latest?.id === input.recordId && isCurrentDecisionSource) {
-    const { data: occUpdated, error: occError } = await supabase
-      .from('occurrences')
-      .update({
-        availability_status: input.availabilityStatus,
-        load_management_restrictions: input.loadManagementRestrictions,
-        load_management_notes: input.loadManagementNotes,
-        // Only advance the parent's timestamp when the decision itself
-        // changed — a pure record_date/assessment-text correction must not
-        // re-rank this occurrence above a genuinely newer event elsewhere.
-        ...(decisionChanged ? { updated_at: new Date().toISOString() } : {}),
-        decision_source: 'reassessment',
-      })
-      .eq('id', updated.occurrence_id)
-      .eq('is_resolved', false)
-      .select('id')
-      .maybeSingle()
-    if (occError) throw new Error(occError.message)
-
-    // occUpdated is legitimately null (not an error) when the occurrence has
-    // since been resolved — .eq('is_resolved', false) excludes it, and a
-    // resolved occurrence's status isn't driven by reassessments anymore.
-    if (occUpdated) {
-      const nextStatus = await recomputeAthleteAvailability(supabase, updated.athlete_id, input.availabilityStatus)
-      await persistAvailability(supabase, updated.athlete_id, nextStatus)
+  // it's fixing OLD history — the mirror only applies while this record is
+  // still the most recently *created* reassessment for its occurrence AND a
+  // reassessment is still the occurrence's decision_source (a direct edit or
+  // a diagnosis may have taken over since). Both checks and the mirroring
+  // update must happen atomically: doing them as separate SELECTs first left
+  // a window where another clinician's concurrent addOccurrenceRecord call
+  // on the same occurrence could log a genuinely newer reassessment in
+  // between — this correction to older history would still pass the
+  // already-cached checks and overwrite the parent with its own, now stale,
+  // values. resync_occurrence_from_latest_reassessment (063) re-derives
+  // "still latest" against the same snapshot its UPDATE commits against, so
+  // there's no gap left for a concurrent insert to land in.
+  const { data: occUpdated, error: occError } = await supabase.rpc(
+    'resync_occurrence_from_latest_reassessment',
+    {
+      p_occurrence_id: updated.occurrence_id,
+      p_record_id: input.recordId,
+      p_availability_status: input.availabilityStatus,
+      p_load_management_restrictions: input.loadManagementRestrictions,
+      p_load_management_notes: input.loadManagementNotes,
+      // Only advance the parent's timestamp when the decision itself
+      // changed — a pure record_date/assessment-text correction must not
+      // re-rank this occurrence above a genuinely newer event elsewhere.
+      p_bump_updated_at: decisionChanged,
     }
+  )
+  if (occError) throw new Error(occError.message)
+
+  // occUpdated is legitimately empty (not an error) when this record is no
+  // longer the latest reassessment, a reassessment is no longer the
+  // occurrence's decision source, or the occurrence has since been resolved.
+  if (occUpdated && occUpdated.length > 0) {
+    const nextStatus = await recomputeAthleteAvailability(supabase, updated.athlete_id, input.availabilityStatus)
+    await persistAvailability(supabase, updated.athlete_id, nextStatus)
   }
 
   revalidatePath('/occurrences')

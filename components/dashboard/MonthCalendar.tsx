@@ -486,6 +486,7 @@ interface DayHistoryRow {
 
 function DayHistoryPanel({ date, squadId, onClose }: { date: string; squadId: string | null; onClose: () => void }) {
   const [rows, setRows] = useState<DayHistoryRow[] | null>(null)
+  const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -509,8 +510,17 @@ function DayHistoryPanel({ date, squadId, onClose }: { date: string; squadId: st
         .gte('diagnosed_at', `${date}T00:00:00`)
         .lt('diagnosed_at', `${date}T23:59:59.999`)
 
-      const [{ data: occ }, { data: rec }, { data: diag }] = await Promise.all([occQuery, recQuery, diagQuery])
+      const [{ data: occ, error: occErr }, { data: rec, error: recErr }, { data: diag, error: diagErr }] =
+        await Promise.all([occQuery, recQuery, diagQuery])
       if (cancelled) return
+
+      // A transient DB/network failure resolves as { data: null, error }, not
+      // a rejection — treating it as "no data" would render the empty state
+      // ("Sem ocorrências...") for a day that may well have real history.
+      if (occErr || recErr || diagErr) {
+        setLoadError(true)
+        return
+      }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const athleteOf = (a: any): { name: string; squad_id?: string | null } | null => (Array.isArray(a) ? a[0] ?? null : a ?? null)
@@ -567,7 +577,11 @@ function DayHistoryPanel({ date, squadId, onClose }: { date: string; squadId: st
         </div>
 
         <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {rows === null ? (
+          {loadError ? (
+            <p style={{ fontSize: 12, color: 'var(--sophi-danger)', textAlign: 'center', padding: '16px 0' }}>
+              Não foi possível carregar o histórico deste dia. Tenta novamente.
+            </p>
+          ) : rows === null ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: 20 }}>
               <Loader2 size={18} className="animate-spin" style={{ color: 'var(--sophi-text3)' }} />
             </div>

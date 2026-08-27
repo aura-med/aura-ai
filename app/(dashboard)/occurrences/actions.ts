@@ -391,7 +391,7 @@ export async function updateOccurrenceRecord(input: {
   // athlete's live status today — correcting it must also correct that.
   const { data: latest, error: latestError } = await supabase
     .from('occurrence_records')
-    .select('id')
+    .select('id, created_at')
     .eq('occurrence_id', updated.occurrence_id)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -401,7 +401,26 @@ export async function updateOccurrenceRecord(input: {
   // athlete's status stale while reporting success.
   if (latestError) throw new Error(latestError.message)
 
+  // Even when this record is the latest reassessment, an occurrence can carry
+  // at most one active diagnosis, and createDiagnosis/updateDiagnosis mirror
+  // it onto the occurrence at diagnosis time. If that diagnosis was made
+  // AFTER this reassessment, it has already superseded it as the athlete's
+  // current decision — resyncing here would stamp the occurrence's
+  // updated_at to right now (the edit time) and wrongly outrank that later
+  // diagnosis in recomputeAthleteAvailability's most-recent-wins ranking.
+  let supersededByDiagnosis = false
   if (latest?.id === input.recordId) {
+    const { data: diagnosis, error: diagnosisError } = await supabase
+      .from('diagnoses')
+      .select('diagnosed_at')
+      .eq('occurrence_id', updated.occurrence_id)
+      .eq('is_resolved', false)
+      .maybeSingle()
+    if (diagnosisError) throw new Error(diagnosisError.message)
+    supersededByDiagnosis = !!diagnosis && diagnosis.diagnosed_at > latest.created_at
+  }
+
+  if (latest?.id === input.recordId && !supersededByDiagnosis) {
     const { data: occUpdated, error: occError } = await supabase
       .from('occurrences')
       .update({

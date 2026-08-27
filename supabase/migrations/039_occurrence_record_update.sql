@@ -6,6 +6,7 @@
 -- just add new ones, so add an UPDATE policy mirroring the existing
 -- INSERT policy's org/squad/role scoping.
 
+DROP POLICY IF EXISTS "clinical_update_occurrence_records" ON occurrence_records;
 CREATE POLICY "clinical_update_occurrence_records" ON occurrence_records
   FOR UPDATE USING (
     EXISTS (SELECT 1 FROM occurrences o WHERE o.id = occurrence_id AND o.org_id = get_user_org_id())

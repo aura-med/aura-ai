@@ -21,5 +21,6 @@ AS $$
     )
 $$;
 
+ALTER TABLE rehab_sessions DROP CONSTRAINT IF EXISTS rehab_sessions_exercises_shape;
 ALTER TABLE rehab_sessions
   ADD CONSTRAINT rehab_sessions_exercises_shape CHECK (valid_rehab_exercises(exercises));

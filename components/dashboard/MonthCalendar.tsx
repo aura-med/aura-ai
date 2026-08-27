@@ -122,7 +122,20 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
     setPrevEvents(events)
     squadEpoch.bump()
     loadedMonths.clear()
-    setItems(events)
+    // Clear rather than seed from `events` — at this exact render, `events`
+    // is still the OLD squad's server-fetched data; the parent Server
+    // Component only refetches it after the squad-switch navigation
+    // completes, which can't happen within this synchronous render. Seeding
+    // items from it would republish the old squad's event chips under the
+    // new squad's context — a coach who clicks one before that navigation
+    // resolves would open an editor stamped with the NEW squadId for an
+    // event that actually belongs to the OLD one, silently moving it on
+    // save. Leaving items empty until either ensureMonthLoaded below (for
+    // the currently displayed month) or the genuinely-fresh `events` prop
+    // (via the events !== prevEvents branch, once navigation completes)
+    // repopulates it is safe: an empty calendar is a stale-data risk to no
+    // one, unlike showing the wrong squad's data as if it belonged here.
+    setItems([])
     // The editor form caches the event/date it was opened for, but its
     // squadId prop always tracks the current squad — saving after a squad
     // switch would submit the NEW squad's id for an event that belongs to

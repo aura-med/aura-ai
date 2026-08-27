@@ -97,12 +97,25 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
   // (including one just saved/deleted in a month outside the server's own
   // window), even though loadedMonths still thinks that month is loaded, so
   // it wouldn't be refetched until the component remounts. Keep whatever the
-  // fresh server props say about the window (in case a squad switch changed
-  // what's in it) and preserve on-demand items outside it. Adjusted during
-  // render (React's recommended prop->state sync pattern) rather than in an
-  // effect, which would trigger an extra render pass.
+  // fresh server props say about the window and preserve on-demand items
+  // outside it — UNLESS the squad itself changed: those out-of-window items
+  // were fetched under the *previous* squad's filter (ensureMonthLoaded
+  // closes over effectiveSquadId), so merging them forward would leak one
+  // squad's schedule into another's view and — worse — let an edit on one
+  // of them submit the new squad's squad_id, silently moving the event.
+  // loadedMonths isn't squad-scoped either, so it must be cleared too or a
+  // revisited out-of-window month would wrongly look "already loaded" and
+  // never get refetched for the new squad. Adjusted during render (React's
+  // recommended prop->state sync pattern) rather than in an effect, which
+  // would trigger an extra render pass.
   const [prevEvents, setPrevEvents] = useState(events)
-  if (events !== prevEvents) {
+  const [prevSquadId, setPrevSquadId] = useState(effectiveSquadId)
+  if (effectiveSquadId !== prevSquadId) {
+    setPrevSquadId(effectiveSquadId)
+    setPrevEvents(events)
+    loadedMonths.clear()
+    setItems(events)
+  } else if (events !== prevEvents) {
     setPrevEvents(events)
     setItems((prev) => [
       ...events,

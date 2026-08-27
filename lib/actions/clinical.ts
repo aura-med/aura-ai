@@ -165,13 +165,6 @@ export interface UpdateDiagnosisInput {
 // which closes it out. Only reachable while unresolved: once resolved, the
 // diagnosis has already migrated into the athlete's injury history and the UI
 // never renders an edit affordance for it, but the guard is repeated here too.
-function sameStringSet(a: string[], b: string[]): boolean {
-  if (a.length !== b.length) return false
-  const sortedA = [...a].sort()
-  const sortedB = [...b].sort()
-  return sortedA.every((v, i) => v === sortedB[i])
-}
-
 export async function updateDiagnosis(input: UpdateDiagnosisInput) {
   const supabase = await createClient()
 
@@ -189,69 +182,31 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
     if (existing) throw new Error('Esta ocorrência já tem um diagnóstico ativo.')
   }
 
-  // Fetched before the update so the occurrence mirror below can tell a real
-  // decision change apart from a description-only correction — migration 047
-  // already makes diagnoses.updated_at itself conditional this way, but the
-  // separate mirror write onto the parent occurrence needs its own check.
-  const { data: existingDiagnosis, error: existingDiagnosisError } = await supabase
-    .from('diagnoses')
-    .select('availability_status, load_management_restrictions, load_management_notes')
-    .eq('id', input.diagnosisId)
-    .maybeSingle()
-  if (existingDiagnosisError || !existingDiagnosis) {
-    throw new Error(existingDiagnosisError?.message ?? 'Diagnóstico não encontrado')
-  }
-  const decisionChanged =
-    existingDiagnosis.availability_status !== input.availabilityStatus ||
-    !sameStringSet(existingDiagnosis.load_management_restrictions ?? [], input.loadManagementRestrictions) ||
-    (existingDiagnosis.load_management_notes ?? null) !== (input.loadManagementNotes ?? null)
-
-  const { data: updated, error } = await supabase
-    .from('diagnoses')
-    .update({
-      osiics_code:         input.osiicsCode,
-      osiics_description:  input.osiicsDescription,
-      diagnosis_type:      input.diagnosisType,
-      custom_description:  input.customDescription,
-      availability_status: input.availabilityStatus,
-      load_management_restrictions: input.loadManagementRestrictions,
-      load_management_notes: input.loadManagementNotes,
-      occurrence_id:       input.occurrenceId,
-      // updated_at is deliberately NOT set here — a trigger derives it
-      // server-side (only advancing when availability_status/restrictions/
-      // notes actually change), so a description-only correction can't
-      // outrank a genuinely newer clinical decision, and a Data API caller
-      // can't forge this timestamp directly. See migration 047.
-    })
-    .eq('id', input.diagnosisId)
-    .eq('is_resolved', false)
-    .select('athlete_id')
-    .maybeSingle()
-  if (error || !updated?.athlete_id) throw new Error(error?.message ?? 'Diagnóstico já resolvido ou inexistente')
+  // update_diagnosis_and_mirror (067) locks the diagnosis row first, so
+  // decisionChanged is derived from a guaranteed-current snapshot rather
+  // than a SELECT taken before the update — closing a race where a
+  // concurrent edit to the same diagnosis could leave the app's cached
+  // decisionChanged stale (see migration 067 for the exact scenario). It
+  // also derives diagnoses.updated_at itself via the 047/051/066 trigger
+  // (never set directly here), and skips the occurrence mirror entirely for
+  // a pure description/metadata correction, for the same desync reasons
+  // this comment used to explain inline.
+  const { data: updatedRows, error } = await supabase.rpc('update_diagnosis_and_mirror', {
+    p_diagnosis_id: input.diagnosisId,
+    p_osiics_code: input.osiicsCode,
+    p_osiics_description: input.osiicsDescription,
+    p_diagnosis_type: input.diagnosisType,
+    p_custom_description: input.customDescription,
+    p_availability_status: input.availabilityStatus,
+    p_load_management_restrictions: input.loadManagementRestrictions,
+    p_load_management_notes: input.loadManagementNotes,
+    p_occurrence_id: input.occurrenceId,
+  })
+  if (error) throw new Error(error.message)
+  const updated = updatedRows?.[0]
+  if (!updated?.athlete_id) throw new Error('Diagnóstico já resolvido ou inexistente')
 
   const targetAthleteId = updated.athlete_id
-
-  // Skip the mirror entirely for a pure description/metadata correction (no
-  // change to availability_status/restrictions/notes) — writing those same
-  // (possibly stale, if a later reassessment has since taken over) fields to
-  // the occurrence while leaving its updated_at/decision_source untouched
-  // would desync the two: the occurrence's status could end up reflecting
-  // this diagnosis's values while decision_source still (correctly) points
-  // elsewhere, and recomputeAvailability reads availability_status paired
-  // with whatever updated_at the occurrence already has.
-  if (input.occurrenceId && decisionChanged) {
-    const { error: occError } = await supabase
-      .from('occurrences')
-      .update({
-        availability_status: input.availabilityStatus,
-        load_management_restrictions: input.loadManagementRestrictions,
-        load_management_notes: input.loadManagementNotes,
-        updated_at: new Date().toISOString(),
-        decision_source: 'diagnosis',
-      })
-      .eq('id', input.occurrenceId)
-    if (occError) throw new Error(occError.message)
-  }
 
   const next = await recomputeAvailability(supabase, targetAthleteId, input.availabilityStatus)
   await persistAvailability(supabase, targetAthleteId, next)

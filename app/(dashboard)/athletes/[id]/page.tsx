@@ -140,7 +140,12 @@ async function AthleteDetailContent({
     occurrence_records ( id, record_date, subjective, objective, assessment, plan, availability_status, load_management_restrictions, load_management_notes, clinician_name, created_at ),
     diagnoses ( id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, load_management_restrictions, load_management_notes, is_resolved )
   `
-  const [{ data: activeOccurrences }, { data: recentResolvedOccurrences }, { data: anamnesis }, { data: allActiveDiagnoses }] = await Promise.all([
+  const [
+    { data: activeOccurrences, error: activeOccurrencesError },
+    { data: recentResolvedOccurrences, error: recentResolvedOccurrencesError },
+    { data: anamnesis },
+    { data: allActiveDiagnoses, error: allActiveDiagnosesError },
+  ] = await Promise.all([
     supabase
       .from('occurrences')
       .select(occurrenceColumns)
@@ -174,6 +179,14 @@ async function AthleteDetailContent({
       .eq('is_resolved', false)
       .order('diagnosed_at', { ascending: false }),
   ])
+  // A transient failure here must not be treated as "no diagnoses/
+  // occurrences" — that would silently hide standalone active diagnoses (and
+  // ones linked to a resolved occurrence) even though availability
+  // recomputation still considers them live, or hide open/recent occurrences
+  // entirely from the profile.
+  if (activeOccurrencesError) throw new Error(activeOccurrencesError.message)
+  if (recentResolvedOccurrencesError) throw new Error(recentResolvedOccurrencesError.message)
+  if (allActiveDiagnosesError) throw new Error(allActiveDiagnosesError.message)
 
   // Diagnoses already shown inline under an occurrence row (either an open
   // one, or one of the 5 recently-resolved ones — both render their own

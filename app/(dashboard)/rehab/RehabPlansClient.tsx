@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
@@ -32,6 +32,8 @@ interface RehabPlansClientProps {
   occurrences: RehabPlanOccurrenceOption[]
   role: UserRole
   squadId: string | null
+  initialAthleteId?: string | null
+  openRegister?: boolean
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
@@ -116,12 +118,31 @@ function PlanRow({
   )
 }
 
-export function RehabPlansClient({ plans, athletes, occurrences, role }: RehabPlansClientProps) {
+export function RehabPlansClient({ plans, athletes, occurrences, role, initialAthleteId, openRegister }: RehabPlansClientProps) {
   const [view, setView] = useState<'list' | 'calendar'>('list')
   const [filter, setFilter] = useState<'active' | 'all' | 'history'>('active')
-  const [showRegister, setShowRegister] = useState(false)
+  // `?new=1` deep-link (from the Overview "Iniciar reabilitação" fallback when
+  // the diagnosis has no protocol mapped) opens the manual plan form.
+  const [showRegister, setShowRegister] = useState(!!openRegister)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const router = useRouter()
+  const highlightRef = useRef<HTMLDivElement | null>(null)
+
+  // Auto-expand and scroll to the plan for the incoming athleteId deep-link.
+  useEffect(() => {
+    if (!initialAthleteId) return
+    const target = plans.find((p) => p.athlete_id === initialAthleteId && p.is_active)
+      ?? plans.find((p) => p.athlete_id === initialAthleteId)
+    if (!target) return
+    setFilter(target.is_active ? 'active' : 'all')
+    setExpandedId(target.id)
+  }, [initialAthleteId, plans])
+
+  useEffect(() => {
+    if (expandedId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [expandedId])
 
   const canEdit = role === OWNER_ROLE || REHAB_ROLES.includes(role)
 
@@ -250,16 +271,17 @@ export function RehabPlansClient({ plans, athletes, occurrences, role }: RehabPl
               </div>
             ) : (
               filtered.map((p) => (
-                <PlanRow
-                  key={p.id}
-                  plan={p}
-                  athleteOptions={athleteOptions}
-                  occurrences={occurrences}
-                  canEdit={canEdit}
-                  expanded={expandedId === p.id}
-                  onToggle={() => setExpandedId((cur) => (cur === p.id ? null : p.id))}
-                  onChanged={refresh}
-                />
+                <div key={p.id} ref={initialAthleteId && p.athlete_id === initialAthleteId ? highlightRef : undefined}>
+                  <PlanRow
+                    plan={p}
+                    athleteOptions={athleteOptions}
+                    occurrences={occurrences}
+                    canEdit={canEdit}
+                    expanded={expandedId === p.id}
+                    onToggle={() => setExpandedId((cur) => (cur === p.id ? null : p.id))}
+                    onChanged={refresh}
+                  />
+                </div>
               ))
             )}
           </div>

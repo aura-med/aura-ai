@@ -224,10 +224,32 @@ export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
     .maybeSingle()
   if (error || !resolved?.athlete_id) throw new Error(error?.message ?? 'Diagnóstico já resolvido ou inexistente')
 
-  // Recompute for the diagnosis row's own athlete, not the client-supplied id.
-  // 'available' fallback: with this diagnosis now resolved, nothing else open
-  // means the athlete is available (rehab floor still applies inside the helper).
   const targetAthleteId = resolved.athlete_id
+
+  // Auto-close the linked occurrence when all its diagnoses are resolved — this
+  // MUST happen before recomputeAvailability, otherwise the still-open
+  // occurrence keeps the athlete 'unavailable' even though the injury is done.
+  // Leaves the occurrence open if other unresolved diagnoses still point to it
+  // (e.g. a secondary injury from the same incident).
+  if (resolved.occurrence_id) {
+    const { data: remaining } = await supabase
+      .from('diagnoses')
+      .select('id')
+      .eq('occurrence_id', resolved.occurrence_id)
+      .eq('is_resolved', false)
+    if ((remaining ?? []).length === 0) {
+      await supabase
+        .from('occurrences')
+        .update({ is_resolved: true, resolved_at: new Date().toISOString() })
+        .eq('id', resolved.occurrence_id)
+        .eq('is_resolved', false)
+    }
+  }
+
+  // Recompute for the diagnosis row's own athlete, not the client-supplied id.
+  // 'available' fallback: with this diagnosis now resolved and its occurrence
+  // closed, nothing else open means the athlete is available (rehab floor still
+  // applies inside the helper).
   const next = await recomputeAvailability(supabase, targetAthleteId, 'available')
   await persistAvailability(supabase, targetAthleteId, next)
 
@@ -258,7 +280,6 @@ export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
       injury_date:   injuryDate,
       return_date:   returnDate,
       diagnosis:     resolved.osiics_description ?? resolved.custom_description ?? 'Diagnóstico sem descrição',
-      osiics_code:   resolved.osiics_code,
       severity,
       days_absent:   daysAbsent,
       is_recurrence: false,
@@ -268,6 +289,122 @@ export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
   }
 
   revalidatePath(`/athletes/${targetAthleteId}`)
+  revalidatePath('/occurrences')
+  revalidatePath('/')
+}
+
+// ── Protocol suggestion ─────────────────────────────────────────────────────
+
+export interface SuggestedProtocol {
+  id: string
+  key: string
+  name: string
+  total_days: number
+  color: string
+  return_days_min: number | null
+  return_days_max: number | null
+}
+
+export async function getSuggestedProtocol(protocolKey: string): Promise<SuggestedProtocol | null> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('rehab_protocols')
+    .select('id, key, name, total_days, color, return_days_min, return_days_max')
+    .eq('key', protocolKey)
+    .eq('is_template', true)
+    .maybeSingle()
+  return data ?? null
+}
+
+export async function startRehabProtocol(athleteId: string, protocolId: string, occurrenceId: string | null) {
+  const supabase = await createClient()
+  const today = new Date().toISOString().split('T')[0]
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Fetch protocol data to build the rehab_plans entry
+  const { data: proto } = await supabase
+    .from('rehab_protocols')
+    .select('name, total_days, phases')
+    .eq('id', protocolId)
+    .maybeSingle()
+
+  // Fetch athlete's org/squad for the plan row
+  const { data: athlete } = await supabase
+    .from('athletes')
+    .select('org_id, squad_id')
+    .eq('id', athleteId)
+    .maybeSingle()
+
+  // Insert protocol-tracking session (used by /rehab-protocol)
+  const { error: sessErr } = await supabase.from('rehab_sessions').insert({
+    athlete_id:    athleteId,
+    protocol_id:   protocolId,
+    start_date:    today,
+    session_date:  today,
+    session_type:  'physio',
+    current_day:   1,
+    occurrence_id: occurrenceId ?? null,
+  })
+  if (sessErr) throw new Error(sessErr.message)
+
+  // Also create a rehab_plans entry (used by /rehab planning view)
+  if (proto) {
+    const protoPhases = Array.isArray(proto.phases)
+      ? proto.phases as Array<{ d1: number; name?: string; criteria?: string }>
+      : []
+
+    // RTP criteria from the last phase
+    const lastPhase = protoPhases[protoPhases.length - 1]
+    const rtpCriteria = lastPhase?.criteria
+      ? lastPhase.criteria
+          .split(/;|\./)
+          .map((s: string) => s.trim())
+          .filter(Boolean)
+          .map((label: string, i: number) => ({ id: `rtp_${i}`, label, done: false }))
+      : []
+
+    const endDate = new Date(today)
+    endDate.setDate(endDate.getDate() + (proto.total_days ?? 21))
+
+    const { data: planRow, error: planErr } = await supabase.from('rehab_plans').insert({
+      athlete_id:        athleteId,
+      org_id:            athlete?.org_id ?? null,
+      squad_id:          athlete?.squad_id ?? null,
+      occurrence_id:     occurrenceId ?? null,
+      title:             proto.name,
+      start_date:        today,
+      expected_end_date: endDate.toISOString().split('T')[0],
+      rtp_criteria:      rtpCriteria,
+    }).select('id').single()
+
+    // The rehab_plan is what /rehab shows — a silent failure here is exactly the
+    // "protocolo iniciado mas plano não aparece" bug, so surface it.
+    if (planErr || !planRow?.id) {
+      throw new Error(`Falha ao criar o plano de reabilitação: ${planErr?.message ?? 'a base de dados não devolveu o plano'}`)
+    }
+
+    // Copy protocol phases into rehab_plan_phases so the calendar shows them
+    if (protoPhases.length > 0) {
+      const phaseRows = protoPhases.map((ph, i) => {
+        const phaseStart = new Date(today)
+        phaseStart.setDate(phaseStart.getDate() + ((ph.d1 ?? 1) - 1))
+        return {
+          plan_id:      planRow.id,
+          phase_number: i + 1,
+          name:         ph.name ?? `Fase ${i + 1}`,
+          criteria:     ph.criteria ?? null,
+          start_date:   phaseStart.toISOString().split('T')[0],
+          created_by:   user?.id ?? null,
+        }
+      })
+      const { error: phaseErr } = await supabase.from('rehab_plan_phases').insert(phaseRows)
+      if (phaseErr) throw new Error(`Plano criado, mas falhou a inserção das fases: ${phaseErr.message}`)
+    }
+  }
+
+  revalidatePath(`/athletes/${athleteId}`)
+  revalidatePath('/rehab-protocol')
+  revalidatePath('/rehab')
   revalidatePath('/')
 }
 

@@ -31,9 +31,6 @@ const MedicalTab = dynamic(() => import('./MedicalTab').then((mod) => mod.Medica
 const InjuriesTab = dynamic(() => import('./InjuriesTab').then((mod) => mod.InjuriesTab), {
   loading: () => <TabSkeleton />,
 })
-const TreatmentsTab = dynamic(() => import('./TreatmentsTab').then((mod) => mod.TreatmentsTab), {
-  loading: () => <TabSkeleton />,
-})
 const DocumentsTab = dynamic(() => import('./DocumentsTab').then((mod) => mod.DocumentsTab), {
   loading: () => <TabSkeleton />,
 })
@@ -186,8 +183,7 @@ function TabContent({ tab, profile }: { tab: TabId; profile: AthleteProfileData 
   switch (tab) {
     case 'overview':         return <OverviewTab        profile={profile} />
     case 'medical':          return <MedicalTab         profile={profile} />
-    case 'injuries':         return <InjuriesTab        profile={profile} />
-    case 'treatments':       return <TreatmentsTab      profile={profile} />
+    case 'injuries':         return <MedicalTab         profile={profile} />
     case 'nutrition':        return <NutritionTab       profile={profile} />
     case 'training':         return <TrainingPlanTab    profile={profile} />
     case 'documents':        return <DocumentsTab       profile={profile} />
@@ -201,9 +197,8 @@ function TabContent({ tab, profile }: { tab: TabId; profile: AthleteProfileData 
 function buildBadges(profile: AthleteProfileData): Partial<Record<TabId, number>> {
   const activeInjuries = profile.injuryEvents.filter((i) => i.is_active).length
   return {
-    injuries:  activeInjuries || undefined,
+    medical:   (activeInjuries || (profile.activeConcussion ? 1 : 0)) || undefined,
     documents: profile.documentCount || undefined,
-    medical:   profile.activeConcussion ? 1 : undefined,
   }
 }
 

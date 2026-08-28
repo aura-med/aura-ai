@@ -67,7 +67,7 @@ export default async function ClinicalFilePage({
                 const status = (a.availability_status ?? 'available') as AthleteAvailabilityStatus
                 const cfg = STATUS_CONFIG[status]
                 return (
-                  <Link key={a.id} href={withSquadParam(`/athletes/${a.id}?tab=medical`, squadId)} style={{ textDecoration: 'none' }}>
+                  <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
                     <div style={{
                       display: 'flex', alignItems: 'center', gap: 6,
                       background: cfg.bg, border: `1px solid ${cfg.dot}33`,
@@ -110,7 +110,7 @@ export default async function ClinicalFilePage({
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8 }}>
               {group.map((a) => (
-                <Link key={a.id} href={withSquadParam(`/athletes/${a.id}?tab=medical`, squadId)} className="clinical-athlete-card" style={{ textDecoration: 'none' }}>
+                <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} className="clinical-athlete-card" style={{ textDecoration: 'none' }}>
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 10,
                     padding: '10px 14px', borderRadius: 10,

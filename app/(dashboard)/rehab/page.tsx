@@ -98,6 +98,8 @@ export default async function RehabPlansPage({
   await connection()
   const params = searchParams ? await searchParams : {}
   const squadId = getSquadIdParam(params)
+  const athleteId = typeof params.athleteId === 'string' ? params.athleteId : null
+  const openRegister = params.new === '1' || params.new === 'true'
 
   const { plans, athletes, occurrences, role } = await getData(squadId)
 
@@ -108,6 +110,8 @@ export default async function RehabPlansPage({
       occurrences={occurrences}
       role={role}
       squadId={squadId}
+      initialAthleteId={athleteId}
+      openRegister={openRegister}
     />
   )
 }

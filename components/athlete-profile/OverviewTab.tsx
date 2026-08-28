@@ -2,12 +2,14 @@
 
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
-import { AlertTriangle, Plus, CheckCircle2, Loader2, Pencil } from 'lucide-react'
+import { AlertTriangle, Plus, CheckCircle2, Loader2, Pencil, Activity } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { resolveDiagnosis } from '@/lib/actions/clinical'
-import { useRouter } from 'next/navigation'
+import { resolveDiagnosis, getSuggestedProtocol, startRehabProtocol } from '@/lib/actions/clinical'
+import { OSIICS_FOOTBALL } from '@/lib/data/osiics'
+import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { OccurrenceRow as SharedOccurrenceRow, type Athlete as SharedRowAthlete } from '@/components/occurrences/OccurrenceRow'
-import type { AthleteProfileData, InjuryEventSummary, ActiveDiagnosis, ActiveOccurrence } from '@/types/athlete-profile'
+import type { AthleteProfileData, InjuryEventSummary, ActiveDiagnosis, ActiveOccurrence, ActiveRehabPlanRef } from '@/types/athlete-profile'
 
 const DiagnosisModal = dynamic(() => import('./DiagnosisModal').then((m) => m.DiagnosisModal))
 
@@ -54,41 +56,86 @@ const DIAG_STATUS_CONFIG: Record<string, { label: string; color: string; bg: str
   rtp:         { label: 'Em RTP',        color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.12)' },
 }
 
-type InjuryTimelinePoint = { label: string; injuries: number; severity: number }
+interface GanttRow {
+  label: string
+  start: Date
+  end: Date | null
+  color: string
+}
 
-function InjuryTimelineChart({ data }: { data: InjuryTimelinePoint[] }) {
-  const width = 360
-  const height = 96
-  const chartTop = 8
-  const chartHeight = 58
-  const maxInjuries = Math.max(1, ...data.map((p) => p.injuries))
-  const step = data.length > 1 ? width / (data.length - 1) : width
-  const points = data.map((p, i) => ({
-    ...p,
-    x: i * step,
-    y: chartTop + chartHeight - (p.injuries / maxInjuries) * chartHeight,
-  }))
-  const areaPath = points.length
-    ? [`M ${points[0].x} ${chartTop + chartHeight}`, ...points.map((p) => `L ${p.x} ${p.y}`), `L ${points[points.length - 1].x} ${chartTop + chartHeight}`, 'Z'].join(' ')
-    : ''
-  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+function InjuryGanttChart({ rows, seasonStart, seasonEnd }: { rows: GanttRow[]; seasonStart: Date; seasonEnd: Date }) {
+  const now = new Date()
+  const seasonMs = seasonEnd.getTime() - seasonStart.getTime()
+
+  function toPct(d: Date) {
+    return Math.max(0, Math.min(100, ((d.getTime() - seasonStart.getTime()) / seasonMs) * 100))
+  }
+
+  const todayPct = toPct(now)
+
+  const months: { label: string; pct: number }[] = []
+  for (let i = 0; i < 12; i++) {
+    const m = new Date(seasonStart.getFullYear(), seasonStart.getMonth() + i, 1)
+    months.push({ label: m.toLocaleDateString('pt-PT', { month: 'short' }), pct: toPct(m) })
+  }
+
+  const LABEL_W = 110
 
   return (
-    <div className="h-[100px]">
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Evolucao mensal de lesoes" className="h-full w-full overflow-visible">
-        {[0, 1, 2].map((l) => {
-          const y = chartTop + (chartHeight / 2) * l
-          return <line key={l} x1="0" x2={width} y1={y} y2={y} stroke="var(--sophi-border)" strokeDasharray="3 3" />
+    <div className="w-full overflow-x-auto">
+      <div style={{ minWidth: '360px' }}>
+        {rows.map((row, i) => {
+          const s = toPct(row.start)
+          const e = row.end ? toPct(row.end) : todayPct
+          const w = Math.max(0.8, e - s)
+          const ongoing = row.end === null
+          return (
+            <div key={i} className="flex items-center gap-2 mb-1.5">
+              <div
+                className="shrink-0 text-[9px] truncate text-right leading-tight"
+                style={{ width: `${LABEL_W}px`, color: 'var(--sophi-text3)' }}
+                title={row.label}
+              >
+                {row.label}
+              </div>
+              <div className="relative flex-1 rounded-sm" style={{ height: '10px', background: 'var(--sophi-bg4)' }}>
+                {todayPct > 0 && todayPct < 100 && (
+                  <div
+                    className="absolute top-0 bottom-0 w-px z-10"
+                    style={{ left: `${todayPct}%`, background: 'var(--sophi-warn)', opacity: 0.8 }}
+                  />
+                )}
+                <div
+                  className="absolute top-0 bottom-0 rounded-sm"
+                  style={{
+                    left: `${s}%`,
+                    width: `${w}%`,
+                    background: row.color,
+                    opacity: ongoing ? 0.9 : 0.55,
+                    borderRight: ongoing ? `2px dashed ${row.color}` : undefined,
+                    boxSizing: 'border-box',
+                  }}
+                  title={`${row.label} · ${row.start.toLocaleDateString('pt-PT')} → ${row.end ? row.end.toLocaleDateString('pt-PT') : 'Hoje'}`}
+                />
+              </div>
+            </div>
+          )
         })}
-        <path d={areaPath} fill="var(--sophi-danger-bg)" />
-        <path d={linePath} fill="none" stroke="var(--sophi-danger)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-        {points.map((p) => (
-          <g key={`${p.label}-${p.x}`}>
-            <circle cx={p.x} cy={p.y} r={p.injuries > 0 ? 3 : 2} fill="var(--sophi-danger)" />
-            <text x={p.x} y="88" textAnchor="middle" fontSize="9" fill="var(--sophi-text3)">{p.label}</text>
-          </g>
-        ))}
-      </svg>
+        <div className="flex items-center gap-2 mt-2">
+          <div style={{ width: `${LABEL_W}px` }} className="shrink-0" />
+          <div className="relative flex-1" style={{ height: '14px' }}>
+            {months.map((m, i) => (
+              <span
+                key={i}
+                className="absolute text-[8px] font-mono"
+                style={{ left: `${m.pct}%`, transform: 'translateX(-50%)', color: 'var(--sophi-text3)', whiteSpace: 'nowrap' }}
+              >
+                {m.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -192,42 +239,57 @@ function OccurrencesSummarySection({
   )
 }
 
-function InjuryTimeline({ injuries }: { injuries: InjuryEventSummary[] }) {
+function InjuryTimeline({
+  injuries,
+  activeDiagnoses,
+}: {
+  injuries: InjuryEventSummary[]
+  activeDiagnoses: ActiveDiagnosis[]
+}) {
   const now = new Date()
   const seasonStart = now.getMonth() >= 6
     ? new Date(now.getFullYear(), 6, 1)
     : new Date(now.getFullYear() - 1, 6, 1)
+  const seasonEnd = new Date(seasonStart.getFullYear() + 1, 5, 30)
 
-  const months: { label: string; month: Date; injuries: number; severity: number }[] = []
-  for (let i = 0; i < 12; i++) {
-    const m = new Date(seasonStart.getFullYear(), seasonStart.getMonth() + i, 1)
-    const mNext = new Date(m.getFullYear(), m.getMonth() + 1, 1)
-    const inMonth = injuries.filter((inj) => { const d = new Date(inj.injury_date); return d >= m && d < mNext })
-    months.push({
-      label: m.toLocaleDateString('pt-PT', { month: 'short' }),
-      month: m,
-      injuries: inMonth.length,
-      severity: inMonth.reduce((acc, inj) => {
-        const sv: Record<string, number> = { minor: 1, moderate: 2, major: 3, severe: 4 }
-        return acc + (sv[inj.severity ?? ''] ?? 1)
-      }, 0),
-    })
-  }
+  const rows: GanttRow[] = [
+    ...activeDiagnoses.map((d) => ({
+      label: d.osiics_description ?? d.custom_description ?? 'Lesão',
+      start: new Date(d.diagnosed_at),
+      end: null,
+      color: 'var(--sophi-danger)',
+    })),
+    ...injuries.map((inj) => ({
+      label: inj.diagnosis,
+      start: new Date(inj.injury_date),
+      end: inj.return_date ? new Date(inj.return_date) : new Date(),
+      color: 'var(--sophi-green)',
+    })),
+  ].filter((r) => r.start <= seasonEnd && (!r.end || r.end >= seasonStart))
 
-  const hasData = months.some((m) => m.injuries > 0)
+  const hasData = rows.length > 0
 
   return (
     <div className="rounded-xl border p-4 space-y-3" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
       <div className="flex items-center justify-between">
         <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
-          Injury Timeline — Época Desportiva
+          Linha Cronológica — Época Desportiva
         </p>
-        <p className="text-[10px] font-mono" style={{ color: 'var(--sophi-text3)' }}>Jul – Jun</p>
+        <div className="flex items-center gap-3 text-[9px]" style={{ color: 'var(--sophi-text3)' }}>
+          <span className="flex items-center gap-1">
+            <span className="inline-block w-3 h-2 rounded-sm" style={{ background: 'var(--sophi-danger)', opacity: 0.9 }} />
+            Ativa
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="inline-block w-3 h-2 rounded-sm" style={{ background: 'var(--sophi-green)', opacity: 0.55 }} />
+            Resolvida
+          </span>
+        </div>
       </div>
       {!hasData ? (
         <p className="text-xs text-center py-4" style={{ color: 'var(--sophi-text3)' }}>Sem lesões registadas esta época</p>
       ) : (
-        <InjuryTimelineChart data={months} />
+        <InjuryGanttChart rows={rows} seasonStart={seasonStart} seasonEnd={seasonEnd} />
       )}
     </div>
   )
@@ -239,28 +301,68 @@ function DiagnosisCard({
   diag,
   athleteId,
   canResolve,
+  activePlans = [],
   onResolved,
   onEdit,
 }: {
   diag: ActiveDiagnosis
   athleteId: string
   canResolve: boolean
+  activePlans?: ActiveRehabPlanRef[]
   onResolved: (id: string) => void
   onEdit: () => void
 }) {
   const [resolving, setResolving] = useState(false)
   const [confirming, setConfirming] = useState(false)
+  const [starting, setStarting] = useState(false)
+  const [resolveError, setResolveError] = useState<string | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const squadId = searchParams.get('squadId')
+  const rehabHref = `/rehab${squadId ? `?squadId=${squadId}&` : '?'}athleteId=${athleteId}`
   const statusCfg = DIAG_STATUS_CONFIG[diag.availability_status ?? 'evaluation'] ?? DIAG_STATUS_CONFIG.evaluation
   const title = diag.osiics_description ?? diag.custom_description ?? 'Diagnóstico sem descrição'
 
+  // Does this injury already have an open rehab plan? Match by the shared
+  // occurrence first; otherwise treat any open plan for the athlete as "has
+  // rehab" so we never offer to start a duplicate.
+  const isInjury = diag.diagnosis_type === 'injury'
+  const linkedPlan = diag.occurrence_id
+    ? activePlans.find((p) => p.occurrence_id === diag.occurrence_id)
+    : undefined
+  const hasRehab = isInjury && (!!linkedPlan || activePlans.length > 0)
+  const canStartRehab = isInjury && !hasRehab
+
+  async function handleStartRehab() {
+    setStarting(true)
+    setResolveError(null)
+    try {
+      const entry = diag.osiics_code ? OSIICS_FOOTBALL.find((e) => e.code === diag.osiics_code) : undefined
+      if (entry?.protocolKey) {
+        const proto = await getSuggestedProtocol(entry.protocolKey)
+        if (proto) {
+          await startRehabProtocol(athleteId, proto.id, diag.occurrence_id ?? null)
+          router.push(rehabHref)
+          return
+        }
+      }
+      // No protocol mapped for this OSIICS code — open the manual plan form.
+      router.push(`${rehabHref}&new=1`)
+    } catch (e) {
+      setResolveError(e instanceof Error ? e.message : 'Erro ao iniciar reabilitação')
+      setStarting(false)
+    }
+  }
+
   async function handleResolve() {
     setResolving(true)
+    setResolveError(null)
     try {
-      // Author/recompute handled server-side (resolved_by can't be forged).
       await resolveDiagnosis(diag.id, athleteId)
       onResolved(diag.id)
       router.refresh()
+    } catch (e) {
+      setResolveError(e instanceof Error ? e.message : 'Erro ao resolver diagnóstico')
     } finally {
       setResolving(false)
       setConfirming(false)
@@ -270,7 +372,11 @@ function DiagnosisCard({
   return (
     <div
       className="rounded-lg border p-3 space-y-2"
-      style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border)' }}
+      style={{
+        background: 'var(--sophi-bg3)',
+        borderColor: diag.diagnosis_type === 'injury' ? 'var(--sophi-danger)' : 'var(--sophi-border)',
+        borderLeftWidth: diag.diagnosis_type === 'injury' ? '3px' : undefined,
+      }}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -296,27 +402,52 @@ function DiagnosisCard({
           </span>
         </div>
       </div>
-      {canResolve && !confirming && (
+      {!confirming && (
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onEdit}
-            className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80"
-            style={{ color: 'var(--sophi-text2)' }}
-          >
-            <Pencil size={10} />
-            Editar
-          </button>
-          <button
-            type="button"
-            onClick={() => setConfirming(true)}
-            disabled={resolving}
-            className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80"
-            style={{ color: 'var(--sophi-green)' }}
-          >
-            <CheckCircle2 size={10} />
-            Resolver diagnóstico
-          </button>
+          {hasRehab && (
+            <Link
+              href={rehabHref}
+              className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80"
+              style={{ color: 'var(--sophi-purple)', textDecoration: 'none' }}
+            >
+              Ver reabilitação →
+            </Link>
+          )}
+          {canStartRehab && canResolve && (
+            <button
+              type="button"
+              onClick={handleStartRehab}
+              disabled={starting}
+              className="flex items-center gap-1 text-[10px] font-bold hover:opacity-80"
+              style={{ color: 'var(--sophi-purple)' }}
+            >
+              {starting ? <Loader2 size={10} className="animate-spin" /> : <Activity size={10} />}
+              Iniciar reabilitação
+            </button>
+          )}
+          {canResolve && (
+            <>
+              <button
+                type="button"
+                onClick={onEdit}
+                className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80"
+                style={{ color: 'var(--sophi-text2)' }}
+              >
+                <Pencil size={10} />
+                Editar
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirming(true)}
+                disabled={resolving}
+                className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80"
+                style={{ color: 'var(--sophi-green)' }}
+              >
+                <CheckCircle2 size={10} />
+                Resolver diagnóstico
+              </button>
+            </>
+          )}
         </div>
       )}
       {canResolve && confirming && (
@@ -347,6 +478,11 @@ function DiagnosisCard({
             Confirmar
           </button>
         </div>
+      )}
+      {resolveError && (
+        <p className="text-[10px] px-2 py-1 rounded mt-1" style={{ color: 'var(--sophi-danger)', background: 'var(--sophi-danger-bg)' }}>
+          {resolveError}
+        </p>
       )}
     </div>
   )
@@ -390,7 +526,7 @@ function ActiveDiagnosesSection({
     <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
       <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
         <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>
-          Diagnósticos Ativos
+          {diagnoses.some((d) => d.diagnosis_type === 'injury') ? 'Lesões & Diagnósticos Ativos' : 'Diagnósticos Ativos'}
         </p>
         {diagnoses.length > 0 && (
           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}>
@@ -421,6 +557,7 @@ function ActiveDiagnosesSection({
                 diag={d}
                 athleteId={athleteId}
                 canResolve={canCreate}
+                activePlans={profile.activeRehabPlans ?? []}
                 onResolved={handleResolved}
                 onEdit={() => setEditingDiagnosis(d)}
               />
@@ -480,7 +617,10 @@ export function OverviewTab({ profile }: { profile: AthleteProfileData }) {
       />
 
       {/* Injury timeline */}
-      <InjuryTimeline injuries={profile.injuryEvents} />
+      <InjuryTimeline
+        injuries={profile.injuryEvents}
+        activeDiagnoses={profile.activeDiagnoses.filter((d) => d.diagnosis_type === 'injury')}
+      />
     </div>
   )
 }

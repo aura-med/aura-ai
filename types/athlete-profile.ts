@@ -50,6 +50,15 @@ export interface ActiveDiagnosis {
   occurrence_id: string | null
 }
 
+// Lightweight reference to an athlete's currently-open rehab plan — used by the
+// Overview to decide whether an active injury links to an existing plan or
+// offers to start one.
+export interface ActiveRehabPlanRef {
+  id: string
+  occurrence_id: string | null
+  title: string | null
+}
+
 // Covers both active and recently-resolved occurrences — the Overview tab
 // renders both through the same OccurrenceRow used on the Ocorrências page
 // (see components/occurrences/OccurrenceRow.tsx), so this mirrors that
@@ -182,6 +191,7 @@ export interface RehabPlanDay {
   entry_date: string
   period: RehabPlanPeriod
   content: string | null
+  notes: string | null
   is_rest_day: boolean
   created_at: string
   updated_at: string
@@ -496,6 +506,8 @@ export interface AthleteProfileData {
   // Clinical module (migration 009)
   activeDiagnoses: ActiveDiagnosis[]
   activeOccurrences: ActiveOccurrence[]
+  // Open rehab plans (is_active, not completed) — for the Overview injury cards
+  activeRehabPlans: ActiveRehabPlanRef[]
   // Short history for the Overview compact summary (migration 026)
   recentResolvedOccurrences: ActiveOccurrence[]
   // Documents count (not full list — fetched lazily)

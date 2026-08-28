@@ -11,10 +11,10 @@ import { AthleteProfileClient } from '@/components/athlete-profile/AthleteProfil
 import { getLatestRecommendations } from '@/lib/actions/recommendations'
 import { getViewerContext } from '@/lib/data/auth'
 import type { UserRole } from '@/types'
-import type { AthleteProfileData, TabId, InjuryEventSummary, ActiveDiagnosis, ActiveOccurrence, AthleteAnamnesis } from '@/types/athlete-profile'
+import type { AthleteProfileData, TabId, InjuryEventSummary, ActiveDiagnosis, ActiveOccurrence, ActiveRehabPlanRef, AthleteAnamnesis } from '@/types/athlete-profile'
 
 const VALID_TABS: TabId[] = [
-  'overview', 'medical', 'injuries', 'treatments',
+  'overview', 'medical', 'injuries',
   'nutrition', 'training', 'documents', 'recommendations',
 ]
 
@@ -133,7 +133,7 @@ async function AthleteDetailContent({
     occurrence_records ( id, record_date, subjective, objective, assessment, plan, availability_status, clinician_name, created_at ),
     diagnoses ( id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, is_resolved )
   `
-  const [{ data: activeDiagnoses }, { data: activeOccurrences }, { data: recentResolvedOccurrences }, { data: anamnesis }] = await Promise.all([
+  const [{ data: activeDiagnoses }, { data: activeOccurrences }, { data: recentResolvedOccurrences }, { data: anamnesis }, { data: activeRehabPlans }] = await Promise.all([
     supabase
       .from('diagnoses')
       .select('id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, diagnosed_at, is_resolved, occurrence_id')
@@ -160,6 +160,13 @@ async function AthleteDetailContent({
       .order('season', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from('rehab_plans')
+      .select('id, occurrence_id, title')
+      .eq('athlete_id', id)
+      .eq('is_active', true)
+      .eq('is_completed', false)
+      .order('start_date', { ascending: false }),
   ])
 
   // ── Document + consultation counts ────────────────────────────────────────
@@ -283,6 +290,7 @@ async function AthleteDetailContent({
     injuryEvents,
     activeDiagnoses:   (activeDiagnoses ?? []) as ActiveDiagnosis[],
     activeOccurrences: (activeOccurrences ?? []) as ActiveOccurrence[],
+    activeRehabPlans:  (activeRehabPlans ?? []) as ActiveRehabPlanRef[],
     recentResolvedOccurrences: (recentResolvedOccurrences ?? []) as ActiveOccurrence[],
     documentCount:     documentCount ?? 0,
     consultationCount: consultationCount ?? 0,

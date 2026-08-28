@@ -1,7 +1,20 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Plus, Trash2, Loader2, CheckSquare, Square } from 'lucide-react'
+import { Plus, Trash2, Loader2, CheckSquare, Square, Sparkles } from 'lucide-react'
+
+const RTP_PRESETS = [
+  'Corrida 100% sem dor',
+  'Salto unipodal sem hesitação',
+  'Mudanças de direção indolores',
+  'Força simétrica (diferença < 10%)',
+  'Amplitude de movimento completa',
+  'Sem edema em repouso',
+  'Treino de grupo sem restrições',
+  'Aprovação médica para regresso',
+  'Sprints máximos sem sintomas',
+  'Equilíbrio unipodal 10s estável',
+]
 import { updateRtpCriteria } from '@/lib/actions/rehab-plan'
 import type { RtpCriterion } from '@/types/athlete-profile'
 
@@ -112,38 +125,65 @@ export function RtpCriteriaSection({ planId, initialCriteria, canEdit }: RtpCrit
         ))}
 
         {showAdd && (
-          <div className="flex items-center gap-2 pt-1">
-            <input
-              autoFocus
-              value={newLabel}
-              onChange={(e) => setNewLabel(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') addCriterion(); if (e.key === 'Escape') { setShowAdd(false); setNewLabel('') } }}
-              placeholder="Descrição do critério…"
-              className="flex-1 text-xs px-3 py-1.5 rounded-lg border outline-none focus:ring-1"
-              style={{
-                background: 'var(--sophi-bg3)',
-                borderColor: 'var(--sophi-border2)',
-                color: 'var(--sophi-text)',
-              }}
-            />
-            <button
-              type="button"
-              onClick={addCriterion}
-              disabled={!newLabel.trim() || isPending}
-              className="flex items-center gap-1 text-[10px] font-bold px-2 py-1.5 rounded-lg"
-              style={{ background: 'var(--sophi-green)', color: '#000', opacity: !newLabel.trim() ? 0.5 : 1 }}
-            >
-              {isPending ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
-              OK
-            </button>
-            <button
-              type="button"
-              onClick={() => { setShowAdd(false); setNewLabel('') }}
-              className="text-[10px] px-2 py-1.5 rounded-lg border hover:bg-white/5"
-              style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text3)' }}
-            >
-              Cancelar
-            </button>
+          <div className="space-y-2 pt-1">
+            {/* Preset suggestions */}
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1" style={{ color: 'var(--sophi-text3)' }}>
+                <Sparkles size={10} />
+                <span className="text-[10px] font-semibold uppercase tracking-wider">Sugestões</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {RTP_PRESETS.filter((p) => !criteria.some((c) => c.label === p)).map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    disabled={isPending}
+                    onClick={() => {
+                      const next: RtpCriterion = { id: crypto.randomUUID(), label: preset, done: false }
+                      persist([...criteria, next])
+                    }}
+                    className="text-[10px] px-2 py-1 rounded-full border hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)] transition-colors"
+                    style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)', background: 'var(--sophi-bg3)' }}
+                  >
+                    + {preset}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Free-text input */}
+            <div className="flex items-center gap-2">
+              <input
+                autoFocus
+                value={newLabel}
+                onChange={(e) => setNewLabel(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') addCriterion(); if (e.key === 'Escape') { setShowAdd(false); setNewLabel('') } }}
+                placeholder="Ou escreve um critério personalizado…"
+                className="flex-1 text-xs px-3 py-1.5 rounded-lg border outline-none focus:ring-1"
+                style={{
+                  background: 'var(--sophi-bg3)',
+                  borderColor: 'var(--sophi-border2)',
+                  color: 'var(--sophi-text)',
+                }}
+              />
+              <button
+                type="button"
+                onClick={addCriterion}
+                disabled={!newLabel.trim() || isPending}
+                className="flex items-center gap-1 text-[10px] font-bold px-2 py-1.5 rounded-lg"
+                style={{ background: 'var(--sophi-green)', color: '#000', opacity: !newLabel.trim() ? 0.5 : 1 }}
+              >
+                {isPending ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
+                OK
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowAdd(false); setNewLabel('') }}
+                className="text-[10px] px-2 py-1.5 rounded-lg border hover:bg-white/5"
+                style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text3)' }}
+              >
+                Fechar
+              </button>
+            </div>
           </div>
         )}
       </div>

@@ -1,11 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { AlertTriangle, CheckCircle2, Clock, Brain, Shield, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
+import { AlertTriangle, CheckCircle2, Clock, Brain, Shield, ChevronRight, ChevronLeft, Loader2, Plus } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import type { AthleteProfileData, InjuryEventSummary, Scat6Assessment } from '@/types/athlete-profile'
+import type { AthleteProfileData, InjuryEventSummary, ActiveDiagnosis, Scat6Assessment } from '@/types/athlete-profile'
 import { RTP_STAGES } from '@/types/athlete-profile'
+
+const DiagnosisModal = dynamic(() => import('./DiagnosisModal').then((m) => m.DiagnosisModal))
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -32,10 +36,13 @@ function durationDays(start: string, end: string | null) {
 
 // ── Injury Card ───────────────────────────────────────────────────────────────
 
-function InjuryCard({ inj }: { inj: InjuryEventSummary }) {
-  const sev     = severityConfig(inj.severity)
-  const days    = durationDays(inj.injury_date, inj.return_date)
+function InjuryCard({ inj, athleteId }: { inj: InjuryEventSummary; athleteId: string }) {
+  const sev      = severityConfig(inj.severity)
+  const days     = durationDays(inj.injury_date, inj.return_date)
   const isActive = inj.is_active
+  const searchParams = useSearchParams()
+  const squadId  = searchParams.get('squadId')
+  const rehabHref = `/rehab${squadId ? `?squadId=${squadId}&` : '?'}athleteId=${athleteId}`
 
   return (
     <div
@@ -71,6 +78,15 @@ function InjuryCard({ inj }: { inj: InjuryEventSummary }) {
         <span className="ml-auto font-mono font-bold" style={{ color: isActive ? 'var(--sophi-danger)' : 'var(--sophi-text3)' }}>
           {isActive ? `${days}d afastado` : `${days}d`}
         </span>
+        {!isActive && (
+          <Link
+            href={rehabHref}
+            className="text-[10px] font-medium hover:opacity-80"
+            style={{ color: 'var(--sophi-purple)', textDecoration: 'none' }}
+          >
+            Ver plano →
+          </Link>
+        )}
       </div>
     </div>
   )
@@ -227,9 +243,48 @@ function EmptyInjuries() {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
+function ActiveInjuryCard({ diag }: { diag: ActiveDiagnosis }) {
+  const title = diag.osiics_description ?? diag.custom_description ?? 'Lesão'
+  const statusColors: Record<string, { color: string; bg: string; label: string }> = {
+    unavailable: { color: 'var(--sophi-danger)', bg: 'var(--sophi-danger-bg)', label: 'Indisponível' },
+    evaluation:  { color: 'var(--sophi-warn)',   bg: 'var(--sophi-warn-bg)',   label: 'Em Avaliação' },
+    rtp:         { color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.12)', label: 'Em RTP'       },
+    available:   { color: 'var(--sophi-green)',  bg: 'var(--sophi-green-bg)',  label: 'Disponível'   },
+  }
+  const sc = statusColors[diag.availability_status ?? ''] ?? statusColors.evaluation
+  return (
+    <div className="rounded-lg border p-3 flex items-center justify-between gap-2"
+      style={{ borderColor: 'var(--sophi-danger)', borderLeftWidth: '3px', background: 'var(--sophi-bg3)' }}>
+      <div className="min-w-0">
+        {diag.osiics_code && (
+          <span className="text-[10px] font-mono mr-1.5" style={{ color: 'var(--sophi-text3)' }}>{diag.osiics_code}</span>
+        )}
+        <span className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>{title}</span>
+        <p className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>
+          Desde {formatDate(diag.diagnosed_at)}
+        </p>
+      </div>
+      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
+        style={{ background: sc.bg, color: sc.color }}>
+        {sc.label}
+      </span>
+    </div>
+  )
+}
+
 export function InjuriesTab({ profile }: { profile: AthleteProfileData }) {
-  const active   = profile.injuryEvents.filter((i) => i.is_active)
-  const resolved = profile.injuryEvents.filter((i) => !i.is_active)
+  const router    = useRouter()
+  const [activeDiags, setActiveDiags] = useState(
+    profile.activeDiagnoses.filter((d) => d.diagnosis_type === 'injury')
+  )
+  const resolved  = profile.injuryEvents
+  const athleteId = profile.id
+  const [showDiagModal, setShowDiagModal] = useState(false)
+
+  function handleDiagSaved() {
+    setShowDiagModal(false)
+    router.refresh()
+  }
 
   return (
     <div className="space-y-6">
@@ -241,22 +296,30 @@ export function InjuriesTab({ profile }: { profile: AthleteProfileData }) {
       {/* Active injuries */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
+          <p className="text-[10px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text3)' }}>
             Lesões Ativas
           </p>
-          {active.length > 0 && (
+          {activeDiags.length > 0 && (
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}>
-              {active.length}
+              {activeDiags.length}
             </span>
           )}
+          <button
+            type="button"
+            onClick={() => setShowDiagModal(true)}
+            className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]"
+            style={{ color: 'var(--sophi-green)' }}
+          >
+            <Plus size={10} /> Novo diagnóstico
+          </button>
         </div>
-        {active.length === 0 ? (
+        {activeDiags.length === 0 ? (
           <div className="rounded-xl border py-6 flex flex-col items-center gap-1.5" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
             <CheckCircle2 size={18} style={{ color: 'var(--sophi-green)' }} />
             <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>Sem lesões ativas</p>
           </div>
         ) : (
-          <div className="space-y-3">{active.map((inj) => <InjuryCard key={inj.id} inj={inj} />)}</div>
+          <div className="space-y-3">{activeDiags.map((d) => <ActiveInjuryCard key={d.id} diag={d} />)}</div>
         )}
       </div>
 
@@ -266,13 +329,20 @@ export function InjuriesTab({ profile }: { profile: AthleteProfileData }) {
           Histórico de Lesões
           {resolved.length > 0 && <span className="ml-2 font-mono">({resolved.length})</span>}
         </p>
-        {resolved.length === 0 && active.length === 0
+        {resolved.length === 0
           ? <EmptyInjuries />
-          : resolved.length === 0
-            ? <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>Sem lesões resolvidas</p>
-            : <div className="space-y-3">{resolved.map((inj) => <InjuryCard key={inj.id} inj={inj} />)}</div>
+          : <div className="space-y-3">{resolved.map((inj) => <InjuryCard key={inj.id} inj={inj} athleteId={athleteId} />)}</div>
         }
       </div>
+
+      {showDiagModal && (
+        <DiagnosisModal
+          athleteId={athleteId}
+          occurrences={profile.activeOccurrences}
+          onClose={() => setShowDiagModal(false)}
+          onSaved={handleDiagSaved}
+        />
+      )}
     </div>
   )
 }

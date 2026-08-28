@@ -17,6 +17,7 @@ import {
   createRehabPlan, updateRehabPlan, closeRehabPlan,
   upsertRehabPlanPhase, deleteRehabPlanPhase,
   upsertRehabPlanDay, deleteRehabPlanDay, moveRehabPlanDay,
+  getActiveInjuryDiagnoses,
 } from '@/lib/actions/rehab-plan'
 import { REHAB_DAY_OCCUPIED_ERROR } from '@/lib/actions/rehab-plan-errors'
 import type { RehabPlan, RehabPlanPhase, RehabPlanDay, RehabPlanPeriod } from '@/types/athlete-profile'
@@ -325,6 +326,7 @@ function DayEntryModal({
   onSaved: () => void
 }) {
   const [content, setContent] = useState(existing?.content ?? '')
+  const [notes, setNotes] = useState(existing?.notes ?? '')
   const [isRestDay, setIsRestDay] = useState(existing?.is_rest_day ?? false)
   const [phaseId, setPhaseId] = useState(existing?.phase_id ?? '')
   const [saving, setSaving] = useState(false)
@@ -348,6 +350,7 @@ function DayEntryModal({
         entryDate: date,
         period,
         content: content.trim() || null,
+        notes: notes.trim() || null,
         isRestDay,
         phaseId: phaseId || null,
       })
@@ -416,9 +419,16 @@ function DayEntryModal({
           </label>
 
           <div>
-            <label className={labelClass} style={{ color: 'var(--sophi-text3)' }}>Plano / notas</label>
-            <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={5}
-              placeholder="Exercícios, carga prescrita, avaliação, dor, resultados de testes..."
+            <label className={labelClass} style={{ color: 'var(--sophi-text3)' }}>Plano prescrito</label>
+            <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={3}
+              placeholder="Exercícios, carga prescrita, objetivos da sessão..."
+              className={inputClass} style={{ ...inputStyle, resize: 'vertical' }} />
+          </div>
+
+          <div>
+            <label className={labelClass} style={{ color: 'var(--sophi-text3)' }}>Notas da sessão</label>
+            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3}
+              placeholder="O que foi feito, resposta do atleta, dor EVA, observações..."
               className={inputClass} style={{ ...inputStyle, resize: 'vertical' }} />
           </div>
 
@@ -568,7 +578,10 @@ function WeekBlock({
                       <span className="text-[9px] font-semibold" style={{ color: 'var(--sophi-text3)' }}>Folga</span>
                     )}
                     {entry?.content && (
-                      <p className="text-[10px] leading-snug line-clamp-3" style={{ color: 'var(--sophi-text2)' }}>{entry.content}</p>
+                      <p className="text-[10px] leading-snug line-clamp-2" style={{ color: 'var(--sophi-text2)' }}>{entry.content}</p>
+                    )}
+                    {entry?.notes && (
+                      <p className="text-[9px] leading-snug line-clamp-2 mt-1 italic" style={{ color: 'var(--sophi-purple)' }}>📝 {entry.notes}</p>
                     )}
                     {!entry && canEdit && (
                       <span className="text-[9px]" style={{ color: 'var(--sophi-text3)' }}>+ planear</span>
@@ -607,6 +620,9 @@ export function PlanDetail({
   const [dayTarget, setDayTarget] = useState<{ date: string; period: RehabPlanPeriod } | null>(null)
   const [matchDays, setMatchDays] = useState<string[]>([])
   const [closing, setClosing] = useState<'complete' | 'archive' | null>(null)
+  const [closeError, setCloseError] = useState<string | null>(null)
+  const [diagPicker, setDiagPicker] = useState<{ diagnoses: { id: string; label: string }[] } | null>(null)
+  const [selectedDiagId, setSelectedDiagId] = useState<string>('')
   const [confirmDeletePhaseId, setConfirmDeletePhaseId] = useState<string | null>(null)
   const [deletingPhase, setDeletingPhase] = useState(false)
 
@@ -678,13 +694,39 @@ export function PlanDetail({
 
   const dayMap = new Map(days.map((d) => [dayKey(d.entry_date, d.period), d]))
 
-  async function handleClose(completed: boolean) {
+  async function handleClose(completed: boolean, diagnosisId?: string | null) {
     setClosing(completed ? 'complete' : 'archive')
+    setCloseError(null)
+    setDiagPicker(null)
     try {
-      await closeRehabPlan(plan.id, completed)
-      onPlanChanged()
+      await closeRehabPlan(plan.id, completed, diagnosisId)
+    } catch (e) {
+      setCloseError(e instanceof Error ? e.message : 'Erro ao fechar plano')
     } finally {
       setClosing(null)
+      onPlanChanged()
+    }
+  }
+
+  async function handleConcluirClick() {
+    // If already linked to an occurrence, close directly (auto-resolve handles it server-side)
+    if (plan.occurrence_id) {
+      await handleClose(true)
+      return
+    }
+    // No occurrence_id — fetch active diagnoses to let the user pick which to resolve
+    setCloseError(null)
+    try {
+      const diagnoses = await getActiveInjuryDiagnoses(plan.athlete_id)
+      if (diagnoses.length === 0) {
+        // No active diagnoses — just close without resolving anything
+        await handleClose(true, null)
+      } else {
+        setSelectedDiagId('')
+        setDiagPicker({ diagnoses })
+      }
+    } catch (e) {
+      setCloseError(e instanceof Error ? e.message : 'Erro ao carregar diagnósticos')
     }
   }
 
@@ -718,7 +760,7 @@ export function PlanDetail({
               </button>
               {plan.is_active && (
                 <>
-                  <button type="button" onClick={() => handleClose(true)} disabled={closing !== null}
+                  <button type="button" onClick={handleConcluirClick} disabled={closing !== null}
                     className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]" style={{ color: 'var(--sophi-green)' }}>
                     {closing === 'complete' ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />} Concluir
                   </button>
@@ -732,6 +774,67 @@ export function PlanDetail({
           )}
         </div>
       </div>
+
+      {closeError && (
+        <p className="text-xs px-1 py-0.5 rounded" style={{ color: 'var(--sophi-danger)', background: 'var(--sophi-danger-bg)' }}>
+          {closeError}
+        </p>
+      )}
+
+      {/* Diagnosis picker shown when plan has no occurrence_id */}
+      {diagPicker && (
+        <div className="rounded-xl border p-4 space-y-3" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-green)' }}>
+          <p className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>
+            Qual diagnóstico fica resolvido com a conclusão deste plano?
+          </p>
+          <div className="space-y-2">
+            {diagPicker.diagnoses.map((d) => (
+              <label key={d.id} className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="radio"
+                  name="resolve-diag"
+                  value={d.id}
+                  checked={selectedDiagId === d.id}
+                  onChange={() => setSelectedDiagId(d.id)}
+                  className="accent-[var(--sophi-green)]"
+                />
+                <span className="text-xs" style={{ color: 'var(--sophi-text2)' }}>{d.label}</span>
+              </label>
+            ))}
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="resolve-diag"
+                value=""
+                checked={selectedDiagId === ''}
+                onChange={() => setSelectedDiagId('')}
+                className="accent-[var(--sophi-green)]"
+              />
+              <span className="text-xs" style={{ color: 'var(--sophi-text3)' }}>Nenhum (só concluir o plano)</span>
+            </label>
+          </div>
+          <div className="flex items-center gap-2 pt-1">
+            <button
+              type="button"
+              disabled={closing !== null}
+              onClick={() => handleClose(true, selectedDiagId || null)}
+              className="flex items-center gap-1 text-[10px] font-bold px-3 py-1.5 rounded-lg"
+              style={{ background: 'var(--sophi-green)', color: '#000' }}
+            >
+              {closing === 'complete' ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />} Confirmar conclusão
+            </button>
+            <button
+              type="button"
+              disabled={closing !== null}
+              onClick={() => setDiagPicker(null)}
+              className="text-[10px] font-medium px-3 py-1.5 rounded-lg hover:bg-white/5"
+              style={{ color: 'var(--sophi-text3)' }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Phases */}
       <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
@@ -753,7 +856,9 @@ export function PlanDetail({
                 <div key={ph.id} className="rounded-lg border p-3" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>Fase {ph.phase_number} — {ph.name}</p>
+                      <p className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>
+                        {/^fase\s*\d/i.test(ph.name) ? ph.name : `Fase ${ph.phase_number} — ${ph.name}`}
+                      </p>
                       <p className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>a partir de {formatShort(ph.start_date)}</p>
                       {ph.criteria && <p className="text-[11px] mt-1.5 whitespace-pre-wrap" style={{ color: 'var(--sophi-text2)' }}>{ph.criteria}</p>}
                     </div>
@@ -814,11 +919,20 @@ export function PlanDetail({
             />
           ))}
           {canEdit && (
-            <button type="button" onClick={() => setExtraWeeks((w) => w + 1)}
-              className="w-full py-2 rounded-lg border border-dashed text-xs font-medium hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
-              style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}>
-              + Adicionar semana
-            </button>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setExtraWeeks((w) => w + 1)}
+                className="flex-1 py-2 rounded-lg border border-dashed text-xs font-medium hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
+                style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}>
+                + Adicionar semana
+              </button>
+              {weekCount > 1 && (
+                <button type="button" onClick={() => setExtraWeeks((w) => w - 1)}
+                  className="px-4 py-2 rounded-lg border border-dashed text-xs font-medium hover:border-[var(--sophi-danger)] hover:text-[var(--sophi-danger)]"
+                  style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}>
+                  − Remover
+                </button>
+              )}
+            </div>
           )}
         </div>
       )}

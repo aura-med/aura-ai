@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Search, X, Loader2 } from 'lucide-react'
-import { createDiagnosis, updateDiagnosis } from '@/lib/actions/clinical'
+import { Search, X, Loader2, Activity, CheckCircle2 } from 'lucide-react'
+import { createDiagnosis, updateDiagnosis, getSuggestedProtocol, startRehabProtocol } from '@/lib/actions/clinical'
+import type { SuggestedProtocol } from '@/lib/actions/clinical'
 import { searchOsiics, OSIICS_FOOTBALL } from '@/lib/data/osiics'
 import type { OsiicsEntry } from '@/lib/data/osiics'
 import type { ActiveOccurrence } from '@/types/athlete-profile'
@@ -55,6 +56,8 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
   const [occurrenceId,    setOccurrenceId]    = useState(existing?.occurrence_id ?? (occurrences.length === 1 ? occurrences[0].id : ''))
   const [saving,          setSaving]          = useState(false)
   const [error,           setError]           = useState<string | null>(null)
+  const [suggestion,      setSuggestion]      = useState<SuggestedProtocol | null | 'loading'>(null)
+  const [startingRehab,   setStartingRehab]   = useState(false)
 
   async function handleSave() {
     if (!selectedOsiics && !customDesc.trim()) {
@@ -64,7 +67,6 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
     setSaving(true)
     setError(null)
     try {
-      // Author/org derived server-side + availability recomputed there.
       if (isEdit && existing) {
         await updateDiagnosis({
           diagnosisId:        existing.id,
@@ -75,6 +77,7 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
           availabilityStatus: status as 'available' | 'evaluation' | 'unavailable' | 'rtp',
           occurrenceId:       occurrenceId || null,
         })
+        onSaved()
       } else {
         await createDiagnosis({
           athleteId,
@@ -85,12 +88,32 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
           availabilityStatus: status as 'available' | 'evaluation' | 'unavailable' | 'rtp',
           occurrenceId:       occurrenceId || null,
         })
+        // After creation, check for a suggested protocol (injury only)
+        if (selectedOsiics?.protocolKey && diagnosisType === 'injury') {
+          setSuggestion('loading')
+          const proto = await getSuggestedProtocol(selectedOsiics.protocolKey)
+          setSuggestion(proto)
+          if (!proto) onSaved() // no protocol found — close normally
+        } else {
+          onSaved()
+        }
       }
-      onSaved()
     } catch (e) {
       setError((e as Error).message)
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleStartRehab() {
+    if (!suggestion || suggestion === 'loading') return
+    setStartingRehab(true)
+    try {
+      await startRehabProtocol(athleteId, suggestion.id, occurrenceId || null)
+      onSaved()
+    } catch (e) {
+      setError((e as Error).message)
+      setStartingRehab(false)
     }
   }
 
@@ -260,26 +283,89 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
           <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>
         )}
 
-        <div className="flex gap-3 pt-1">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 px-4 py-2 rounded-lg text-sm border transition-colors hover:bg-[var(--sophi-bg3)]"
-            style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}
+        {/* Protocol suggestion step */}
+        {suggestion && suggestion !== 'loading' && (
+          <div
+            className="rounded-xl border p-4 space-y-3"
+            style={{ background: 'var(--sophi-green-bg)', borderColor: 'var(--sophi-green)' }}
           >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
-            style={{ background: 'var(--sophi-green)', color: '#000' }}
-          >
-            {saving && <Loader2 size={13} className="animate-spin" />}
-            Guardar
-          </button>
-        </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 size={14} style={{ color: 'var(--sophi-green)' }} />
+              <p className="text-xs font-semibold" style={{ color: 'var(--sophi-green)' }}>
+                Diagnóstico guardado · Protocolo disponível
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div
+                className="w-1 self-stretch rounded-full"
+                style={{ background: suggestion.color }}
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold" style={{ color: 'var(--sophi-text)' }}>
+                  {suggestion.name}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--sophi-text2)' }}>
+                  {suggestion.total_days} dias
+                  {suggestion.return_days_min && suggestion.return_days_max
+                    ? ` · RTP estimado ${suggestion.return_days_min}–${suggestion.return_days_max}d`
+                    : ''}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => onSaved()}
+                className="flex-1 px-3 py-2 rounded-lg text-xs border hover:bg-[var(--sophi-bg3)]"
+                style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}
+              >
+                Ignorar
+              </button>
+              <button
+                type="button"
+                onClick={handleStartRehab}
+                disabled={startingRehab}
+                className="flex-1 px-3 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5"
+                style={{ background: 'var(--sophi-green)', color: '#000' }}
+              >
+                {startingRehab
+                  ? <><Loader2 size={11} className="animate-spin" /> A iniciar…</>
+                  : <><Activity size={11} /> Iniciar Protocolo</>
+                }
+              </button>
+            </div>
+          </div>
+        )}
+
+        {suggestion === 'loading' && (
+          <div className="flex items-center gap-2 py-2" style={{ color: 'var(--sophi-text3)' }}>
+            <Loader2 size={13} className="animate-spin" />
+            <span className="text-xs">A procurar protocolo sugerido…</span>
+          </div>
+        )}
+
+        {!suggestion && (
+          <div className="flex gap-3 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 rounded-lg text-sm border transition-colors hover:bg-[var(--sophi-bg3)]"
+              style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
+              style={{ background: 'var(--sophi-green)', color: '#000' }}
+            >
+              {saving && <Loader2 size={13} className="animate-spin" />}
+              Guardar
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

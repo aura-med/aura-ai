@@ -58,7 +58,7 @@ next-intl is configured via `i18n/request.ts`. The active locale is read from th
 
 Tailwind CSS v4 with PostCSS. Theme tokens are CSS custom properties (`--sophi-bg`, `--sophi-green`, `--sophi-border`, `--sophi-text`, etc.) defined in `app/globals.css`. Prefer inline `style={{ color: 'var(--sophi-text2)' }}` over one-off Tailwind colour utilities when using Sophi design tokens. UI primitives in `components/ui/` are shadcn-based; `components/ui/sophi.tsx` has project-specific variants.
 
-Fonts: Inter (`--font-inter`), DM Mono (`--font-dm-mono`), Syne (`--font-syne` — used for headings and the brand wordmark).
+Fonts: Poppins (`--font-poppins`), DM Mono (`--font-dm-mono`), Syne (`--font-syne` — used for headings). The Sophi wordmark itself is an image (`components/branding/SophiMark.tsx`, `public/branding/sophi-mark.svg`), not text.
 
 ### Environment variables
 

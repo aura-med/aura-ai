@@ -96,7 +96,7 @@ export function AthleteCard({
           {/* Name */}
           <p
             className="text-sm font-semibold truncate leading-tight"
-            style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-inter)' }}
+            style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-poppins)' }}
           >
             {name}
           </p>

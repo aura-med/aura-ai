@@ -13,6 +13,10 @@ import {
   ClipboardList, TrendingUp, FileText, AlertCircle, UserCircle, Pill, Apple,
   ChevronLeft, ChevronRight,
 } from 'lucide-react'
+import { ClubBadge } from '@/components/branding/ClubBadge'
+
+// See TopbarClient.tsx — same single hardcoded club asset, same guard.
+const BADGED_ORG_NAME = 'Estrela da Amadora'
 
 // Rehab protocols / RTP are physio & doctor work; rehab_sessions RLS and the
 // RTP/score APIs exclude masseurs, so keep /rehab out of their nav.
@@ -119,18 +123,21 @@ export function Sidebar() {
         style={{ borderColor: 'var(--sophi-border)' }}
       >
         {selectedOrg && (
-          <div className="mb-2">
-            <div
-              className="text-sm font-bold leading-tight"
-              style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}
-            >
-              {selectedOrg.name}
-            </div>
-            <div
-              className="text-[10px] uppercase tracking-wide"
-              style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}
-            >
-              {selectedOrg.type}
+          <div className="mb-2 flex items-center gap-2">
+            {selectedOrg.name === BADGED_ORG_NAME && <ClubBadge orgName={selectedOrg.name} size={24} />}
+            <div>
+              <div
+                className="text-sm font-bold leading-tight"
+                style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}
+              >
+                {selectedOrg.name}
+              </div>
+              <div
+                className="text-[10px] uppercase tracking-wide"
+                style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}
+              >
+                {selectedOrg.type}
+              </div>
             </div>
           </div>
         )}

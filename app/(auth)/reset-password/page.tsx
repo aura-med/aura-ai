@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { AuthControls } from '@/components/auth/AuthControls'
+import { SophiMark } from '@/components/branding/SophiMark'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -76,18 +77,8 @@ export default function ResetPasswordPage() {
       >
         <AuthControls />
         <div className="text-center mb-8">
-          <h1
-            className="text-3xl font-bold"
-            style={{
-              fontFamily: 'var(--font-syne)',
-              background: 'linear-gradient(135deg, var(--sophi-green) 0%, var(--sophi-blue) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            Sophi
-          </h1>
-          <p className="text-xs mt-1" style={{ color: 'var(--sophi-text3)' }}>
+          <SophiMark size={56} className="mx-auto rounded-xl" />
+          <p className="text-xs mt-3" style={{ color: 'var(--sophi-text3)' }}>
             {t('brandSubtitle')}
           </p>
         </div>

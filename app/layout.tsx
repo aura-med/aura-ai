@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { DM_Mono, Inter, Syne } from "next/font/google";
+import { DM_Mono, Poppins, Syne } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getLocale } from 'next-intl/server'
 
-const inter = Inter({
-  variable: "--font-inter",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const dmMono = DM_Mono({
@@ -35,7 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt"
-      className={`dark ${inter.variable} ${dmMono.variable} ${syne.variable} h-full`}
+      className={`dark ${poppins.variable} ${dmMono.variable} ${syne.variable} h-full`}
     >
       <body className="h-full antialiased">
         <Suspense fallback={null}>

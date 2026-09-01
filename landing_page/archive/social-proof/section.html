@@ -1,0 +1,21 @@
+<!-- ARCHIVED: "Trusted by" / social proof section.
+     Removed from template.html on 2026-09-01.
+     To restore: paste this block back into template.html between the
+     "HOW SOPHI HELPS" and "HOW IT WORKS" sections, restore the "social"
+     key in content/{en,pt,es}.json from content-social.json in this folder,
+     re-add the "About us" nav link pointing at #about, and renumber the
+     chapter indices. The .trust and .fine-print CSS rules and the two logo
+     files in assets/logos/ were left in place so this drops straight back in. -->
+
+<!-- ============ SOCIAL PROOF ============ -->
+  <section class="section" id="about">
+    <div class="wrap reveal">
+      <p class="chapter"><span class="ix">03</span><span class="rule"></span>{{social.eyebrow}}</p>
+      <h2 style="font-size:clamp(1.4rem,2.8vw,1.9rem);max-width:30ch;">{{social.headline}}</h2>
+      <div class="trust">
+        <img src="/assets/logos/estrela-amadora.png" alt="Estrela da Amadora" loading="lazy">
+        <img src="/assets/logos/fpf.png" alt="Federação Portuguesa de Futebol" loading="lazy">
+      </div>
+      <p class="fine-print">{{social.note}}</p>
+    </div>
+  </section>

@@ -1,0 +1,126 @@
+{
+  "lang": "es",
+  "meta": {
+    "title": "Sophi — Al Lado de Tu Equipo",
+    "description": "Sophi convierte los datos de bienestar, carga y notas clínicas que los clubes ya recopilan en una puntuación diaria de riesgo de lesión por atleta, con la variable que la provoca. Apoyo a la decisión para equipos médicos."
+  },
+  "nav": {
+    "product": "Producto",
+    "how": "Cómo funciona",
+    "about": "Sobre nosotros",
+    "demo": "Reservar Demo"
+  },
+  "hero": {
+    "kicker": "Al lado de tu equipo",
+    "headline": "Sabe qué jugadores necesitan atención esta mañana.",
+    "subheadline": "Sophi convierte los datos de bienestar, carga y notas clínicas que ya recopilas en una puntuación de riesgo diaria para cada atleta — e identifica la variable que la provoca, para que tu equipo médico decida qué hacer.",
+    "ctaPrimary": "Reservar Demo",
+    "ctaSecondary": "Contactar",
+    "foot": "9 señales evaluadas por atleta, cada mañana"
+  },
+  "spec": {
+    "items": [
+      {
+        "n": "9",
+        "k": "Señales por atleta",
+        "c": "Historial, carga, VFC, fatiga, sueño, recuperación, estrés, desaceleración y contexto de partido."
+      },
+      {
+        "n": "7:28",
+        "k": "Carga aguda : crónica",
+        "c": "Ratio de carga calculado desde tus sesiones de GPS, actualizado cada día."
+      },
+      {
+        "n": "4",
+        "k": "Niveles de riesgo",
+        "c": "Bajo, moderado, alto y crítico — cada uno con la variable que lo provoca."
+      }
+    ],
+    "micro": "El riesgo se pondera según el momento de la plantilla en el microciclo."
+  },
+  "problem": {
+    "eyebrow": "El coste de no saberlo",
+    "headline": "Cada señal de alerta ignorada te cuesta un jugador.",
+    "body": "La mayoría de las lesiones no surgen de la nada. Las señales están ahí, en los datos de carga, sueño y recuperación. Pero esos datos viven en hojas de cálculo, formularios en papel y en la memoria de alguien. Cuando se detecta el patrón, el jugador ya está lesionado. Cada semana sin una visión completa es una semana de riesgo oculto.",
+    "chartCap": "Disponibilidad de la plantilla a lo largo de una temporada — cada caída es una decisión tomada demasiado tarde."
+  },
+  "solution": {
+    "eyebrow": "Cómo ayuda Sophi",
+    "headline": "Un sistema. Todas las señales. Una puntuación clara.",
+    "intro": "Sophi reúne todos tus datos médicos y los convierte en algo que tu equipo puede usar esta misma mañana.",
+    "bullets": [
+      {
+        "title": "Sistema de seguimiento médico",
+        "body": "El historial de salud de cada atleta en un solo lugar — bienestar, lesiones y notas clínicas, siempre al día.",
+        "vizLabel": "Jugadores disponibles",
+        "vizUnit": "últimos 14 días"
+      },
+      {
+        "title": "Seguimiento de protocolos de rehabilitación",
+        "body": "Cada plan avanza paso a paso, ajustándose a la respuesta real del atleta y no a un calendario fijo.",
+        "vizLabel": "Progreso del protocolo",
+        "vizUnit": "planes activos"
+      },
+      {
+        "title": "Puntuación de riesgo y análisis",
+        "body": "Una puntuación clara por atleta a partir de datos reales, con las tendencias de carga y rendimiento detrás.",
+        "vizLabel": "Distribución de plantilla",
+        "vizUnit": "hoy"
+      }
+    ]
+  },
+  "how": {
+    "eyebrow": "Cómo funciona",
+    "headline": "Tres pasos para una visión completa.",
+    "steps": [
+      {
+        "num": "01",
+        "title": "Introduce tus datos",
+        "body": "Los cuestionarios de bienestar se completan en Sophi, en el idioma del jugador. Las notas clínicas y el historial de lesiones los introduce tu equipo médico o se envían por nuestra API REST. Los datos de carga y GPS se cargan con nuestra ayuda — las conexiones directas con Catapult, Polar, Garmin, Oura y WHOOP están en la hoja de ruta y todavía no están disponibles."
+      },
+      {
+        "num": "02",
+        "title": "Obtén una puntuación de riesgo diaria",
+        "body": "Cada atleta recibe una puntuación clara cada día, basada en datos reales, no en suposiciones."
+      },
+      {
+        "num": "03",
+        "title": "Actúa antes de que sea una lesión",
+        "body": "Tu equipo médico ve quién está en riesgo y ajusta el entrenamiento o la rehabilitación antes de que un pequeño problema se convierta en uno grande."
+      }
+    ]
+  },
+  "faq": {
+    "eyebrow": "Preguntas",
+    "headline": "Lo que los clubes preguntan primero.",
+    "items": [
+      {
+        "q": "Ya tenemos un sistema para el seguimiento de lesiones.",
+        "a": "La mayoría de los clubes lo tienen, normalmente una mezcla de hojas de cálculo y formularios en papel. Sophi no sustituye el criterio médico de tu equipo. Te da una puntuación de riesgo diaria y clara, construida con los datos que ya recopilas, para que los problemas aparezcan antes."
+      },
+      {
+        "q": "¿Están seguros los datos de nuestros atletas?",
+        "a": "Sí. Sophi está construida desde el primer día para datos de salud sensibles, con controles de acceso estrictos y registro de auditoría. Solo tu personal médico y técnico puede verlos."
+      },
+      {
+        "q": "¿Tardaremos mucho en configurarlo?",
+        "a": "No. Reserva una demo breve y te mostramos exactamente cómo Sophi encaja en tu flujo de trabajo actual. La mayoría de los clubes están operativos en semanas, no meses."
+      }
+    ]
+  },
+  "finalCta": {
+    "headline": "Dale a tu equipo médico la visión completa.",
+    "body": "Reserva una demo de 20 minutos. Sin compromiso, sin presión, solo una visión clara de cómo Sophi funciona para tu plantilla.",
+    "ctaPrimary": "Reservar Demo",
+    "ctaSecondary": "Contactar"
+  },
+  "footer": {
+    "tagline": "Al lado de tu equipo.",
+    "about": "Sophi es una plataforma de inteligencia de salud y rendimiento creada para departamentos de medicina deportiva, para que los equipos médicos puedan proteger la disponibilidad de los atletas con confianza.",
+    "contactLabel": "Contacto",
+    "rights": "© 2026 Sophi. Todos los derechos reservados.",
+    "emailSubject": "Request for Information - Sophi",
+    "disclaimer": "Sophi apoya la decisión clínica de tu equipo médico. No diagnostica ni trata, y no sustituye el criterio clínico.",
+    "securityLink": "Seguridad y protección de datos"
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "lang": "pt",
+  "meta": {
+    "title": "Sophi — Ao Lado da Tua Equipa",
+    "description": "A Sophi transforma os dados de bem-estar, carga e registo clínico que os clubes já recolhem numa pontuação diária de risco de lesão por atleta, com a variável que a está a causar. Apoio à decisão para equipas médicas."
+  },
+  "nav": {
+    "product": "Produto",
+    "how": "Como funciona",
+    "about": "Sobre nós",
+    "demo": "Marcar Demo"
+  },
+  "hero": {
+    "kicker": "Ao lado da tua equipa",
+    "headline": "Sabe que jogadores precisam de atenção esta manhã.",
+    "subheadline": "A Sophi transforma os dados de bem-estar, carga e registo clínico que já recolhes numa pontuação de risco diária para cada atleta — e identifica a variável que a está a causar, para que a tua equipa médica decida o que fazer.",
+    "ctaPrimary": "Marcar Demo",
+    "ctaSecondary": "Contactar",
+    "foot": "9 sinais avaliados por atleta, todas as manhãs"
+  },
+  "spec": {
+    "items": [
+      {
+        "n": "9",
+        "k": "Sinais por atleta",
+        "c": "Histórico, carga, VFC, fadiga, sono, recuperação, stress, desaceleração e contexto de jogo."
+      },
+      {
+        "n": "7:28",
+        "k": "Carga aguda : crónica",
+        "c": "Rácio de carga calculado a partir das tuas sessões de GPS, atualizado todos os dias."
+      },
+      {
+        "n": "4",
+        "k": "Níveis de risco",
+        "c": "Baixo, moderado, alto e crítico — cada um com a variável que o está a causar."
+      }
+    ],
+    "micro": "O risco é ponderado pelo momento do plantel no microciclo."
+  },
+  "problem": {
+    "eyebrow": "O custo de não saber",
+    "headline": "Cada sinal de alerta ignorado custa-te um jogador.",
+    "body": "A maioria das lesões não surge do nada. Os sinais estão lá, nos dados de carga, sono e recuperação. Mas esses dados vivem em folhas de cálculo, formulários em papel e na memória de alguém. Quando o padrão é percebido, o jogador já está lesionado. Cada semana sem uma visão completa é uma semana de risco escondido.",
+    "chartCap": "Disponibilidade do plantel ao longo de uma época — cada queda é uma decisão tomada tarde demais."
+  },
+  "solution": {
+    "eyebrow": "Como a Sophi ajuda",
+    "headline": "Um sistema. Todos os sinais. Uma pontuação clara.",
+    "intro": "A Sophi junta todos os dados médicos e transforma-os em algo que a tua equipa pode usar já esta manhã.",
+    "bullets": [
+      {
+        "title": "Sistema de registo clínico",
+        "body": "O histórico clínico de cada atleta num só lugar — bem-estar, lesões e notas clínicas, sempre atualizados.",
+        "vizLabel": "Jogadores disponíveis",
+        "vizUnit": "últimos 14 dias"
+      },
+      {
+        "title": "Acompanhamento de protocolos de reabilitação",
+        "body": "Cada plano avança passo a passo, ajustando-se à resposta real do atleta e não a um calendário fixo.",
+        "vizLabel": "Progresso do protocolo",
+        "vizUnit": "planos ativos"
+      },
+      {
+        "title": "Pontuação de risco e análise",
+        "body": "Uma pontuação clara por atleta a partir de dados reais, com as tendências de carga e performance por trás.",
+        "vizLabel": "Distribuição do plantel",
+        "vizUnit": "hoje"
+      }
+    ]
+  },
+  "how": {
+    "eyebrow": "Como funciona",
+    "headline": "Três passos para uma visão completa.",
+    "steps": [
+      {
+        "num": "01",
+        "title": "Coloca os teus dados na Sophi",
+        "body": "Os questionários de bem-estar são preenchidos na Sophi, na língua do jogador. As notas clínicas e o histórico de lesões são introduzidos pela equipa médica ou enviados pela nossa API REST. Os dados de carga e GPS são carregados connosco — as ligações diretas ao Catapult, Polar, Garmin, Oura e WHOOP estão no roteiro e ainda não estão disponíveis."
+      },
+      {
+        "num": "02",
+        "title": "Recebe uma pontuação de risco diária",
+        "body": "Cada atleta recebe uma pontuação clara todos os dias, baseada em dados reais, não em suposições."
+      },
+      {
+        "num": "03",
+        "title": "Age antes que seja uma lesão",
+        "body": "A tua equipa médica vê quem está em risco e ajusta o treino ou a reabilitação antes de um pequeno problema se tornar grande."
+      }
+    ]
+  },
+  "faq": {
+    "eyebrow": "Perguntas",
+    "headline": "O que os clubes perguntam primeiro.",
+    "items": [
+      {
+        "q": "Já temos um sistema para acompanhar lesões.",
+        "a": "A maioria dos clubes tem, normalmente uma mistura de folhas de cálculo e formulários em papel. A Sophi não substitui o julgamento clínico da tua equipa. Dá-te uma pontuação de risco diária e clara, construída com os dados que já recolhes, para que os problemas apareçam mais cedo."
+      },
+      {
+        "q": "Os dados dos nossos atletas estão seguros?",
+        "a": "Sim. A Sophi foi criada desde o início para dados de saúde sensíveis, com controlos de acesso rigorosos e registo de auditoria. Só a tua equipa médica e técnica pode ver os dados."
+      },
+      {
+        "q": "Isto demora muito tempo a configurar?",
+        "a": "Não. Marca uma demo curta e mostramos exatamente como a Sophi se encaixa no teu fluxo de trabalho atual. A maioria dos clubes está operacional em semanas, não meses."
+      }
+    ]
+  },
+  "finalCta": {
+    "headline": "Dá à tua equipa médica a visão completa.",
+    "body": "Marca uma demo de 20 minutos. Sem compromisso, sem pressão, apenas uma visão clara de como a Sophi funciona para o teu plantel.",
+    "ctaPrimary": "Marcar Demo",
+    "ctaSecondary": "Contactar"
+  },
+  "footer": {
+    "tagline": "Ao lado da tua equipa.",
+    "about": "A Sophi é uma plataforma de inteligência de saúde e performance criada para departamentos de medicina desportiva, para que as equipas médicas possam proteger a disponibilidade dos atletas com confiança.",
+    "contactLabel": "Contacto",
+    "rights": "© 2026 Sophi. Todos os direitos reservados.",
+    "emailSubject": "Request for Information - Sophi",
+    "disclaimer": "A Sophi apoia a decisão clínica da tua equipa médica. Não diagnostica nem trata, e não substitui o julgamento clínico.",
+    "securityLink": "Segurança e proteção de dados"
+  }
+}

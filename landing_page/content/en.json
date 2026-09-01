@@ -1,0 +1,126 @@
+{
+  "lang": "en",
+  "meta": {
+    "title": "Sophi — Behind Your Team",
+    "description": "Sophi turns the wellness, workload and clinical data football clubs already collect into a daily injury-risk score for every athlete, with the variable driving it. Decision support for medical staff."
+  },
+  "nav": {
+    "product": "Product",
+    "how": "How it works",
+    "about": "About us",
+    "demo": "Book a Demo"
+  },
+  "hero": {
+    "kicker": "Behind your team",
+    "headline": "Know which players need attention this morning.",
+    "subheadline": "Sophi turns the wellness, workload and clinical data you already collect into a daily risk score for every athlete — and names the variable driving it, so your medical team decides what to do about it.",
+    "ctaPrimary": "Book a Demo",
+    "ctaSecondary": "Contact Us",
+    "foot": "9 signals scored per athlete, every morning"
+  },
+  "spec": {
+    "items": [
+      {
+        "n": "9",
+        "k": "Signals per athlete",
+        "c": "History, workload, HRV, fatigue, sleep, recovery, stress, deceleration and matchday context."
+      },
+      {
+        "n": "7:28",
+        "k": "Acute : chronic load",
+        "c": "Rolling workload ratio from your GPS sessions, recalculated every day."
+      },
+      {
+        "n": "4",
+        "k": "Risk bands",
+        "c": "Low, moderate, high and critical — each one naming the variable driving it."
+      }
+    ],
+    "micro": "Risk is weighted to where the squad sits in the microcycle."
+  },
+  "problem": {
+    "eyebrow": "The cost of not knowing",
+    "headline": "Every missed warning sign costs you a player.",
+    "body": "Most injuries don't come out of nowhere. The signs are there, in workload, sleep, and recovery data. But that data lives in spreadsheets, paper forms, and someone's memory. By the time you spot the pattern, the player is already hurt. Every week you can't see the full picture is a week of hidden risk.",
+    "chartCap": "Squad availability across a season — every dip is a decision made too late."
+  },
+  "solution": {
+    "eyebrow": "How Sophi helps",
+    "headline": "One system. Every signal. One clear score.",
+    "intro": "Sophi brings your medical data together and turns it into something your team can act on this morning.",
+    "bullets": [
+      {
+        "title": "Medical tracking system",
+        "body": "Every athlete's health record in one place — wellness, injuries and clinical notes, always current.",
+        "vizLabel": "Players available",
+        "vizUnit": "last 14 days"
+      },
+      {
+        "title": "Rehab protocol tracking",
+        "body": "Each plan advances step by step, adjusting to how the athlete actually responds, not to a fixed calendar.",
+        "vizLabel": "Protocol progress",
+        "vizUnit": "active plans"
+      },
+      {
+        "title": "Risk score & analytics",
+        "body": "One clear score per athlete from real data, plus the load and performance trends behind it.",
+        "vizLabel": "Squad distribution",
+        "vizUnit": "today"
+      }
+    ]
+  },
+  "how": {
+    "eyebrow": "How it works",
+    "headline": "Three steps to full visibility.",
+    "steps": [
+      {
+        "num": "01",
+        "title": "Get your data in",
+        "body": "Wellness check-ins are completed in Sophi, in the player's own language. Clinical notes and injury history are entered by your medical staff or pushed through our REST API. Workload and GPS data is loaded with our help — direct connectors for Catapult, Polar, Garmin, Oura and WHOOP are on the roadmap, not live yet."
+      },
+      {
+        "num": "02",
+        "title": "Get a daily risk score",
+        "body": "Every athlete gets one clear score each day, backed by real data, not guesswork."
+      },
+      {
+        "num": "03",
+        "title": "Act before it's an injury",
+        "body": "Your medical team sees who's at risk and adjusts training or rehab before a small issue becomes a big one."
+      }
+    ]
+  },
+  "faq": {
+    "eyebrow": "Questions",
+    "headline": "What clubs ask us first.",
+    "items": [
+      {
+        "q": "We already have a system for tracking injuries.",
+        "a": "Most clubs do, usually a mix of spreadsheets and paper forms. Sophi doesn't replace your medical judgment. It gives your team one clear, daily risk score built from the data you already collect, so problems surface earlier."
+      },
+      {
+        "q": "Is our athletes' data safe?",
+        "a": "Yes. Sophi is built for sensitive health data from day one, with strict access controls and audit logging. Only your medical and technical staff can see it."
+      },
+      {
+        "q": "Will this take a long time to set up?",
+        "a": "No. Book a short demo and we'll show you exactly how Sophi fits your current workflow. Most clubs are up and running within weeks, not months."
+      }
+    ]
+  },
+  "finalCta": {
+    "headline": "Give your medical team the full picture.",
+    "body": "Book a 20-minute demo. No commitment, no pressure, just a clear look at how Sophi works for your squad.",
+    "ctaPrimary": "Book a Demo",
+    "ctaSecondary": "Contact Us"
+  },
+  "footer": {
+    "tagline": "Behind your team.",
+    "about": "Sophi is a health & performance intelligence platform built for sports medicine departments, so medical teams can protect player availability with confidence.",
+    "contactLabel": "Contact",
+    "rights": "© 2026 Sophi. All rights reserved.",
+    "emailSubject": "Request for Information - Sophi",
+    "disclaimer": "Sophi supports clinical decision-making by your medical staff. It does not diagnose or treat, and it does not replace clinical judgement.",
+    "securityLink": "Security & data protection"
+  }
+}

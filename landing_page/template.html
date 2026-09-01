@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{meta.title}}</title>
+<meta name="description" content="{{meta.description}}">
+<link rel="icon" href="/assets/favicon.ico">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{meta.title}}">
+<meta property="og:description" content="{{meta.description}}">
+<meta property="og:image" content="/assets/logos/sophi-social-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<script>document.documentElement.className += ' js'</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-nav">
+  <div class="nav-inner">
+    <a class="brand" href="{{homeHref}}" aria-label="Sophi">{{&lockup}}</a>
+    <nav class="nav-links">
+      <a href="#product">{{nav.product}}</a>
+      <a href="#how">{{nav.how}}</a>
+    </nav>
+    <div class="nav-actions">
+      <div class="lang-switch">{{#each langs}}<a href="{{href}}" aria-current="{{current}}">{{code}}</a>{{/each}}</div>
+      <a class="btn btn-cta btn-sm" href="{{calendlyUrl}}" target="_blank" rel="noopener">{{nav.demo}}</a>
+      <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="mobile-panel">
+    <a href="#product">{{nav.product}}</a>
+    <a href="#how">{{nav.how}}</a>
+    <div class="lang-switch">{{#each langs}}<a href="{{href}}" aria-current="{{current}}">{{code}}</a>{{/each}}</div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="product">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="kicker"><span class="rule"></span>{{hero.kicker}}</p>
+        <h1>{{hero.headline}}</h1>
+        <p class="sub">{{hero.subheadline}}</p>
+        <div class="cta-row">
+          <a class="btn btn-cta" href="{{calendlyUrl}}" target="_blank" rel="noopener">{{hero.ctaPrimary}}</a>
+          <a class="btn btn-quiet" href="mailto:{{email}}?subject={{footer.emailSubjectEncoded}}">{{hero.ctaSecondary}}</a>
+        </div>
+        <p class="hero-foot"><span class="dot-mark"></span> {{hero.foot}}</p>
+      </div>
+
+      <div class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="shot-dots"><i></i><i></i><i></i></span>
+            <span class="shot-url mono">app.sophisports.com/dashboard</span>
+          </div>
+          <div class="shot-window">
+            <div class="app" id="appShot">
+              <div class="app-top">
+                <span class="app-mark">Sophi</span>
+                <span class="app-top-r">
+                  <span class="app-pill">First Team</span>
+                  <span>Physiotherapist</span>
+                  <span class="app-av">AS</span>
+                </span>
+              </div>
+              <div class="app-body">
+                <aside class="app-side">
+                  <p class="app-sl">Overview</p>
+                  <span class="app-nav on">Dashboard</span>
+                  <span class="app-nav">Squad</span>
+                  <span class="app-nav">Athlete Assessment</span>
+                  <span class="app-nav">Wellness Input</span>
+                  <span class="app-nav">Readiness</span>
+                  <p class="app-sl">Clinical</p>
+                  <span class="app-nav">Clinical Module</span>
+                  <span class="app-nav">Rehabilitation</span>
+                  <p class="app-sl">Performance</p>
+                  <span class="app-nav">Load &amp; GPS</span>
+                  <span class="app-nav">Calendar Intelligence</span>
+                </aside>
+                <div class="app-main">
+                  <div class="app-h">
+                    <h4>Dashboard</h4>
+                    <p>Squad overview &mdash; today</p>
+                  </div>
+                  <div class="app-kpis">
+                    <div class="app-kpi"><p class="n">26</p><p class="l">Registered athletes</p><p class="s">18 avail. &middot; 4 rehab.</p></div>
+                    <div class="app-kpi"><p class="n">42</p><p class="l">Average squad score</p><p class="s">-3 vs last week</p></div>
+                    <div class="app-kpi"><p class="n" style="color:#ff7043">3</p><p class="l">High/critical alerts</p><p class="s">Score &ge; 65</p></div>
+                    <div class="app-kpi"><p class="n">4</p><p class="l">In rehabilitation</p><p class="s">Active protocol</p></div>
+                  </div>
+                  <div class="app-cols">
+                    <div class="app-card">
+                      <div class="app-ct"><span>Athletes on alert</span><span>Dominant variable</span></div>
+                      <div id="alertRows"></div>
+                    </div>
+                    <div class="app-card">
+                      <div class="app-ct"><span>Squad risk &middot; 14 days</span></div>
+                      <svg class="app-spark" viewBox="0 0 300 90">
+                        <path d="M0,90 L0,67 L23,58 L46,64 L69,48 L92,54 L115,42 L138,51 L161,35 L184,45 L207,54 L230,48 L253,38 L276,45 L299,54 L299,90 Z" fill="rgba(0,229,160,.08)"/>
+                        <polyline points="0,67 23,58 46,64 69,48 92,54 115,42 138,51 161,35 184,45 207,54 230,48 253,38 276,45 299,54" fill="none" stroke="#00e5a0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="299" cy="54" r="3.5" fill="#00e5a0"/>
+                      </svg>
+                      <div class="app-dist">
+                        <span style="background:#00e5a0;width:54%"></span>
+                        <span style="background:#f6ad55;width:27%"></span>
+                        <span style="background:#ff7043;width:15%"></span>
+                        <span style="background:#ff4d6d;width:4%"></span>
+                      </div>
+                      <div class="app-dist-k"><span>Low 14</span><span>Mod 7</span><span>High 4</span><span>Crit 1</span></div>
+                    </div>
+                  </div>
+                  <div class="app-rehab">
+                    <div class="app-ct"><span>In rehabilitation</span><span>Return-to-play</span></div>
+                    <div class="app-rrow"><span><span class="app-nm">D. Matos</span> <span class="app-mt">&middot; Hamstring, grade II</span></span><span class="ph">Phase 3 / 4</span><span class="app-bar"><i style="width:72%"></i></span><span class="rt">RTP in 9 d</span></div>
+                    <div class="app-rrow"><span><span class="app-nm">B. Faria</span> <span class="app-mt">&middot; Ankle sprain</span></span><span class="ph">Phase 2 / 4</span><span class="app-bar"><i style="width:45%"></i></span><span class="rt">RTP in 16 d</span></div>
+                    <div class="app-rrow"><span><span class="app-nm">L. Reis</span> <span class="app-mt">&middot; Adductor strain</span></span><span class="ph">RTP testing</span><span class="app-bar"><i style="width:91%"></i></span><span class="rt">RTP in 3 d</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SPEC BAND ============ -->
+  <div class="spec-band">
+    <div class="wrap">
+      <div class="spec-grid">
+        {{#each spec.items}}
+        <div class="spec reveal">
+          <p class="n">{{n}}</p>
+          <p class="k">{{k}}</p>
+          <p class="c">{{c}}</p>
+        </div>
+        {{/each}}
+      </div>
+      <div class="micro-row">
+        <span class="md">MD-4</span><span class="md">MD-3</span><span class="md on">MD-2</span><span class="md">MD-1</span><span class="md">MD</span>
+        <span class="cap">{{spec.micro}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PROBLEM ============ -->
+  <section class="section">
+    <div class="wrap problem-grid">
+      <div class="reveal">
+        <p class="chapter"><span class="ix">01</span><span class="rule"></span>{{problem.eyebrow}}</p>
+        <h2>{{problem.headline}}</h2>
+      </div>
+      <div class="reveal">
+        <p class="problem-body">{{problem.body}}</p>
+        <div class="problem-ticks" id="probTicks" aria-hidden="true"></div>
+        <p class="problem-cap">{{problem.chartCap}}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HOW SOPHI HELPS ============ -->
+  <section class="section" id="solution">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="chapter"><span class="ix">02</span><span class="rule"></span>{{solution.eyebrow}}</p>
+        <h2>{{solution.headline}}</h2>
+        <p class="lede">{{solution.intro}}</p>
+      </div>
+
+      <div class="cards">
+        <!-- 1 · medical tracking → availability calendar line -->
+        <div class="card reveal">
+          <div class="viz">
+            <div class="viz-label">
+              <span>{{solution.bullets.0.vizLabel}}</span>
+              <b id="calNow">—</b>
+            </div>
+            <svg id="calSvg" viewBox="0 0 260 78" role="img" aria-label="Players available over the last 14 days">
+              <line x1="0" y1="16" x2="260" y2="16" stroke="rgba(24,32,58,.07)"/>
+              <line x1="0" y1="44" x2="260" y2="44" stroke="rgba(24,32,58,.07)"/>
+              <line x1="0" y1="72" x2="260" y2="72" stroke="rgba(24,32,58,.12)"/>
+              <path id="calArea" fill="rgba(55,99,217,.10)" d=""/>
+              <polyline id="calLine" fill="none" stroke="#3763D9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/>
+              <g id="calDots"></g>
+            </svg>
+            <div class="axis" id="calAxis"></div>
+          </div>
+          <h3>{{solution.bullets.0.title}}</h3>
+          <p>{{solution.bullets.0.body}}</p>
+        </div>
+
+        <!-- 2 · rehab protocol tracking -->
+        <div class="card reveal">
+          <div class="viz">
+            <div class="viz-label">
+              <span>{{solution.bullets.1.vizLabel}}</span>
+              <b>{{solution.bullets.1.vizUnit}}</b>
+            </div>
+            <div class="pbar">
+              <div class="r"><span>Phase 2</span><span class="t"><i class="f" data-w="78"></i></span><span>78%</span></div>
+              <div class="r"><span>Phase 3</span><span class="t"><i class="f" data-w="45"></i></span><span>45%</span></div>
+              <div class="r"><span>RTP</span><span class="t"><i class="f" data-w="12"></i></span><span>12%</span></div>
+            </div>
+          </div>
+          <h3>{{solution.bullets.1.title}}</h3>
+          <p>{{solution.bullets.1.body}}</p>
+        </div>
+
+        <!-- 3 · risk score & analytics -->
+        <div class="card reveal">
+          <div class="viz">
+            <div class="viz-label">
+              <span>{{solution.bullets.2.vizLabel}}</span>
+              <b>{{solution.bullets.2.vizUnit}}</b>
+            </div>
+            <div class="stack">
+              <span style="background:var(--risk-low)" data-w="52"></span>
+              <span style="background:var(--risk-med)" data-w="26"></span>
+              <span style="background:var(--risk-high)" data-w="15"></span>
+              <span style="background:var(--risk-crit)" data-w="7"></span>
+            </div>
+            <div class="stack-key">
+              <span><i style="background:var(--risk-low)"></i>52%</span>
+              <span><i style="background:var(--risk-med)"></i>26%</span>
+              <span><i style="background:var(--risk-high)"></i>15%</span>
+              <span><i style="background:var(--risk-crit)"></i>7%</span>
+            </div>
+          </div>
+          <h3>{{solution.bullets.2.title}}</h3>
+          <p>{{solution.bullets.2.body}}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ HOW IT WORKS ============ -->
+  <section class="section" id="how">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="chapter"><span class="ix">03</span><span class="rule"></span>{{how.eyebrow}}</p>
+        <h2>{{how.headline}}</h2>
+      </div>
+      <div class="steps reveal">
+        {{#each how.steps}}
+        <div class="step">
+          <span class="n">{{num}}</span>
+          <h3>{{title}}</h3>
+          <p>{{body}}</p>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="section">
+    <div class="wrap narrow">
+      <div class="section-head reveal">
+        <p class="chapter"><span class="ix">04</span><span class="rule"></span>{{faq.eyebrow}}</p>
+        <h2>{{faq.headline}}</h2>
+      </div>
+      <div class="faq-list reveal">
+        {{#each faq.items}}
+        <details class="faq-item">
+          <summary>{{q}}</summary>
+          <p>{{a}}</p>
+        </details>
+        {{/each}}
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ CLOSING CTA (navy) ============ -->
+<div class="cta-band">
+  <div class="wrap narrow">
+    <h2>{{finalCta.headline}}</h2>
+    <p>{{finalCta.body}}</p>
+    <div class="cta-row center">
+      <a class="btn btn-white" href="{{calendlyUrl}}" target="_blank" rel="noopener">{{finalCta.ctaPrimary}}</a>
+      <a class="btn btn-outline" href="mailto:{{email}}?subject={{footer.emailSubjectEncoded}}">{{finalCta.ctaSecondary}}</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FOOTER (navy) ============ -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        {{&lockup}}
+        <p>{{footer.about}}</p>
+        <p class="footer-disclaimer">{{footer.disclaimer}}</p>
+      </div>
+      <div class="footer-contact">
+        <p class="flabel">{{footer.contactLabel}}</p>
+        <a href="mailto:{{email}}?subject={{footer.emailSubjectEncoded}}">{{email}}</a>
+        <a href="{{calendlyUrl}}" target="_blank" rel="noopener">{{nav.demo}}</a>
+        <a href="/security/">{{footer.securityLink}}</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>{{footer.rights}}</span>
+      <span>{{footer.tagline}}</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/script.js"></script>
+</body>
+</html>

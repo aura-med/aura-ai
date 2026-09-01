@@ -1,0 +1,192 @@
+{
+  "meta": {
+    "title": "Security & data protection — Sophi",
+    "description": "How Sophi handles athlete health data: roles, access control, audit logging, athlete rights and data ownership."
+  },
+  "draft": {
+    "title": "Draft — not ready to publish",
+    "body": "Every item marked “To confirm” below is a factual or legal claim that has to be verified by your counsel, your DPO and your hosting setup before this page goes public. Nothing on this page should be published as-is. Items marked “In the platform” were verified against the Sophi codebase."
+  },
+  "hero": {
+    "kicker": "Security & data protection",
+    "headline": "How Sophi handles athlete health data.",
+    "intro": "Sophi processes special-category health data about professional athletes. This page sets out who is responsible for what, who can see what, and what happens to the data — so your DPO and legal team can assess us properly rather than take our word for it."
+  },
+  "legendVerified": "In the platform",
+  "legendConfirm": "To confirm",
+  "sections": [
+    {
+      "n": "01",
+      "title": "Roles and responsibilities",
+      "items": [
+        {
+          "t": "Controller and processor",
+          "d": "The club or federation is the data controller. Sophi acts as processor and only processes athlete data on your documented instructions.",
+          "status": "confirm"
+        },
+        {
+          "t": "Data Processing Agreement",
+          "d": "A GDPR Article 28 DPA is signed before any athlete data is loaded. A copy is available for your legal team to review in advance.",
+          "status": "confirm"
+        },
+        {
+          "t": "Lawful basis for health data",
+          "d": "State which GDPR Article 9(2) condition the processing relies on, and how it is documented with each club. This is a legal position that must be settled with counsel before publication.",
+          "status": "confirm"
+        },
+        {
+          "t": "Sophi legal entity and DPO contact",
+          "d": "Registered company name, address, registration number and the contact point for data-protection enquiries.",
+          "status": "confirm"
+        }
+      ]
+    },
+    {
+      "n": "02",
+      "title": "Where the data lives",
+      "items": [
+        {
+          "t": "Platform",
+          "d": "Athlete records are stored in a managed PostgreSQL database on Supabase, which also provides authentication.",
+          "status": "verified"
+        },
+        {
+          "t": "Hosting region and residency",
+          "d": "Name the region athlete data is stored and processed in, and whether any processing happens outside the EEA.",
+          "status": "confirm"
+        },
+        {
+          "t": "Sub-processors",
+          "d": "Publish the list of sub-processors, what each one processes, and where. Include a notification process for changes.",
+          "status": "confirm"
+        },
+        {
+          "t": "Encryption",
+          "d": "Confirm encryption in transit and at rest as configured on your plan, and state it explicitly.",
+          "status": "confirm"
+        }
+      ]
+    },
+    {
+      "n": "03",
+      "title": "Who can see what",
+      "items": [
+        {
+          "t": "Role-based access",
+          "d": "Every account has a role — doctor, physiotherapist, masseur, fitness coach, coach or administrator — and the interface a person sees follows that role.",
+          "status": "verified"
+        },
+        {
+          "t": "Coaching staff do not see clinical detail",
+          "d": "Clinical records such as occurrences and diagnoses are restricted at the database level by row-level security, so coaching roles cannot read them even through the API.",
+          "status": "verified"
+        },
+        {
+          "t": "Squad and organisation scoping",
+          "d": "Records are scoped to an organisation and a squad, so staff only see the athletes they are responsible for.",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "n": "04",
+      "title": "Audit trail",
+      "items": [
+        {
+          "t": "Medical record access is logged",
+          "d": "Defined actions on athlete and medical records — reading an athlete, reading a consultation or document, creating a consultation, updating a rehabilitation assessment, advancing or overriding a rehab phase, and issuing an API token — are written to an audit log with the acting user, their organisation and a timestamp.",
+          "status": "verified"
+        },
+        {
+          "t": "Log retention and access",
+          "d": "State how long audit logs are kept, who at the club can review them, and how you provide them if the club is asked to account for a decision.",
+          "status": "confirm"
+        }
+      ]
+    },
+    {
+      "n": "05",
+      "title": "Accounts and API access",
+      "items": [
+        {
+          "t": "Authentication",
+          "d": "Staff sign in with email and password through Supabase Auth; sessions are carried in cookies and refreshed server-side.",
+          "status": "verified"
+        },
+        {
+          "t": "API tokens are short-lived",
+          "d": "REST API tokens expire 30 minutes after they are issued and never expose the underlying Supabase refresh token.",
+          "status": "verified"
+        },
+        {
+          "t": "Password policy, MFA and session limits",
+          "d": "State the password policy, whether multi-factor authentication is available, and how staff access is revoked when someone leaves the club.",
+          "status": "confirm"
+        }
+      ]
+    },
+    {
+      "n": "06",
+      "title": "Athletes and their rights",
+      "items": [
+        {
+          "t": "Consent register",
+          "d": "Sophi keeps a per-athlete consent record with the date consent was given, shows which athletes are missing it, and exports the register as a CSV for your files.",
+          "status": "verified"
+        },
+        {
+          "t": "Access, correction and erasure requests",
+          "d": "Describe how the club services an athlete's Article 15 access request or an erasure request through Sophi, and the turnaround you commit to.",
+          "status": "confirm"
+        },
+        {
+          "t": "What happens when a player leaves",
+          "d": "State what happens to a player's record on transfer or contract end, and the retention period applied.",
+          "status": "confirm"
+        }
+      ]
+    },
+    {
+      "n": "07",
+      "title": "Ownership, export and exit",
+      "items": [
+        {
+          "t": "The club's data stays the club's",
+          "d": "State plainly that the club owns its data, that a full export in open formats is available on request at any time including at contract end, and what happens to the data after termination.",
+          "status": "confirm"
+        },
+        {
+          "t": "Backups and recovery",
+          "d": "State backup frequency, retention and your recovery objectives.",
+          "status": "confirm"
+        },
+        {
+          "t": "Breach notification",
+          "d": "State the process and the timeframe within which you notify the club of a personal data breach, so it can meet its own 72-hour obligation.",
+          "status": "confirm"
+        }
+      ]
+    },
+    {
+      "n": "08",
+      "title": "Clinical position",
+      "items": [
+        {
+          "t": "Sophi supports decisions, it does not make them",
+          "d": "Sophi surfaces a daily risk score and names the variable driving it. What to do about it is a clinical decision that stays with the club's medical staff.",
+          "status": "verified"
+        },
+        {
+          "t": "Regulatory classification",
+          "d": "Sophi's position on EU MDR classification needs to be settled with regulatory counsel and stated here in plain terms. Do not publish a classification claim before that advice is in writing.",
+          "status": "confirm"
+        }
+      ]
+    }
+  ],
+  "contact": {
+    "title": "Questions from your DPO or legal team",
+    "body": "Send them to us directly and we will answer in writing.",
+    "cta": "Email us"
+  }
+}

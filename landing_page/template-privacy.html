@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{privacy.meta.title}}</title>
+<meta name="description" content="{{privacy.meta.description}}">
+<link rel="icon" href="/assets/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-nav">
+  <div class="nav-inner">
+    <a class="brand" href="{{homeHref}}" aria-label="Sophi">{{&lockup}}</a>
+    <nav class="nav-links">
+      <a href="{{homeHref}}#product">{{nav.product}}</a>
+      <a href="{{homeHref}}#how">{{nav.how}}</a>
+      <a href="{{homeHref}}#team">{{nav.about}}</a>
+    </nav>
+    <div class="nav-actions">
+      <div class="lang-switch">{{#each langs}}<a href="{{href}}privacy/" aria-current="{{current}}">{{code}}</a>{{/each}}</div>
+      <a class="btn btn-cta btn-sm" href="{{calendlyUrl}}" target="_blank" rel="noopener">{{nav.demo}}</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap narrow">
+
+    <section class="doc-hero">
+      <p class="kicker"><span class="rule"></span>{{privacy.hero.kicker}}</p>
+      <h1>{{privacy.hero.headline}}</h1>
+      <p class="doc-intro">{{privacy.hero.intro}}</p>
+      <p class="doc-meta mono">{{privacy.hero.updated}}</p>
+    </section>
+
+    <div class="doc-callout">
+      <p class="doc-callout-t">{{privacy.scope.title}}</p>
+      <p>{{privacy.scope.body}}</p>
+    </div>
+
+    <p class="doc-note doc-pending">{{privacy.hero.pending}}</p>
+
+    {{#each privacy.sections}}
+    <section class="doc-section">
+      <h2><span class="doc-n">{{n}}</span>{{title}}</h2>
+      <dl class="doc-list">
+        {{#each items}}
+        <div class="doc-item doc-{{status}}">
+          <dt>{{t}}</dt>
+          <dd>{{d}}</dd>
+        </div>
+        {{/each}}
+      </dl>
+    </section>
+    {{/each}}
+
+    <section class="doc-section">
+      <h2><span class="doc-n">{{privacy.contact.n}}</span>{{privacy.contact.title}}</h2>
+      <p class="doc-intro">{{privacy.contact.body}}</p>
+      <p class="cta-row">
+        <a class="btn btn-cta" href="mailto:{{email}}?subject={{privacy.contact.subjectEncoded}}">{{privacy.contact.cta}}</a>
+      </p>
+      <p class="doc-note">{{privacy.contact.supervisory}}</p>
+    </section>
+
+    <p class="doc-note doc-prevails">{{privacy.prevails}}</p>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        {{&lockup}}
+        <p>{{footer.about}}</p>
+        <p class="footer-disclaimer">{{footer.disclaimer}}</p>
+      </div>
+      <div class="footer-contact">
+        <p class="flabel">{{footer.contactLabel}}</p>
+        <a href="mailto:{{email}}?subject={{footer.emailSubjectEncoded}}">{{email}}</a>
+        <address class="footer-address">{{address}}</address>
+        <a href="{{calendlyUrl}}" target="_blank" rel="noopener">{{nav.demo}}</a>
+        <a href="{{privacyHref}}">{{footer.privacyLink}}</a>
+        <a href="/security/">{{footer.securityLink}}</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>{{footer.rights}}</span>
+      <span>{{footer.tagline}}</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

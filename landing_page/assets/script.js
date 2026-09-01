@@ -176,6 +176,61 @@
     })
   }
 
+  /* ------------------------------------------------------- newsletter */
+  // Progressive enhancement only. Without JS the form does a plain POST to Brevo and the
+  // browser lands on Brevo's own confirmation page — which is why target="_blank" is set
+  // in the markup. With JS we post in the background and keep the reader here.
+  //
+  // The honeypot and the timing check below are noise reduction, nothing more: anyone can
+  // read the action URL out of the page source and POST straight to it. Double opt-in on
+  // the Brevo side is the control that actually works, because a bot never clicks the
+  // confirmation link.
+  var newsForm = document.getElementById('newsForm')
+  if (newsForm && window.fetch && window.FormData) {
+    var newsStatus = document.getElementById('newsStatus')
+    var okCopy = newsForm.getAttribute('data-success') || ''
+    var badCopy = newsForm.getAttribute('data-error') || ''
+    var shownAt = Date.now()
+
+    newsForm.addEventListener('submit', function (ev) {
+      // Filled honeypot, or submitted implausibly fast: drop it silently. Reporting an
+      // error would just tell a bot what tripped it.
+      if (newsForm.email_address_check.value !== '' || Date.now() - shownAt < 3000) {
+        ev.preventDefault()
+        return
+      }
+
+      ev.preventDefault()
+      var btn = newsForm.querySelector('button[type=submit]')
+      if (btn) btn.disabled = true
+      newsStatus.className = 'news-status'
+      newsStatus.textContent = ''
+
+      // URLSearchParams, not FormData: this sends application/x-www-form-urlencoded,
+      // byte-for-byte what the native form would post. FormData would send multipart.
+      fetch(newsForm.action, {
+        method: 'POST',
+        body: new URLSearchParams(new FormData(newsForm)),
+        mode: 'no-cors'
+      })
+        .then(function () {
+          // no-cors gives an opaque response, so a resolved promise is all we can read.
+          // It means the request left the browser, not that Brevo accepted it — hence
+          // wording that points at the confirmation email rather than claiming success.
+          newsForm.classList.add('sent')
+          newsStatus.className = 'news-status ok'
+          newsStatus.textContent = okCopy
+        })
+        .catch(function () {
+          if (btn) btn.disabled = false
+          newsStatus.className = 'news-status bad'
+          newsStatus.textContent = badCopy
+          // Fall back to a real submit — .submit() skips this handler, so no loop.
+          newsForm.submit()
+        })
+    })
+  }
+
   /* --------------------------------------------------- reveal on scroll */
   var revealed = new WeakSet()
   var io = new IntersectionObserver(function (entries) {

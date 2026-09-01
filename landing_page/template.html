@@ -26,6 +26,7 @@
     <nav class="nav-links">
       <a href="#product">{{nav.product}}</a>
       <a href="#how">{{nav.how}}</a>
+      <a href="#team">{{nav.about}}</a>
     </nav>
     <div class="nav-actions">
       <div class="lang-switch">{{#each langs}}<a href="{{href}}" aria-current="{{current}}">{{code}}</a>{{/each}}</div>
@@ -38,6 +39,7 @@
   <div class="mobile-panel">
     <a href="#product">{{nav.product}}</a>
     <a href="#how">{{nav.how}}</a>
+    <a href="#team">{{nav.about}}</a>
     <div class="lang-switch">{{#each langs}}<a href="{{href}}" aria-current="{{current}}">{{code}}</a>{{/each}}</div>
   </div>
 </header>
@@ -265,11 +267,45 @@
     </div>
   </section>
 
+  <!-- ============ TEAM ============ -->
+  <section class="section" id="team">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="chapter"><span class="ix">04</span><span class="rule"></span>{{team.eyebrow}}</p>
+        <h2>{{team.headline}}</h2>
+        <p class="lede">{{team.intro}}</p>
+      </div>
+
+      <div class="cards team-grid">
+        {{#each team.people}}
+        <div class="card person reveal">
+          <!-- The monogram sits underneath; if the headshot is missing the <img> removes
+               itself and the initials show through. Drop a real file in assets/team/ and
+               it takes over with no code change. -->
+          <span class="person-photo">
+            <span class="person-mono" aria-hidden="true">{{initials}}</span>
+            <img src="/assets/team/{{photo}}" alt="{{name}}" loading="lazy" decoding="async" onerror="this.remove()">
+          </span>
+          <div class="person-id">
+            <h3>{{name}}</h3>
+            <p class="person-role">{{role}}</p>
+          </div>
+          <p class="flabel person-cred">{{credential}}</p>
+          <p class="person-bio">{{bio}}</p>
+          <a class="person-in" href="{{linkedin}}" target="_blank" rel="noopener" aria-label="{{name}} — LinkedIn">
+            {{&linkedinIcon}}<span>LinkedIn</span>
+          </a>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </section>
+
   <!-- ============ FAQ ============ -->
   <section class="section">
     <div class="wrap narrow">
       <div class="section-head reveal">
-        <p class="chapter"><span class="ix">04</span><span class="rule"></span>{{faq.eyebrow}}</p>
+        <p class="chapter"><span class="ix">05</span><span class="rule"></span>{{faq.eyebrow}}</p>
         <h2>{{faq.headline}}</h2>
       </div>
       <div class="faq-list reveal">
@@ -296,6 +332,45 @@
   </div>
 </div>
 
+<!-- ============ NEWSLETTER ============ -->
+<!-- Deliberately quiet: this sits after the demo CTA and must read as a utility, not as a
+     second offer competing with it. Posts straight to Brevo, so nothing here is loaded or
+     contacted until someone actually submits. -->
+<section class="news-band" aria-labelledby="news-h">
+  <div class="wrap news-grid">
+    <div>
+      <p class="flabel">{{newsletter.label}}</p>
+      <h2 id="news-h">{{newsletter.headline}}</h2>
+      <p class="news-body">{{newsletter.body}}</p>
+    </div>
+
+    <form class="news-form" id="newsForm" method="POST" action="{{newsletterAction}}" target="_blank"
+          data-success="{{newsletter.success}}" data-error="{{newsletter.error}}">
+      <input type="hidden" name="locale" value="{{localeCode}}">
+      <!-- Brevo's own honeypot. Off-screen rather than display:none — bots skip the latter. -->
+      <div class="hp" aria-hidden="true">
+        <label for="email_address_check">Leave this field empty</label>
+        <input type="text" id="email_address_check" name="email_address_check" value="" tabindex="-1" autocomplete="off">
+      </div>
+
+      <div class="news-row">
+        <label class="sr-only" for="EMAIL">{{newsletter.emailLabel}}</label>
+        <input class="news-input" type="email" id="EMAIL" name="EMAIL" required
+               autocomplete="email" placeholder="{{newsletter.placeholder}}">
+        <button class="btn btn-quiet" type="submit">{{newsletter.cta}}</button>
+      </div>
+
+      <label class="news-consent">
+        <input type="checkbox" required>
+        <span>{{newsletter.consent}} <a href="{{privacyHref}}">{{newsletter.privacyLink}}</a></span>
+      </label>
+
+      <p class="news-note">{{newsletter.note}}</p>
+      <p class="news-status" id="newsStatus" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
 <!-- ============ FOOTER (navy) ============ -->
 <footer class="site-footer">
   <div class="wrap">
@@ -308,7 +383,9 @@
       <div class="footer-contact">
         <p class="flabel">{{footer.contactLabel}}</p>
         <a href="mailto:{{email}}?subject={{footer.emailSubjectEncoded}}">{{email}}</a>
+        <address class="footer-address">{{address}}</address>
         <a href="{{calendlyUrl}}" target="_blank" rel="noopener">{{nav.demo}}</a>
+        <a href="{{privacyHref}}">{{footer.privacyLink}}</a>
         <a href="/security/">{{footer.securityLink}}</a>
       </div>
     </div>

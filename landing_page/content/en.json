@@ -90,6 +90,28 @@
       }
     ]
   },
+  "team": {
+    "eyebrow": "Who builds it",
+    "headline": "Built by the people who work the touchline.",
+    "intro": "Sophi is built by clinicians and engineers who have spent their careers in elite sport. The medicine is not an afterthought here — it is where the product started.",
+    "people": [
+      {
+        "role": "Chief Medical Officer",
+        "credential": "Sports & exercise medicine physician",
+        "bio": "Extensive medical experience across elite Portuguese football and international tennis tournaments, specialising in clinical leadership and high-level athletic emergency care."
+      },
+      {
+        "role": "Chief Rehabilitation Officer",
+        "credential": "Physiotherapist & osteopath",
+        "bio": "Leads the Osteoparque clinic in Lisbon, combining extensive clinical practice with hands-on rehabilitation experience inside professional football teams."
+      },
+      {
+        "role": "Chief Technology Officer",
+        "credential": "AI & data engineer",
+        "bio": "Builds scalable, cloud-native data platforms and AI analytics. Consulting background at EY and KPMG, bridging advanced technology with business strategy."
+      }
+    ]
+  },
   "faq": {
     "eyebrow": "Questions",
     "headline": "What clubs ask us first.",
@@ -114,6 +136,19 @@
     "ctaPrimary": "Book a Demo",
     "ctaSecondary": "Contact Us"
   },
+  "newsletter": {
+    "label": "Monthly newsletter",
+    "headline": "One email a month, for medical staff.",
+    "body": "What we are learning about workload, availability and injury risk in elite football. No sales email.",
+    "emailLabel": "Your work email",
+    "placeholder": "you@club.com",
+    "cta": "Subscribe",
+    "consent": "I agree to receive Sophi's monthly newsletter. I can unsubscribe at any time.",
+    "privacyLink": "How we handle your data",
+    "note": "We will send you a confirmation email. Your address goes no further.",
+    "success": "Almost there. Check your inbox and click the confirmation link.",
+    "error": "That did not go through. Please try again, or email us instead."
+  },
   "footer": {
     "tagline": "Behind your team.",
     "about": "Sophi is a health & performance intelligence platform built for sports medicine departments, so medical teams can protect player availability with confidence.",
@@ -121,6 +156,7 @@
     "rights": "© 2026 Sophi. All rights reserved.",
     "emailSubject": "Request for Information - Sophi",
     "disclaimer": "Sophi supports clinical decision-making by your medical staff. It does not diagnose or treat, and it does not replace clinical judgement.",
-    "securityLink": "Security & data protection"
+    "securityLink": "Security & data protection",
+    "privacyLink": "Privacy notice"
   }
 }

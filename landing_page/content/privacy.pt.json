@@ -1,0 +1,185 @@
+{
+  "meta": {
+    "title": "Política de privacidade — Sophi",
+    "description": "Como a Sophi trata os dados pessoais recolhidos neste site: subscritores da newsletter, pedidos de demo e contactos por email. Os dados dos atletas são regidos separadamente pelo contrato de cada clube."
+  },
+  "hero": {
+    "kicker": "Política de privacidade",
+    "headline": "O que fazemos com os dados que nos dás aqui.",
+    "intro": "Esta política cobre os dados pessoais que a Sophi recolhe através deste site. Foi escrita para ser lida, não para ser suportada. Se alguma coisa não estiver clara, envia-nos um email e explicamos.",
+    "updated": "Última atualização: 1 de setembro de 2026",
+    "pending": "Alguns dados de registo da empresa estão assinalados abaixo como pendentes. Estão a ser finalizados e serão preenchidos assim que os dados da entidade forem confirmados."
+  },
+  "scope": {
+    "title": "Esta política não é sobre os dados dos atletas.",
+    "body": "Quando um clube de futebol usa a Sophi, é o clube que decide que dados de saúde dos atletas são recolhidos e para quê. O clube é o responsável pelo tratamento desses dados e a Sophi actua como subcontratante, ao abrigo de um contrato escrito separado com esse clube. Os atletas devem dirigir-se ao departamento médico do seu clube sobre esses dados. Esta página é apenas sobre os dados que nos dás aqui no site — o teu email se subscreveres, os teus dados se marcares uma demo, e o que escreveres se nos enviares um email."
+  },
+  "sections": [
+    {
+      "n": "01",
+      "title": "Quem é responsável",
+      "items": [
+        {
+          "status": "confirm",
+          "t": "O responsável pelo tratamento",
+          "d": "Sophi. A denominação social, o número de registo e a sede estão pendentes de confirmação e serão publicados aqui."
+        },
+        {
+          "status": "verified",
+          "t": "Onde estamos",
+          "d": "Lisboa, Portugal. A Sophi está estabelecida na União Europeia e esta política é escrita ao abrigo do RGPD."
+        },
+        {
+          "status": "verified",
+          "t": "Como falar connosco sobre privacidade",
+          "d": "info@sophisports.com. É uma pessoa que lê. Usa este endereço para qualquer pedido sobre os teus dados, incluindo os direitos listados na secção 06."
+        },
+        {
+          "status": "confirm",
+          "t": "Encarregado de proteção de dados",
+          "d": "Está a ser avaliado se a Sophi é obrigada a designar um EPD. Se for designado, os contactos serão publicados aqui."
+        }
+      ]
+    },
+    {
+      "n": "02",
+      "title": "O que recolhemos, e porquê",
+      "items": [
+        {
+          "status": "verified",
+          "t": "Subscritores da newsletter",
+          "d": "O teu email, e mais nada. Não pedimos nome, nem clube, nem cargo. Usamo-lo para enviar uma newsletter por mês. Não o usamos para te vender nada."
+        },
+        {
+          "status": "verified",
+          "t": "Registo de confirmação",
+          "d": "Quando subscreves, enviamos um email de confirmação, e só entras na lista depois de clicares no link. O nosso fornecedor de newsletter regista a data, a hora e o endereço IP dessa confirmação. Esse registo existe para provar que o consentimento foi real, e para mais nada."
+        },
+        {
+          "status": "verified",
+          "t": "Marcação de demos",
+          "d": "O botão Marcar Demo abre o Calendly, um serviço de agendamento separado. O que introduzires lá — normalmente nome, email e uma hora — é recolhido pelo Calendly e transmitido a nós para podermos realizar a reunião."
+        },
+        {
+          "status": "verified",
+          "t": "Contactos por email",
+          "d": "Se nos enviares um email, guardamos o teu endereço e o que escolheste escrever, para podermos responder e acompanhar a conversa."
+        },
+        {
+          "status": "verified",
+          "t": "O que nunca pedimos aqui",
+          "d": "Este site não recolhe dados de saúde, nem dados de categorias especiais, nem nada sobre qualquer atleta. Por favor não envies informação clínica de atletas por email — pede-nos antes um canal seguro."
+        }
+      ]
+    },
+    {
+      "n": "03",
+      "title": "O nosso fundamento legal",
+      "items": [
+        {
+          "status": "verified",
+          "t": "Newsletter — o teu consentimento",
+          "d": "Artigo 6.º, n.º 1, alínea a). Marcas uma caixa e confirmas depois por email. Podes retirar o consentimento a qualquer momento, e é tão fácil como dá-lo: todas as newsletters levam um link de cancelamento com um clique. Retirar o consentimento não torna ilícitos os envios anteriores."
+        },
+        {
+          "status": "verified",
+          "t": "Demos e contactos — diligências pré-contratuais",
+          "d": "Artigo 6.º, n.º 1, alínea b), em conjunto com o nosso interesse legítimo em responder a quem nos contacta sobre o produto, alínea f). Se nos fazes uma pergunta, assumimos que esperas resposta."
+        }
+      ]
+    },
+    {
+      "n": "04",
+      "title": "Quem mais lhes toca",
+      "items": [
+        {
+          "status": "verified",
+          "t": "Brevo — envio da newsletter",
+          "d": "A Brevo é uma empresa francesa e trata a nossa lista de newsletter. O teu endereço só é enviado à Brevo no momento em que carregas em Subscrever. Nada sobre ti chega à Brevo apenas por leres este site."
+        },
+        {
+          "status": "confirm",
+          "t": "Onde a Brevo os guarda",
+          "d": "A Brevo declara alojar os dados dos clientes dentro da União Europeia. Estamos a confirmar as localizações concretas na lista de subcontratantes e no contrato de tratamento de dados da própria Brevo, e indicá-las-emos aqui com precisão."
+        },
+        {
+          "status": "verified",
+          "t": "Calendly — agendamento de demos",
+          "d": "O Calendly é uma empresa dos Estados Unidos e só é usado se escolheres marcar uma demo. Ao fazê-lo és levado para o site do Calendly, sujeito à política de privacidade do Calendly, o que envolve uma transferência dos teus dados para os Estados Unidos."
+        },
+        {
+          "status": "verified",
+          "t": "Google Fonts — tipografia da página",
+          "d": "Este site carrega duas famílias tipográficas dos servidores da Google. Isso divulga o teu endereço IP à Google. Estamos a passar estas fontes para alojamento próprio para eliminar essa divulgação."
+        },
+        {
+          "status": "verified",
+          "t": "Não vendemos nem partilhamos dados",
+          "d": "Não vendemos dados pessoais, não os alugamos, e não os passamos a anunciantes nem a corretores de dados. Os três serviços acima são a lista completa."
+        }
+      ]
+    },
+    {
+      "n": "05",
+      "title": "Cookies e rastreio",
+      "items": [
+        {
+          "status": "verified",
+          "t": "Este site não usa cookies",
+          "d": "Sem cookies, sem armazenamento local, sem pixels de rastreio, sem gravação de sessão. Não corremos qualquer tipo de analítica, por isso não sabemos quem nos visita nem quantos são. É uma escolha deliberada, e é por isso que não te estamos a pedir para dispensar um aviso de cookies."
+        },
+        {
+          "status": "verified",
+          "t": "Se isso mudar",
+          "d": "Se algum dia adicionarmos analítica, pediremos o teu consentimento primeiro e atualizaremos esta página antes de o fazer."
+        }
+      ]
+    },
+    {
+      "n": "06",
+      "title": "Durante quanto tempo os guardamos",
+      "items": [
+        {
+          "status": "verified",
+          "t": "Newsletter",
+          "d": "Até cancelares a subscrição. Depois disso guardamos o teu endereço numa lista de supressão, para não te voltarmos a enviar email por engano. Podes pedir o apagamento total em vez disso, e fazemo-lo."
+        },
+        {
+          "status": "confirm",
+          "t": "Demos e contactos",
+          "d": "Guardados enquanto estivermos em contacto e por um período posterior, para os nossos registos comerciais. O prazo exacto está a ser definido e será indicado aqui."
+        }
+      ]
+    },
+    {
+      "n": "07",
+      "title": "Os teus direitos",
+      "items": [
+        {
+          "status": "verified",
+          "t": "O que podes pedir",
+          "d": "Podes pedir para ver os dados que temos sobre ti, corrigi-los, apagá-los, limitar o que fazemos com eles, recebê-los num formato portável, e opor-te ao tratamento baseado em interesse legítimo. Quando nos baseamos no consentimento, podes retirá-lo a qualquer momento."
+        },
+        {
+          "status": "verified",
+          "t": "Como pedir",
+          "d": "Envia um email para info@sophisports.com. Não há formulário a preencher. Não cobramos por isto e respondemos no prazo de um mês."
+        },
+        {
+          "status": "verified",
+          "t": "Se falharmos",
+          "d": "Podes apresentar reclamação à Comissão Nacional de Proteção de Dados (CNPD), ou à autoridade do país da UE onde vives ou trabalhas. Preferíamos que nos dissesses primeiro, mas não és obrigado."
+        }
+      ]
+    }
+  ],
+  "contact": {
+    "n": "08",
+    "title": "Pergunta-nos o que quiseres sobre isto",
+    "body": "Se alguma coisa aqui não fizer sentido, ou quiseres saber exactamente o que temos sobre ti, escreve-nos. Respondemos em linguagem simples.",
+    "cta": "Enviar email sobre privacidade",
+    "subject": "Privacy question - Sophi",
+    "supervisory": "Comissão Nacional de Proteção de Dados (CNPD) — Av. D. Carlos I, 134, 1.º, 1200-651 Lisboa, Portugal."
+  },
+  "prevails": "Esta política é publicada em inglês, português e espanhol. Em caso de divergência, prevalece a versão inglesa."
+}

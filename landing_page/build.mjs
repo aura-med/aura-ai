@@ -12,7 +12,38 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const SITE = {
   calendlyUrl: 'https://calendly.com/sophisports/demo',
   email: 'info@sophisports.com',
+  address: 'Lisbon, Portugal',
+  // Brevo hosted form. The markup Brevo serves uses a relative action, so it has to be
+  // absolutised here. Posting to it directly (rather than embedding Brevo's iframe) keeps
+  // the page free of third-party requests until someone actually submits.
+  newsletterAction:
+    'https://906fa3d3.sibforms.com/serve/MUIFAC7VNaYXm39OWpkVD0dUZa80ymTBvtXCslCcvZCOxBmxDRdiyJuHYRe5Q2sXkYirEX6cBrXac1fCcI0zs1V5WC8BSD8KB65dmZAq0gNfr9CW4P1RAim1IygISlSb--2UQsHVL-HD0A3fSXSS7Oc2ZAYMWoeoFSmZrVEnqXqFVdOTNtG6rgLoYr6g5nuhmjlol1rQTwtPmFdbAg==',
 }
+
+// Locale-invariant facts about the team. Roles, credentials and bios are translated and
+// live in content/<locale>.json under team.people, positionally matched to this list —
+// keeping names, photo filenames and LinkedIn URLs here stops them drifting between
+// languages.
+const TEAM = [
+  {
+    name: 'Diogo Simões',
+    initials: 'DS',
+    photo: 'diogo-simoes.jpg',
+    linkedin: 'https://www.linkedin.com/in/diogodacruzsimoes/',
+  },
+  {
+    name: 'Alexandre Cardoso',
+    initials: 'AC',
+    photo: 'alexandre-cardoso.jpg',
+    linkedin: 'https://www.linkedin.com/in/alexandre-cardoso-260b8857/',
+  },
+  {
+    name: 'Tiago Pimentel',
+    initials: 'TP',
+    photo: 'tiago-pimentel.jpg',
+    linkedin: 'https://www.linkedin.com/in/tiagopimentel94/',
+  },
+]
 
 // en is the default locale, served at the site root; pt/es live in their own folder.
 const LOCALES = [
@@ -24,6 +55,8 @@ const LOCALES = [
 // Raw fragments injected with {{&name}} (not HTML-escaped).
 const PARTIALS = {
   lockup: readFileSync(join(__dirname, 'partials', 'lockup.svg'), 'utf8').trim(),
+  // Not "linkedin" — each team member carries a `linkedin` URL that would shadow it.
+  linkedinIcon: readFileSync(join(__dirname, 'partials', 'linkedin.svg'), 'utf8').trim(),
 }
 
 function escapeHtml(str) {
@@ -103,7 +136,13 @@ function localeData(locale) {
     ...SITE,
     ...PARTIALS,
     homeHref: hrefFor(locale),
+    privacyHref: `${hrefFor(locale)}privacy/`,
+    localeCode: locale.code,
     langs,
+    team: {
+      ...content.team,
+      people: TEAM.map((person, i) => ({ ...person, ...(content.team?.people?.[i] ?? {}) })),
+    },
     footer: {
       ...content.footer,
       emailSubjectEncoded: encodeURIComponent(content.footer.emailSubject),
@@ -111,12 +150,21 @@ function localeData(locale) {
   }
 }
 
-/* ---------------- locale landing pages ---------------- */
+/* ---------------- locale landing pages + privacy notice ---------------- */
 const template = readFileSync(join(__dirname, 'template.html'), 'utf8')
+const privacyTpl = readFileSync(join(__dirname, 'template-privacy.html'), 'utf8')
 
 for (const locale of LOCALES) {
   const data = localeData(locale)
   write(join(locale.dir, 'index.html'), render(template, data))
+
+  // The newsletter form collects an address in every locale, so the notice that governs
+  // it has to be readable in every locale too.
+  const privacy = JSON.parse(
+    readFileSync(join(__dirname, 'content', `privacy.${locale.code}.json`), 'utf8'),
+  )
+  privacy.contact.subjectEncoded = encodeURIComponent(privacy.contact.subject)
+  write(join(locale.dir, 'privacy', 'index.html'), render(privacyTpl, { ...data, privacy }))
 }
 
 /* ---------------- security page (English only for now) ---------------- */

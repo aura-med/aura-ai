@@ -94,7 +94,7 @@ export async function getReadinessList(squadId?: string | null): Promise<Readine
       athlete_passport ( is_shareable, passport_data )
     `)
     .eq('active', true)
-    .or('availability_status.is.null,availability_status.eq.available')
+    .or('availability_status.is.null,availability_status.eq.available,availability_status.eq.load_management')
     .order('shirt_number')
   if (squadId) query = query.eq('squad_id', squadId)
   const { data, error } = await query

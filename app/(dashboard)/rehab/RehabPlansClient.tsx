@@ -90,6 +90,7 @@ function PlanRow({
           <PlanDetail
             plan={plan}
             athletes={athleteOptions}
+            athleteName={plan.athletes?.name ?? '—'}
             occurrences={occurrences.filter((o) => o.athlete_id === plan.athlete_id)}
             canEdit={canEdit}
             onPlanChanged={onChanged}

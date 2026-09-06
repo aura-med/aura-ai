@@ -1,17 +1,25 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, Download, Hourglass, Search, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, Download, Hourglass, Search, X } from 'lucide-react'
 import { AthleteCard } from '@/components/ui/AthleteCard'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { withSquadParam } from '@/lib/squad-url'
-import { formatDisplayDate, addDays } from '@/lib/utils/microcycle'
 import type { MicrocycleStatus } from '@/lib/utils/microcycle'
 import { exportDashboardPDF, type DashboardOccurrenceRow, type ClinicalStaffMember } from '@/lib/utils/pdf-export'
 import { MonthCalendar, type MonthCalendarEvent } from '@/components/dashboard/MonthCalendar'
+import { restrictionLabels } from '@/components/shared/LoadManagementFields'
 import type { AthleteAvailabilityStatus } from '@/types'
+
+interface AthleteReason {
+  // Omitted (not just empty) for entries built from get_squad_load_
+  // management_restrictions (081) for coach/fitness_coach — that RPC never
+  // exposes clinical text, only the restrictions/notes checklist.
+  reason?: string
+  restrictions: string[]
+  notes: string | null
+}
 
 interface DashboardAthlete {
   id: string
@@ -32,9 +40,20 @@ interface DashboardClientProps {
   squadId: string | null
   currentDate: string
   microcycle: MicrocycleStatus
-  isToday: boolean
   calendarEvents: MonthCalendarEvent[]
   clinicalOccurrences: DashboardOccurrenceRow[]
+  reasonByAthleteId: Record<string, AthleteReason>
+  // RLS (018) only grants owner/doctor/physio/masseur read access to
+  // occurrences/diagnoses — reasonByAthleteId is empty for everyone else, so
+  // the expand-to-see-reason affordance must not be offered to them (it
+  // would read as "nothing happened" instead of "no access").
+  canReadClinical: boolean
+  // coach/fitness_coach can't read clinical data (canReadClinical is false
+  // for them) but 040's own header names them as the intended audience for
+  // the load-management restrictions checklist — they need to know WHAT to
+  // restrict, not WHY. Lets them expand *just* the load_management group;
+  // reasonByAthleteId entries populated for them (081) never carry `reason`.
+  canApplyLoadManagement: boolean
   clinicalStaff: ClinicalStaffMember[]
   orgName: string | null
 }
@@ -47,42 +66,32 @@ const STATUS_CONFIG: Record<AthleteAvailabilityStatus, {
   dot: string
   priority: number
 }> = {
-  available:   { label: 'Disponível',    color: 'var(--sophi-green)',  bg: 'rgba(0,229,160,0.06)',   border: 'rgba(0,229,160,0.2)',   dot: '#00e5a0', priority: 4 },
-  evaluation:  { label: 'Em Avaliação',  color: 'var(--sophi-warn)',   bg: 'rgba(246,173,85,0.06)',  border: 'rgba(246,173,85,0.25)', dot: '#f6ad55', priority: 2 },
-  unavailable: { label: 'Indisponível',  color: 'var(--sophi-danger)', bg: 'rgba(255,77,109,0.06)',  border: 'rgba(255,77,109,0.2)',  dot: '#ff4d6d', priority: 1 },
-  rtp:         { label: 'Return To Play', color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.06)', border: 'rgba(180,141,252,0.2)', dot: '#b48dfc', priority: 3 },
+  available:       { label: 'Disponível',      color: 'var(--sophi-green)',  bg: 'rgba(0,229,160,0.06)',   border: 'rgba(0,229,160,0.2)',   dot: '#00e5a0', priority: 5 },
+  evaluation:      { label: 'Em Avaliação',    color: 'var(--sophi-yellow)', bg: 'rgba(212,160,23,0.06)',  border: 'rgba(212,160,23,0.3)',  dot: '#d4a017', priority: 2 },
+  load_management: { label: 'Gestão de Carga', color: 'var(--sophi-orange)', bg: 'rgba(249,115,22,0.06)',  border: 'rgba(249,115,22,0.25)', dot: '#f97316', priority: 3 },
+  unavailable:     { label: 'Indisponível',    color: 'var(--sophi-danger)', bg: 'rgba(255,77,109,0.06)',  border: 'rgba(255,77,109,0.2)',  dot: '#ff4d6d', priority: 1 },
+  rtp:             { label: 'Return To Play',  color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.06)', border: 'rgba(180,141,252,0.2)', dot: '#b48dfc', priority: 4 },
 }
 
-const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 'rtp', 'available']
+const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 'load_management', 'rtp', 'available']
 
 // "Em Avaliação" isn't a semáforo colour — it's a to-do (athlete pending a clinical
 // decision), so it gets its own action band instead of a slot in the traffic light.
-// The remaining three read as severity: available < rtp < unavailable.
-const TRAFFIC_LIGHT_ORDER: AthleteAvailabilityStatus[] = ['available', 'rtp', 'unavailable']
+// The remaining four render as a 2x2 grid: Disponível/Gestão de Carga on top (both
+// train normally, just one is monitored), Indisponível/RTP below (both off the
+// normal training plan).
+const TRAFFIC_LIGHT_ORDER: AthleteAvailabilityStatus[] = ['available', 'load_management', 'unavailable', 'rtp']
 
-export function DashboardClient({ athletes, squadId, currentDate, microcycle, isToday, calendarEvents, clinicalOccurrences, clinicalStaff, orgName }: DashboardClientProps) {
+export function DashboardClient({ athletes, squadId, currentDate, microcycle, calendarEvents, clinicalOccurrences, reasonByAthleteId, canReadClinical, canApplyLoadManagement, clinicalStaff, orgName }: DashboardClientProps) {
   const [tab, setTab] = useState<'overview' | 'squad' | 'calendar'>('overview')
   const [squadQuery, setSquadQuery] = useState('')
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-
-  function navigateDate(direction: -1 | 1) {
-    const newDate = addDays(currentDate, direction)
-    const params = new URLSearchParams(searchParams.toString())
-    params.set('date', newDate)
-    router.push(`${pathname}?${params.toString()}`, { scroll: false })
-  }
-
-  function goToToday() {
-    const params = new URLSearchParams(searchParams.toString())
-    params.delete('date')
-    router.push(`${pathname}?${params.toString()}`, { scroll: false })
-  }
-
+  // Which status group is expanded to show each athlete's reason inline —
+  // 'evaluation' covers the "A Reavaliar" strip too, sharing one toggle with
+  // the traffic-light grid below it.
+  const [expandedGroup, setExpandedGroup] = useState<AthleteAvailabilityStatus | null>(null)
   const byStatus = STATUS_ORDER.reduce<Record<AthleteAvailabilityStatus, DashboardAthlete[]>>(
     (acc, s) => ({ ...acc, [s]: athletes.filter((a) => a.availability_status === s) }),
-    { available: [], evaluation: [], unavailable: [], rtp: [] }
+    { available: [], evaluation: [], load_management: [], unavailable: [], rtp: [] }
   )
 
   const squadSearch = squadQuery.trim().toLowerCase()
@@ -150,42 +159,6 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
             Exportar PDF
           </button>
         </div>
-
-        {/* Date navigation */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <button
-            onClick={() => navigateDate(-1)}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 6, border: '1px solid var(--sophi-border2)', background: 'var(--sophi-bg3)', color: 'var(--sophi-text2)', cursor: 'pointer' }}
-            aria-label="Dia anterior"
-          >
-            <ChevronLeft size={14} />
-          </button>
-          <div
-            className="min-w-[140px] sm:min-w-[180px]"
-            style={{
-              fontFamily: 'var(--font-dm-mono)', fontSize: 12, color: 'var(--sophi-text)',
-              padding: '5px 12px', borderRadius: 6, border: '1px solid var(--sophi-border2)',
-              background: 'var(--sophi-bg3)', textAlign: 'center',
-            }}
-          >
-            {formatDisplayDate(currentDate)}
-          </div>
-          <button
-            onClick={() => navigateDate(1)}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 6, border: '1px solid var(--sophi-border2)', background: 'var(--sophi-bg3)', color: 'var(--sophi-text2)', cursor: 'pointer' }}
-            aria-label="Próximo dia"
-          >
-            <ChevronRight size={14} />
-          </button>
-          {!isToday && (
-            <button
-              onClick={goToToday}
-              style={{ fontSize: 11, fontFamily: 'var(--font-dm-mono)', padding: '5px 10px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-green)', cursor: 'pointer' }}
-            >
-              Hoje
-            </button>
-          )}
-        </div>
       </div>
 
       {/* ── Tabs ──────────────────────────────────────────────────────── */}
@@ -215,54 +188,82 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
             <div style={{
               marginBottom: 16,
               borderRadius: 12,
-              border: '1px solid rgba(246,173,85,0.35)',
-              background: 'linear-gradient(180deg, rgba(246,173,85,0.10), rgba(246,173,85,0.03))',
+              border: '1px solid rgba(212,160,23,0.35)',
+              background: 'linear-gradient(180deg, rgba(212,160,23,0.10), rgba(212,160,23,0.03))',
               padding: '14px 16px',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <Hourglass size={15} color="var(--sophi-warn)" className="animate-pulse" />
-                <span style={{ fontFamily: 'var(--font-syne)', fontSize: 13, fontWeight: 700, color: 'var(--sophi-warn)' }}>
+              <div
+                onClick={canReadClinical ? () => setExpandedGroup((g) => (g === 'evaluation' ? null : 'evaluation')) : undefined}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, cursor: canReadClinical ? 'pointer' : 'default' }}
+              >
+                <Hourglass size={15} color="var(--sophi-yellow)" className="animate-pulse" />
+                <span style={{ fontFamily: 'var(--font-syne)', fontSize: 13, fontWeight: 700, color: 'var(--sophi-yellow)' }}>
                   A Reavaliar
                 </span>
                 <span style={{
-                  fontFamily: 'var(--font-dm-mono)', fontSize: 11, fontWeight: 700, color: 'var(--sophi-warn)',
-                  background: 'rgba(246,173,85,0.18)', borderRadius: 999, padding: '1px 8px',
+                  fontFamily: 'var(--font-dm-mono)', fontSize: 11, fontWeight: 700, color: 'var(--sophi-yellow)',
+                  background: 'rgba(212,160,23,0.18)', borderRadius: 999, padding: '1px 8px',
                 }}>
                   {byStatus.evaluation.length}
                 </span>
                 <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--sophi-text3)' }}>
                   Aguardam decisão clínica
                 </span>
+                {canReadClinical && (expandedGroup === 'evaluation' ? <ChevronUp size={13} color="var(--sophi-yellow)" /> : <ChevronDown size={13} color="var(--sophi-yellow)" />)}
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {byStatus.evaluation.map((a) => (
-                  <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: 8,
-                      background: 'var(--sophi-bg2)', border: '1px solid rgba(246,173,85,0.25)',
-                      borderRadius: 999, padding: '4px 12px 4px 4px',
-                    }}>
-                      <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={26} />
-                      <span style={{ fontSize: 12, color: 'var(--sophi-text)', fontWeight: 500 }}>{a.name}</span>
-                      <span style={{ fontSize: 10, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
-                        {a.position}
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+              {canReadClinical && expandedGroup === 'evaluation' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {byStatus.evaluation.map((a) => (
+                    <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        background: 'var(--sophi-bg2)', border: '1px solid rgba(212,160,23,0.25)',
+                        borderRadius: 10, padding: '6px 12px',
+                      }}>
+                        <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={26} />
+                        <span style={{ fontSize: 12, color: 'var(--sophi-text)', fontWeight: 500, flexShrink: 0 }}>{a.name}</span>
+                        <span style={{ fontSize: 11, color: 'var(--sophi-text3)', flex: 1 }}>
+                          {reasonByAthleteId[a.id]?.reason ?? 'Sem motivo registado'}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {byStatus.evaluation.map((a) => (
+                    <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        background: 'var(--sophi-bg2)', border: '1px solid rgba(212,160,23,0.25)',
+                        borderRadius: 999, padding: '4px 12px 4px 4px',
+                      }}>
+                        <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={26} />
+                        <span style={{ fontSize: 12, color: 'var(--sophi-text)', fontWeight: 500 }}>{a.name}</span>
+                        <span style={{ fontSize: 10, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
+                          {a.position}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
-          {/* Semáforo: disponível → RTP → indisponível, por ordem crescente de restrição.
-              Fixed 3-column row spanning the full page width on desktop/tablet (≥640px,
-              same as before); stacks to 1 column on phones so the named pills have room
-              to wrap instead of being squeezed into a ~110px-wide slot. */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Semáforo em grelha 2x2: Disponível/Gestão de Carga em cima (treinam
+              normalmente), Indisponível/RTP em baixo (fora do plano normal).
+              Stacks to 1 column on phones so the named pills have room to wrap
+              instead of being squeezed into a ~110px-wide slot. */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {TRAFFIC_LIGHT_ORDER.map((status) => {
               const cfg = STATUS_CONFIG[status]
               const group = byStatus[status]
-              const isPriority = status === 'unavailable' || status === 'rtp'
+              const isPriority = status === 'unavailable' || status === 'rtp' || status === 'load_management'
+              // Only load_management gets a second path in: coach/fitness_coach
+              // can't read any other group's clinical reason, but they're the
+              // intended audience for this one group's restrictions checklist.
+              const canExpand = canReadClinical || (status === 'load_management' && canApplyLoadManagement)
               return (
                 <div key={status} style={{
                   background: 'var(--sophi-bg2)',
@@ -270,33 +271,80 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
                   borderRadius: 12,
                   overflow: 'hidden',
                 }}>
-                  {/* Group header */}
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    padding: '10px 14px',
-                    background: group.length > 0 ? cfg.bg : 'transparent',
-                    borderBottom: '1px solid var(--sophi-border)',
-                  }}>
+                  {/* Group header — click the label to expand and list each
+                      athlete's reason (diagnosis/occurrence) inline. */}
+                  <div
+                    onClick={canExpand ? () => setExpandedGroup((g) => (g === status ? null : status)) : undefined}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      padding: '10px 14px', cursor: canExpand ? 'pointer' : 'default',
+                      background: group.length > 0 ? cfg.bg : 'transparent',
+                      borderBottom: '1px solid var(--sophi-border)',
+                    }}
+                  >
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: cfg.dot, flexShrink: 0 }} />
                     <span style={{ fontFamily: 'var(--font-syne)', fontSize: 12, fontWeight: 700, color: cfg.color }}>
                       {cfg.label}
                     </span>
                     <span style={{
-                      marginLeft: 'auto', fontFamily: 'var(--font-dm-mono)', fontSize: 11,
+                      fontFamily: 'var(--font-dm-mono)', fontSize: 11,
                       fontWeight: 700, color: cfg.color,
                       background: `${cfg.dot}22`, borderRadius: 999, padding: '1px 8px',
                     }}>
                       {group.length}
                     </span>
+                    {canExpand && (
+                      <span style={{ marginLeft: 'auto', display: 'flex' }}>
+                        {expandedGroup === status ? <ChevronUp size={13} color={cfg.color} /> : <ChevronDown size={13} color={cfg.color} />}
+                      </span>
+                    )}
                   </div>
 
                   {/* Athletes — "Disponível" stays as compact avatar circles (many
-                      athletes); RTP/Indisponível use the same named-pill format as
-                      the "A Reavaliar" strip above, since there are fewer of them. */}
+                      athletes); RTP/Indisponível/Gestão de Carga use the same
+                      named-pill format as the "A Reavaliar" strip above, since
+                      there are fewer of them. Expanding the header switches any
+                      group to a detailed list with each athlete's reason. */}
                   <div style={{ padding: '10px 14px', minHeight: 60 }}>
                     {group.length === 0 ? (
                       <div style={{ fontSize: 11, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)', textAlign: 'center', padding: '12px 0' }}>
                         —
+                      </div>
+                    ) : expandedGroup === status ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {group.map((a) => {
+                          const r = reasonByAthleteId[a.id]
+                          return (
+                            <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
+                              <div style={{
+                                display: 'flex', alignItems: 'center', gap: 10,
+                                background: 'var(--sophi-bg3)', border: `1px solid ${cfg.border}`,
+                                borderRadius: 10, padding: '6px 12px',
+                              }}>
+                                <AthleteAvatar photoUrl={a.photo_url} shirtNumber={a.shirt_number} name={a.name} size={26} />
+                                <div style={{ minWidth: 0, flex: 1 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span style={{ fontSize: 12, color: 'var(--sophi-text)', fontWeight: 500, flexShrink: 0 }}>{a.name}</span>
+                                    {/* canReadClinical-only text — reasonByAthleteId entries built
+                                        for coach/fitness_coach (081) never carry `reason` at all, so
+                                        this must not fall back to a "no reason" message that would
+                                        misreport a genuinely-recorded but deliberately withheld one. */}
+                                    {canReadClinical && (
+                                      <span style={{ fontSize: 11, color: 'var(--sophi-text3)' }}>{r?.reason ?? 'Sem motivo registado'}</span>
+                                    )}
+                                  </div>
+                                  {status === 'load_management' && (r?.restrictions.length || r?.notes) ? (
+                                    <div style={{ fontSize: 10, color: cfg.color, marginTop: 2 }}>
+                                      {r.restrictions.length ? restrictionLabels(r.restrictions) : null}
+                                      {r.restrictions.length && r.notes ? ' — ' : ''}
+                                      {r.notes ?? ''}
+                                    </div>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </Link>
+                          )
+                        })}
                       </div>
                     ) : isPriority ? (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -415,9 +463,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, is
                           photoUrl={a.photo_url}
                           shirtNumber={a.shirt_number}
                           position={posCodes[pos] ?? pos}
-                          status={a.availability_status === 'available' ? 'available'
-                            : a.availability_status === 'rtp' ? 'rehab'
-                            : 'unavailable'}
+                          status={a.availability_status}
                           score={a.score}
                           scoreColor={a.scoreColor}
                           scoreLabel={a.scoreLabel}

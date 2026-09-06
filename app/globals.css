@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-poppins);
   --font-mono: var(--font-dm-mono);
   --font-display: var(--font-syne);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -155,6 +155,10 @@ html.light {
   --sophi-danger-bg: rgba(255, 77, 109, 0.12);
   --sophi-purple: #b48dfc;
   --sophi-purple-bg: rgba(180, 141, 252, 0.12);
+  --sophi-orange: #f97316;
+  --sophi-orange-bg: rgba(249, 115, 22, 0.12);
+  --sophi-yellow: #d4a017;
+  --sophi-yellow-bg: rgba(212, 160, 23, 0.12);
   --sophi-text:   #e8eaf2;
   --sophi-text2:  #8892a4;
   --sophi-text3:  #4a5568;
@@ -200,7 +204,7 @@ html.light {
   --text2:  var(--sophi-text2);
   --text3:  var(--sophi-text3);
   --mono:   var(--font-dm-mono);
-  --body:   var(--font-inter);
+  --body:   var(--font-poppins);
   --display: var(--font-syne);
 }
 

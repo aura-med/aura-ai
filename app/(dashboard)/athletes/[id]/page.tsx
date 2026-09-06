@@ -11,7 +11,7 @@ import { AthleteProfileClient } from '@/components/athlete-profile/AthleteProfil
 import { getLatestRecommendations } from '@/lib/actions/recommendations'
 import { getViewerContext } from '@/lib/data/auth'
 import type { UserRole } from '@/types'
-import type { AthleteProfileData, TabId, InjuryEventSummary, ActiveDiagnosis, ActiveOccurrence, AthleteAnamnesis } from '@/types/athlete-profile'
+import type { AthleteProfileData, TabId, InjuryEventSummary, ActiveOccurrence, ActiveDiagnosis, AthleteAnamnesis } from '@/types/athlete-profile'
 
 const VALID_TABS: TabId[] = [
   'overview', 'medical', 'injuries', 'treatments',
@@ -122,24 +122,30 @@ async function AthleteDetailContent({
     .limit(1)
     .maybeSingle()
 
-  // ── Active diagnoses + occurrences (clinical module) ─────────────────────
-  // Occurrences carry the full SOAP + title so the Overview tab can expand a
-  // row inline instead of navigating away; a short window of recently-resolved
-  // rows is fetched separately for the Overview's compact history.
+  // ── Occurrences (clinical module) ──────────────────────────────────────────
+  // Occurrences carry the full SOAP + title, plus their own diagnosis inline,
+  // so the Overview tab can expand a row (and its diagnosis) without a
+  // separate, easily-desynced "active diagnoses" list — for the normal case
+  // (a diagnosis attached to an occurrence). The schema still allows a
+  // diagnosis with no occurrence_id (older records made that way, or created
+  // through the API directly), so those are fetched separately below and
+  // shown in their own small fallback section — otherwise they'd become
+  // invisible/unmanageable from the profile. A short window of
+  // recently-resolved occurrences is fetched separately for the compact history.
   const occurrenceColumns = `
     id, athlete_id, title, occurrence_date, occurrence_type, availability_status,
+    load_management_restrictions, load_management_notes,
     subjective, objective, assessment, plan, clinician_name, clinician_role,
     is_resolved, resolved_at,
-    occurrence_records ( id, record_date, subjective, objective, assessment, plan, availability_status, clinician_name, created_at ),
-    diagnoses ( id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, is_resolved )
+    occurrence_records ( id, record_date, subjective, objective, assessment, plan, availability_status, load_management_restrictions, load_management_notes, clinician_name, created_at ),
+    diagnoses ( id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, load_management_restrictions, load_management_notes, is_resolved )
   `
-  const [{ data: activeDiagnoses }, { data: activeOccurrences }, { data: recentResolvedOccurrences }, { data: anamnesis }] = await Promise.all([
-    supabase
-      .from('diagnoses')
-      .select('id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, diagnosed_at, is_resolved, occurrence_id')
-      .eq('athlete_id', id)
-      .eq('is_resolved', false)
-      .order('diagnosed_at', { ascending: false }),
+  const [
+    { data: activeOccurrences, error: activeOccurrencesError },
+    { data: recentResolvedOccurrences, error: recentResolvedOccurrencesError },
+    { data: anamnesis },
+    { data: allActiveDiagnoses, error: allActiveDiagnosesError },
+  ] = await Promise.all([
     supabase
       .from('occurrences')
       .select(occurrenceColumns)
@@ -160,7 +166,42 @@ async function AthleteDetailContent({
       .order('season', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    // All active diagnoses, not just occurrence_id IS NULL ones — a diagnosis
+    // stays active after its parent occurrence is resolved, and that parent
+    // then drops out of activeOccurrences (and eventually out of the 5-row
+    // recentResolvedOccurrences window too), so filtering by occurrence_id
+    // alone would make the diagnosis disappear from the profile entirely
+    // even though availability recomputation still considers it live.
+    supabase
+      .from('diagnoses')
+      .select('id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, load_management_restrictions, load_management_notes, diagnosed_at, is_resolved, occurrence_id')
+      .eq('athlete_id', id)
+      .eq('is_resolved', false)
+      .order('diagnosed_at', { ascending: false }),
   ])
+  // A transient failure here must not be treated as "no diagnoses/
+  // occurrences" — that would silently hide standalone active diagnoses (and
+  // ones linked to a resolved occurrence) even though availability
+  // recomputation still considers them live, or hide open/recent occurrences
+  // entirely from the profile.
+  if (activeOccurrencesError) throw new Error(activeOccurrencesError.message)
+  if (recentResolvedOccurrencesError) throw new Error(recentResolvedOccurrencesError.message)
+  if (allActiveDiagnosesError) throw new Error(allActiveDiagnosesError.message)
+
+  // Diagnoses already shown inline under an occurrence row (either an open
+  // one, or one of the 5 recently-resolved ones — both render their own
+  // nested `diagnoses`) are excluded here to avoid listing them twice. An
+  // active diagnosis can outlive its parent occurrence being resolved, so
+  // without also covering recentResolvedOccurrences, one linked to a
+  // recently-resolved occurrence would show up both under that occurrence's
+  // row AND again here as if it had no occurrence at all.
+  const shownInlineOccurrenceIds = new Set([
+    ...(activeOccurrences ?? []).map((o) => o.id),
+    ...(recentResolvedOccurrences ?? []).map((o) => o.id),
+  ])
+  const orphanDiagnoses = (allActiveDiagnoses ?? []).filter(
+    (d) => !d.occurrence_id || !shownInlineOccurrenceIds.has(d.occurrence_id)
+  )
 
   // ── Document + consultation counts ────────────────────────────────────────
   const [{ count: documentCount }, { count: consultationCount }] = await Promise.all([
@@ -281,9 +322,9 @@ async function AthleteDetailContent({
     baselineScat6:     baselineScat6 ?? null,
     activeConcussion:  activeConcussion ?? null,
     injuryEvents,
-    activeDiagnoses:   (activeDiagnoses ?? []) as ActiveDiagnosis[],
     activeOccurrences: (activeOccurrences ?? []) as ActiveOccurrence[],
     recentResolvedOccurrences: (recentResolvedOccurrences ?? []) as ActiveOccurrence[],
+    orphanDiagnoses: (orphanDiagnoses ?? []) as ActiveDiagnosis[],
     documentCount:     documentCount ?? 0,
     consultationCount: consultationCount ?? 0,
     recommendations,

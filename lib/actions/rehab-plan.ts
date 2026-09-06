@@ -15,6 +15,25 @@ async function currentUserId(supabase: Awaited<ReturnType<typeof createClient>>)
   return user?.id ?? null
 }
 
+// The FK on rehab_plans.occurrence_id only checks the occurrence exists,
+// not that it belongs to this plan's own athlete — without this, a crafted
+// request could link a plan for athlete A to athlete B's occurrence. Same
+// pattern as validateOccurrenceOwnership in
+// app/api/athletes/[id]/rehab-sessions/route.ts.
+async function validateOccurrenceOwnership(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  occurrenceId: string | null,
+  athleteId: string,
+): Promise<void> {
+  if (!occurrenceId) return
+  const { data, error } = await supabase
+    .from('occurrences')
+    .select('athlete_id')
+    .eq('id', occurrenceId)
+    .maybeSingle()
+  if (error || !data || data.athlete_id !== athleteId) throw new Error('Ocorrência inválida para este atleta')
+}
+
 // ── Plans ────────────────────────────────────────────────────────────────────
 
 export interface CreateRehabPlanInput {
@@ -52,6 +71,8 @@ export async function createRehabPlan(input: CreateRehabPlanInput) {
   if (existingError) throw new Error(existingError.message)
   if (existingActive) throw new Error('Este atleta já tem um plano de reabilitação ativo. Termina-o antes de criar um novo.')
 
+  await validateOccurrenceOwnership(supabase, input.occurrenceId, input.athleteId)
+
   const { data, error } = await supabase.from('rehab_plans').insert({
     athlete_id:        input.athleteId,
     org_id:            profile?.org_id ?? null,
@@ -84,6 +105,17 @@ export interface UpdateRehabPlanInput {
 
 export async function updateRehabPlan(input: UpdateRehabPlanInput) {
   const supabase = await createClient()
+
+  // Need the plan's own athlete_id to validate the new occurrenceId
+  // against — RLS already scopes this read to plans the caller can see.
+  const { data: existing, error: existingError } = await supabase
+    .from('rehab_plans')
+    .select('athlete_id')
+    .eq('id', input.planId)
+    .maybeSingle()
+  if (existingError || !existing?.athlete_id) throw new Error(existingError?.message ?? 'Plano não encontrado')
+
+  await validateOccurrenceOwnership(supabase, input.occurrenceId, existing.athlete_id)
 
   const { data, error } = await supabase
     .from('rehab_plans')
@@ -133,6 +165,7 @@ export interface UpsertRehabPlanPhaseInput {
   name: string
   criteria: string | null
   startDate: string
+  testDate: string | null
 }
 
 export async function upsertRehabPlanPhase(input: UpsertRehabPlanPhaseInput) {
@@ -149,7 +182,7 @@ export async function upsertRehabPlanPhase(input: UpsertRehabPlanPhaseInput) {
   if (input.phaseId) {
     const { error } = await supabase
       .from('rehab_plan_phases')
-      .update({ name: input.name, criteria: input.criteria, start_date: input.startDate })
+      .update({ name: input.name, criteria: input.criteria, start_date: input.startDate, test_date: input.testDate })
       .eq('id', input.phaseId)
       .eq('plan_id', input.planId)
     if (error) throw new Error(error.message)
@@ -173,6 +206,7 @@ export async function upsertRehabPlanPhase(input: UpsertRehabPlanPhaseInput) {
       name:         input.name,
       criteria:     input.criteria,
       start_date:   input.startDate,
+      test_date:    input.testDate,
       created_by:   userId,
     })
     if (error) {
@@ -283,62 +317,29 @@ export interface MoveRehabPlanDayInput {
 // clobber an occupied destination unless the caller confirms via `overwrite`.
 export async function moveRehabPlanDay(input: MoveRehabPlanDayInput) {
   const supabase = await createClient()
-  const userId = await currentUserId(supabase)
 
-  const { data: plan, error: planError } = await supabase
-    .from('rehab_plans')
-    .select('athlete_id')
-    .eq('id', input.planId)
-    .single()
-  if (planError || !plan?.athlete_id) throw new Error(planError?.message ?? 'Plano não encontrado')
-
-  const { data: source, error: sourceError } = await supabase
-    .from('rehab_plan_days')
-    .select('*')
-    .eq('plan_id', input.planId)
-    .eq('entry_date', input.fromDate)
-    .eq('period', input.fromPeriod)
-    .maybeSingle()
-  if (sourceError) throw new Error(sourceError.message)
-  if (!source) throw new Error('Não há nada para mover nesse dia/período.')
-
-  if (input.fromDate === input.toDate && input.fromPeriod === input.toPeriod) {
-    return // no-op: moving onto itself
+  // move_rehab_plan_day (083) locks the source AND destination rows before
+  // writing, closing two races the previous multi-call version couldn't:
+  // a partial failure between the destination write and the source delete
+  // duplicating content across both cells, and two concurrent no-overwrite
+  // moves onto the same empty destination both passing a read-only
+  // occupancy check. It also carries the source's own created_by onto the
+  // destination through a trusted, transaction-local flag the trigger
+  // checks — a plain client write can't set that flag, so authorship can
+  // no longer be forged by claiming "this is a move" on an unrelated write.
+  const { data: athleteId, error } = await supabase.rpc('move_rehab_plan_day', {
+    p_plan_id: input.planId,
+    p_from_date: input.fromDate,
+    p_from_period: input.fromPeriod,
+    p_to_date: input.toDate,
+    p_to_period: input.toPeriod,
+    p_overwrite: input.overwrite,
+  })
+  if (error) {
+    if (error.code === '23505') throw new Error(REHAB_DAY_OCCUPIED_ERROR)
+    throw new Error(error.message)
   }
+  if (!athleteId) return // no-op: moving onto itself
 
-  const { data: destination, error: destError } = await supabase
-    .from('rehab_plan_days')
-    .select('id')
-    .eq('plan_id', input.planId)
-    .eq('entry_date', input.toDate)
-    .eq('period', input.toPeriod)
-    .maybeSingle()
-  if (destError) throw new Error(destError.message)
-  if (destination && !input.overwrite) {
-    throw new Error(REHAB_DAY_OCCUPIED_ERROR)
-  }
-
-  // Write destination first, then clear the source — if the destination write
-  // fails, the original entry is left untouched instead of being lost. This
-  // is not a transaction, though: two separate Supabase calls can't be made
-  // atomic without an RPC, so a failure specifically on the delete below
-  // (after a successful write) leaves the content duplicated in both cells
-  // rather than moved. Judged an acceptable, narrow residual risk over the
-  // added complexity of a transactional RPC for this action.
-  const { error: upsertError } = await supabase.from('rehab_plan_days').upsert({
-    plan_id:     input.planId,
-    entry_date:  input.toDate,
-    period:      input.toPeriod,
-    content:     source.content,
-    is_rest_day: source.is_rest_day,
-    phase_id:    source.phase_id,
-    created_by:  source.created_by,
-    updated_by:  userId,
-  }, { onConflict: 'plan_id,entry_date,period' })
-  if (upsertError) throw new Error(upsertError.message)
-
-  const { error: deleteError } = await supabase.from('rehab_plan_days').delete().eq('id', source.id)
-  if (deleteError) throw new Error(deleteError.message)
-
-  revalidatePath(`/athletes/${plan.athlete_id}`)
+  revalidatePath(`/athletes/${athleteId}`)
 }

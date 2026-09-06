@@ -71,7 +71,9 @@
       "calendar": "Calendar Intelligence",
       "passport": "Athlete Passport",
       "female_squad": "Female Squad",
-      "settings": "Settings"
+      "settings": "Settings",
+      "collapse_sidebar": "Collapse sidebar",
+      "expand_sidebar": "Expand sidebar"
     },
     "version": "Sophi v1.1 · FPF Pilot"
   },

@@ -2,10 +2,12 @@
 // Uses jsPDF + autotable; imported only from 'use client' components.
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { addDays } from '@/lib/utils/microcycle'
 
 const STATUS_LABELS: Record<string, string> = {
   available: 'Disponível',
   evaluation: 'Em Avaliação',
+  load_management: 'Gestão de Carga',
   unavailable: 'Indisponível',
   rtp: 'Em RTP',
 }
@@ -117,15 +119,20 @@ export interface ClinicalStaffMember {
 const DECISION_LABELS: Record<string, string> = {
   available: 'Apto',
   evaluation: 'Reavaliar',
+  load_management: 'Gestão de Carga',
   rtp: 'RTP',
   unavailable: 'Indisponível',
 }
 
+// evaluation is a true yellow (a to-do, not a severity colour) and
+// load_management is a strong/vivid orange — kept visually distinct from each
+// other and from unavailable's red, since a page can show all three at once.
 const DECISION_COLORS: Record<string, { fill: [number, number, number]; text: [number, number, number] }> = {
-  available:   { fill: [84, 130, 53],   text: [255, 255, 255] },
-  evaluation:  { fill: [255, 217, 0],   text: [40, 40, 40] },
-  rtp:         { fill: [47, 84, 150],   text: [255, 255, 255] },
-  unavailable: { fill: [214, 25, 25],   text: [255, 255, 255] },
+  available:       { fill: [84, 130, 53],   text: [255, 255, 255] },
+  evaluation:      { fill: [255, 217, 0],   text: [40, 40, 40] },
+  load_management: { fill: [255, 111, 0],   text: [255, 255, 255] },
+  rtp:              { fill: [47, 84, 150],   text: [255, 255, 255] },
+  unavailable:      { fill: [214, 25, 25],   text: [255, 255, 255] },
 }
 
 const STAFF_PREFIX: Record<string, string> = {
@@ -162,10 +169,11 @@ export function exportDashboardPDF(
   doc.text('Legenda:', 14, 25)
 
   const legendEntries: { status: string; text: string }[] = [
-    { status: 'available',   text: 'Apesar da observação atleta treina sem limitações - APTO' },
-    { status: 'evaluation',  text: 'Treina de forma condicionada/Gestão de carga/Reavaliar pré treino' },
-    { status: 'unavailable', text: 'Não pode treinar/Indisponível' },
-    { status: 'rtp',         text: 'Return to Play (RTP)' },
+    { status: 'available',        text: 'Apesar da observação atleta treina sem limitações - APTO' },
+    { status: 'evaluation',       text: 'Reavaliar pré treino' },
+    { status: 'load_management',  text: 'Treina de forma condicionada - Gestão de Carga' },
+    { status: 'unavailable',      text: 'Não pode treinar/Indisponível' },
+    { status: 'rtp',              text: 'Return to Play (RTP)' },
   ]
   let legendY = 29
   doc.setFont('helvetica', 'normal')
@@ -226,4 +234,136 @@ export function exportDashboardPDF(
 
   withFooter(doc, meta.currentDate)
   doc.save(`registos-clinicos-${meta.currentDate}.pdf`)
+}
+
+// ── Rehab plan export ───────────────────────────────────────────────────────
+
+export interface RehabPlanExportPhase {
+  phase_number: number
+  name: string
+  criteria: string | null
+  start_date: string
+  test_date: string | null
+}
+
+export interface RehabPlanExportDay {
+  entry_date: string
+  period: 'morning' | 'afternoon'
+  content: string | null
+  is_rest_day: boolean
+}
+
+const PERIOD_LABELS: Record<string, string> = { morning: 'Manhã', afternoon: 'Tarde' }
+const WEEKDAY_LABELS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
+
+function mondayOf(dateStr: string): string {
+  const dow = new Date(dateStr + 'T12:00:00').getDay() // 0=Sun..6=Sat
+  return addDays(dateStr, -((dow + 6) % 7))
+}
+
+function diffDaysLocal(a: string, b: string): number {
+  return Math.round((new Date(b + 'T12:00:00').getTime() - new Date(a + 'T12:00:00').getTime()) / 86_400_000)
+}
+
+export function exportRehabPlanPDF(
+  plan: { title: string; start_date: string; expected_end_date: string | null; is_active: boolean; is_completed: boolean },
+  phases: RehabPlanExportPhase[],
+  days: RehabPlanExportDay[],
+  range: { rangeStart: string; rangeEnd: string },
+  meta: { athleteName: string; currentDate: string },
+) {
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
+  const statusLabel = plan.is_active ? 'Ativo' : plan.is_completed ? 'Concluído' : 'Arquivado'
+  const subtitleParts = [
+    meta.athleteName,
+    `Início ${plan.start_date}`,
+    plan.expected_end_date ? `Fim previsto ${plan.expected_end_date}` : null,
+    statusLabel,
+  ].filter(Boolean)
+  let y = brandHeader(doc, plan.title, subtitleParts.join(' · '))
+
+  if (phases.length) {
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(10)
+    doc.setTextColor(30, 30, 30)
+    doc.text('Fases & Critérios de Progressão', 14, y)
+    y += 4
+
+    autoTable(doc, {
+      startY: y,
+      head: [['Fase', 'Nome', 'Início', 'Dia de Teste', 'Critérios']],
+      body: phases.map((ph) => [
+        String(ph.phase_number),
+        ph.name,
+        ph.start_date,
+        ph.test_date ?? '—',
+        ph.criteria ?? '—',
+      ]),
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [18, 22, 28], textColor: [180, 141, 252], fontStyle: 'bold' },
+      columnStyles: { 4: { cellWidth: 90 } },
+      margin: { left: 14, right: 14 },
+    })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    y = (doc as any).lastAutoTable.finalY + 8
+  }
+
+  // Weekly grid — mirrors the on-screen calendar (Manhã/Tarde x weekday),
+  // one table per week, instead of a flat chronological list, so a printed
+  // copy reads the same way the club's own paper weekly plans always have.
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(10)
+  doc.setTextColor(30, 30, 30)
+  doc.text('Plano Semanal', 14, y)
+  y += 5
+
+  const dayMap = new Map(days.map((d) => [`${d.entry_date}__${d.period}`, d]))
+  const startMonday = mondayOf(range.rangeStart)
+  const totalWeeks = Math.max(1, Math.ceil((diffDaysLocal(startMonday, range.rangeEnd) + 1) / 7))
+
+  for (let w = 0; w < totalWeeks; w++) {
+    const monday = addDays(startMonday, w * 7)
+    const weekDates = Array.from({ length: 7 }, (_, i) => addDays(monday, i))
+
+    if (y > 170) { doc.addPage(); y = 20 }
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9)
+    doc.setTextColor(30, 30, 30)
+    doc.text(`Semana ${w + 1} · ${weekDates[0]} – ${weekDates[6]}`, 14, y)
+    y += 4
+
+    autoTable(doc, {
+      startY: y,
+      head: [['', ...weekDates.map((d, i) => {
+        const label = `${WEEKDAY_LABELS[i].slice(0, 3)} ${d.slice(8, 10)}/${d.slice(5, 7)}`
+        const testPhase = phases.find((ph) => ph.test_date === d)
+        return testPhase ? `${label}\nTeste F${testPhase.phase_number}` : label
+      })]],
+      body: (['morning', 'afternoon'] as const).map((period) => [
+        PERIOD_LABELS[period],
+        ...weekDates.map((date) => {
+          if (date < range.rangeStart || date > range.rangeEnd) return ''
+          const entry = dayMap.get(`${date}__${period}`)
+          if (!entry) return '—'
+          return entry.is_rest_day ? 'Folga' : (entry.content ?? '—')
+        }),
+      ]),
+      styles: { fontSize: 7, cellPadding: 2, valign: 'top' },
+      headStyles: { fillColor: [18, 22, 28], textColor: [0, 229, 160], fontStyle: 'bold', halign: 'center' },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 18 } },
+      margin: { left: 14, right: 14 },
+    })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    y = (doc as any).lastAutoTable.finalY + 8
+  }
+
+  if (!days.length && !phases.length) {
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    doc.setTextColor(120, 120, 120)
+    doc.text('Sem sessões planeadas', 14, y)
+  }
+
+  withFooter(doc, meta.currentDate)
+  doc.save(`plano-reabilitacao-${meta.athleteName.replace(/\s+/g, '-').toLowerCase()}-${meta.currentDate}.pdf`)
 }

@@ -1,0 +1,36 @@
+-- Migration 064 — (Corrected) do NOT backfill injury_events for diagnoses
+-- 061's dedup resolved.
+--
+-- This migration originally treated every diagnosis 061's dedup resolved
+-- (is_resolved = true, resolved_by IS NULL — 061's raw UPDATE, never set
+-- by the real resolveDiagnosis action) as a separately concluded injury,
+-- inserting a matching injury_events row for each one. That premise was
+-- wrong: 061's own ranking (PARTITION BY occurrence_id ... ROW_NUMBER())
+-- always keeps exactly one diagnosis active per occurrence and resolves
+-- every OTHER duplicate — meaning every diagnosis this migration targeted
+-- necessarily has a sibling diagnosis on the SAME occurrence that is still
+-- open. The injury was never actually over; the duplicate rows are
+-- redundant records of the SAME still-ongoing injury the surviving
+-- diagnosis already represents, not N separate ones.
+--
+-- Backfilling here was actively harmful two ways: it recorded a fake
+-- "return to play" (the discarded duplicate's resolved_at, or NOW() at
+-- migration time) for an injury that was still active via the surviving
+-- diagnosis; and when that survivor was later resolved for real through
+-- resolveDiagnosis (lib/actions/clinical.ts), its own — correct —
+-- injury_events insert would create a SECOND entry for the same injury,
+-- duplicating it on the athlete's timeline and inflating the injury-
+-- history risk input the dashboard scoring reads from. The original
+-- NOT EXISTS guard didn't prevent this either: a single INSERT ... SELECT
+-- evaluates every row's subquery against the SAME pre-statement snapshot,
+-- so two-or-more duplicates with identical (athlete_id, injury_date,
+-- diagnosis) sharing one INSERT statement could all pass it and insert
+-- their own copies.
+--
+-- No backfill is actually needed: resolveDiagnosis already creates exactly
+-- one injury_events row, correctly, whenever the surviving diagnosis is
+-- genuinely resolved — before or after this migration runs. This file is
+-- kept (rather than deleted) to preserve that record for anyone who
+-- already ran its original version in a non-production environment; it is
+-- intentionally a no-op here.
+SELECT 1;

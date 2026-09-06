@@ -4,9 +4,11 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { DiagnosisModal } from '@/components/athlete-profile/DiagnosisModal'
-import { ChevronDown, ChevronUp, Plus, Check, Pencil } from 'lucide-react'
-import { resolveOccurrence, addOccurrenceRecord, updateOccurrence } from '@/app/(dashboard)/occurrences/actions'
+import { ChevronDown, ChevronUp, Plus, Check, Pencil, CheckCircle2, Loader2 } from 'lucide-react'
+import { resolveOccurrence, addOccurrenceRecord, updateOccurrence, updateOccurrenceRecord } from '@/app/(dashboard)/occurrences/actions'
+import { resolveDiagnosis } from '@/lib/actions/clinical'
 import { todayStr } from '@/lib/utils/microcycle'
+import { LoadManagementFields, restrictionLabels } from '@/components/shared/LoadManagementFields'
 import type { AthleteAvailabilityStatus } from '@/types'
 
 // Shared between the Ocorrências page and the athlete profile's Overview tab
@@ -14,10 +16,11 @@ import type { AthleteAvailabilityStatus } from '@/types'
 // attach a diagnosis — regardless of where it's opened from.
 
 export const STATUS_CONFIG: Record<AthleteAvailabilityStatus, { label: string; color: string; bg: string; dot: string }> = {
-  available:   { label: 'Disponível',   color: 'var(--sophi-green)',  bg: 'rgba(0,229,160,0.1)',   dot: '#00e5a0' },
-  evaluation:  { label: 'Em Avaliação', color: 'var(--sophi-warn)',   bg: 'rgba(246,173,85,0.1)',  dot: '#f6ad55' },
-  unavailable: { label: 'Indisponível', color: 'var(--sophi-danger)', bg: 'rgba(255,77,109,0.1)',  dot: '#ff4d6d' },
-  rtp:         { label: 'Em RTP',       color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.1)', dot: '#b48dfc' },
+  available:       { label: 'Disponível',      color: 'var(--sophi-green)',  bg: 'rgba(0,229,160,0.1)',   dot: '#00e5a0' },
+  evaluation:      { label: 'Em Avaliação',    color: 'var(--sophi-warn)',   bg: 'rgba(246,173,85,0.1)',  dot: '#f6ad55' },
+  load_management: { label: 'Gestão de Carga', color: 'var(--sophi-orange)', bg: 'rgba(204,85,0,0.1)',    dot: '#cc5500' },
+  unavailable:     { label: 'Indisponível',    color: 'var(--sophi-danger)', bg: 'rgba(255,77,109,0.1)',  dot: '#ff4d6d' },
+  rtp:             { label: 'Em RTP',          color: 'var(--sophi-purple)', bg: 'rgba(180,141,252,0.1)', dot: '#b48dfc' },
 }
 
 export const OCCURRENCE_TYPES = [
@@ -44,6 +47,8 @@ export interface OccurrenceRecord {
   assessment: string | null
   plan: string | null
   availability_status: AthleteAvailabilityStatus | null
+  load_management_restrictions?: string[]
+  load_management_notes?: string | null
   clinician_name: string | null
   created_at: string
 }
@@ -55,6 +60,8 @@ export interface OccurrenceDiagnosis {
   diagnosis_type: string | null
   custom_description: string | null
   availability_status: AthleteAvailabilityStatus | null
+  load_management_restrictions?: string[]
+  load_management_notes?: string | null
   is_resolved: boolean
 }
 
@@ -69,6 +76,8 @@ export interface Occurrence {
   assessment: string | null
   plan: string | null
   availability_status: AthleteAvailabilityStatus
+  load_management_restrictions?: string[]
+  load_management_notes?: string | null
   clinician_name: string | null
   clinician_role: string | null
   is_resolved: boolean
@@ -103,6 +112,13 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
   const [reevalData, setReevalData] = useState({
     observations: '',
     availability_status: occ.availability_status as AthleteAvailabilityStatus,
+    // Defaults to the occurrence's own current restrictions/notes — a
+    // reassessment that keeps the status as load_management (the common
+    // case: logging progress without changing the decision) must not
+    // silently blank out the athlete's real restrictions just because the
+    // clinician didn't re-check every box.
+    restrictions: occ.load_management_restrictions ?? [] as string[],
+    notes: occ.load_management_notes ?? '',
   })
   const [editData, setEditData] = useState({
     title: occ.title ?? '',
@@ -110,19 +126,28 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
     occurrenceType: (occ.occurrence_type ?? 'complaint') as 'complaint' | 'trauma' | 'disease' | 'other',
     observations: occ.assessment ?? '',
     availability_status: occ.availability_status as AthleteAvailabilityStatus,
+    restrictions: occ.load_management_restrictions ?? [],
+    notes: occ.load_management_notes ?? '',
+  })
+  const [resolvingDiagnosis, setResolvingDiagnosis] = useState(false)
+  const [confirmResolveDiagnosis, setConfirmResolveDiagnosis] = useState(false)
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null)
+  const [recordEditData, setRecordEditData] = useState({
+    recordDate: '',
+    assessment: '',
+    availability_status: 'available' as AthleteAvailabilityStatus,
+    restrictions: [] as string[],
+    notes: '',
   })
 
   const a = occ.athletes
   const typeLabel = OCCURRENCE_TYPES.find((t) => t.value === occ.occurrence_type)?.label ?? occ.occurrence_type
   const activeDiagnosis = occ.diagnoses?.find((d) => !d.is_resolved)
   // What's shown first: the active diagnosis takes priority; otherwise the
-  // most recent reassessment's note; otherwise the occurrence's own title.
-  const latestRecord = occ.occurrence_records.length
-    ? [...occ.occurrence_records].sort((x, y) => y.created_at.localeCompare(x.created_at))[0]
-    : null
+  // occurrence's own (original) title — never a reassessment's note, which is
+  // just a dated log entry, not a replacement headline for the issue itself.
   const primaryLabel =
     (activeDiagnosis && (activeDiagnosis.osiics_description ?? activeDiagnosis.custom_description))
-    || latestRecord?.assessment
     || occ.title
     || a.name
 
@@ -144,9 +169,16 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
         assessment: reevalData.observations,
         plan: '',
         availabilityStatus: reevalData.availability_status,
+        loadManagementRestrictions: reevalData.restrictions,
+        loadManagementNotes: reevalData.notes.trim() || null,
       })
       setShowReeval(false)
-      setReevalData({ observations: '', availability_status: occ.availability_status })
+      setReevalData({
+        observations: '',
+        availability_status: occ.availability_status,
+        restrictions: occ.load_management_restrictions ?? [],
+        notes: occ.load_management_notes ?? '',
+      })
       onRevalidate()
     })
   }
@@ -160,8 +192,50 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
         occurrenceType: editData.occurrenceType,
         observations: editData.observations,
         availabilityStatus: editData.availability_status,
+        loadManagementRestrictions: editData.restrictions,
+        loadManagementNotes: editData.notes.trim() || null,
       })
       setShowEdit(false)
+      onRevalidate()
+    })
+  }
+
+  async function handleResolveDiagnosis() {
+    if (!activeDiagnosis) return
+    setResolvingDiagnosis(true)
+    try {
+      // Author/recompute handled server-side.
+      await resolveDiagnosis(activeDiagnosis.id, occ.athlete_id)
+      onRevalidate()
+    } finally {
+      setResolvingDiagnosis(false)
+      setConfirmResolveDiagnosis(false)
+    }
+  }
+
+  function startEditRecord(r: OccurrenceRecord) {
+    setRecordEditData({
+      recordDate: r.record_date,
+      assessment: r.assessment ?? '',
+      availability_status: (r.availability_status ?? 'available') as AthleteAvailabilityStatus,
+      restrictions: r.load_management_restrictions ?? [],
+      notes: r.load_management_notes ?? '',
+    })
+    setEditingRecordId(r.id)
+  }
+
+  function handleUpdateRecord() {
+    if (!editingRecordId) return
+    startTransition(async () => {
+      await updateOccurrenceRecord({
+        recordId: editingRecordId,
+        recordDate: recordEditData.recordDate,
+        assessment: recordEditData.assessment,
+        availabilityStatus: recordEditData.availability_status,
+        loadManagementRestrictions: recordEditData.restrictions,
+        loadManagementNotes: recordEditData.notes.trim() || null,
+      })
+      setEditingRecordId(null)
       onRevalidate()
     })
   }
@@ -225,6 +299,23 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
             ))}
           </div>
 
+          {/* Restrições de Gestão de Carga */}
+          {occ.availability_status === 'load_management' && (occ.load_management_restrictions?.length || occ.load_management_notes) && (
+            <div style={{ marginBottom: 12, background: 'var(--sophi-orange-bg)', border: '1px solid var(--sophi-orange)', borderRadius: 6, padding: '8px 10px' }}>
+              <div style={{ fontSize: 9, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-orange)', fontWeight: 700, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                Restrições de Gestão de Carga
+              </div>
+              {occ.load_management_restrictions?.length ? (
+                <div style={{ fontSize: 12, color: 'var(--sophi-text)', marginBottom: occ.load_management_notes ? 4 : 0 }}>
+                  {restrictionLabels(occ.load_management_restrictions)}
+                </div>
+              ) : null}
+              {occ.load_management_notes && (
+                <div style={{ fontSize: 11, color: 'var(--sophi-text2)' }}>{occ.load_management_notes}</div>
+              )}
+            </div>
+          )}
+
           {/* Diagnóstico */}
           {activeDiagnosis && (
             <div style={{ marginBottom: 12, background: 'var(--sophi-bg3)', borderRadius: 6, padding: '8px 10px' }}>
@@ -236,7 +327,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                   {activeDiagnosis.osiics_description ?? activeDiagnosis.custom_description ?? '—'}
                 </span>
                 {activeDiagnosis.availability_status && <StatusBadge status={activeDiagnosis.availability_status} />}
-                {canCreateDiagnosis && (
+                {canCreateDiagnosis && !confirmResolveDiagnosis && (
                   <button
                     onClick={() => setShowEditDiagnosis(true)}
                     style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, padding: '3px 7px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer', flexShrink: 0 }}
@@ -245,7 +336,45 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                     Editar
                   </button>
                 )}
+                {canCreateDiagnosis && !confirmResolveDiagnosis && (
+                  <button
+                    onClick={() => setConfirmResolveDiagnosis(true)}
+                    disabled={resolvingDiagnosis}
+                    style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, padding: '3px 7px', borderRadius: 6, border: '1px solid rgba(0,229,160,0.3)', background: 'rgba(0,229,160,0.06)', color: 'var(--sophi-green)', cursor: 'pointer', flexShrink: 0 }}
+                  >
+                    <CheckCircle2 size={9} />
+                    Resolver diagnóstico
+                  </button>
+                )}
               </div>
+              {activeDiagnosis.availability_status === 'load_management' && (activeDiagnosis.load_management_restrictions?.length || activeDiagnosis.load_management_notes) && (
+                <div style={{ marginTop: 6, fontSize: 11, color: 'var(--sophi-orange)' }}>
+                  {restrictionLabels(activeDiagnosis.load_management_restrictions)}
+                  {activeDiagnosis.load_management_notes ? ` — ${activeDiagnosis.load_management_notes}` : ''}
+                </div>
+              )}
+              {confirmResolveDiagnosis && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, borderRadius: 6, border: '1px solid var(--sophi-green)', background: 'var(--sophi-green-bg)', padding: '6px 8px' }}>
+                  <p style={{ fontSize: 10, flex: 1, color: 'var(--sophi-text2)' }}>
+                    Confirma que este diagnóstico fica resolvido?
+                  </p>
+                  <button
+                    onClick={() => setConfirmResolveDiagnosis(false)}
+                    disabled={resolvingDiagnosis}
+                    style={{ fontSize: 10, color: 'var(--sophi-text3)', background: 'transparent', border: 'none', cursor: 'pointer', flexShrink: 0 }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleResolveDiagnosis}
+                    disabled={resolvingDiagnosis}
+                    style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 700, color: 'var(--sophi-green)', background: 'transparent', border: 'none', cursor: 'pointer', flexShrink: 0 }}
+                  >
+                    {resolvingDiagnosis ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle2 size={10} />}
+                    Confirmar
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -256,12 +385,92 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                 Reavaliações ({occ.occurrence_records.length})
               </div>
               {occ.occurrence_records.map((r) => (
-                <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid var(--sophi-border)' }}>
-                  <span style={{ fontSize: 11, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)', flexShrink: 0 }}>{r.record_date}</span>
-                  <span style={{ fontSize: 11, color: 'var(--sophi-text2)', flex: 1 }}>{r.assessment ?? r.subjective ?? '—'}</span>
-                  {r.availability_status && <StatusBadge status={r.availability_status} />}
-                  <span style={{ fontSize: 10, color: 'var(--sophi-text3)' }}>{r.clinician_name}</span>
-                </div>
+                editingRecordId === r.id ? (
+                  <div key={r.id} style={{ background: 'var(--sophi-bg3)', borderRadius: 8, padding: 12, marginBottom: 8 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 6 }}>
+                      <div>
+                        <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                          Data
+                        </label>
+                        <input
+                          type="date"
+                          value={recordEditData.recordDate}
+                          onChange={(e) => setRecordEditData((d) => ({ ...d, recordDate: e.target.value }))}
+                          style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)', fontFamily: 'inherit' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                          Estado de disponibilidade
+                        </label>
+                        <select
+                          value={recordEditData.availability_status}
+                          onChange={(e) => setRecordEditData((d) => ({ ...d, availability_status: e.target.value as AthleteAvailabilityStatus }))}
+                          style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)', fontFamily: 'inherit' }}
+                        >
+                          {Object.entries(STATUS_CONFIG).map(([v, cfg]) => (
+                            <option key={v} value={v}>{cfg.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    {recordEditData.availability_status === 'load_management' && (
+                      <LoadManagementFields
+                        restrictions={recordEditData.restrictions}
+                        onRestrictionsChange={(next) => setRecordEditData((d) => ({ ...d, restrictions: next }))}
+                        notes={recordEditData.notes}
+                        onNotesChange={(next) => setRecordEditData((d) => ({ ...d, notes: next }))}
+                      />
+                    )}
+                    <div style={{ marginBottom: 6 }}>
+                      <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                        Observações
+                      </label>
+                      <textarea
+                        value={recordEditData.assessment}
+                        onChange={(e) => setRecordEditData((d) => ({ ...d, assessment: e.target.value }))}
+                        rows={3}
+                        style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)', resize: 'vertical', fontFamily: 'inherit' }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button
+                        onClick={handleUpdateRecord}
+                        disabled={isPending}
+                        style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: 'none', background: 'var(--sophi-green)', color: '#000', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        {isPending ? 'A guardar...' : 'Guardar'}
+                      </button>
+                      <button
+                        onClick={() => setEditingRecordId(null)}
+                        style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div key={r.id} style={{ padding: '6px 0', borderBottom: '1px solid var(--sophi-border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 11, color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)', flexShrink: 0 }}>{r.record_date}</span>
+                      <span style={{ fontSize: 11, color: 'var(--sophi-text2)', flex: 1 }}>{r.assessment ?? r.subjective ?? '—'}</span>
+                      {r.availability_status && <StatusBadge status={r.availability_status} />}
+                      <span style={{ fontSize: 10, color: 'var(--sophi-text3)' }}>{r.clinician_name}</span>
+                      <button
+                        onClick={() => startEditRecord(r)}
+                        style={{ display: 'flex', alignItems: 'center', padding: 3, borderRadius: 6, border: 'none', background: 'transparent', color: 'var(--sophi-text3)', cursor: 'pointer', flexShrink: 0 }}
+                      >
+                        <Pencil size={11} />
+                      </button>
+                    </div>
+                    {r.availability_status === 'load_management' && (r.load_management_restrictions?.length || r.load_management_notes) && (
+                      <div style={{ fontSize: 10, color: 'var(--sophi-orange)', marginTop: 2 }}>
+                        {restrictionLabels(r.load_management_restrictions)}
+                        {r.load_management_notes ? ` — ${r.load_management_notes}` : ''}
+                      </div>
+                    )}
+                  </div>
+                )
               ))}
             </div>
           )}
@@ -303,6 +512,14 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                   ))}
                 </select>
               </div>
+              {reevalData.availability_status === 'load_management' && (
+                <LoadManagementFields
+                  restrictions={reevalData.restrictions}
+                  onRestrictionsChange={(next) => setReevalData((d) => ({ ...d, restrictions: next }))}
+                  notes={reevalData.notes}
+                  onNotesChange={(next) => setReevalData((d) => ({ ...d, notes: next }))}
+                />
+              )}
               <div style={{ display: 'flex', gap: 6 }}>
                 <button
                   onClick={handleAddRecord}
@@ -409,6 +626,14 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                   ))}
                 </select>
               </div>
+              {editData.availability_status === 'load_management' && (
+                <LoadManagementFields
+                  restrictions={editData.restrictions}
+                  onRestrictionsChange={(next) => setEditData((d) => ({ ...d, restrictions: next }))}
+                  notes={editData.notes}
+                  onNotesChange={(next) => setEditData((d) => ({ ...d, notes: next }))}
+                />
+              )}
               <div style={{ display: 'flex', gap: 6 }}>
                 <button
                   onClick={handleUpdate}
@@ -430,7 +655,26 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
           {/* Actions */}
           <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
             <button
-              onClick={() => { setShowEdit((v) => !v); setShowReeval(false) }}
+              onClick={() => {
+                // Re-seed from the occurrence's current data every time the
+                // form is opened, not just at first mount — same reasoning
+                // as "Reavaliar" below: this row can stay mounted across a
+                // reassessment/diagnosis elsewhere refreshing this same
+                // occurrence's status/restrictions/notes, and submitting
+                // stale mount-time values through updateOccurrence would
+                // overwrite that newer decision.
+                setEditData((d) => (showEdit ? d : {
+                  title: occ.title ?? '',
+                  occurrenceDate: occ.occurrence_date,
+                  occurrenceType: (occ.occurrence_type ?? 'complaint') as 'complaint' | 'trauma' | 'disease' | 'other',
+                  observations: occ.assessment ?? '',
+                  availability_status: occ.availability_status as AthleteAvailabilityStatus,
+                  restrictions: occ.load_management_restrictions ?? [],
+                  notes: occ.load_management_notes ?? '',
+                }))
+                setShowEdit((v) => !v)
+                setShowReeval(false)
+              }}
               style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
             >
               <Pencil size={11} />
@@ -439,7 +683,21 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
             {!occ.is_resolved && (
               <>
                 <button
-                  onClick={() => { setShowReeval((v) => !v); setShowEdit(false) }}
+                  onClick={() => {
+                    // Re-seed from the occurrence's current data every time
+                    // the form is opened, not just at first mount — this row
+                    // can stay mounted (e.g. via router.refresh() after some
+                    // other action changed this same occurrence) for a while
+                    // before "Reavaliar" gets clicked.
+                    setReevalData((d) => (showReeval ? d : {
+                      observations: '',
+                      availability_status: occ.availability_status as AthleteAvailabilityStatus,
+                      restrictions: occ.load_management_restrictions ?? [],
+                      notes: occ.load_management_notes ?? '',
+                    }))
+                    setShowReeval((v) => !v)
+                    setShowEdit(false)
+                  }}
                   style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-text2)', cursor: 'pointer' }}
                 >
                   <Plus size={11} />
@@ -492,6 +750,8 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
             diagnosis_type:      activeDiagnosis.diagnosis_type,
             custom_description:  activeDiagnosis.custom_description,
             availability_status: activeDiagnosis.availability_status,
+            load_management_restrictions: activeDiagnosis.load_management_restrictions,
+            load_management_notes: activeDiagnosis.load_management_notes,
             occurrence_id:       occ.id,
           }}
           onClose={() => setShowEditDiagnosis(false)}

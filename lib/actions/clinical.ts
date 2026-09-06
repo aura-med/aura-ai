@@ -6,67 +6,29 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-type Avail = 'available' | 'evaluation' | 'unavailable' | 'rtp'
-const SEVERITY: Record<Avail, number> = { available: 0, evaluation: 1, rtp: 2, unavailable: 3 }
+type Avail = 'available' | 'evaluation' | 'unavailable' | 'rtp' | 'load_management'
 
-// The athlete's status is whatever the MOST RECENTLY recorded open
-// occurrence/diagnosis says — not the most restrictive of all open issues.
-// A newer clinical call supersedes an older one, even if less restrictive.
-// Active rehab still acts as a floor (an ongoing RTP protocol isn't silently
-// overridden by an unrelated occurrence that happens to have a newer
-// timestamp).
-async function recomputeAvailability(
+// Recompute the athlete's availability from their still-open occurrences/
+// diagnoses/active-rehab state and persist it — atomically:
+// recompute_and_persist_athlete_availability (078) locks the athletes row
+// first, so a concurrent write to a DIFFERENT occurrence/diagnosis for the
+// same athlete can't interleave with this one and have its own,
+// actually-newer result overwritten by a stale one that merely happened to
+// persist last (the previous shape read+decided in TypeScript, then
+// persisted via a separate call, with no lock spanning the gap). The
+// athlete's status is whatever the MOST RECENTLY recorded open occurrence/
+// diagnosis says — not the most restrictive of all open issues; active
+// rehab still acts as a floor. Falls back to `fallback` when nothing else
+// is open.
+async function recomputeAndPersistAvailability(
   supabase: Awaited<ReturnType<typeof createClient>>,
   athleteId: string,
   fallback: Avail,
-): Promise<Avail> {
-  const [occResult, diagResult, rehabResult] = await Promise.all([
-    supabase.from('occurrences').select('availability_status, created_at, updated_at').eq('athlete_id', athleteId).eq('is_resolved', false),
-    supabase.from('diagnoses').select('availability_status, diagnosed_at').eq('athlete_id', athleteId).eq('is_resolved', false),
-    // SECURITY DEFINER RPC so the rehab floor is seen regardless of role.
-    supabase.rpc('athlete_in_active_rehab', { p_athlete_id: athleteId }),
-  ])
-  // A failed read resolves as { data: null, error }, not a throw. Ignoring it
-  // would drop a restrictive open issue/rehab floor and persist a wrongly
-  // permissive status — abort instead of recomputing from partial data.
-  const sourceError = occResult.error ?? diagResult.error ?? rehabResult.error
-  if (sourceError) {
-    throw new Error(`Não foi possível recalcular a disponibilidade: ${sourceError.message}`)
-  }
-  const occ = occResult.data
-  const diag = diagResult.data
-  const inActiveRehab = rehabResult.data
-
-  type TimedStatus = { status: Avail; at: string }
-  const events: TimedStatus[] = [
-    ...(occ ?? [])
-      .filter((r): r is { availability_status: Avail; created_at: string; updated_at: string | null } =>
-        r.availability_status != null && r.availability_status in SEVERITY)
-      .map((r) => ({ status: r.availability_status, at: r.updated_at ?? r.created_at })),
-    ...(diag ?? [])
-      .filter((r): r is { availability_status: Avail; diagnosed_at: string } =>
-        r.availability_status != null && r.availability_status in SEVERITY)
-      .map((r) => ({ status: r.availability_status, at: r.diagnosed_at })),
-  ]
-
-  // ISO 8601 timestamps compare correctly as strings.
-  let result: Avail = events.length
-    ? events.reduce((latest, e) => (e.at > latest.at ? e : latest)).status
-    : fallback
-
-  if (inActiveRehab === true && SEVERITY.rtp > SEVERITY[result]) result = 'rtp'
-
-  return result
-}
-
-// Persist availability, throwing on a structured RPC error so a transient
-// failure doesn't silently leave the athlete's status stale after a write.
-async function persistAvailability(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  athleteId: string,
-  status: Avail,
-) {
-  const { error } = await supabase.rpc('update_athlete_availability', { p_athlete_id: athleteId, p_status: status })
+): Promise<void> {
+  const { error } = await supabase.rpc('recompute_and_persist_athlete_availability', {
+    p_athlete_id: athleteId,
+    p_fallback: fallback,
+  })
   if (error) throw new Error(`Não foi possível atualizar a disponibilidade: ${error.message}`)
 }
 
@@ -77,6 +39,8 @@ export interface CreateDiagnosisInput {
   diagnosisType: 'injury' | 'disease'
   customDescription: string | null
   availabilityStatus: Avail
+  loadManagementRestrictions: string[]
+  loadManagementNotes: string | null
   occurrenceId: string | null
 }
 
@@ -103,36 +67,35 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
     if (existing) throw new Error('Esta ocorrência já tem um diagnóstico ativo.')
   }
 
-  const { error } = await supabase.from('diagnoses').insert({
-    athlete_id:          input.athleteId,
-    org_id:              prof?.org_id ?? null,
-    osiics_code:         input.osiicsCode,
-    osiics_description:  input.osiicsDescription,
-    diagnosis_type:      input.diagnosisType,
-    custom_description:  input.customDescription,
-    availability_status: input.availabilityStatus,
-    diagnosed_by:        user?.id ?? null, // authoritative author, not client-supplied
-    occurrence_id:       input.occurrenceId,
+  // create_diagnosis_and_mirror (069) inserts the diagnosis and, only when
+  // it's still the most recent source for its occurrence, mirrors it onto
+  // the occurrence's own status — all in one transaction. Doing this as two
+  // separate calls (insert, then a separate mirror update) risked a race
+  // with a concurrent addOccurrenceRecord on the same occurrence: whichever
+  // mirror update ran second could get rejected by
+  // validate_occurrence_decision_source (065) because the other source was
+  // now genuinely newer, even though this diagnosis had already been
+  // permanently saved — reporting failure and skipping availability
+  // recomputation for real clinical data that did save.
+  // diagnosed_by is derived from auth.uid() inside the RPC itself (069) —
+  // not passed here — since this function is directly callable via the
+  // Data API and a parameter couldn't stop a caller from attributing the
+  // diagnosis to someone else.
+  const { error } = await supabase.rpc('create_diagnosis_and_mirror', {
+    p_athlete_id: input.athleteId,
+    p_org_id: prof?.org_id ?? null,
+    p_osiics_code: input.osiicsCode,
+    p_osiics_description: input.osiicsDescription,
+    p_diagnosis_type: input.diagnosisType,
+    p_custom_description: input.customDescription,
+    p_availability_status: input.availabilityStatus,
+    p_load_management_restrictions: input.loadManagementRestrictions,
+    p_load_management_notes: input.loadManagementNotes,
+    p_occurrence_id: input.occurrenceId,
   })
   if (error) throw new Error(error.message)
 
-  // The occurrence's own availability_status is a separate stored value from
-  // the diagnosis — without this, the occurrence keeps showing its pre-
-  // diagnosis status even though the athlete's overall status (recomputed
-  // below) is correct.
-  if (input.occurrenceId) {
-    // updated_at is set explicitly — nothing bumps it automatically — so
-    // recomputeAvailability's "most recent event wins" ranking sees this
-    // diagnosis as newer than the occurrence's original creation.
-    const { error: occError } = await supabase
-      .from('occurrences')
-      .update({ availability_status: input.availabilityStatus, updated_at: new Date().toISOString() })
-      .eq('id', input.occurrenceId)
-    if (occError) throw new Error(occError.message)
-  }
-
-  const next = await recomputeAvailability(supabase, input.athleteId, input.availabilityStatus)
-  await persistAvailability(supabase, input.athleteId, next)
+  await recomputeAndPersistAvailability(supabase, input.athleteId, input.availabilityStatus)
 
   revalidatePath(`/athletes/${input.athleteId}`)
   revalidatePath('/occurrences')
@@ -146,6 +109,8 @@ export interface UpdateDiagnosisInput {
   diagnosisType: 'injury' | 'disease'
   customDescription: string | null
   availabilityStatus: Avail
+  loadManagementRestrictions: string[]
+  loadManagementNotes: string | null
   occurrenceId: string | null
 }
 
@@ -170,34 +135,33 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
     if (existing) throw new Error('Esta ocorrência já tem um diagnóstico ativo.')
   }
 
-  const { data: updated, error } = await supabase
-    .from('diagnoses')
-    .update({
-      osiics_code:         input.osiicsCode,
-      osiics_description:  input.osiicsDescription,
-      diagnosis_type:      input.diagnosisType,
-      custom_description:  input.customDescription,
-      availability_status: input.availabilityStatus,
-      occurrence_id:       input.occurrenceId,
-    })
-    .eq('id', input.diagnosisId)
-    .eq('is_resolved', false)
-    .select('athlete_id')
-    .maybeSingle()
-  if (error || !updated?.athlete_id) throw new Error(error?.message ?? 'Diagnóstico já resolvido ou inexistente')
+  // update_diagnosis_and_mirror (067) locks the diagnosis row first, so
+  // decisionChanged is derived from a guaranteed-current snapshot rather
+  // than a SELECT taken before the update — closing a race where a
+  // concurrent edit to the same diagnosis could leave the app's cached
+  // decisionChanged stale (see migration 067 for the exact scenario). It
+  // also derives diagnoses.updated_at itself via the 047/051/066 trigger
+  // (never set directly here), and skips the occurrence mirror entirely for
+  // a pure description/metadata correction, for the same desync reasons
+  // this comment used to explain inline.
+  const { data: updatedRows, error } = await supabase.rpc('update_diagnosis_and_mirror', {
+    p_diagnosis_id: input.diagnosisId,
+    p_osiics_code: input.osiicsCode,
+    p_osiics_description: input.osiicsDescription,
+    p_diagnosis_type: input.diagnosisType,
+    p_custom_description: input.customDescription,
+    p_availability_status: input.availabilityStatus,
+    p_load_management_restrictions: input.loadManagementRestrictions,
+    p_load_management_notes: input.loadManagementNotes,
+    p_occurrence_id: input.occurrenceId,
+  })
+  if (error) throw new Error(error.message)
+  const updated = updatedRows?.[0]
+  if (!updated?.athlete_id) throw new Error('Diagnóstico já resolvido ou inexistente')
 
   const targetAthleteId = updated.athlete_id
 
-  if (input.occurrenceId) {
-    const { error: occError } = await supabase
-      .from('occurrences')
-      .update({ availability_status: input.availabilityStatus, updated_at: new Date().toISOString() })
-      .eq('id', input.occurrenceId)
-    if (occError) throw new Error(occError.message)
-  }
-
-  const next = await recomputeAvailability(supabase, targetAthleteId, input.availabilityStatus)
-  await persistAvailability(supabase, targetAthleteId, next)
+  await recomputeAndPersistAvailability(supabase, targetAthleteId, input.availabilityStatus)
 
   revalidatePath(`/athletes/${targetAthleteId}`)
   revalidatePath('/occurrences')
@@ -206,66 +170,34 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
 
 export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
-  // resolved_by derived from the session, not the client payload. Guard on
-  // is_resolved=false so a stale/double resolve doesn't overwrite the original
-  // resolved_at/resolved_by on an already-resolved diagnosis.
-  const { data: resolved, error } = await supabase
-    .from('diagnoses')
-    .update({ is_resolved: true, resolved_at: new Date().toISOString(), resolved_by: user?.id ?? null })
-    .eq('id', diagnosisId)
-    .eq('is_resolved', false)
-    .select(`
-      athlete_id, diagnosis_type, osiics_code, osiics_description, custom_description,
-      diagnosed_at, resolved_at, occurrence_id,
-      occurrences ( occurrence_date )
-    `)
-    .maybeSingle()
-  if (error || !resolved?.athlete_id) throw new Error(error?.message ?? 'Diagnóstico já resolvido ou inexistente')
+  // resolve_diagnosis_and_cleanup (080) does all of this atomically, in one
+  // transaction: resolves the diagnosis; while it's still the open
+  // occurrence's decision source, re-derives that occurrence's status from
+  // its own latest reassessment (or resets decision_source to 'own' if
+  // there isn't one) — otherwise the occurrence would keep this
+  // now-resolved diagnosis's mirrored status indefinitely, and
+  // recompute_and_persist_athlete_availability below would keep surfacing
+  // it as the athlete's live restriction; and, for 'injury' diagnoses,
+  // preserves the injury permanently in the athlete's history
+  // (injury_events) — folded into the same transaction rather than a
+  // separate follow-up insert, so a failure there rolls back the
+  // resolution too instead of leaving the diagnosis permanently resolved
+  // with no way to retry the now-lost history row. resolved_by/
+  // confirmed_by are derived from auth.uid() inside the RPC, not passed
+  // here.
+  const { data: rows, error } = await supabase.rpc('resolve_diagnosis_and_cleanup', {
+    p_diagnosis_id: diagnosisId,
+  })
+  if (error) throw new Error(error.message)
+  const resolved = rows?.[0]
+  if (!resolved?.athlete_id) throw new Error('Diagnóstico já resolvido ou inexistente')
 
   // Recompute for the diagnosis row's own athlete, not the client-supplied id.
   // 'available' fallback: with this diagnosis now resolved, nothing else open
   // means the athlete is available (rehab floor still applies inside the helper).
   const targetAthleteId = resolved.athlete_id
-  const next = await recomputeAvailability(supabase, targetAthleteId, 'available')
-  await persistAvailability(supabase, targetAthleteId, next)
-
-  // A resolved diagnosis is never just discarded — it's preserved permanently
-  // in the athlete's injury history (histórico de lesões) so the clinical
-  // record is never lost. 'disease' diagnoses are excluded: injury_events'
-  // location/severity fields describe musculoskeletal injuries, not illness.
-  if (resolved.diagnosis_type === 'injury') {
-    const occurrence = Array.isArray(resolved.occurrences) ? resolved.occurrences[0] : resolved.occurrences
-    const injuryDate = occurrence?.occurrence_date ?? (resolved.diagnosed_at ?? new Date().toISOString()).slice(0, 10)
-    const returnDate = (resolved.resolved_at ?? new Date().toISOString()).slice(0, 10)
-    const daysAbsent = Math.max(0, Math.round(
-      (new Date(returnDate).getTime() - new Date(injuryDate).getTime()) / 86_400_000,
-    ))
-    // diagnoses carries no severity field — approximate it from days absent,
-    // the same signal clinicians use to classify injury severity in practice.
-    const severity: 'minor' | 'moderate' | 'major' | 'severe' =
-      daysAbsent > 84 ? 'severe' : daysAbsent > 28 ? 'major' : daysAbsent > 7 ? 'moderate' : 'minor'
-
-    const { data: clinician } = await supabase
-      .from('profiles')
-      .select('full_name')
-      .eq('id', user?.id ?? '')
-      .maybeSingle()
-
-    const { error: injuryError } = await supabase.from('injury_events').insert({
-      athlete_id:    targetAthleteId,
-      injury_date:   injuryDate,
-      return_date:   returnDate,
-      diagnosis:     resolved.osiics_description ?? resolved.custom_description ?? 'Diagnóstico sem descrição',
-      osiics_code:   resolved.osiics_code,
-      severity,
-      days_absent:   daysAbsent,
-      is_recurrence: false,
-      confirmed_by:  clinician?.full_name ?? null,
-    })
-    if (injuryError) throw new Error(`Diagnóstico resolvido, mas falhou a migração para o histórico de lesões: ${injuryError.message}`)
-  }
+  await recomputeAndPersistAvailability(supabase, targetAthleteId, 'available')
 
   revalidatePath(`/athletes/${targetAthleteId}`)
   revalidatePath('/')

@@ -16,6 +16,13 @@ import { UserMenuDropdown } from '@/components/layout/UserMenuDropdown'
 import { useUiStore } from '@/stores/uiStore'
 import { getSquadIdParam } from '@/lib/squad-url'
 import type { TopbarDTO } from '@/lib/data/types'
+import { SophiMark } from '@/components/branding/SophiMark'
+import { ClubBadge } from '@/components/branding/ClubBadge'
+
+// organizations has no logo/badge column (multi-org platform) — this badge
+// is a single hardcoded club asset (see ClubBadge.tsx), so only show it
+// when the active org actually is that club, not for every org.
+const BADGED_ORG_NAME = 'Estrela da Amadora'
 
 function formatDate(): string {
   return new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -108,36 +115,29 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
         >
           <Menu size={18} />
         </button>
-        <Link
-          href={dashboardHref}
-          aria-label="Dashboard"
-          className="text-xl font-bold tracking-tight"
-          style={{
-            fontFamily: 'var(--font-syne)',
-            background: 'linear-gradient(135deg, var(--sophi-green) 0%, var(--sophi-blue) 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
-        >
-          Sophi
+        <Link href={dashboardHref} aria-label="Dashboard">
+          <SophiMark size={30} className="rounded-md" />
         </Link>
         {dto.org && (
           <div
-            className="hidden min-w-0 items-baseline gap-2 border-l pl-3 md:flex"
+            className="hidden min-w-0 items-center gap-2 border-l pl-3 md:flex"
             style={{ borderColor: 'var(--sophi-border)' }}
           >
-            <span
-              className="truncate text-base font-bold leading-none"
-              style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}
-            >
-              {dto.org.name}
-            </span>
-            <span
-              className="text-[10px] font-mono uppercase tracking-wide"
-              style={{ color: 'var(--sophi-text3)' }}
-            >
-              {dto.org.type}
-            </span>
+            {dto.org.name === BADGED_ORG_NAME && <ClubBadge orgName={dto.org.name} size={26} />}
+            <div className="flex min-w-0 items-baseline gap-2">
+              <span
+                className="truncate text-base font-bold leading-none"
+                style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}
+              >
+                {dto.org.name}
+              </span>
+              <span
+                className="text-[10px] font-mono uppercase tracking-wide"
+                style={{ color: 'var(--sophi-text3)' }}
+              >
+                {dto.org.type}
+              </span>
+            </div>
           </div>
         )}
 

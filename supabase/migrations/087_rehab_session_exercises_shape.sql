@@ -1,6 +1,12 @@
--- Migration 053 — Constrain rehab_sessions.exercises to an array of objects.
+-- RENUMBERED: originally 053, renamed to 087 (2026-09-06) so it sorts after
+-- 084 (see 084's note for why 084 moved). Sequence requirement: must apply
+-- AFTER 084 — this migration constrains the `exercises` column 084 creates;
+-- running at its original slot (053, before 084 existed) would fail with
+-- "column exercises does not exist". Must apply BEFORE 088.
 --
--- 035 added the column with no structural constraint beyond "is jsonb". The
+-- Migration 087 — Constrain rehab_sessions.exercises to an array of objects.
+--
+-- 084 added the column with no structural constraint beyond "is jsonb". The
 -- API route (sanitizeExercises in app/api/athletes/[id]/rehab-sessions/route.ts)
 -- coerces whatever it's given into the expected shape, but a doctor/physio/
 -- owner writing rehab_sessions directly through the Data API bypasses that

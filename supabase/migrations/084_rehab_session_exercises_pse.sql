@@ -1,4 +1,10 @@
--- Migration 035 — Structured exercises + PSE on the physio session log.
+-- RENUMBERED: originally 035, renamed to 084 (2026-09-06) — PR #82/#84
+-- (feature/rehab-v3 stack) independently added their own 035/036 with
+-- unrelated content, so this branch's 035/036 had to move to avoid a
+-- filename collision on merge. Sequence requirement: must apply BEFORE
+-- 087/088/089/090, which alter/validate the `exercises` column added below.
+--
+-- Migration 084 — Structured exercises + PSE on the physio session log.
 --
 -- The club's real "Tratamentos"/"Condicionados" session sheets log each
 -- session as a small exercise table (name, sets, reps/duration, load) plus a

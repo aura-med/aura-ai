@@ -2,7 +2,7 @@
 --
 -- 019's EXISTS (SELECT 1 FROM rehab_sessions rs WHERE rs.athlete_id = ...)
 -- matches ANY rehab_sessions row, but that table is shared, by name only,
--- with the unrelated physio/rehab session log (008/027/033/035/074) — an
+-- with the unrelated physio/rehab session log (008/027/033/074/084) — an
 -- ordinary treatment log entry (protocol_id IS NULL) satisfies this EXISTS
 -- just as well as a real RTP protocol row. Combined with an open injury
 -- (return_date IS NULL), an athlete who's simply had a physio session

@@ -1,11 +1,16 @@
--- Migration 062 — Revalidate rehab_sessions.exercises against the current
--- (058/060-hardened) predicate, not just 053's original looser one.
+-- RENUMBERED: originally 062, renamed to 090 (2026-09-06) — final step of
+-- the exercises-column chain (see 087's note). Sequence requirement: must
+-- apply AFTER 089, since it revalidates existing rows against 089's
+-- (strictest) predicate. Last in this renumbered group.
+--
+-- Migration 090 — Revalidate rehab_sessions.exercises against the current
+-- (088/089-hardened) predicate, not just 087's original looser one.
 --
 -- Postgres does not re-check a CHECK constraint's existing rows when the
 -- function it calls is replaced (CREATE OR REPLACE) — only when the
--- constraint itself is (re-)added. 058 and 060 only replaced
+-- constraint itself is (re-)added. 088 and 089 only replaced
 -- valid_rehab_exercises(), so a row that slipped in during the gap between
--- 053 and 058/060 (or written directly via the Data API in that window) can
+-- 087 and 088/089 (or written directly via the Data API in that window) can
 -- still violate the current, stricter predicate and reach
 -- RehabSessionModal's ex.name.trim() unguarded.
 --
@@ -17,13 +22,13 @@
 -- replacing the function, DOES scan every existing row) confirms nothing
 -- violates it anymore.
 --
--- Known narrow gap (Codex): this cleanup runs after 053, so on a database
--- where 053's own ADD CONSTRAINT fails outright against pre-existing data
+-- Known narrow gap (Codex): this cleanup runs after 087, so on a database
+-- where 087's own ADD CONSTRAINT fails outright against pre-existing data
 -- that isn't even array-of-objects shaped (e.g. exercises = [1]), migration
--- application aborts at 053 and never reaches this file. Not a risk for
--- this deployment — 053 already applied cleanly here — but a from-scratch
--- environment with such data already present before running 053 would need
--- manual cleanup first; 053 itself can't be edited in place since it's
+-- application aborts at 087 and never reaches this file. Not a risk for
+-- this deployment — 087 already applied cleanly here — but a from-scratch
+-- environment with such data already present before running 087 would need
+-- manual cleanup first; 087 itself can't be edited in place since it's
 -- already applied.
 
 UPDATE rehab_sessions

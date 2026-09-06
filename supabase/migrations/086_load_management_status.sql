@@ -1,7 +1,14 @@
--- Migration 038 — "Gestão de Carga" becomes a 5th availability_status value,
--- replacing the plan_type approach from migration 036.
+-- RENUMBERED: originally 038, renamed to 086 (2026-09-06) so it sorts after
+-- 085 (see 084's note for why 085 moved). Sequence requirement: must apply
+-- AFTER 085 — this migration drops the `plan_type` column 085 creates, and
+-- if it ran first (at its original slot, before 085 existed) the DROP would
+-- silently no-op and 085 would leave a dead column behind. Independent of
+-- 087-090 (no shared objects); order relative to those doesn't matter.
 --
--- Real-world testing showed the plan_type/badge approach (036) doesn't match
+-- Migration 086 — "Gestão de Carga" becomes a 5th availability_status value,
+-- replacing the plan_type approach from migration 085.
+--
+-- Real-world testing showed the plan_type/badge approach (085) doesn't match
 -- how the club actually works: gestão de carga isn't a treatment plan, it's
 -- an availability signal for coaches/fitness staff ("this player trains, but
 -- is conditioned") — always tied to an open occurrence/diagnosis, exactly
@@ -14,7 +21,7 @@
 -- STATUS_CONFIG maps) picks it up for free, the same way it already handles
 -- 'rtp' or 'evaluation'.
 --
--- 1. Revert 036 — drop plan_type from rehab_plans. rehab_plans/phases/days
+-- 1. Revert 085 — drop plan_type from rehab_plans. rehab_plans/phases/days
 --    keep working exactly as before as the clinical day-by-day calendar tool;
 --    they're just no longer the thing that flags an athlete's availability.
 DROP INDEX IF EXISTS idx_rehab_plans_type;

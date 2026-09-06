@@ -5,7 +5,7 @@
 -- restricted — a fixed checklist (volume/sprints/HSR/acc-dec/change of
 -- direction) the fitness coach can scan at a glance, plus a free-text note
 -- for anything specific. Added to all three places availability_status
--- already lives (038), so the same "current row carries the current
+-- already lives (086), so the same "current row carries the current
 -- reason" pattern already used for availability_status extends naturally.
 
 ALTER TABLE occurrences

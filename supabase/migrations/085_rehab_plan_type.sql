@@ -1,4 +1,9 @@
--- Migration 036 — plan_type on rehab_plans: "Gestão de Carga" vs "Reabilitação".
+-- RENUMBERED: originally 036, renamed to 085 (2026-09-06) — same collision
+-- as 084 (see that file): PR #82/#84 added their own unrelated 036. Sequence
+-- requirement: must apply BEFORE 086, which drops the `plan_type` column
+-- added below (086 needs the column to exist to correctly revert it).
+--
+-- Migration 085 — plan_type on rehab_plans: "Gestão de Carga" vs "Reabilitação".
 --
 -- The club's Drive keeps a "Condicionados" folder structurally identical to
 -- "Tratamentos" (same weekly-grid plan, same per-session exercise log) — it's

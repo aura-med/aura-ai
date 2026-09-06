@@ -1,7 +1,12 @@
--- Migration 058 — Validate individual exercise field types, not just
+-- RENUMBERED: originally 058, renamed to 088 (2026-09-06) — part of the same
+-- exercises-column chain as 087 (see its note). Sequence requirement: must
+-- apply AFTER 087 (replaces the validation function 087 creates) and BEFORE
+-- 089.
+--
+-- Migration 088 — Validate individual exercise field types, not just
 -- "array of objects".
 --
--- 053 only checked each element was a JSON object — a row like
+-- 087 only checked each element was a JSON object — a row like
 -- {"name": {}} still passed. RehabSessionModal calls `ex.name.trim()`
 -- unconditionally when saving, so reopening a session with a malformed
 -- `name` (missing, or not a string) throws and blocks the clinician from

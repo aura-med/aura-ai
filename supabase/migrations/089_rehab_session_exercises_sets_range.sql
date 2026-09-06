@@ -1,7 +1,12 @@
--- Migration 060 — Reject negative/non-integer exercise set counts.
+-- RENUMBERED: originally 060, renamed to 089 (2026-09-06) — part of the same
+-- exercises-column chain as 087/088 (see 087's note). Sequence requirement:
+-- must apply AFTER 088 (replaces the validation function 088 creates) and
+-- BEFORE 090.
+--
+-- Migration 089 — Reject negative/non-integer exercise set counts.
 --
 -- The app's route sanitizer now clamps sets to a non-negative integer
--- (Math.max(0, Math.round(...))), but 058's DB constraint only checked the
+-- (Math.max(0, Math.round(...))), but 088's DB constraint only checked the
 -- JSON type ('number' or 'null') — a value like {"name":"Squat","sets":-3}
 -- written directly through the Data API still passes. Require sets, when
 -- present and not null, to be a non-negative integer.

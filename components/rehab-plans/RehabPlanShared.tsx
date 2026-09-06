@@ -20,6 +20,7 @@ import {
 } from '@/lib/actions/rehab-plan'
 import { REHAB_DAY_OCCUPIED_ERROR } from '@/lib/actions/rehab-plan-errors'
 import type { RehabPlan, RehabPlanPhase, RehabPlanDay, RehabPlanPeriod } from '@/types/athlete-profile'
+import { RtpCriteriaSection } from './RtpCriteriaSection'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -91,10 +92,10 @@ export async function fetchRehabPlans(athleteId: string) {
   const supabase = createClient()
   const { data } = await supabase
     .from('rehab_plans')
-    .select('*')
+    .select('*, rtp_criteria')
     .eq('athlete_id', athleteId)
     .order('start_date', { ascending: false })
-  return (data ?? []) as RehabPlan[]
+  return (data ?? []).map((p) => ({ ...p, rtp_criteria: p.rtp_criteria ?? [] })) as RehabPlan[]
 }
 
 // ── Plan create/edit modal ──────────────────────────────────────────────────
@@ -787,6 +788,13 @@ export function PlanDetail({
           )}
         </div>
       </div>
+
+      {/* RTP Criteria */}
+      <RtpCriteriaSection
+        planId={plan.id}
+        initialCriteria={plan.rtp_criteria ?? []}
+        canEdit={canEdit}
+      />
 
       {/* Calendar */}
       {loading ? (

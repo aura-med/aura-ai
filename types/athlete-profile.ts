@@ -143,6 +143,12 @@ export interface RehabSession {
 
 export type RehabPlanPeriod = 'morning' | 'afternoon'
 
+export interface RtpCriterion {
+  id: string
+  label: string
+  done: boolean
+}
+
 export interface RehabPlan {
   id: string
   athlete_id: string
@@ -153,6 +159,7 @@ export interface RehabPlan {
   is_active: boolean
   is_completed: boolean
   closed_at: string | null
+  rtp_criteria: RtpCriterion[]
   created_at: string
   updated_at: string
 }

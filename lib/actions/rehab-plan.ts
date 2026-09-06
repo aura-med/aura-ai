@@ -342,3 +342,31 @@ export async function moveRehabPlanDay(input: MoveRehabPlanDayInput) {
 
   revalidatePath(`/athletes/${plan.athlete_id}`)
 }
+
+// ── RTP criteria ──────────────────────────────────────────────────────────────
+
+export interface RtpCriterionInput {
+  id: string
+  label: string
+  done: boolean
+}
+
+export async function updateRtpCriteria(planId: string, criteria: RtpCriterionInput[]) {
+  const supabase = await createClient()
+
+  const { data: plan, error: planError } = await supabase
+    .from('rehab_plans')
+    .select('athlete_id')
+    .eq('id', planId)
+    .single()
+  if (planError || !plan?.athlete_id) throw new Error(planError?.message ?? 'Plano não encontrado')
+
+  const { error } = await supabase
+    .from('rehab_plans')
+    .update({ rtp_criteria: criteria })
+    .eq('id', planId)
+  if (error) throw new Error(error.message)
+
+  revalidatePath('/rehab')
+  revalidatePath(`/athletes/${plan.athlete_id}`)
+}

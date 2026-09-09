@@ -7,7 +7,7 @@ import { AthleteCard } from '@/components/ui/AthleteCard'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { withSquadParam } from '@/lib/squad-url'
 import type { MicrocycleStatus } from '@/lib/utils/microcycle'
-import { exportDashboardPDF, type DashboardOccurrenceRow, type ClinicalStaffMember } from '@/lib/utils/pdf-export'
+import type { DashboardOccurrenceRow, ClinicalStaffMember } from '@/lib/utils/pdf-export'
 import { MonthCalendar, type MonthCalendarEvent } from '@/components/dashboard/MonthCalendar'
 import { restrictionLabels } from '@/components/shared/LoadManagementFields'
 import type { AthleteAvailabilityStatus } from '@/types'
@@ -107,7 +107,8 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
   const posLabels: Record<string, string> = { GK: 'Guarda-Redes', DEF: 'Defesas', MID: 'Médios', FWD: 'Avançados', OTHER: 'Sem posição' }
   const posCodes: Record<string, string> = { GK: 'GK', DEF: 'DEF', MID: 'MED', FWD: 'AVA', OTHER: '—' }
 
-  function handleExport() {
+  async function handleExport() {
+    const { exportDashboardPDF } = await import('@/lib/utils/pdf-export')
     exportDashboardPDF(clinicalOccurrences, clinicalStaff, { orgName, currentDate })
   }
 

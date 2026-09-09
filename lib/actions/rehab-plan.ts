@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { RehabPlanPeriod } from '@/types/athlete-profile'
 import { REHAB_DAY_OCCUPIED_ERROR } from '@/lib/actions/rehab-plan-errors'
+import { resolveDiagnosis } from '@/lib/actions/clinical'
 
 async function currentUserId(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: { user } } = await supabase.auth.getUser()
@@ -138,7 +139,7 @@ export async function updateRehabPlan(input: UpdateRehabPlanInput) {
 // closed_at is stamped either way so the history view always shows when a
 // plan stopped being active, not just for the "completed" outcome.
 // Guarded on is_active=true so a stale UI can't re-close an already-closed plan.
-export async function closeRehabPlan(planId: string, completed: boolean) {
+export async function closeRehabPlan(planId: string, completed: boolean, resolveTargetDiagnosisId?: string | null) {
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -150,11 +151,49 @@ export async function closeRehabPlan(planId: string, completed: boolean) {
     })
     .eq('id', planId)
     .eq('is_active', true)
-    .select('athlete_id')
+    .select('athlete_id, occurrence_id')
     .maybeSingle()
   if (error || !data?.athlete_id) throw new Error(error?.message ?? 'Plano já encerrado ou inexistente')
 
+  // When completed, resolve the linked injury diagnosis so it migrates into
+  // injury history (injury_events) and availability is recomputed.
+  // Priority: explicit diagnosisId > occurrence_id lookup > skip.
+  if (completed) {
+    const targetId = resolveTargetDiagnosisId ?? await (async () => {
+      if (!data.occurrence_id) return null
+      const { data: diag } = await supabase
+        .from('diagnoses')
+        .select('id')
+        .eq('occurrence_id', data.occurrence_id)
+        .eq('is_resolved', false)
+        .eq('diagnosis_type', 'injury')
+        .maybeSingle()
+      return diag?.id ?? null
+    })()
+    if (targetId) {
+      await resolveDiagnosis(targetId, data.athlete_id)
+    }
+  }
+
+  revalidatePath('/rehab')
   revalidatePath(`/athletes/${data.athlete_id}`)
+}
+
+// Returns active (unresolved) injury diagnoses for a given athlete — used by
+// the "Concluir" picker when the plan has no occurrence_id.
+export async function getActiveInjuryDiagnoses(athleteId: string) {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('diagnoses')
+    .select('id, osiics_description, custom_description')
+    .eq('athlete_id', athleteId)
+    .eq('is_resolved', false)
+    .eq('diagnosis_type', 'injury')
+    .order('diagnosed_at', { ascending: false })
+  return (data ?? []).map((d) => ({
+    id:    d.id,
+    label: d.osiics_description ?? d.custom_description ?? 'Diagnóstico sem descrição',
+  }))
 }
 
 // ── Phases ───────────────────────────────────────────────────────────────────
@@ -245,6 +284,7 @@ export interface UpsertRehabPlanDayInput {
   entryDate: string
   period: RehabPlanPeriod
   content: string | null
+  notes: string | null
   isRestDay: boolean
   phaseId: string | null
 }
@@ -276,6 +316,7 @@ export async function upsertRehabPlanDay(input: UpsertRehabPlanDayInput) {
     entry_date:  input.entryDate,
     period:      input.period,
     content:     input.content,
+    notes:       input.notes,
     is_rest_day: input.isRestDay,
     phase_id:    input.phaseId,
     created_by:  existingDay?.created_by ?? userId,
@@ -342,4 +383,32 @@ export async function moveRehabPlanDay(input: MoveRehabPlanDayInput) {
   if (!athleteId) return // no-op: moving onto itself
 
   revalidatePath(`/athletes/${athleteId}`)
+}
+
+// ── RTP criteria ──────────────────────────────────────────────────────────────
+
+export interface RtpCriterionInput {
+  id: string
+  label: string
+  done: boolean
+}
+
+export async function updateRtpCriteria(planId: string, criteria: RtpCriterionInput[]) {
+  const supabase = await createClient()
+
+  const { data: plan, error: planError } = await supabase
+    .from('rehab_plans')
+    .select('athlete_id')
+    .eq('id', planId)
+    .single()
+  if (planError || !plan?.athlete_id) throw new Error(planError?.message ?? 'Plano não encontrado')
+
+  const { error } = await supabase
+    .from('rehab_plans')
+    .update({ rtp_criteria: criteria })
+    .eq('id', planId)
+  if (error) throw new Error(error.message)
+
+  revalidatePath('/rehab')
+  revalidatePath(`/athletes/${plan.athlete_id}`)
 }

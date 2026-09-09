@@ -11,7 +11,7 @@ import { AthleteProfileClient } from '@/components/athlete-profile/AthleteProfil
 import { getLatestRecommendations } from '@/lib/actions/recommendations'
 import { getViewerContext } from '@/lib/data/auth'
 import type { UserRole } from '@/types'
-import type { AthleteProfileData, TabId, InjuryEventSummary, ActiveOccurrence, ActiveDiagnosis, AthleteAnamnesis } from '@/types/athlete-profile'
+import type { AthleteProfileData, TabId, InjuryEventSummary, ActiveOccurrence, ActiveDiagnosis, ActiveRehabPlanRef, AthleteAnamnesis } from '@/types/athlete-profile'
 
 const VALID_TABS: TabId[] = [
   'overview', 'medical', 'injuries', 'treatments',
@@ -145,6 +145,7 @@ async function AthleteDetailContent({
     { data: recentResolvedOccurrences, error: recentResolvedOccurrencesError },
     { data: anamnesis },
     { data: allActiveDiagnoses, error: allActiveDiagnosesError },
+    { data: activeRehabPlans },
   ] = await Promise.all([
     supabase
       .from('occurrences')
@@ -178,6 +179,13 @@ async function AthleteDetailContent({
       .eq('athlete_id', id)
       .eq('is_resolved', false)
       .order('diagnosed_at', { ascending: false }),
+    supabase
+      .from('rehab_plans')
+      .select('id, occurrence_id, title')
+      .eq('athlete_id', id)
+      .eq('is_active', true)
+      .eq('is_completed', false)
+      .order('start_date', { ascending: false }),
   ])
   // A transient failure here must not be treated as "no diagnoses/
   // occurrences" — that would silently hide standalone active diagnoses (and
@@ -323,8 +331,10 @@ async function AthleteDetailContent({
     activeConcussion:  activeConcussion ?? null,
     injuryEvents,
     activeOccurrences: (activeOccurrences ?? []) as ActiveOccurrence[],
+    activeRehabPlans:  (activeRehabPlans ?? []) as ActiveRehabPlanRef[],
     recentResolvedOccurrences: (recentResolvedOccurrences ?? []) as ActiveOccurrence[],
     orphanDiagnoses: (orphanDiagnoses ?? []) as ActiveDiagnosis[],
+    activeDiagnoses: (allActiveDiagnoses ?? []) as ActiveDiagnosis[],
     documentCount:     documentCount ?? 0,
     consultationCount: consultationCount ?? 0,
     recommendations,

@@ -71,7 +71,9 @@
       "calendar": "Calendar Intelligence",
       "passport": "Passaporte Atleta",
       "female_squad": "Seleção Feminina",
-      "settings": "Definições"
+      "settings": "Definições",
+      "collapse_sidebar": "Minimizar menu",
+      "expand_sidebar": "Expandir menu"
     },
     "version": "Sophi v1.1 · FPF Pilot"
   },

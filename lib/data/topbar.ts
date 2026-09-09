@@ -31,7 +31,10 @@ export async function getTopbarDTO(): Promise<TopbarDTO> {
         .from('notifications')
         .select('id', { count: 'exact', head: true })
         .eq('org_id', viewer.org.id)
-        .not('read_by', 'cs', `{${viewer.userId}}`)
+        // read_by is nullable — `.not(..., 'cs', ...)` alone evaluates to
+        // NULL (not true) for a row with read_by IS NULL, silently
+        // excluding it from this count and undercounting unread alerts.
+        .or(`read_by.is.null,read_by.not.cs.{${viewer.userId}}`)
     : null
 
   const [{ data }, unreadResult] = await Promise.all([

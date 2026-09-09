@@ -70,3 +70,52 @@ CREATE POLICY rehab_clinical_write ON rehab_sessions FOR ALL
       SELECT id FROM athletes WHERE org_id = get_user_org_id()
     )
   );
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Merged in: originally a separate file also numbered "007" (007_sprint3.sql).
+-- Two migrations shared the same leading version number, which the Supabase
+-- migration history table can't represent (version is its primary key) —
+-- db push failed with a duplicate-key error trying to record the second one.
+-- Renumbering it to run later was tried and reverted: same reasoning as the 002 pair.
+-- Merging into the file that already holds this version preserves the exact
+-- original ordering relative to every other migration.
+--
+-- Caveat (Codex) resolved: see 077's header for the full reasoning — only
+-- the lowest-numbered of these six pairs ("002") could ever have had its
+-- version pre-recorded from just one half before this branch's merge fix
+-- existed; db push stops at the first failure, so "007" and every higher
+-- pair here could only be reached (and hence recorded) AFTER the merge
+-- fix already made both halves part of the same file. Not at risk.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Migration 007 — Sprint 3
+--   • photo_url column on athletes
+--   • athlete-photos Storage bucket + RLS
+-- ─────────────────────────────────────────────────────────────────────────────
+
+-- ── Athlete photo ─────────────────────────────────────────────────────────────
+
+ALTER TABLE athletes
+  ADD COLUMN IF NOT EXISTS photo_url text;
+
+-- ── Storage bucket: athlete-photos ───────────────────────────────────────────
+-- Run these manually in Dashboard → Storage if the SQL editor cannot
+-- create buckets directly:
+--
+--   INSERT INTO storage.buckets (id, name, public)
+--   VALUES ('athlete-photos', 'athlete-photos', false)
+--   ON CONFLICT (id) DO NOTHING;
+--
+--   CREATE POLICY "authenticated read athlete-photos"
+--     ON storage.objects FOR SELECT TO authenticated
+--     USING (bucket_id = 'athlete-photos' AND auth.role() = 'authenticated');
+--
+--   CREATE POLICY "authenticated upload athlete-photos"
+--     ON storage.objects FOR INSERT TO authenticated
+--     WITH CHECK (bucket_id = 'athlete-photos' AND auth.role() = 'authenticated');
+--
+--   CREATE POLICY "authenticated update athlete-photos"
+--     ON storage.objects FOR UPDATE TO authenticated
+--     USING (bucket_id = 'athlete-photos' AND auth.role() = 'authenticated');

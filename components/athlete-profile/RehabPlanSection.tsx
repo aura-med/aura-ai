@@ -58,7 +58,7 @@ export function RehabPlanSection({ profile }: { profile: AthleteProfileData }) {
   return (
     <div className="space-y-4">
       {activePlan ? (
-        <PlanDetail plan={activePlan} occurrences={occurrences} canEdit={canEdit} onPlanChanged={loadPlans} />
+        <PlanDetail plan={activePlan} athleteName={profile.name} occurrences={occurrences} canEdit={canEdit} onPlanChanged={loadPlans} />
       ) : (
         <div className="rounded-xl border p-8 flex flex-col items-center gap-3 text-center" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
           <CalendarClock size={22} style={{ color: 'var(--sophi-text3)' }} />
@@ -94,7 +94,7 @@ export function RehabPlanSection({ profile }: { profile: AthleteProfileData }) {
                 </button>
                 {expandedPastId === p.id && (
                   <div className="px-4 pb-4">
-                    <PlanDetail plan={p} occurrences={occurrences} canEdit={false} onPlanChanged={loadPlans} />
+                    <PlanDetail plan={p} athleteName={profile.name} occurrences={occurrences} canEdit={false} onPlanChanged={loadPlans} />
                   </div>
                 )}
               </div>

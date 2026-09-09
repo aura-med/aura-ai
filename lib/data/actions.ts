@@ -118,23 +118,23 @@ export async function markAllNotificationsRead(orgId: string) {
   const supabase = await createClient()
   const { data } = await supabase
     .from('notifications')
-    .select('id, read_by')
+    .select('id')
     .eq('org_id', orgId)
-    .not('read_by', 'cs', `{${viewer.userId}}`)
+    // read_by is nullable — `.not('read_by', 'cs', ...)` alone evaluates
+    // to NULL (not true) for a row with read_by IS NULL, silently
+    // excluding it from this list forever, even though mark_notifications_
+    // read (077) already handles a null array correctly once given the id.
+    .or(`read_by.is.null,read_by.not.cs.{${viewer.userId}}`)
 
-  await Promise.all(
-    asRecordArray(data).map((row) => {
-      const id = asString(row.id)
-      if (!id) return Promise.resolve()
-      const readBy = Array.isArray(row.read_by)
-        ? row.read_by.filter((userId): userId is string => typeof userId === 'string')
-        : []
-      return supabase
-        .from('notifications')
-        .update({ read_by: [...new Set([...readBy, viewer.userId])] })
-        .eq('id', id)
-    })
-  )
+  const ids = asRecordArray(data).map((row) => asString(row.id)).filter((id): id is string => !!id)
+  if (ids.length) {
+    // mark_notifications_read (077) only ever appends auth.uid() to
+    // read_by — notifications has no general UPDATE policy, since that
+    // would let any org member rewrite other fields (type/title/body/...)
+    // on every notification in the org.
+    const { error } = await supabase.rpc('mark_notifications_read', { p_notification_ids: ids })
+    if (error) throw new Error(error.message)
+  }
 
   updateTag(dataTags.orgNotifications(orgId))
 }

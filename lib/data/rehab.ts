@@ -20,14 +20,21 @@ export async function getRehabPageDTO(squadId: string | null): Promise<RehabPage
     .from('athletes')
     .select('id, name, position, club, rehab_sessions!inner(id, current_day, rtp_criteria, clinical_data, rehab_protocols(key, name, total_days, evidence, phases))')
     .eq('active', true)
+    // rehab_sessions is shared, by name only, with the unrelated physio/
+    // rehab session log (008/027/033/035/074) — without this, an ordinary
+    // treatment log row (protocol_id IS NULL, never populating
+    // current_day/rtp_criteria/clinical_data/rehab_protocols) could be the
+    // "latest" row selected below, rendering as a broken/empty RTP
+    // protocol card for an athlete who was never actually on one.
+    .not('rehab_sessions.protocol_id', 'is', null)
     .order('shirt_number')
     .order('updated_at', { referencedTable: 'rehab_sessions', ascending: false })
     .limit(1, { referencedTable: 'rehab_sessions' })
-    .limit(1, { referencedTable: 'rehab_protocols' })
 
   if (squadId) query = query.eq('squad_id', squadId)
 
-  const { data } = await query
+  const { data, error } = await query
+  if (error) console.error('[rehab] Supabase query error:', error)
   return {
     squadId,
     sessions: asRecordArray(data).map(rehabSessionDTO),

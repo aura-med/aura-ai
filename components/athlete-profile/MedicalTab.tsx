@@ -16,6 +16,7 @@ const ConsultationModal = dynamic(() => import('./ConsultationModal').then((mod)
 const MedicalHistoryModal = dynamic(() => import('./MedicalHistoryModal').then((mod) => mod.MedicalHistoryModal))
 const Scat6Modal = dynamic(() => import('./Scat6Modal').then((mod) => mod.Scat6Modal))
 const AnamnesisTab = dynamic(() => import('./AnamnesisTab').then((mod) => mod.AnamnesisTab))
+const InjuriesTab = dynamic(() => import('./InjuriesTab').then((mod) => mod.InjuriesTab))
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -525,6 +526,9 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
 
         {/* Anamnese — Avaliação Pré-Época */}
         <AnamnesisTab profile={profile} />
+
+        {/* Lesões — histórico integrado na ficha clínica */}
+        <InjuriesTab profile={profile} />
       </div>
 
       {/* Modals */}
@@ -537,6 +541,7 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
           onDeleted={handleSoapDeleted}
         />
       )}
+
       {showHistModal && (
         <MedicalHistoryModal
           athleteId={profile.id}

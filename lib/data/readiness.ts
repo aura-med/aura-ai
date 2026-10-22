@@ -23,7 +23,7 @@ export async function getReadinessPageDTO(squadId: string | null): Promise<Readi
       athlete_passport(passport_data)
     `)
     .eq('active', true)
-    .or('availability_status.is.null,availability_status.eq.available')
+    .or('availability_status.is.null,availability_status.eq.available,availability_status.eq.load_management')
     .order('shirt_number')
     .order('checkin_date', { referencedTable: 'wellness_checkins', ascending: false })
     .order('session_date', { referencedTable: 'gps_sessions', ascending: false })

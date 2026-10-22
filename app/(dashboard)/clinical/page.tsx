@@ -6,13 +6,14 @@ import Link from 'next/link'
 import type { AthleteAvailabilityStatus } from '@/types'
 
 const STATUS_CONFIG: Record<AthleteAvailabilityStatus, { label: string; color: string; dot: string; bg: string }> = {
-  available:   { label: 'Disponível',   color: 'var(--sophi-green)',  dot: '#00e5a0', bg: 'rgba(0,229,160,0.08)' },
-  evaluation:  { label: 'Em Avaliação', color: 'var(--sophi-warn)',   dot: '#f6ad55', bg: 'rgba(246,173,85,0.08)' },
-  unavailable: { label: 'Indisponível', color: 'var(--sophi-danger)', dot: '#ff4d6d', bg: 'rgba(255,77,109,0.08)' },
-  rtp:         { label: 'Em RTP',       color: 'var(--sophi-purple)', dot: '#b48dfc', bg: 'rgba(180,141,252,0.08)' },
+  available:       { label: 'Disponível',      color: 'var(--sophi-green)',  dot: '#00e5a0', bg: 'rgba(0,229,160,0.08)' },
+  evaluation:      { label: 'Em Avaliação',    color: 'var(--sophi-warn)',   dot: '#f6ad55', bg: 'rgba(246,173,85,0.08)' },
+  load_management: { label: 'Gestão de Carga', color: 'var(--sophi-orange)', dot: '#cc5500', bg: 'rgba(204,85,0,0.08)' },
+  unavailable:     { label: 'Indisponível',    color: 'var(--sophi-danger)', dot: '#ff4d6d', bg: 'rgba(255,77,109,0.08)' },
+  rtp:             { label: 'Em RTP',          color: 'var(--sophi-purple)', dot: '#b48dfc', bg: 'rgba(180,141,252,0.08)' },
 }
 
-const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 'rtp', 'available']
+const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 'load_management', 'rtp', 'available']
 
 async function getData(squadId: string | null) {
   const supabase = await createClient()
@@ -40,7 +41,7 @@ export default async function ClinicalFilePage({
 
   const byStatus = STATUS_ORDER.reduce<Record<AthleteAvailabilityStatus, typeof athletes>>(
     (acc, s) => ({ ...acc, [s]: athletes.filter((a) => (a.availability_status ?? 'available') === s) }),
-    { available: [], evaluation: [], unavailable: [], rtp: [] }
+    { available: [], evaluation: [], load_management: [], unavailable: [], rtp: [] }
   )
 
   const nonAvailable = athletes.filter((a) => (a.availability_status ?? 'available') !== 'available')
@@ -67,7 +68,7 @@ export default async function ClinicalFilePage({
                 const status = (a.availability_status ?? 'available') as AthleteAvailabilityStatus
                 const cfg = STATUS_CONFIG[status]
                 return (
-                  <Link key={a.id} href={withSquadParam(`/athletes/${a.id}?tab=medical`, squadId)} style={{ textDecoration: 'none' }}>
+                  <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
                     <div style={{
                       display: 'flex', alignItems: 'center', gap: 6,
                       background: cfg.bg, border: `1px solid ${cfg.dot}33`,
@@ -110,7 +111,7 @@ export default async function ClinicalFilePage({
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8 }}>
               {group.map((a) => (
-                <Link key={a.id} href={withSquadParam(`/athletes/${a.id}?tab=medical`, squadId)} className="clinical-athlete-card" style={{ textDecoration: 'none' }}>
+                <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} className="clinical-athlete-card" style={{ textDecoration: 'none' }}>
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 10,
                     padding: '10px 14px', borderRadius: 10,

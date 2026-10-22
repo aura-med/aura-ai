@@ -2,6 +2,7 @@ import { calcScore, riskColor, riskLabel } from '@/lib/scoring'
 import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import { getAthleteList, type AthleteListDTO } from '@/lib/dal/athletes'
 import { AthleteCard } from '@/components/ui/AthleteCard'
+import type { AthleteAvailabilityStatus } from '@/types'
 
 export default async function AthletesIndexPage({
   searchParams,
@@ -25,7 +26,11 @@ export default async function AthletesIndexPage({
       decel: null, md: null,
     }
     const score = calcScore(inputs)
-    return { ...a, score }
+    // Falls back to the legacy status flag for rows predating the
+    // availability_status migration.
+    const effectiveStatus = (a.availability_status as AthleteAvailabilityStatus | null)
+      ?? (a.status === 'rehab' ? 'rtp' : 'available')
+    return { ...a, score, effectiveStatus }
   })
 
   return (
@@ -52,7 +57,7 @@ export default async function AthletesIndexPage({
               photoUrl={a.photo_url}
               shirtNumber={a.shirt_number}
               position={a.position}
-              status={a.status}
+              status={a.effectiveStatus}
               score={a.score.score}
               scoreColor={riskColor(a.score.score)}
               scoreLabel={riskLabel(a.score.score)}

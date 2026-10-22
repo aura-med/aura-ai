@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { Topbar } from '@/components/layout/Topbar'
 import { Sidebar } from '@/components/layout/Sidebar'
+import { MainContent } from '@/components/layout/MainContent'
 import { DashboardSkeleton } from '@/components/ui/DashboardSkeleton'
 
 export default function DashboardLayout({
@@ -14,9 +15,7 @@ export default function DashboardLayout({
       <Suspense fallback={null}>
         <Sidebar />
       </Suspense>
-      <main className="md:ml-60 mt-14 min-h-[calc(100vh-3.5rem)] p-4 sm:p-6">
-        {children}
-      </main>
+      <MainContent>{children}</MainContent>
     </Suspense>
   )
 }

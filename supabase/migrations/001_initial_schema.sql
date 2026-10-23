@@ -1,6 +1,6 @@
--- Aura Health & Performance Intelligence Platform
+-- Sophi Health & Performance Intelligence Platform
 -- Database schema v1.1 — Supabase PostgreSQL (Frankfurt EU-West)
--- Architecture doc: Aura_Arquitectura_Tecnica_v1.1
+-- Architecture doc: Sophi_Arquitectura_Tecnica_v1.1
 
 -- Enable RLS on all tables
 -- Enable UUID extension

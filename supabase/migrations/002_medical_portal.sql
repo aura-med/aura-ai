@@ -1,4 +1,4 @@
--- Aura Medical Portal — Schema additions v1.2
+-- Sophi Medical Portal — Schema additions v1.2
 -- Run in: Supabase → SQL Editor
 -- Adds OSIICS linkage, availability status, and RLS policies for the medical dashboard.
 

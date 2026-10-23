@@ -190,7 +190,7 @@ CREATE POLICY "auth_update_rtp"             ON rtp_protocol_tracking      FOR UP
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 006_recommendations.sql
--- Aura — Recommendations Model
+-- Sophi — Recommendations Model
 -- Tables: org_recommendation_config · org_recommendation_overrides · recommendation_log
 --
 -- Architecture:
@@ -210,7 +210,7 @@ CREATE TABLE IF NOT EXISTS org_recommendation_config (
   org_id  uuid NOT NULL UNIQUE REFERENCES organizations(id) ON DELETE CASCADE,
 
   -- Risk band thresholds (score 0–100)
-  -- Defaults match Aura v1.1 model
+  -- Defaults match Sophi v1.1 model
   risk_thresholds jsonb NOT NULL DEFAULT
     '{"medium": 40, "high": 65, "critical": 85}'::jsonb,
 
@@ -232,8 +232,8 @@ CREATE TABLE IF NOT EXISTS org_recommendation_config (
 );
 
 COMMENT ON TABLE org_recommendation_config IS
-  'Per-organisation configuration for the Aura recommendations model. '
-  'Managed exclusively by Aura platform admins. '
+  'Per-organisation configuration for the Sophi recommendations model. '
+  'Managed exclusively by Sophi platform admins. '
   'Absence of a row means the org uses global defaults.';
 
 COMMENT ON COLUMN org_recommendation_config.risk_thresholds IS

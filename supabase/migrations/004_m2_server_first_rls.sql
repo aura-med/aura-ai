@@ -112,7 +112,7 @@ CREATE POLICY rehab_sessions_clinical_write_m2
 -- fix already made both halves part of the same file. Not at risk.
 -- ─────────────────────────────────────────────────────────────────────────────
 
--- Aura internal platform administration
+-- Sophi internal platform administration
 -- Uses RLS-locked public tables so the server-only Supabase service client can
 -- manage admin data through the default Supabase Data API. No anon/authenticated
 -- policies are created for these tables.

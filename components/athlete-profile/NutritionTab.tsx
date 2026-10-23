@@ -126,7 +126,7 @@ function DailyWeightModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="w-full max-w-xs rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
-        <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>Registar Peso</h3>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>Registar Peso</h3>
         <div className="space-y-3">
           <div className="space-y-1.5">
             <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Data</label>
@@ -140,7 +140,7 @@ function DailyWeightModal({
         {error && <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>}
         <div className="flex gap-3">
           <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--sophi-bg3)]" style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}>Cancelar</button>
-          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--sophi-green)', color: '#000' }}>
+          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
             {saving && <Loader2 size={12} className="animate-spin" />} Guardar
           </button>
         </div>
@@ -188,7 +188,7 @@ function AssessmentModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
-        <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>Nova Avaliação Nutricional</h3>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>Nova Avaliação Nutricional</h3>
 
         <div className="space-y-1.5">
           <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Data</label>
@@ -237,7 +237,7 @@ function AssessmentModal({
         {error && <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>}
         <div className="flex gap-3">
           <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--sophi-bg3)]" style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}>Cancelar</button>
-          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--sophi-green)', color: '#000' }}>
+          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
             {saving && <Loader2 size={12} className="animate-spin" />} Guardar
           </button>
         </div>
@@ -290,7 +290,7 @@ function SupplementModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="w-full max-w-sm rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
-        <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>Novo Suplemento</h3>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>Novo Suplemento</h3>
         <div className="space-y-3">
           <div className="space-y-1.5">
             <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Nome</label>
@@ -324,7 +324,7 @@ function SupplementModal({
         {error && <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>}
         <div className="flex gap-3">
           <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--sophi-bg3)]" style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}>Cancelar</button>
-          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--sophi-green)', color: '#000' }}>
+          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
             {saving && <Loader2 size={12} className="animate-spin" />} Guardar
           </button>
         </div>
@@ -417,12 +417,12 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
       {/* Peso diário */}
       <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
-          <Scale size={13} style={{ color: 'var(--sophi-green)' }} />
+          <Scale size={13} style={{ color: 'var(--sophi-accent)' }} />
           <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>
             Peso Diário{height ? ` · Altura ${height} cm` : ''}
           </p>
           {canWeight && (
-            <button type="button" onClick={() => setShowWeightModal(true)} className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]" style={{ color: 'var(--sophi-green)' }}>
+            <button type="button" onClick={() => setShowWeightModal(true)} className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-accent-bg)]" style={{ color: 'var(--sophi-accent)' }}>
               <Plus size={10} /> Registar
             </button>
           )}
@@ -454,7 +454,7 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
           <div className="flex items-center gap-2">
             <input type="number" step="0.1" value={limitDraft} onChange={(e) => setLimitDraft(e.target.value)} className="w-20 px-2 py-1 rounded-lg text-xs border" style={inputStyle} />
             <span className="text-xs" style={{ color: 'var(--sophi-text3)' }}>mm</span>
-            <button type="button" onClick={saveLimit} disabled={savingLimit} className="text-[10px] font-bold px-2 py-1 rounded-lg" style={{ background: 'var(--sophi-green)', color: '#000' }}>
+            <button type="button" onClick={saveLimit} disabled={savingLimit} className="text-[10px] font-bold px-2 py-1 rounded-lg" style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
               {savingLimit ? <Loader2 size={10} className="animate-spin" /> : 'OK'}
             </button>
           </div>
@@ -462,7 +462,7 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold font-mono" style={{ color: 'var(--sophi-text)' }}>{limit != null ? `${limit} mm` : '—'}</span>
             {canAssessment && (
-              <button type="button" onClick={() => { setLimitDraft(limit?.toString() ?? ''); setEditingLimit(true) }} className="p-1 rounded hover:bg-white/10">
+              <button type="button" onClick={() => { setLimitDraft(limit?.toString() ?? ''); setEditingLimit(true) }} className="p-1 rounded hover:bg-[var(--sophi-bg4)]">
                 <Edit2 size={11} style={{ color: 'var(--sophi-text3)' }} />
               </button>
             )}
@@ -483,12 +483,12 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
       {/* Avaliações — tabela lado a lado por data */}
       <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
-          <Apple size={13} style={{ color: 'var(--sophi-green)' }} />
+          <Apple size={13} style={{ color: 'var(--sophi-accent)' }} />
           <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>
             Avaliações Antropométricas
           </p>
           {canAssessment && (
-            <button type="button" onClick={() => setShowAssessmentModal(true)} className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]" style={{ color: 'var(--sophi-green)' }}>
+            <button type="button" onClick={() => setShowAssessmentModal(true)} className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-accent-bg)]" style={{ color: 'var(--sophi-accent)' }}>
               <Plus size={10} /> Nova avaliação
             </button>
           )}
@@ -583,12 +583,12 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
       {/* Suplementos */}
       <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
-          <Pill size={13} style={{ color: 'var(--sophi-green)' }} />
+          <Pill size={13} style={{ color: 'var(--sophi-accent)' }} />
           <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>
             Suplementos{supplements.length ? ` (${supplements.length})` : ''}
           </p>
           {canAssessment && (
-            <button type="button" onClick={() => setShowSupplementModal(true)} className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]" style={{ color: 'var(--sophi-green)' }}>
+            <button type="button" onClick={() => setShowSupplementModal(true)} className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-accent-bg)]" style={{ color: 'var(--sophi-accent)' }}>
               <Plus size={10} /> Novo
             </button>
           )}
@@ -605,7 +605,7 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>{s.name}</span>
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: active ? 'var(--sophi-green-bg)' : 'var(--sophi-bg4)', color: active ? 'var(--sophi-green)' : 'var(--sophi-text3)' }}>
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: active ? 'var(--sophi-accent-bg)' : 'var(--sophi-bg4)', color: active ? 'var(--sophi-accent)' : 'var(--sophi-text3)' }}>
                           {active ? 'Ativo' : 'Terminado'}
                         </span>
                         {s.dosage && <span className="text-[10px]" style={{ color: 'var(--sophi-text3)' }}>{s.dosage}</span>}
@@ -628,7 +628,7 @@ export function NutritionTab({ profile }: { profile: AthleteProfileData }) {
                           if (!error) setSupplements((prev) => prev.filter((x) => x.id !== s.id))
                           setDeletingSupplementId(null)
                         }}
-                        className="p-1 rounded hover:bg-white/10 shrink-0"
+                        className="p-1 rounded hover:bg-[var(--sophi-bg4)] shrink-0"
                         title="Remover"
                       >
                         {deletingSupplementId === s.id ? <Loader2 size={11} className="animate-spin" style={{ color: 'var(--sophi-text3)' }} /> : <Trash2 size={11} style={{ color: 'var(--sophi-danger)' }} />}

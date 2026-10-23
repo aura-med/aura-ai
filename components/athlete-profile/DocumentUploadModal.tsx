@@ -92,7 +92,7 @@ export function DocumentUploadModal({ athleteId, onClose, onUploaded }: Props) {
   }
 
   const inputStyle = { background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }
-  const inputClass = "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+  const inputClass = "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-accent)]"
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)' }}>
@@ -105,7 +105,7 @@ export function DocumentUploadModal({ athleteId, onClose, onUploaded }: Props) {
           <p className="text-sm font-bold" style={{ color: 'var(--sophi-text)' }}>
             Upload Documento
           </p>
-          <button type="button" onClick={onClose} className="rounded-lg p-1 hover:bg-white/10">
+          <button type="button" onClick={onClose} className="rounded-lg p-1 hover:bg-[var(--sophi-bg4)]">
             <X size={15} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
@@ -115,13 +115,13 @@ export function DocumentUploadModal({ athleteId, onClose, onUploaded }: Props) {
 
           {/* File drop zone */}
           <div
-            className="rounded-xl border-2 border-dashed p-6 flex flex-col items-center gap-3 cursor-pointer transition-colors hover:border-[var(--sophi-green)]"
-            style={{ borderColor: file ? 'var(--sophi-green)' : 'var(--sophi-border2)' }}
+            className="rounded-xl border-2 border-dashed p-6 flex flex-col items-center gap-3 cursor-pointer transition-colors hover:border-[var(--sophi-accent)]"
+            style={{ borderColor: file ? 'var(--sophi-accent)' : 'var(--sophi-border2)' }}
             onClick={() => inputRef.current?.click()}
           >
             {file ? (
               <>
-                <File size={24} style={{ color: 'var(--sophi-green)' }} />
+                <File size={24} style={{ color: 'var(--sophi-accent)' }} />
                 <div className="text-center">
                   <p className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>{file.name}</p>
                   <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>
@@ -211,7 +211,7 @@ export function DocumentUploadModal({ athleteId, onClose, onUploaded }: Props) {
             <div className="rounded-full overflow-hidden h-1.5" style={{ background: 'var(--sophi-bg3)' }}>
               <div
                 className="h-full rounded-full transition-all duration-500"
-                style={{ width: `${progress}%`, background: 'var(--sophi-green)' }}
+                style={{ width: `${progress}%`, background: 'var(--sophi-accent)' }}
               />
             </div>
           )}
@@ -233,7 +233,7 @@ export function DocumentUploadModal({ athleteId, onClose, onUploaded }: Props) {
         <div className="flex items-center justify-end gap-2 px-5 py-4 border-t" style={{ borderColor: 'var(--sophi-border)' }}>
           <button
             type="button" onClick={onClose}
-            className="px-4 py-2 rounded-lg text-xs font-medium border hover:bg-white/5"
+            className="px-4 py-2 rounded-lg text-xs font-medium border hover:bg-[var(--sophi-accent-bg)]"
             style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)' }}
           >
             Cancelar
@@ -241,7 +241,7 @@ export function DocumentUploadModal({ athleteId, onClose, onUploaded }: Props) {
           <button
             type="button" onClick={handleUpload} disabled={uploading || !file}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50"
-            style={{ background: 'var(--sophi-green)', color: '#000' }}
+            style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
           >
             {uploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
             {uploading ? 'A carregar…' : 'Upload'}

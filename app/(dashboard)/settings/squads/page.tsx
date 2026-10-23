@@ -125,7 +125,7 @@ export default function SquadsPage() {
     <div className="max-w-2xl space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+          <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
             {t('title')}
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--sophi-text3)' }}>{t('description')}</p>
@@ -133,7 +133,7 @@ export default function SquadsPage() {
         <button
           onClick={() => setShowCreate(true)}
           className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
-          style={{ background: 'var(--sophi-green)', color: '#000' }}
+          style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
         >
           <Plus size={14} />
           {t('createSquad')}
@@ -180,7 +180,7 @@ export default function SquadsPage() {
               onClick={handleCreate}
               disabled={creating || !newName.trim()}
               className="px-4 py-1.5 rounded-md text-sm font-medium disabled:opacity-50"
-              style={{ background: 'var(--sophi-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
             >
               {creating ? tc('saving') : tc('create')}
             </button>
@@ -220,9 +220,9 @@ export default function SquadsPage() {
               <div className="flex items-center gap-3">
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center"
-                  style={{ background: 'rgba(0,229,160,0.08)' }}
+                  style={{ background: 'color-mix(in srgb, var(--sophi-accent) 8%, transparent)' }}
                 >
-                  <Users size={14} style={{ color: 'var(--sophi-green)' }} />
+                  <Users size={14} style={{ color: 'var(--sophi-accent)' }} />
                 </div>
                 <div>
                   <div className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>{sq.name}</div>
@@ -254,7 +254,7 @@ export default function SquadsPage() {
               ) : (
                 <button
                   onClick={() => setDeleteId(sq.id)}
-                  className="p-1.5 rounded-md transition-colors hover:bg-white/5"
+                  className="p-1.5 rounded-md transition-colors hover:bg-[var(--sophi-accent-bg)]"
                   style={{ color: 'var(--sophi-text3)' }}
                 >
                   <Trash2 size={14} />

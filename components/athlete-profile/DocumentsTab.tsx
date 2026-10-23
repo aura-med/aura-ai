@@ -91,7 +91,7 @@ function DocumentRow({
       {/* Icon */}
       <div
         className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-        style={{ background: `${cfg.color}18` }}
+        style={{ background: `color-mix(in srgb, ${cfg.color} 9%, transparent)` }}
       >
         <Icon size={14} style={{ color: cfg.color }} />
       </div>
@@ -113,7 +113,7 @@ function DocumentRow({
           type="button"
           onClick={handleOpen}
           disabled={opening}
-          className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
+          className="p-1.5 rounded-lg transition-colors hover:bg-[var(--sophi-bg4)]"
           title="Abrir documento"
         >
           {opening
@@ -197,7 +197,7 @@ export function DocumentsTab({ profile }: { profile: AthleteProfileData }) {
           <button
             type="button"
             onClick={() => setShowUpload(true)}
-            className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
+            className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-accent)] hover:text-[var(--sophi-accent)]"
             style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}
           >
             <Upload size={11} />
@@ -212,9 +212,9 @@ export function DocumentsTab({ profile }: { profile: AthleteProfileData }) {
             onClick={() => setActiveCategory('all')}
             className="text-[10px] font-medium px-2.5 py-1 rounded-lg border transition-colors"
             style={{
-              borderColor: activeCategory === 'all' ? 'var(--sophi-green)' : 'var(--sophi-border)',
-              color:  activeCategory === 'all' ? 'var(--sophi-green)' : 'var(--sophi-text3)',
-              background: activeCategory === 'all' ? 'var(--sophi-green-bg)' : 'var(--sophi-bg2)',
+              borderColor: activeCategory === 'all' ? 'var(--sophi-accent)' : 'var(--sophi-border)',
+              color:  activeCategory === 'all' ? 'var(--sophi-accent)' : 'var(--sophi-text3)',
+              background: activeCategory === 'all' ? 'var(--sophi-accent-bg)' : 'var(--sophi-bg2)',
             }}
           >
             Todos {documents.length > 0 && `(${documents.length})`}
@@ -234,7 +234,7 @@ export function DocumentsTab({ profile }: { profile: AthleteProfileData }) {
                 style={{
                   borderColor: isActive ? cfg.color : 'var(--sophi-border)',
                   color:  isActive ? cfg.color : 'var(--sophi-text3)',
-                  background: isActive ? `${cfg.color}15` : 'var(--sophi-bg2)',
+                  background: isActive ? `color-mix(in srgb, ${cfg.color} 9%, transparent)` : 'var(--sophi-bg2)',
                 }}
               >
                 <Icon size={9} />
@@ -267,7 +267,7 @@ export function DocumentsTab({ profile }: { profile: AthleteProfileData }) {
             <button
               type="button"
               onClick={() => setShowUpload(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-accent)] hover:text-[var(--sophi-accent)]"
               style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}
             >
               <Upload size={11} />

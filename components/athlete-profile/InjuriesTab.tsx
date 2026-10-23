@@ -213,14 +213,14 @@ function ConcussionSection({ scat6 }: { scat6: Scat6Assessment }) {
             disabled={saving}
             onClick={() => { setConfirmR(false); updateStage(stage + 1) }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
-            style={{ background: 'var(--sophi-green)', color: '#000' }}
+            style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
           >
             {saving ? <Loader2 size={11} className="animate-spin" /> : null}
             {stage === 0 ? 'Iniciar protocolo' : 'Avançar fase'}
             <ChevronRight size={11} />
           </button>
         ) : (
-          <span className="text-xs font-bold" style={{ color: 'var(--sophi-green)' }}>
+          <span className="text-xs font-bold" style={{ color: 'var(--sophi-accent)' }}>
             ✓ Protocolo concluído
           </span>
         )}
@@ -307,8 +307,8 @@ export function InjuriesTab({ profile }: { profile: AthleteProfileData }) {
           <button
             type="button"
             onClick={() => setShowDiagModal(true)}
-            className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]"
-            style={{ color: 'var(--sophi-green)' }}
+            className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-accent-bg)]"
+            style={{ color: 'var(--sophi-accent)' }}
           >
             <Plus size={10} /> Novo diagnóstico
           </button>

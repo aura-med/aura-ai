@@ -52,7 +52,7 @@ export default async function UsersPage({
 
       <Card>
         <div className="mb-4 flex items-center gap-2">
-          <MailPlus size={15} style={{ color: 'var(--sophi-green)' }} />
+          <MailPlus size={15} style={{ color: 'var(--sophi-accent)' }} />
           <h2 className="text-sm font-semibold">Invite user</h2>
         </div>
         <form action={inviteUser} className="grid gap-3 lg:grid-cols-[1fr_1fr_180px_160px_auto]">
@@ -131,8 +131,8 @@ export default async function UsersPage({
                         {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
                       </select>
                       <button
-                        className="min-h-7 rounded px-2 text-xs hover:bg-white/5"
-                        style={{ color: 'var(--sophi-green)' }}
+                        className="min-h-7 rounded px-2 text-xs hover:bg-[var(--sophi-accent-bg)]"
+                        style={{ color: 'var(--sophi-accent)' }}
                         type="submit"
                         title="Save role"
                       >

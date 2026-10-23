@@ -4,7 +4,7 @@
 // Enforced by: import 'server-only' below + Edge Function vault (predict-risk).
 import 'server-only'
 // Scoring engine — server-side implementation
-// Port of calcScore() from Aura_Demo_FPF.html
+// Port of calcScore() from Sophi_Demo_FPF.html
 // Architecture doc §3: "scoring corre no servidor, nunca no cliente"
 //
 // Phase 1 weights (v1.1) — expert-defined, literature-based

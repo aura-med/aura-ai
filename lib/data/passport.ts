@@ -11,7 +11,8 @@ export async function getPassportPageDTO(
   athleteId: string | null
 ): Promise<PassportPageDTO> {
   const viewer = await getViewerContext()
-  if (!canUseSquad(viewer, squadId)) return { squadId: null, selectedAthleteId: null, athletes: [] }
+  const orgName = viewer.org?.name ?? null
+  if (!canUseSquad(viewer, squadId)) return { squadId: null, orgName, selectedAthleteId: null, athletes: [] }
 
   const supabase = await createClient()
   let query = supabase
@@ -34,5 +35,5 @@ export async function getPassportPageDTO(
     ? athleteId
     : athletes[0]?.id ?? null
 
-  return { squadId, selectedAthleteId, athletes }
+  return { squadId, orgName, selectedAthleteId, athletes }
 }

@@ -137,7 +137,7 @@ function DailyWeightModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="w-full max-w-xs rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>Registar Peso</h3>
+          <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>Registar Peso</h3>
           <button type="button" onClick={onClose}><X size={14} style={{ color: 'var(--sophi-text3)' }} /></button>
         </div>
         <div className="space-y-3">
@@ -159,7 +159,7 @@ function DailyWeightModal({
         {error && <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>}
         <div className="flex gap-3">
           <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--sophi-bg3)]" style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}>Cancelar</button>
-          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--sophi-green)', color: '#000' }}>
+          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
             {saving && <Loader2 size={12} className="animate-spin" />} Guardar
           </button>
         </div>
@@ -211,7 +211,7 @@ function AssessmentModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>Nova Avaliação Nutricional</h3>
+          <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>Nova Avaliação Nutricional</h3>
           <button type="button" onClick={onClose}><X size={14} style={{ color: 'var(--sophi-text3)' }} /></button>
         </div>
 
@@ -260,7 +260,7 @@ function AssessmentModal({
         {error && <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>}
         <div className="flex gap-3">
           <button type="button" onClick={onClose} className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--sophi-bg3)]" style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}>Cancelar</button>
-          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--sophi-green)', color: '#000' }}>
+          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1" style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
             {saving && <Loader2 size={12} className="animate-spin" />} Guardar
           </button>
         </div>
@@ -310,9 +310,9 @@ export function NutritionClient({
       {/* Header */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
-          <Apple size={18} style={{ color: 'var(--sophi-green)' }} />
+          <Apple size={18} style={{ color: 'var(--sophi-accent)' }} />
           <div>
-            <h1 className="text-lg font-bold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+            <h1 className="text-lg font-bold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
               Nutrição
             </h1>
             <p className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
@@ -331,7 +331,7 @@ export function NutritionClient({
           {canAssessment && (
             <button type="button" onClick={() => setShowAssessmentModal(true)} disabled={athletes.length === 0}
               className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg disabled:opacity-40"
-              style={{ background: 'var(--sophi-green)', color: '#000' }}>
+              style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
               <Plus size={13} /> Nova Avaliação
             </button>
           )}
@@ -355,7 +355,7 @@ export function NutritionClient({
       {/* Daily weights */}
       <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
-          <Scale size={13} style={{ color: 'var(--sophi-green)' }} />
+          <Scale size={13} style={{ color: 'var(--sophi-accent)' }} />
           <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text2)' }}>
             Pesagens Recentes{filteredWeights.length ? ` (${filteredWeights.length})` : ''}
           </p>
@@ -383,7 +383,7 @@ export function NutritionClient({
       {/* Assessments */}
       <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
-          <Apple size={13} style={{ color: 'var(--sophi-green)' }} />
+          <Apple size={13} style={{ color: 'var(--sophi-accent)' }} />
           <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text2)' }}>
             Avaliações Recentes{filteredAssessments.length ? ` (${filteredAssessments.length})` : ''}
           </p>

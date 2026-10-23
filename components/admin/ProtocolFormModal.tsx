@@ -153,9 +153,9 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
 
   // ── Style helpers ──────────────────────────────────────────────────────────
   const baseInput =
-    'mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--sophi-green)] transition-colors'
+    'mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--sophi-accent)] transition-colors'
   const baseTextarea =
-    'mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--sophi-green)] transition-colors resize-none'
+    'mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--sophi-accent)] transition-colors resize-none'
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -254,7 +254,7 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
                 type="button"
                 onClick={addPhase}
                 className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-colors hover:bg-[var(--sophi-bg4)]"
-                style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-green)' }}
+                style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-accent)' }}
               >
                 <Plus size={11} />
                 Adicionar Fase
@@ -274,7 +274,7 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
                       borderColor: hasError
                         ? 'rgba(255,77,109,0.4)'
                         : isExpanded
-                        ? 'rgba(0,229,160,0.2)'
+                        ? 'color-mix(in srgb, var(--sophi-accent) 20%, transparent)'
                         : 'var(--sophi-border)',
                       background: 'var(--sophi-bg3)',
                     }}
@@ -288,8 +288,8 @@ export function ProtocolFormModal({ open, onClose, onSuccess, toast, protocol }:
                       <span
                         className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0"
                         style={{
-                          background: isExpanded ? 'rgba(0,229,160,0.1)' : 'var(--sophi-bg4)',
-                          color: isExpanded ? 'var(--sophi-green)' : 'var(--sophi-text3)',
+                          background: isExpanded ? 'color-mix(in srgb, var(--sophi-accent) 10%, transparent)' : 'var(--sophi-bg4)',
+                          color: isExpanded ? 'var(--sophi-accent)' : 'var(--sophi-text3)',
                         }}
                       >
                         F{i + 1}

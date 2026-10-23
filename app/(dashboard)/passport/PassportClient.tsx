@@ -1,11 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { useMemo, useState, useTransition } from 'react'
 import { updatePassportShare } from '@/lib/data/actions'
 import type { PassportPageDTO } from '@/lib/data/types'
 
 export function PassportClient({ dto }: { dto: PassportPageDTO }) {
+  const t = useTranslations('passport')
   const [selected, setSelected] = useState(dto.selectedAthleteId ?? '')
   const [shared, setShared] = useState<Record<string, boolean>>({})
   const [isPending, startTransition] = useTransition()
@@ -62,7 +64,7 @@ export function PassportClient({ dto }: { dto: PassportPageDTO }) {
 
       <div className="g2">
         <div>
-          <div className="card" style={{ marginBottom: 12, borderColor: isShareable ? 'rgba(0,229,160,0.3)' : 'var(--border)' }}>
+          <div className="card" style={{ marginBottom: 12, borderColor: isShareable ? 'color-mix(in srgb, var(--sophi-green) 30%, transparent)' : 'var(--border)' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
               <div>
                 <Link href={`/athletes/${athlete.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -142,7 +144,7 @@ export function PassportClient({ dto }: { dto: PassportPageDTO }) {
             <div className="ctitle">Simulacao - Novo clube recebe passaporte</div>
             <div style={{ background: 'var(--bg3)', borderRadius: 8, padding: 14, marginBottom: 12 }}>
               <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text3)', letterSpacing: 1.5, marginBottom: 10 }}>
-                CENARIO: TRANSFERENCIA PARA CLUBE CLIENTE SOPHI
+                CENARIO: TRANSFERENCIA PARA CLUBE CLIENTE SOPHI SPORTS
               </div>
               <button
                 onClick={() => setShared((state) => ({ ...state, [athlete.id]: !isShared }))}
@@ -152,19 +154,19 @@ export function PassportClient({ dto }: { dto: PassportPageDTO }) {
               </button>
 
               {isShared ? (
-                <div style={{ background: 'var(--green4)', border: '1px solid rgba(0,229,160,0.2)', borderRadius: 8, padding: 12 }}>
+                <div style={{ background: 'var(--green4)', border: '1px solid color-mix(in srgb, var(--sophi-green) 20%, transparent)', borderRadius: 8, padding: 12 }}>
                   <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--green2)', letterSpacing: 1.5, marginBottom: 8 }}>NOVO CLUBE RECEBE:</div>
                   <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.8 }}>
                     Historial completo de lesoes ({athlete.injuries.length} episodios)<br />
                     {athlete.performance.vmax && <>Vmax de referencia: {athlete.performance.vmax} km/h<br /></>}
                     {athlete.passport.hrvBaselineMs && <>HRV baseline: {athlete.passport.hrvBaselineMs} ms<br /></>}
                     {athlete.fatigueProfile && <>Perfil de recuperacao calibrado<br /></>}
-                    Verificado pela FPF
+                    {dto.orgName ? t('verifiedBy', { org: dto.orgName }) : t('verified')}
                   </div>
                 </div>
               ) : (
                 <div style={{ background: 'var(--bg4)', borderRadius: 8, padding: 12, fontSize: 12, color: 'var(--text3)' }}>
-                  Sem Sophi: o novo clube comeca do zero. Nenhum historial, nenhum baseline.
+                  Sem a Sophi Sports: o novo clube comeca do zero. Nenhum historial, nenhum baseline.
                 </div>
               )}
             </div>

@@ -136,7 +136,7 @@ export default function RehabSessionClient({
           <Link href={athlete ? `/athletes/${athlete.id}` : '#'} style={{ textDecoration: 'none', color: 'inherit' }}>
             <h1
               style={{
-                fontFamily: 'var(--font-syne)',
+                fontFamily: 'var(--font-display)',
                 fontSize: '1.25rem',
                 fontWeight: 800,
                 color: 'var(--sophi-text)',
@@ -162,8 +162,8 @@ export default function RehabSessionClient({
                   padding: '8px 16px',
                   borderRadius: '8px',
                   border: 'none',
-                  background: 'var(--sophi-green)',
-                  color: '#000',
+                  background: 'var(--sophi-primary)',
+                  color: 'var(--sophi-on-primary)',
                   fontWeight: 600,
                   fontSize: '13px',
                   cursor: 'pointer',
@@ -221,7 +221,7 @@ export default function RehabSessionClient({
               letterSpacing: '1px',
               textTransform: 'uppercase',
               border: `1px solid ${activeTab === tab ? currentPhase?.color ?? 'var(--sophi-green)' : 'var(--sophi-border)'}`,
-              background: activeTab === tab ? `${currentPhase?.color ?? '#00e5a0'}15` : 'transparent',
+              background: activeTab === tab ? `${currentPhase?.color ?? '#3763d9'}15` : 'transparent',
               color: activeTab === tab ? currentPhase?.color ?? 'var(--sophi-green)' : 'var(--sophi-text2)',
               transition: 'all .15s',
             }}
@@ -322,7 +322,7 @@ export default function RehabSessionClient({
                         step={field.step ?? 1}
                         value={(currentVal as number) ?? 5}
                         onChange={e => updateAssessment(field.key, parseFloat(e.target.value))}
-                        style={{ width: '100%', accentColor: 'var(--sophi-green)', cursor: 'pointer' }}
+                        style={{ width: '100%', accentColor: 'var(--sophi-accent)', cursor: 'pointer' }}
                       />
                     </div>
                   )}
@@ -342,9 +342,9 @@ export default function RehabSessionClient({
                               fontSize: '11px',
                               cursor: 'pointer',
                               transition: 'all .15s',
-                              border: `1px solid ${isActive ? 'var(--sophi-green)' : 'var(--sophi-border)'}`,
-                              background: isActive ? 'rgba(0,229,160,0.12)' : 'var(--sophi-bg3)',
-                              color: isActive ? 'var(--sophi-green)' : 'var(--sophi-text2)',
+                              border: `1px solid ${isActive ? 'var(--sophi-accent)' : 'var(--sophi-border)'}`,
+                              background: isActive ? 'color-mix(in srgb, var(--sophi-accent) 12%, transparent)' : 'var(--sophi-bg3)',
+                              color: isActive ? 'var(--sophi-accent)' : 'var(--sophi-text2)',
                             }}
                           >
                             {opt.label}
@@ -370,7 +370,7 @@ export default function RehabSessionClient({
                               fontSize: '12px',
                               cursor: 'pointer',
                               border: `1px solid ${isActive ? (isNeg ? 'var(--sophi-green)' : 'var(--sophi-danger)') : 'var(--sophi-border)'}`,
-                              background: isActive ? (isNeg ? 'rgba(0,229,160,0.1)' : 'rgba(255,77,109,0.1)') : 'var(--sophi-bg3)',
+                              background: isActive ? (isNeg ? 'color-mix(in srgb, var(--sophi-green) 10%, transparent)' : 'rgba(255,77,109,0.1)') : 'var(--sophi-bg3)',
                               color: isActive ? (isNeg ? 'var(--sophi-green)' : 'var(--sophi-danger)') : 'var(--sophi-text2)',
                               transition: 'all .15s',
                             }}
@@ -420,8 +420,8 @@ export default function RehabSessionClient({
                     padding: '10px 12px',
                     borderRadius: '8px',
                     marginBottom: '8px',
-                    background: passed ? 'rgba(0,229,160,0.06)' : 'rgba(255,77,109,0.06)',
-                    border: `1px solid ${passed ? 'rgba(0,229,160,0.2)' : 'rgba(255,77,109,0.2)'}`,
+                    background: passed ? 'color-mix(in srgb, var(--sophi-green) 6%, transparent)' : 'rgba(255,77,109,0.06)',
+                    border: `1px solid ${passed ? 'color-mix(in srgb, var(--sophi-green) 20%, transparent)' : 'rgba(255,77,109,0.2)'}`,
                   }}
                 >
                   <div
@@ -563,8 +563,8 @@ export default function RehabSessionClient({
                     minWidth: 200,
                     padding: '14px 16px',
                     borderRadius: '10px',
-                    border: `1px solid ${isActive ? phase.color : isDone ? 'rgba(0,229,160,0.25)' : 'var(--sophi-border)'}`,
-                    background: isActive ? `${phase.color}15` : isDone ? 'rgba(0,229,160,0.05)' : 'var(--sophi-bg3)',
+                    border: `1px solid ${isActive ? phase.color : isDone ? 'color-mix(in srgb, var(--sophi-green) 25%, transparent)' : 'var(--sophi-border)'}`,
+                    background: isActive ? `${phase.color}15` : isDone ? 'color-mix(in srgb, var(--sophi-green) 5%, transparent)' : 'var(--sophi-bg3)',
                   }}
                 >
                   <div
@@ -700,7 +700,7 @@ export default function RehabSessionClient({
           >
             <h3
               style={{
-                fontFamily: 'var(--font-syne)',
+                fontFamily: 'var(--font-display)',
                 fontSize: '1rem',
                 fontWeight: 700,
                 color: 'var(--sophi-warn)',

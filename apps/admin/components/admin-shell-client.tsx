@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu, ShieldCheck, Timer } from 'lucide-react'
+import { Menu, Timer } from 'lucide-react'
+import { SophiLogo } from '@/components/brand/SophiLogo'
 import { Sidebar } from '@/components/sidebar'
 import { UserMenu } from '@/components/user-menu'
 import { SubmitButton } from '@/components/ui'
@@ -38,7 +39,7 @@ export function AdminShellClient({ email, fullName, level, supportSession, child
         <div className="flex items-center gap-3">
           <button
             onClick={() => setMobileSidebarOpen((v) => !v)}
-            className="flex size-11 items-center justify-center rounded-md transition-colors hover:bg-white/5 md:hidden"
+            className="flex size-11 items-center justify-center rounded-md transition-colors hover:bg-[var(--sophi-accent-bg)] md:hidden"
             style={{ color: 'var(--sophi-text2)' }}
             aria-label="Toggle menu"
             aria-expanded={mobileSidebarOpen}
@@ -46,23 +47,17 @@ export function AdminShellClient({ email, fullName, level, supportSession, child
           >
             <Menu size={18} />
           </button>
-          <div
-            className="flex h-8 w-8 items-center justify-center rounded-lg"
-            style={{ background: 'var(--sophi-green-bg)', color: 'var(--sophi-green)' }}
+          <SophiLogo className="h-10 w-auto" />
+          <span
+            className="rounded-md px-2 py-1 text-[10px] font-medium uppercase tracking-widest"
+            style={{
+              background: 'var(--sophi-accent-bg)',
+              color: 'var(--sophi-accent)',
+              fontFamily: 'var(--font-dm-mono)',
+            }}
           >
-            <ShieldCheck size={16} />
-          </div>
-          <div>
-            <div className="text-lg font-bold leading-none" style={{ fontFamily: 'var(--font-syne)' }}>
-              Sophi Admin
-            </div>
-            <div
-              className="hidden text-[10px] sm:block"
-              style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}
-            >
-              PLATFORM CONTROL
-            </div>
-          </div>
+            Admin
+          </span>
         </div>
 
         {/* Right — date + user menu */}

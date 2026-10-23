@@ -91,7 +91,7 @@ export default function PreferencesPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
           {t('title')}
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--sophi-text3)' }}>{t('description')}</p>
@@ -111,9 +111,9 @@ export default function PreferencesPage() {
                 onClick={() => setPrefs(p => ({ ...p, theme: th }))}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-colors flex-1 justify-center"
                 style={{
-                  background: prefs.theme === th ? 'rgba(0,229,160,0.08)' : 'var(--sophi-bg3)',
-                  borderColor: prefs.theme === th ? 'var(--sophi-green)' : 'var(--sophi-border2)',
-                  color: prefs.theme === th ? 'var(--sophi-green)' : 'var(--sophi-text2)',
+                  background: prefs.theme === th ? 'color-mix(in srgb, var(--sophi-accent) 8%, transparent)' : 'var(--sophi-bg3)',
+                  borderColor: prefs.theme === th ? 'var(--sophi-accent)' : 'var(--sophi-border2)',
+                  color: prefs.theme === th ? 'var(--sophi-accent)' : 'var(--sophi-text2)',
                 }}
               >
                 {th === 'dark' ? <Moon size={14} /> : <Sun size={14} />}
@@ -133,9 +133,9 @@ export default function PreferencesPage() {
                 onClick={() => setPrefs(p => ({ ...p, locale: value as 'pt' | 'en' | 'es' }))}
                 className="flex-1 py-2 rounded-lg text-sm font-medium border transition-colors"
                 style={{
-                  background: prefs.locale === value ? 'rgba(0,229,160,0.08)' : 'var(--sophi-bg3)',
-                  borderColor: prefs.locale === value ? 'var(--sophi-green)' : 'var(--sophi-border2)',
-                  color: prefs.locale === value ? 'var(--sophi-green)' : 'var(--sophi-text2)',
+                  background: prefs.locale === value ? 'color-mix(in srgb, var(--sophi-accent) 8%, transparent)' : 'var(--sophi-bg3)',
+                  borderColor: prefs.locale === value ? 'var(--sophi-accent)' : 'var(--sophi-border2)',
+                  color: prefs.locale === value ? 'var(--sophi-accent)' : 'var(--sophi-text2)',
                 }}
               >
                 {label}
@@ -155,7 +155,7 @@ export default function PreferencesPage() {
         onClick={handleSave}
         disabled={saving}
         className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
-        style={{ background: 'var(--sophi-green)', color: '#000' }}
+        style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
       >
         <Save size={14} />
         {saving ? tc('saving') : saved ? tc('saved') : tc('save')}

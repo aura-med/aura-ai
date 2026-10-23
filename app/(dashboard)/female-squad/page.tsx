@@ -5,10 +5,10 @@ import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 
 const PHASE_GUIDE = [
-  { phase: 'menstrual',  color: '#ff4d6d', days: 'D1–5',  note: 'Dor e fadiga possíveis. Reduzir impacto se necessário.' },
-  { phase: 'follicular', color: '#00e5a0', days: 'D6–13', note: 'Fase ideal para carga alta e desenvolvimento de força.' },
-  { phase: 'ovulatory',  color: '#ff7043', days: 'D14',   note: 'Risco LCA +40%. Evitar arranques bruscos e aterragens.' },
-  { phase: 'luteal',     color: '#ffb347', days: 'D15–28',note: 'Laxidez ligamentar aumentada. Reforço proprioceptivo.' },
+  { phase: 'menstrual',  color: 'var(--risk-critical)', days: 'D1–5',  note: 'Dor e fadiga possíveis. Reduzir impacto se necessário.' },
+  { phase: 'follicular', color: 'var(--risk-low)', days: 'D6–13', note: 'Fase ideal para carga alta e desenvolvimento de força.' },
+  { phase: 'ovulatory',  color: 'var(--risk-high)', days: 'D14',   note: 'Risco LCA +40%. Evitar arranques bruscos e aterragens.' },
+  { phase: 'luteal',     color: 'var(--risk-medium)', days: 'D15–28',note: 'Laxidez ligamentar aumentada. Reforço proprioceptivo.' },
 ]
 
 export default async function FemalePage({
@@ -58,7 +58,7 @@ export default async function FemalePage({
   return (
     <div>
       <div className="sec-hdr">
-        <div className="sec-title">⚽ Seleção Nacional Feminina</div>
+        <div className="sec-title">⚽ Equipa Feminina</div>
         <div className="sec-sub">Monitorização com ciclo menstrual integrado · Risco LCA ajustado</div>
       </div>
 
@@ -78,7 +78,7 @@ export default async function FemalePage({
           <div className="adot ad-b" />
           <div style={{ fontSize: 12 }}>
             <strong>Evidência:</strong> Risco de lesão LCA varia até 4x ao longo do ciclo menstrual
-            (Hewett et al. 2007; Renstrom et al. BJSM 2008). A Sophi é a única plataforma que integra
+            (Hewett et al. 2007; Renstrom et al. BJSM 2008). A Sophi Sports é a única plataforma que integra
             este factor no score de risco.
           </div>
         </div>

@@ -69,7 +69,7 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
   return (
     <div className="relative" ref={ref}>
       <button
-        className="flex items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-white/5"
+        className="flex items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-[var(--sophi-accent-bg)]"
         onClick={() => setOpen((v) => !v)}
         type="button"
       >
@@ -102,8 +102,8 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
               <span
                 className="mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
                 style={{
-                  background: 'rgba(0,229,160,0.10)',
-                  color: 'var(--sophi-green)',
+                  background: 'color-mix(in srgb, var(--sophi-accent) 10%, transparent)',
+                  color: 'var(--sophi-accent)',
                   fontFamily: 'var(--font-dm-mono)',
                 }}
               >
@@ -134,9 +134,9 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
                     aria-pressed={locale === l.value}
                     className="rounded px-2 py-0.5 text-[10px] font-semibold uppercase transition-colors"
                     style={{
-                      background: locale === l.value ? 'rgba(0,229,160,0.10)' : 'var(--sophi-bg3)',
-                      color: locale === l.value ? 'var(--sophi-green)' : 'var(--sophi-text2)',
-                      border: `1px solid ${locale === l.value ? 'rgba(0,229,160,0.3)' : 'var(--sophi-border)'}`,
+                      background: locale === l.value ? 'color-mix(in srgb, var(--sophi-accent) 10%, transparent)' : 'var(--sophi-bg3)',
+                      color: locale === l.value ? 'var(--sophi-accent)' : 'var(--sophi-text2)',
+                      border: `1px solid ${locale === l.value ? 'color-mix(in srgb, var(--sophi-accent) 30%, transparent)' : 'var(--sophi-border)'}`,
                       fontFamily: 'var(--font-dm-mono)',
                     }}
                   >
@@ -155,7 +155,7 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
                 disabled={isPending}
                 onClick={handleThemeToggle}
                 type="button"
-                className="flex items-center gap-1.5 rounded px-2 py-0.5 text-xs transition-colors hover:bg-white/5"
+                className="flex items-center gap-1.5 rounded px-2 py-0.5 text-xs transition-colors hover:bg-[var(--sophi-accent-bg)]"
                 style={{ color: 'var(--sophi-text2)' }}
               >
                 {theme === 'dark' ? <Moon size={13} /> : <Sun size={13} />}
@@ -175,7 +175,7 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
             <Link
               href="/settings"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-white/5"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-[var(--sophi-accent-bg)]"
               style={{ color: 'var(--sophi-text2)' }}
             >
               <Settings size={14} />
@@ -184,7 +184,7 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
             <button
               onClick={handleSignOut}
               type="button"
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-white/5"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-[var(--sophi-accent-bg)]"
               style={{ color: 'var(--sophi-text2)' }}
             >
               <LogOut size={14} />

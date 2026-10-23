@@ -126,9 +126,9 @@ export function MedicationClient({
       {/* Header */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
-          <Pill size={18} style={{ color: 'var(--sophi-green)' }} />
+          <Pill size={18} style={{ color: 'var(--sophi-accent)' }} />
           <div>
-            <h1 className="text-lg font-bold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+            <h1 className="text-lg font-bold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
               Medicação
             </h1>
             <p className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
@@ -142,7 +142,7 @@ export function MedicationClient({
             onClick={() => setModal({ mode: 'create' })}
             disabled={athletes.length === 0}
             className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg disabled:opacity-40"
-            style={{ background: 'var(--sophi-green)', color: '#000' }}
+            style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
           >
             <Plus size={13} /> Registar Administração
           </button>
@@ -181,7 +181,7 @@ export function MedicationClient({
         )}
         <button type="button" onClick={() => setGrouped((g) => !g)}
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs border"
-          style={{ borderColor: 'var(--sophi-border)', color: grouped ? 'var(--sophi-green)' : 'var(--sophi-text2)', background: grouped ? 'rgba(0,229,160,0.08)' : 'transparent' }}>
+          style={{ borderColor: 'var(--sophi-border)', color: grouped ? 'var(--sophi-accent)' : 'var(--sophi-text2)', background: grouped ? 'color-mix(in srgb, var(--sophi-accent) 8%, transparent)' : 'transparent' }}>
           {grouped ? <List size={13} /> : <Users size={13} />} {grouped ? 'Lista' : 'Agrupar por atleta'}
         </button>
       </div>
@@ -281,10 +281,10 @@ function Row({
           </div>
           {canWrite && !confirming && (
             <div className="flex items-center gap-1">
-              <button type="button" onClick={onEdit} className="p-1 rounded hover:bg-white/10" title="Editar">
+              <button type="button" onClick={onEdit} className="p-1 rounded hover:bg-[var(--sophi-bg4)]" title="Editar">
                 <Pencil size={12} style={{ color: 'var(--sophi-text3)' }} />
               </button>
-              <button type="button" onClick={() => setConfirmDeleteId(r.id)} className="p-1 rounded hover:bg-white/10" title="Apagar">
+              <button type="button" onClick={() => setConfirmDeleteId(r.id)} className="p-1 rounded hover:bg-[var(--sophi-bg4)]" title="Apagar">
                 <Trash2 size={12} style={{ color: 'var(--sophi-danger)' }} />
               </button>
             </div>
@@ -379,7 +379,7 @@ function MedicationModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="w-full max-w-sm rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+          <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
             {isEdit ? 'Editar Administração' : 'Registar Administração'}
           </h3>
           <button type="button" onClick={onClose}><X size={14} style={{ color: 'var(--sophi-text3)' }} /></button>
@@ -443,7 +443,7 @@ function MedicationModal({
           </button>
           <button type="button" onClick={handleSave} disabled={saving}
             className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1"
-            style={{ background: 'var(--sophi-green)', color: '#000' }}>
+            style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
             {saving && <Loader2 size={12} className="animate-spin" />} Guardar
           </button>
         </div>

@@ -34,7 +34,7 @@ export function MedicationModal({ athleteId, medHistory, editing, editingIndex, 
   const [deleting, setDeleting] = useState(false)
   const [error,    setError]    = useState<string | null>(null)
 
-  const inputClass = "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+  const inputClass = "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-accent)]"
   const inputStyle = { background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }
 
   async function handleSave() {
@@ -106,12 +106,12 @@ export function MedicationModal({ athleteId, medHistory, editing, editingIndex, 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b shrink-0" style={{ borderColor: 'var(--sophi-border)' }}>
           <div className="flex items-center gap-2">
-            <Pill size={14} style={{ color: 'var(--sophi-green)' }} />
+            <Pill size={14} style={{ color: 'var(--sophi-accent)' }} />
             <p className="text-sm font-bold" style={{ color: 'var(--sophi-text)' }}>
               {isEdit ? 'Editar Medicação' : 'Nova Medicação'}
             </p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-white/10">
+          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-[var(--sophi-bg4)]">
             <X size={14} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
@@ -224,7 +224,7 @@ export function MedicationModal({ athleteId, medHistory, editing, editingIndex, 
           <div className="flex items-center gap-2">
             <button
               type="button" onClick={onClose}
-              className="px-4 py-2 rounded-lg text-xs font-medium border hover:bg-white/5"
+              className="px-4 py-2 rounded-lg text-xs font-medium border hover:bg-[var(--sophi-accent-bg)]"
               style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)' }}
             >
               Cancelar
@@ -233,7 +233,7 @@ export function MedicationModal({ athleteId, medHistory, editing, editingIndex, 
               type="button" onClick={handleSave}
               disabled={saving || deleting}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50"
-              style={{ background: 'var(--sophi-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
             >
               {saving ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
               {saving ? 'A guardar…' : isEdit ? 'Guardar' : 'Adicionar'}

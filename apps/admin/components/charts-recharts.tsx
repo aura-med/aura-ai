@@ -11,7 +11,7 @@ export function MiniLineChartImpl({
     <div className="h-56">
       <ResponsiveContainer height="100%" width="100%">
         <LineChart data={data}>
-          <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
+          <CartesianGrid stroke="var(--sophi-border)" vertical={false} />
           <XAxis dataKey="label" stroke="var(--sophi-text3)" tick={{ fontSize: 11 }} />
           <YAxis stroke="var(--sophi-text3)" tick={{ fontSize: 11 }} width={28} />
           <Tooltip
@@ -22,7 +22,7 @@ export function MiniLineChartImpl({
               color: 'var(--sophi-text)',
             }}
           />
-          <Line dataKey={dataKey} dot={false} stroke="var(--sophi-green)" strokeWidth={2} type="monotone" />
+          <Line dataKey={dataKey} dot={false} stroke="var(--sophi-accent)" strokeWidth={2} type="monotone" />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -37,7 +37,7 @@ export function MiniBarChartImpl({
     <div className="h-56">
       <ResponsiveContainer height="100%" width="100%">
         <BarChart data={data}>
-          <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
+          <CartesianGrid stroke="var(--sophi-border)" vertical={false} />
           <XAxis dataKey="label" stroke="var(--sophi-text3)" tick={{ fontSize: 11 }} />
           <YAxis stroke="var(--sophi-text3)" tick={{ fontSize: 11 }} width={28} />
           <Tooltip

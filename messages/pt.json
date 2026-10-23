@@ -7,20 +7,19 @@
       "fitness_coach": "Prep. Físico",
       "admin": "Admin"
     },
-    "fpfPilot": "FPF Pilot",
     "langToggle": "Idioma",
     "squad": "Squad",
     "org": "Organização"
   },
   "auth": {
-    "brandSubtitle": "Health & Performance Intelligence · FPF",
+    "brandSubtitle": "Health & Performance Intelligence",
     "emailLabel": "Email",
     "login": {
       "passwordLabel": "Palavra-passe",
       "forgotPassword": "Esqueceu a palavra-passe?",
       "submit": "Entrar",
       "submitting": "A entrar...",
-      "restrictedAccess": "Acesso restrito a staff clínico e técnico FPF"
+      "restrictedAccess": "Acesso restrito a staff clínico e técnico"
     },
     "forgot": {
       "success": "Verifique o seu email. Enviámos um link para repor a sua palavra-passe.",
@@ -70,12 +69,16 @@
       "performance": "Máximos & Perfil",
       "calendar": "Calendar Intelligence",
       "passport": "Passaporte Atleta",
-      "female_squad": "Seleção Feminina",
+      "female_squad": "Equipa Feminina",
       "settings": "Definições",
       "collapse_sidebar": "Minimizar menu",
       "expand_sidebar": "Expandir menu"
     },
-    "version": "Sophi v1.1 · FPF Pilot"
+    "version": "Sophi Sports v1.1"
+  },
+  "passport": {
+    "verifiedBy": "Verificado por {org}",
+    "verified": "Verificado"
   },
   "risk": {
     "low": "Baixo",
@@ -326,7 +329,7 @@
       "createSquad": "Novo Squad",
       "newSquad": "Criar Squad",
       "squadName": "Nome",
-      "squadNamePlaceholder": "Ex: Seleção A",
+      "squadNamePlaceholder": "Ex: Equipa Principal",
       "squadType": "Tipo",
       "typeMale": "Masculino",
       "typeFemale": "Feminino",
@@ -373,12 +376,12 @@
     "integrations": {
       "title": "Integrações",
       "description": "Conecta dispositivos e plataformas externas.",
-      "note": "As integrações serão disponibilizadas progressivamente. Contacta a equipa Sophi para acesso antecipado."
+      "note": "As integrações serão disponibilizadas progressivamente. Contacta a equipa Sophi Sports para acesso antecipado."
     },
     "subscription": {
       "title": "Subscrição",
       "description": "Detalhes do plano e funcionalidades incluídas.",
-      "planName": "FPF Pilot",
+      "planName": "Piloto",
       "planType": "Plano Piloto",
       "planActive": "Ativo",
       "validFrom": "Válido desde",
@@ -393,7 +396,7 @@
       "featureSupport": "Suporte técnico dedicado",
       "upgradeTitle": "Interessado em expandir?",
       "upgradeDescription": "Contacta-nos para explorar opções de plano completo, integrações adicionais ou implementação noutras organizações.",
-      "contactUpgrade": "Contactar equipa Sophi"
+      "contactUpgrade": "Contactar equipa Sophi Sports"
     },
     "privacy": {
       "title": "Privacidade & GDPR",

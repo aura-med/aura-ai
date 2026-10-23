@@ -64,7 +64,7 @@ export function LoginForm() {
       <button
         className="w-full rounded-lg py-2.5 text-sm font-semibold transition-opacity disabled:opacity-50"
         disabled={loading}
-        style={{ background: 'var(--sophi-green)', color: 'var(--sophi-bg)', fontFamily: 'var(--font-syne)' }}
+        style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)', fontFamily: 'var(--font-display)' }}
         type="submit"
       >
         {loading ? 'Entering...' : 'Enter admin'}

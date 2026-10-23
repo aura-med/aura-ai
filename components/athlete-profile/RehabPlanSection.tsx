@@ -65,7 +65,7 @@ export function RehabPlanSection({ profile }: { profile: AthleteProfileData }) {
           <p className="text-sm font-semibold" style={{ color: 'var(--sophi-text)' }}>Sem plano de reabilitação ativo</p>
           {canEdit && (
             <button type="button" onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg" style={{ background: 'var(--sophi-green)', color: '#000' }}>
+              className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg" style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
               <Plus size={12} /> Criar Plano de Reabilitação
             </button>
           )}
@@ -83,7 +83,7 @@ export function RehabPlanSection({ profile }: { profile: AthleteProfileData }) {
             {pastPlans.map((p) => (
               <div key={p.id}>
                 <button type="button" onClick={() => setExpandedPastId((cur) => (cur === p.id ? null : p.id))}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5">
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--sophi-accent-bg)]">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium" style={{ color: 'var(--sophi-text)' }}>{p.title}</p>
                     <p className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>

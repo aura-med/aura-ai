@@ -108,7 +108,7 @@ export function TrainingPlanTab({ profile }: { profile: AthleteProfileData }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <FileStack size={14} style={{ color: 'var(--sophi-green)' }} />
+          <FileStack size={14} style={{ color: 'var(--sophi-accent)' }} />
           <p className="text-sm font-semibold" style={{ color: 'var(--sophi-text)' }}>Plano de Treino Individual</p>
         </div>
         {canUpload && (
@@ -117,7 +117,7 @@ export function TrainingPlanTab({ profile }: { profile: AthleteProfileData }) {
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-accent)] hover:text-[var(--sophi-accent)]"
               style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}
             >
               {uploading ? <Loader2 size={11} className="animate-spin" /> : <Upload size={11} />}
@@ -138,7 +138,7 @@ export function TrainingPlanTab({ profile }: { profile: AthleteProfileData }) {
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-accent)] hover:text-[var(--sophi-accent)]"
               style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}
             >
               <Upload size={11} /> Upload PDF
@@ -161,7 +161,7 @@ export function TrainingPlanTab({ profile }: { profile: AthleteProfileData }) {
                 href={signedUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-white/10 shrink-0"
+                className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-bg4)] shrink-0"
                 style={{ color: 'var(--sophi-text3)' }}
               >
                 <ExternalLink size={11} /> Abrir

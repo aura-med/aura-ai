@@ -13,7 +13,7 @@ export function getMenstrualPhase(
     return {
       phase: 'menstrual',
       label: 'Menstrual',
-      color: '#ff4d6d',
+      color: 'var(--risk-critical)',
       lcaRiskMultiplier: 1.1,
       note: 'Inflamação sistémica ligeiramente elevada. Vigilância LCA.',
     }
@@ -22,7 +22,7 @@ export function getMenstrualPhase(
     return {
       phase: 'follicular',
       label: 'Folicular',
-      color: '#00e5a0',
+      color: 'var(--risk-low)',
       lcaRiskMultiplier: 1.0,
       note: 'Fase mais segura. Estrogénio eleva rigidez ligamentar.',
     }
@@ -31,7 +31,7 @@ export function getMenstrualPhase(
     return {
       phase: 'ovulatory',
       label: 'Ovulatória',
-      color: '#f6ad55',
+      color: 'var(--risk-medium)',
       lcaRiskMultiplier: 1.4,
       note: 'Pico de risco LCA (+40%). Pico estrogénio → laxidão ligamentar.',
     }
@@ -39,7 +39,7 @@ export function getMenstrualPhase(
   return {
     phase: 'luteal',
     label: 'Luteínica',
-    color: '#b48dfc',
+    color: 'var(--sophi-purple)',
     lcaRiskMultiplier: 1.2,
     note: 'Risco LCA moderadamente elevado (+20%). Progesterona dominante.',
   }

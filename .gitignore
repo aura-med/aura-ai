@@ -58,7 +58,7 @@ yarn-error.log*
 next-env.d.ts
 
 # workspace vs code
-aura.code-workspace
+sophi.code-workspace
 .worktrees/
 
 # local planning docs

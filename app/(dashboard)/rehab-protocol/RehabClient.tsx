@@ -47,7 +47,7 @@ function RehabClinicalControl({ session }: { session: RehabSessionDTO }) {
               step={1}
               defaultValue={clinical.pain_vas ?? 5}
               onChange={(e) => update('pain_vas', parseInt(e.target.value, 10))}
-              style={{ width: '100%', accentColor: 'var(--green2)', minHeight: 32 }}
+              style={{ width: '100%', accentColor: 'var(--sophi-accent)', minHeight: 32 }}
             />
           </label>
 
@@ -133,9 +133,9 @@ function SegmentedNumberControl({
               cursor: 'pointer',
               fontFamily: 'var(--mono)',
               fontSize: 11,
-              border: `1px solid ${current === value ? 'var(--green2)' : 'var(--border)'}`,
-              background: current === value ? 'var(--green3)' : 'var(--bg4)',
-              color: current === value ? 'var(--green2)' : 'var(--text2)',
+              border: `1px solid ${current === value ? 'var(--sophi-accent)' : 'var(--border)'}`,
+              background: current === value ? 'var(--sophi-accent-bg)' : 'var(--bg4)',
+              color: current === value ? 'var(--sophi-accent)' : 'var(--text2)',
             }}
           >
             {value}
@@ -164,7 +164,7 @@ function RtpChecklist({ session }: { session: RehabSessionDTO }) {
                 await toggleRtpCriterion(session.id, index, session.rtpCriteria)
               })
             }}
-            style={{ width: 18, height: 18, accentColor: 'var(--green2)' }}
+            style={{ width: 18, height: 18, accentColor: 'var(--sophi-accent)' }}
           />
           <span style={{ color: criterion.done ? 'var(--green2)' : 'var(--text2)' }}>{criterion.label}</span>
         </label>

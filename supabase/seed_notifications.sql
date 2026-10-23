@@ -1,23 +1,25 @@
--- Mock notifications for fisio@fpf.pt
+-- Mock notifications for the org of a given user
 -- Run this in the Supabase SQL editor (Dashboard → SQL Editor)
+-- Set v_email below to the email of an existing user before running.
 
 DO $$
 DECLARE
+  v_email    text := 'user@example.com';  -- EDIT: email of the user whose org receives the notifications
   v_org_id   uuid;
   v_squad_id uuid;
   v_ath1     uuid;
   v_ath2     uuid;
   v_ath3     uuid;
 BEGIN
-  -- Resolve org for fisio@fpf.pt
+  -- Resolve org for v_email
   SELECT org_id INTO v_org_id
     FROM profiles p
     JOIN auth.users u ON u.id = p.id
-   WHERE u.email = 'fisio@fpf.pt'
+   WHERE u.email = v_email
    LIMIT 1;
 
   IF v_org_id IS NULL THEN
-    RAISE EXCEPTION 'Could not find org for fisio@fpf.pt — check the email or profiles table';
+    RAISE EXCEPTION 'Could not find org for % — check the email or profiles table', v_email;
   END IF;
 
   -- First squad in that org

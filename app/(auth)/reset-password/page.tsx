@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { AuthControls } from '@/components/auth/AuthControls'
+import { SophiLogo } from '@/components/brand/SophiLogo'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -76,16 +77,8 @@ export default function ResetPasswordPage() {
       >
         <AuthControls />
         <div className="text-center mb-8">
-          <h1
-            className="text-3xl font-bold"
-            style={{
-              fontFamily: 'var(--font-syne)',
-              background: 'linear-gradient(135deg, var(--sophi-green) 0%, var(--sophi-blue) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            Sophi
+          <h1 className="mt-4 flex justify-center">
+            <SophiLogo className="h-20 w-auto" />
           </h1>
           <p className="text-xs mt-1" style={{ color: 'var(--sophi-text3)' }}>
             {t('brandSubtitle')}
@@ -170,9 +163,9 @@ export default function ResetPasswordPage() {
               disabled={loading}
               className="w-full py-2.5 rounded-lg text-sm font-semibold transition-opacity disabled:opacity-50"
               style={{
-                background: 'var(--sophi-green)',
-                color: 'var(--sophi-bg)',
-                fontFamily: 'var(--font-syne)',
+                background: 'var(--sophi-primary)',
+                color: 'var(--sophi-on-primary)',
+                fontFamily: 'var(--font-display)',
               }}
             >
               {loading ? t('reset.submitting') : t('reset.submit')}

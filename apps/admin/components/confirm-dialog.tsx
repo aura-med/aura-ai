@@ -59,7 +59,7 @@ export function ConfirmDialog({
             </p>
             <div className="flex justify-end gap-2">
               <button
-                className="min-h-9 rounded-md px-3 text-sm hover:bg-white/5"
+                className="min-h-9 rounded-md px-3 text-sm hover:bg-[var(--sophi-accent-bg)]"
                 disabled={pending}
                 onClick={() => setOpen(false)}
                 style={{ color: 'var(--sophi-text2)' }}

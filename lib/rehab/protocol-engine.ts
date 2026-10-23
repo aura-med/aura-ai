@@ -194,7 +194,7 @@ export const PROTOCOLS: Record<string, RehabProtocolDef> = {
         name: 'Retorno ao treino',
         d1: 22,
         d2: 28,
-        color: '#00e5a0',
+        color: '#2e9e63',
         exercises: [
           'Treino integrado com grupo',
           'Sprints máximos',
@@ -372,7 +372,7 @@ export const PROTOCOLS: Record<string, RehabProtocolDef> = {
         name: 'Retorno ao desporto',
         d1: 15,
         d2: 21,
-        color: '#00e5a0',
+        color: '#2e9e63',
         exercises: [
           'Mudanças de direcção',
           'Sprints com travagem',

@@ -139,10 +139,10 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
         style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
       >
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+          <h3 className="font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
             {isEdit ? 'Editar Diagnóstico' : 'Novo Diagnóstico'}
           </h3>
-          <button type="button" onClick={onClose} className="p-1 rounded hover:bg-white/10">
+          <button type="button" onClick={onClose} className="p-1 rounded hover:bg-[var(--sophi-bg4)]">
             <X size={16} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
@@ -156,9 +156,9 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
               onClick={() => setDiagnosisType(t)}
               className="flex-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors"
               style={{
-                background: diagnosisType === t ? 'var(--sophi-green)' : 'var(--sophi-bg3)',
-                color:      diagnosisType === t ? '#000'               : 'var(--sophi-text2)',
-                borderColor: diagnosisType === t ? 'var(--sophi-green)' : 'var(--sophi-border)',
+                background: diagnosisType === t ? 'var(--sophi-accent)' : 'var(--sophi-bg3)',
+                color:      diagnosisType === t ? 'var(--sophi-on-accent)' : 'var(--sophi-text2)',
+                borderColor: diagnosisType === t ? 'var(--sophi-accent)' : 'var(--sophi-border)',
               }}
             >
               {t === 'injury' ? 'Lesão' : 'Doença'}
@@ -176,7 +176,7 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
               className="flex items-center gap-2 px-3 py-2 rounded-lg border"
               style={{ background: 'var(--sophi-green-bg)', borderColor: 'var(--sophi-green)' }}
             >
-              <span className="text-[10px] font-mono font-bold" style={{ color: 'var(--sophi-green)' }}>
+              <span className="text-[10px] font-mono font-bold" style={{ color: 'var(--sophi-accent)' }}>
                 {selectedOsiics.code}
               </span>
               <span className="flex-1 text-xs" style={{ color: 'var(--sophi-text)' }}>
@@ -311,7 +311,7 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
           >
             <div className="flex items-center gap-2">
               <CheckCircle2 size={14} style={{ color: 'var(--sophi-green)' }} />
-              <p className="text-xs font-semibold" style={{ color: 'var(--sophi-green)' }}>
+              <p className="text-xs font-semibold" style={{ color: 'var(--sophi-accent)' }}>
                 Diagnóstico guardado · Protocolo disponível
               </p>
             </div>
@@ -346,7 +346,7 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
                 onClick={handleStartRehab}
                 disabled={startingRehab}
                 className="flex-1 px-3 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5"
-                style={{ background: 'var(--sophi-green)', color: '#000' }}
+                style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
               >
                 {startingRehab
                   ? <><Loader2 size={11} className="animate-spin" /> A iniciar…</>
@@ -379,7 +379,7 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
               onClick={handleSave}
               disabled={saving}
               className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
-              style={{ background: 'var(--sophi-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
             >
               {saving && <Loader2 size={13} className="animate-spin" />}
               Guardar

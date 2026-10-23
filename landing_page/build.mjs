@@ -28,19 +28,19 @@ const TEAM = [
   {
     name: 'Diogo Simões',
     initials: 'DS',
-    photo: 'diogo-simoes.jpg',
+    photo: 'diogo-simoes.jpeg',
     linkedin: 'https://www.linkedin.com/in/diogodacruzsimoes/',
   },
   {
     name: 'Alexandre Cardoso',
     initials: 'AC',
-    photo: 'alexandre-cardoso.jpg',
+    photo: 'alexandre-cardoso.jpeg',
     linkedin: 'https://www.linkedin.com/in/alexandre-cardoso-260b8857/',
   },
   {
     name: 'Tiago Pimentel',
     initials: 'TP',
-    photo: 'tiago-pimentel.jpg',
+    photo: 'tiago-pimentel.jpeg',
     linkedin: 'https://www.linkedin.com/in/tiagopimentel94/',
   },
 ]

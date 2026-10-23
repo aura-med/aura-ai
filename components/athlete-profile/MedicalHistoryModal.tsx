@@ -34,7 +34,7 @@ function Input({ value, onChange, placeholder, type = 'text' }: {
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+      className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-accent)]"
       style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }}
     />
   )
@@ -120,7 +120,7 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
     }
   }
 
-  const inputClass = "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+  const inputClass = "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-accent)]"
   const inputStyle = { background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }
 
   return (
@@ -134,7 +134,7 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
           <p className="text-sm font-bold" style={{ color: 'var(--sophi-text)' }}>
             Dados Clínicos
           </p>
-          <button type="button" onClick={onClose} className="rounded-lg p-1 hover:bg-white/10">
+          <button type="button" onClick={onClose} className="rounded-lg p-1 hover:bg-[var(--sophi-bg4)]">
             <X size={15} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
@@ -184,7 +184,7 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
               <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
                 Medicação
               </p>
-              <button type="button" onClick={addMed} className="flex items-center gap-1 text-[10px] font-medium" style={{ color: 'var(--sophi-green)' }}>
+              <button type="button" onClick={addMed} className="flex items-center gap-1 text-[10px] font-medium" style={{ color: 'var(--sophi-accent)' }}>
                 <Plus size={10} /> Adicionar
               </button>
             </div>
@@ -217,7 +217,7 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
                       type="date" value={m.start_date ?? ''} onChange={(e) => updateMed(i, 'start_date', e.target.value)}
                       className={`${inputClass} col-span-1`} style={inputStyle}
                     />
-                    <button type="button" onClick={() => removeMed(i)} className="p-1 rounded hover:bg-white/10 shrink-0">
+                    <button type="button" onClick={() => removeMed(i)} className="p-1 rounded hover:bg-[var(--sophi-bg4)] shrink-0">
                       <Trash2 size={12} style={{ color: 'var(--sophi-danger)' }} />
                     </button>
                   </div>
@@ -235,7 +235,7 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
               <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
                 Histórico Cirúrgico
               </p>
-              <button type="button" onClick={addSurgery} className="flex items-center gap-1 text-[10px] font-medium" style={{ color: 'var(--sophi-green)' }}>
+              <button type="button" onClick={addSurgery} className="flex items-center gap-1 text-[10px] font-medium" style={{ color: 'var(--sophi-accent)' }}>
                 <Plus size={10} /> Adicionar
               </button>
             </div>
@@ -263,7 +263,7 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
                     />
                   </div>
                   <div className="col-span-1 flex items-center">
-                    <button type="button" onClick={() => removeSurgery(i)} className="p-1 rounded hover:bg-white/10">
+                    <button type="button" onClick={() => removeSurgery(i)} className="p-1 rounded hover:bg-[var(--sophi-bg4)]">
                       <Trash2 size={12} style={{ color: 'var(--sophi-danger)' }} />
                     </button>
                   </div>
@@ -282,7 +282,7 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Observações adicionais…"
-              className="w-full rounded-lg border px-3 py-2 text-sm resize-none outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+              className="w-full rounded-lg border px-3 py-2 text-sm resize-none outline-none focus:ring-1 focus:ring-[var(--sophi-accent)]"
               style={inputStyle}
             />
           </Field>
@@ -298,7 +298,7 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
         <div className="flex items-center justify-end gap-2 px-5 py-4 border-t shrink-0" style={{ borderColor: 'var(--sophi-border)' }}>
           <button
             type="button" onClick={onClose}
-            className="px-4 py-2 rounded-lg text-xs font-medium border hover:bg-white/5"
+            className="px-4 py-2 rounded-lg text-xs font-medium border hover:bg-[var(--sophi-accent-bg)]"
             style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)' }}
           >
             Cancelar
@@ -306,7 +306,7 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
           <button
             type="button" onClick={handleSave} disabled={saving}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold"
-            style={{ background: 'var(--sophi-green)', color: '#000' }}
+            style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
           >
             {saving && <Loader2 size={12} className="animate-spin" />}
             Guardar

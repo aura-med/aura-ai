@@ -129,7 +129,7 @@ export default async function OrganizationsPage({
                 <td>{org.last_data_at ? formatDateTime(org.last_data_at) : 'No data'}</td>
                 <td className="flex flex-wrap gap-1">
                   <Link
-                    className="inline-flex min-h-8 items-center gap-1 rounded-md px-2 text-xs hover:bg-white/5"
+                    className="inline-flex min-h-8 items-center gap-1 rounded-md px-2 text-xs hover:bg-[var(--sophi-accent-bg)]"
                     href={`/organizations/${org.id}`}
                     style={{ color: 'var(--sophi-blue)' }}
                   >

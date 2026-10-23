@@ -98,6 +98,7 @@ export interface PassportAthleteDTO extends SelectOptionDTO {
 
 export interface PassportPageDTO {
   squadId: string | null
+  orgName: string | null
   selectedAthleteId: string | null
   athletes: PassportAthleteDTO[]
 }

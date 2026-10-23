@@ -20,17 +20,17 @@ const DEFAULT_WEIGHTS     = {
 
 const RISK_COLORS: Record<RiskLevel, string> = {
   low:      'var(--sophi-green)',
-  medium:   '#f59e0b',
-  high:     '#f97316',
-  critical: '#ef4444',
+  medium:   'var(--risk-medium)',
+  high:     'var(--risk-high)',
+  critical: 'var(--risk-critical)',
 }
 
 const EVIDENCE_LEVEL_COLORS: Record<string, string> = {
   Ia:     'var(--sophi-green)',
   Ib:     'var(--sophi-green)',
-  IIa:    '#f59e0b',
-  IIb:    '#f59e0b',
-  III:    '#f97316',
+  IIa:    'var(--risk-medium)',
+  IIb:    'var(--risk-medium)',
+  III:    'var(--risk-high)',
   IV:     'var(--sophi-text3)',
   Expert: 'var(--sophi-text3)',
 }
@@ -52,18 +52,18 @@ function EvidenceBadge({ level }: { level: string }) {
 
 function DirectionBadge({ direction }: { direction: string }) {
   const colors: Record<string, string> = {
-    reduce_load: '#f97316',
-    rest:        '#ef4444',
-    monitor:     '#f59e0b',
+    reduce_load: 'var(--risk-high)',
+    rest:        'var(--risk-critical)',
+    monitor:     'var(--risk-medium)',
     maintain:    'var(--sophi-green)',
-    assess:      '#8b5cf6',
-    communicate: '#3b82f6',
+    assess:      'var(--sophi-purple)',
+    communicate: 'var(--sophi-accent)',
   }
   return (
     <span
       className="inline-block rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider"
       style={{
-        background: `${colors[direction] ?? 'var(--sophi-text3)'}18`,
+        background: `color-mix(in srgb, ${colors[direction] ?? 'var(--sophi-text3)'} 9%, transparent)`,
         color: colors[direction] ?? 'var(--sophi-text3)',
         fontFamily: 'var(--font-dm-mono)',
       }}
@@ -129,7 +129,7 @@ export default async function OrgRecommendationsPage({
       {/* EU AI Act notice */}
       <Card>
         <div className="flex items-start gap-3">
-          <Shield size={16} style={{ color: 'var(--sophi-green)', flexShrink: 0, marginTop: 2 }} />
+          <Shield size={16} style={{ color: 'var(--sophi-accent)', flexShrink: 0, marginTop: 2 }} />
           <div className="space-y-1">
             <p className="text-sm font-semibold">EU AI Act Compliance — Art. 13 &amp; 14</p>
             <p className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
@@ -151,7 +151,7 @@ export default async function OrgRecommendationsPage({
             {config ? 'Custom' : 'Default'}
           </p>
           <p className="text-xs" style={{ color: 'var(--sophi-text2)' }}>
-            {config ? `Updated ${new Date(config.updated_at).toLocaleDateString('pt-PT')}` : 'Using Sophi global defaults'}
+            {config ? `Updated ${new Date(config.updated_at).toLocaleDateString('pt-PT')}` : 'Using Sophi Sports global defaults'}
           </p>
         </Card>
         <Card>
@@ -188,7 +188,7 @@ export default async function OrgRecommendationsPage({
       <Card className="overflow-x-auto p-0">
         <div className="flex items-center justify-between border-b px-4 py-3" style={{ borderColor: 'var(--sophi-border)' }}>
           <div className="flex items-center gap-2">
-            <BookOpen size={14} style={{ color: 'var(--sophi-green)' }} />
+            <BookOpen size={14} style={{ color: 'var(--sophi-accent)' }} />
             <h2 className="text-sm font-semibold">Evidence-Based Rule Library</h2>
           </div>
           <span className="text-xs" style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}>
@@ -249,7 +249,7 @@ export default async function OrgRecommendationsPage({
                       return rules.map((rule: any, ruleIdx: number) => (
                         <tr
                           key={`${variable}-${riskLevel}-${stakeholder}-${ruleIdx}`}
-                          style={activeOverride ? { background: 'rgba(0,229,160,0.04)' } : undefined}
+                          style={activeOverride ? { background: 'color-mix(in srgb, var(--sophi-accent) 4%, transparent)' } : undefined}
                         >
                           {ruleIdx === 0 && (
                             <>
@@ -278,7 +278,7 @@ export default async function OrgRecommendationsPage({
                                 {rule.icon} {rule.text}
                               </p>
                               {activeOverride && activeOverride.override_type === 'text_only' && ruleIdx === 0 && (
-                                <p className="text-xs italic" style={{ color: 'var(--sophi-green)' }}>
+                                <p className="text-xs italic" style={{ color: 'var(--sophi-accent)' }}>
                                   → Override: {activeOverride.custom_text}
                                 </p>
                               )}

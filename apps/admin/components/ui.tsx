@@ -32,7 +32,7 @@ export function PageHeader({
       <div>
         <h1
           className="text-xl font-semibold"
-          style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}
+          style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}
         >
           {title}
         </h1>
@@ -71,7 +71,7 @@ export function Kpi({
       </div>
       <div
         className="mt-2 text-3xl font-black leading-none"
-        style={{ color, fontFamily: 'var(--font-syne)' }}
+        style={{ color, fontFamily: 'var(--font-display)' }}
       >
         {value}
       </div>
@@ -97,7 +97,7 @@ export function StatusBadge({
     warn: { background: 'var(--sophi-warn-bg)', color: 'var(--sophi-warn)' },
     danger: { background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' },
     purple: { background: 'var(--sophi-purple-bg)', color: 'var(--sophi-purple)' },
-    neutral: { background: 'rgba(255,255,255,0.08)', color: 'var(--sophi-text2)' },
+    neutral: { background: 'var(--sophi-bg4)', color: 'var(--sophi-text2)' },
   }[tone]
 
   return (
@@ -120,8 +120,8 @@ export function SubmitButton({
   className?: string
 }) {
   const styles = {
-    green: { background: 'var(--sophi-green)', color: 'var(--sophi-bg)' },
-    danger: { background: 'var(--sophi-danger)', color: '#fff' },
+    green: { background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' },
+    danger: { background: 'var(--sophi-danger)', color: 'var(--sophi-on-primary)' },
     neutral: { background: 'var(--sophi-bg3)', color: 'var(--sophi-text)' },
   }[tone]
 
@@ -175,7 +175,7 @@ export function FeedbackBanner({ success, error }: FeedbackBannerProps) {
   const msg = error ?? success ?? ''
   const colors: Record<string, { bg: string; border: string; color: string }> = {
     danger: { bg: 'var(--sophi-danger-bg)', border: 'rgba(255,77,109,0.28)', color: 'var(--sophi-danger)' },
-    green:  { bg: 'var(--sophi-green-bg)',  border: 'rgba(0,229,160,0.28)',  color: 'var(--sophi-green)' },
+    green:  { bg: 'var(--sophi-green-bg)',  border: 'color-mix(in srgb, var(--sophi-green) 28%, transparent)',  color: 'var(--sophi-green)' },
   }
   const c = colors[tone]
   return (

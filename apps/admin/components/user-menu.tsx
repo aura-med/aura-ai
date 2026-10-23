@@ -20,12 +20,12 @@ interface UserMenuProps {
 
 export function UserMenu({ email, fullName, level }: UserMenuProps) {
   const [open, setOpen] = useState(false)
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+  const [theme, setTheme] = useState<'dark' | 'light'>('light')
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const stored = localStorage.getItem('sophi-theme')
-    setTheme(stored === 'light' ? 'light' : 'dark')
+    setTheme(stored === 'dark' ? 'dark' : 'light')
   }, [])
 
   useEffect(() => {
@@ -51,13 +51,13 @@ export function UserMenu({ email, fullName, level }: UserMenuProps) {
     setTheme(next)
   }
 
-  const displayName = fullName ?? email ?? 'Sophi admin'
+  const displayName = fullName ?? email ?? 'Sophi Sports admin'
   const levelColor = LEVEL_COLORS[level] ?? 'var(--sophi-text3)'
 
   return (
     <div className="relative" ref={ref}>
       <button
-        className="flex items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-white/5"
+        className="flex items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-[var(--sophi-accent-bg)]"
         onClick={() => setOpen((v) => !v)}
         type="button"
       >
@@ -114,7 +114,7 @@ export function UserMenu({ email, fullName, level }: UserMenuProps) {
               <button
                 onClick={toggleTheme}
                 type="button"
-                className="flex items-center gap-1.5 rounded px-2 py-0.5 text-xs transition-colors hover:bg-white/5"
+                className="flex items-center gap-1.5 rounded px-2 py-0.5 text-xs transition-colors hover:bg-[var(--sophi-accent-bg)]"
                 style={{ color: 'var(--sophi-text2)' }}
               >
                 {theme === 'dark' ? <Moon size={13} /> : <Sun size={13} />}
@@ -134,7 +134,7 @@ export function UserMenu({ email, fullName, level }: UserMenuProps) {
             <Link
               href="/settings"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-white/5"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-[var(--sophi-accent-bg)]"
               style={{ color: 'var(--sophi-text2)' }}
             >
               <Settings size={14} />
@@ -142,7 +142,7 @@ export function UserMenu({ email, fullName, level }: UserMenuProps) {
             </Link>
             <form action={signOut}>
               <button
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-[var(--sophi-accent-bg)]"
                 style={{ color: 'var(--sophi-text2)' }}
                 type="submit"
               >

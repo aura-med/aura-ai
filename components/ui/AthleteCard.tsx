@@ -7,7 +7,7 @@ import type { AthleteAvailabilityStatus } from '@/types'
 // ─────────────────────────────────────────────────────────────────────────────
 
 const STATUS_CFG: Record<AthleteAvailabilityStatus, { label: string; color: string; bg: string; dot: string }> = {
-  available:       { label: 'Disponível',      color: 'var(--sophi-green)',  bg: 'var(--sophi-green-bg)',  dot: '#00e5a0' },
+  available:       { label: 'Disponível',      color: 'var(--sophi-green)',  bg: 'var(--sophi-green-bg)',  dot: 'var(--sophi-green)' },
   evaluation:      { label: 'Em Avaliação',    color: 'var(--sophi-warn)',   bg: 'var(--sophi-warn-bg)',   dot: '#f6ad55' },
   load_management: { label: 'Gestão de Carga', color: 'var(--sophi-orange)', bg: 'var(--sophi-orange-bg)', dot: '#cc5500' },
   unavailable:     { label: 'Indisponível',    color: 'var(--sophi-danger)', bg: 'var(--sophi-danger-bg)', dot: '#ff4d6d' },
@@ -69,7 +69,7 @@ export function AthleteCard({
             >
               <span
                 style={{
-                  fontFamily: 'var(--font-syne)',
+                  fontFamily: 'var(--font-display)',
                   fontSize:   '2.5rem',
                   fontWeight: 900,
                   color:      'var(--sophi-green)',
@@ -96,7 +96,7 @@ export function AthleteCard({
           {/* Name */}
           <p
             className="text-sm font-semibold truncate leading-tight"
-            style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-inter)' }}
+            style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-poppins)' }}
           >
             {name}
           </p>

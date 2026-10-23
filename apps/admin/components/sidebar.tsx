@@ -14,6 +14,7 @@ import {
   Stethoscope,
   Users,
 } from 'lucide-react'
+import { SophiLogo } from '@/components/brand/SophiLogo'
 import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
@@ -57,22 +58,17 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
         )}
         style={{ background: 'var(--sophi-bg)', borderColor: 'var(--sophi-border)' }}
       >
-        {/* Mobile-only Sophi Admin badge */}
+        {/* Mobile-only Sophi Sports Admin badge */}
         <div
           className="flex items-center gap-2 border-b px-4 py-3 md:hidden"
           style={{ borderColor: 'var(--sophi-border)' }}
         >
-          <div
-            className="flex h-7 w-7 items-center justify-center rounded-lg"
-            style={{ background: 'var(--sophi-green-bg)', color: 'var(--sophi-green)' }}
-          >
-            <ShieldCheck size={14} />
-          </div>
+          <SophiLogo className="h-8 w-auto" />
           <span
-            className="text-sm font-bold"
-            style={{ fontFamily: 'var(--font-syne)' }}
+            className="rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest"
+            style={{ background: 'var(--sophi-accent-bg)', color: 'var(--sophi-accent)', fontFamily: 'var(--font-dm-mono)' }}
           >
-            Sophi Admin
+            Admin
           </span>
         </div>
 
@@ -97,14 +93,14 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                         className={cn(
                           'flex min-h-10 items-center gap-3 rounded-md px-3 text-sm transition-colors',
                           active
-                            ? 'font-medium text-[var(--sophi-green)]'
+                            ? 'font-medium text-[var(--sophi-accent)]'
                             : 'text-[var(--sophi-text2)] hover:bg-[var(--sophi-bg3)] hover:text-[var(--sophi-text)]'
                         )}
-                        style={active ? { background: 'rgba(0,229,160,0.08)' } : undefined}
+                        style={active ? { background: 'color-mix(in srgb, var(--sophi-accent) 8%, transparent)' } : undefined}
                       >
                         <Icon
                           size={15}
-                          className={active ? 'text-[var(--sophi-green)]' : 'text-[var(--sophi-text3)]'}
+                          className={active ? 'text-[var(--sophi-accent)]' : 'text-[var(--sophi-text3)]'}
                         />
                         <span className="truncate">{item.label}</span>
                       </Link>

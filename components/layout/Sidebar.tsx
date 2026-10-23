@@ -106,7 +106,7 @@ export function Sidebar() {
       <button
         onClick={toggleSidebar}
         aria-label={collapsed ? t('nav.expand_sidebar') : t('nav.collapse_sidebar')}
-        className="hidden md:flex items-center justify-center absolute -right-3.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full border-2 z-50 transition-colors hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
+        className="hidden md:flex items-center justify-center absolute -right-3.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full border-2 z-50 transition-colors hover:border-[var(--sophi-accent)] hover:text-[var(--sophi-accent)]"
         style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)', boxShadow: '0 1px 6px rgba(0,0,0,0.35)' }}
       >
         {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
@@ -122,7 +122,7 @@ export function Sidebar() {
           <div className="mb-2">
             <div
               className="text-sm font-bold leading-tight"
-              style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}
+              style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}
             >
               {selectedOrg.name}
             </div>
@@ -166,14 +166,14 @@ export function Sidebar() {
                     'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors group',
                     collapsed && 'md:justify-center md:px-0',
                     pathname.startsWith('/athletes')
-                      ? 'text-[var(--sophi-green)] font-medium'
+                      ? 'text-[var(--sophi-accent)] font-medium'
                       : 'text-[var(--sophi-text2)] hover:text-[var(--sophi-text)] hover:bg-[var(--sophi-bg3)]'
                   )}
-                  style={pathname.startsWith('/athletes') ? { background: 'rgba(0,229,160,0.08)' } : undefined}
+                  style={pathname.startsWith('/athletes') ? { background: 'color-mix(in srgb, var(--sophi-accent) 8%, transparent)' } : undefined}
                 >
                   <UserCircle
                     size={15}
-                    className={cn('shrink-0', pathname.startsWith('/athletes') ? 'text-[var(--sophi-green)]' : 'text-[var(--sophi-text3)] group-hover:text-[var(--sophi-text2)]')}
+                    className={cn('shrink-0', pathname.startsWith('/athletes') ? 'text-[var(--sophi-accent)]' : 'text-[var(--sophi-text3)] group-hover:text-[var(--sophi-text2)]')}
                   />
                   <span className={cn('flex-1 truncate', collapsed && 'md:hidden')}>{t('nav.my_profile')}</span>
                 </Link>
@@ -209,12 +209,12 @@ export function Sidebar() {
                           item.inDevelopment
                             ? 'opacity-50 cursor-default pointer-events-none'
                             : isActive
-                              ? 'text-[var(--sophi-green)] font-medium'
+                              ? 'text-[var(--sophi-accent)] font-medium'
                               : 'text-[var(--sophi-text2)] hover:text-[var(--sophi-text)] hover:bg-[var(--sophi-bg3)]'
                         )}
                         style={
                           isActive && !item.inDevelopment
-                            ? { background: 'rgba(0,229,160,0.08)' }
+                            ? { background: 'color-mix(in srgb, var(--sophi-accent) 8%, transparent)' }
                             : undefined
                         }
                         aria-disabled={item.inDevelopment}
@@ -225,7 +225,7 @@ export function Sidebar() {
                           className={cn(
                             'shrink-0',
                             isActive && !item.inDevelopment
-                              ? 'text-[var(--sophi-green)]'
+                              ? 'text-[var(--sophi-accent)]'
                               : 'text-[var(--sophi-text3)] group-hover:text-[var(--sophi-text2)]'
                           )}
                         />

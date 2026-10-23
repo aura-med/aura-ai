@@ -115,7 +115,7 @@ function AthleteHeader({ profile }: { profile: AthleteProfileData }) {
           ) : (
             <div
               className="absolute inset-0 flex items-center justify-center text-2xl font-bold font-mono"
-              style={{ color: 'var(--sophi-green)' }}
+              style={{ color: 'var(--sophi-accent)' }}
             >
               {profile.shirt_number ?? '—'}
             </div>
@@ -144,7 +144,7 @@ function AthleteHeader({ profile }: { profile: AthleteProfileData }) {
         <div className="flex flex-col justify-center min-w-0">
           <h1
             className="text-xl font-bold tracking-tight truncate"
-            style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}
+            style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}
           >
             {profile.name}
           </h1>

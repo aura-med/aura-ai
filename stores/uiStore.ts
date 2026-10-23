@@ -39,7 +39,7 @@ export const useUiStore = create<UiState>()(
       setMobileSidebarOpen: (open) => set({ mobileSidebarOpen: open }),
       squads: [],
       setSquads: (squads) => set({ squads }),
-      theme: 'dark',
+      theme: 'light',
       setTheme: (theme) => set({ theme }),
       toggleTheme: () => set((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
       locale: 'pt',

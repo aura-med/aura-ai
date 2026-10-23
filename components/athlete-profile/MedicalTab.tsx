@@ -41,7 +41,7 @@ function Section({
   return (
     <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
       <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
-        <Icon size={13} style={{ color: 'var(--sophi-green)' }} />
+        <Icon size={13} style={{ color: 'var(--sophi-accent)' }} />
         <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>
           {title}
         </p>
@@ -68,8 +68,8 @@ function Scat6Banner({ scat6, onRegisterBaseline, onEdit }: { scat6: Scat6Assess
         <button
           type="button"
           onClick={onRegisterBaseline}
-          className="mt-2 text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-[var(--sophi-green-bg)]"
-          style={{ color: 'var(--sophi-green)' }}
+          className="mt-2 text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-[var(--sophi-accent-bg)]"
+          style={{ color: 'var(--sophi-accent)' }}
         >
           + Registar Baseline
         </button>
@@ -87,7 +87,7 @@ function Scat6Banner({ scat6, onRegisterBaseline, onEdit }: { scat6: Scat6Assess
     <div className="rounded-xl border p-4 space-y-3" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Brain size={14} style={{ color: 'var(--sophi-green)' }} />
+          <Brain size={14} style={{ color: 'var(--sophi-accent)' }} />
           <p className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>
             SCAT-6 · {scat6.is_baseline ? 'Baseline' : formatDate(scat6.incident_date)}
           </p>
@@ -99,7 +99,7 @@ function Scat6Banner({ scat6, onRegisterBaseline, onEdit }: { scat6: Scat6Assess
           <button
             type="button"
             onClick={() => onEdit(scat6)}
-            className="p-1 rounded hover:bg-white/10"
+            className="p-1 rounded hover:bg-[var(--sophi-bg4)]"
             title="Editar SCAT-6"
           >
             <Edit2 size={11} style={{ color: 'var(--sophi-text3)' }} />
@@ -160,7 +160,7 @@ function MedicalBio({ profile, medHistory, onEdit }: {
       <button
         type="button" onClick={onEdit}
         className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80"
-        style={{ color: 'var(--sophi-green)' }}
+        style={{ color: 'var(--sophi-accent)' }}
       >
         <Edit2 size={10} /> Editar dados clínicos
       </button>
@@ -200,7 +200,7 @@ function ConsultationRow({
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onEdit(c) }}
-          className="p-1 rounded hover:bg-white/10 shrink-0"
+          className="p-1 rounded hover:bg-[var(--sophi-bg4)] shrink-0"
         >
           <Edit2 size={11} style={{ color: 'var(--sophi-text3)' }} />
         </button>
@@ -369,7 +369,7 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
                 type="button"
                 onClick={() => { setChronicDraft([...chronicConditions]); setChronicError(null); setEditingChronic(true) }}
                 className="flex items-center gap-1 text-[10px] font-medium hover:opacity-70"
-                style={{ color: 'var(--sophi-green)' }}
+                style={{ color: 'var(--sophi-accent)' }}
               >
                 <Edit2 size={10} /> Editar
               </button>
@@ -412,7 +412,7 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
                   onClick={() => saveChronicConditions(chronicDraft)}
                   disabled={savingChronic}
                   className="flex-1 text-xs py-1.5 rounded-lg font-bold flex items-center justify-center gap-1"
-                  style={{ background: 'var(--sophi-green)', color: '#000' }}
+                  style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
                 >
                   {savingChronic && <Loader2 size={11} className="animate-spin" />}
                   Guardar
@@ -447,7 +447,7 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
         <div className="grid gap-4 lg:grid-cols-2">
           <Section icon={FileText} title={`Medicação${activeMeds.length ? ` (${activeMeds.length})` : ''}`}
             action={
-              <button type="button" onClick={() => setShowHistModal(true)} className="text-[10px] font-medium hover:opacity-70" style={{ color: 'var(--sophi-green)' }}>
+              <button type="button" onClick={() => setShowHistModal(true)} className="text-[10px] font-medium hover:opacity-70" style={{ color: 'var(--sophi-accent)' }}>
                 Editar
               </button>
             }
@@ -471,7 +471,7 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
 
           <Section icon={FileText} title={`Histórico Cirúrgico${surgeries.length ? ` (${surgeries.length})` : ''}`}
             action={
-              <button type="button" onClick={() => setShowHistModal(true)} className="text-[10px] font-medium hover:opacity-70" style={{ color: 'var(--sophi-green)' }}>
+              <button type="button" onClick={() => setShowHistModal(true)} className="text-[10px] font-medium hover:opacity-70" style={{ color: 'var(--sophi-accent)' }}>
                 Editar
               </button>
             }
@@ -500,8 +500,8 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
             <button
               type="button"
               onClick={() => { setEditConsultation(null); setShowSoapModal(true) }}
-              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]"
-              style={{ color: 'var(--sophi-green)' }}
+              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-accent-bg)]"
+              style={{ color: 'var(--sophi-accent)' }}
             >
               <Plus size={10} /> Nova
             </button>

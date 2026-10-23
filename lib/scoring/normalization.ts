@@ -1,6 +1,6 @@
-// Normalization functions — port of norm() from Aura_Demo_FPF.html
+// Normalization functions — port of norm() from Sophi_Demo_FPF.html
 // Each function maps a raw value to 0.0 (normal) → 1.0 (critical risk)
-// Thresholds from architecture doc v1.1 + Aura_Algoritmo_v1.1.html
+// Thresholds from architecture doc v1.1 + Sophi_Algoritmo_v1.1.html
 
 import type { ScoreInputs, ScorePartials } from '@/types'
 

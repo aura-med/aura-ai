@@ -23,8 +23,8 @@ const OCCURRENCE_TYPE_LABELS: Record<string, string> = {
 function brandHeader(doc: jsPDF, title: string, subtitle: string): number {
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(18)
-  doc.setTextColor(0, 229, 160)
-  doc.text('SOPHI', 14, 18)
+  doc.setTextColor(0, 0, 86)
+  doc.text('Sophi Sports', 14, 18)
 
   doc.setFontSize(13)
   doc.setTextColor(30, 30, 30)
@@ -90,7 +90,7 @@ export function exportOccurrencesPDF(
       r.isResolved ? 'Sim' : 'Não',
     ]),
     styles: { fontSize: 9, cellPadding: 2.5 },
-    headStyles: { fillColor: [18, 22, 28], textColor: [0, 229, 160], fontStyle: 'bold' },
+    headStyles: { fillColor: [0, 0, 86], textColor: [255, 255, 255], fontStyle: 'bold' },
     alternateRowStyles: { fillColor: [246, 248, 247] },
   })
 
@@ -219,7 +219,7 @@ export function exportDashboardPDF(
       2: { halign: 'left' },
       3: { cellWidth: 45, fontStyle: 'bold' },
     },
-    headStyles: { fillColor: [18, 22, 28], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+    headStyles: { fillColor: [0, 0, 86], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
     bodyStyles: { fillColor: [225, 235, 216] },
     didParseCell: (data) => {
       if (data.section === 'body' && data.column.index === 3 && rows.length) {
@@ -300,7 +300,7 @@ export function exportRehabPlanPDF(
         ph.criteria ?? '—',
       ]),
       styles: { fontSize: 8, cellPadding: 2 },
-      headStyles: { fillColor: [18, 22, 28], textColor: [180, 141, 252], fontStyle: 'bold' },
+      headStyles: { fillColor: [0, 0, 86], textColor: [255, 255, 255], fontStyle: 'bold' },
       columnStyles: { 4: { cellWidth: 90 } },
       margin: { left: 14, right: 14 },
     })
@@ -349,7 +349,7 @@ export function exportRehabPlanPDF(
         }),
       ]),
       styles: { fontSize: 7, cellPadding: 2, valign: 'top' },
-      headStyles: { fillColor: [18, 22, 28], textColor: [0, 229, 160], fontStyle: 'bold', halign: 'center' },
+      headStyles: { fillColor: [0, 0, 86], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
       columnStyles: { 0: { fontStyle: 'bold', cellWidth: 18 } },
       margin: { left: 14, right: 14 },
     })

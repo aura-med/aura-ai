@@ -44,7 +44,7 @@ const AVAIL_CONFIG: Record<AvailabilityStatus, { label: string; color: string; b
   modified:   { label: 'Modificado',     color: 'var(--sophi-warn)',    bg: 'rgba(255,196,0,0.12)'        },
   monitoring: { label: 'Monitorização',  color: 'var(--sophi-blue)',    bg: 'var(--sophi-blue-bg)'         },
   delayed:    { label: 'Adiado',         color: '#ff9330',             bg: 'rgba(255,147,48,0.12)'       },
-  recovered:  { label: 'Recuperado',     color: 'var(--sophi-green)',   bg: 'rgba(0,229,160,0.10)'        },
+  recovered:  { label: 'Recuperado',     color: 'var(--sophi-green)',   bg: 'color-mix(in srgb, var(--sophi-green) 10%, transparent)'        },
 }
 
 function AvailBadge({ status }: { status: AvailabilityStatus | null }) {
@@ -216,7 +216,7 @@ function RtpMetricsPanel({
       {strengthOk && sprintOk && (
         <p
           className="text-[11px] font-semibold text-center py-1 rounded-md"
-          style={{ background: 'rgba(0,229,160,0.10)', color: 'var(--sophi-green)' }}
+          style={{ background: 'color-mix(in srgb, var(--sophi-green) 10%, transparent)', color: 'var(--sophi-green)' }}
         >
           ✓ Todos os critérios de RTP cumpridos — pronto para autorização médica
         </p>
@@ -457,8 +457,8 @@ function PhaseStepper({
                 canAdvance ? 'hover:opacity-90 cursor-pointer' : 'opacity-40 cursor-not-allowed',
               )}
               style={{
-                background: canAdvance ? 'var(--sophi-green)' : 'var(--sophi-bg3)',
-                color: canAdvance ? '#000' : 'var(--sophi-text3)',
+                background: canAdvance ? 'var(--sophi-primary)' : 'var(--sophi-bg3)',
+                color: canAdvance ? 'var(--sophi-on-primary)' : 'var(--sophi-text3)',
               }}
               title={!allChecked ? 'Cumprir todos os critérios para avançar' : undefined}
             >
@@ -477,8 +477,8 @@ function PhaseStepper({
                 canAdvance ? 'hover:opacity-90 cursor-pointer' : 'opacity-40 cursor-not-allowed',
               )}
               style={{
-                background: canAdvance ? 'var(--sophi-green)' : 'var(--sophi-bg3)',
-                color: canAdvance ? '#000' : 'var(--sophi-text3)',
+                background: canAdvance ? 'var(--sophi-primary)' : 'var(--sophi-bg3)',
+                color: canAdvance ? 'var(--sophi-on-primary)' : 'var(--sophi-text3)',
               }}
             >
               <CheckCircle2 size={13} />
@@ -583,7 +583,7 @@ function ClinicalJournal({
                     type="button"
                     onClick={() => handleSaveEdit(i)}
                     className="px-2.5 py-1 rounded-md text-[11px] font-semibold"
-                    style={{ background: 'var(--sophi-green)', color: '#000' }}
+                    style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
                   >
                     Guardar
                   </button>
@@ -654,7 +654,7 @@ function ClinicalJournal({
           onClick={handleAdd}
           disabled={!text.trim() || saving}
           className="self-end px-3 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-40"
-          style={{ background: 'var(--sophi-green)', color: '#000' }}
+          style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
         >
           {saving ? '…' : 'Guardar'}
         </button>
@@ -885,7 +885,7 @@ export function InjuryAccordionRow({
           {injury?.osiics_code ? (
             <span
               className="font-mono font-bold text-[11px] px-2 py-1 rounded"
-              style={{ background: 'rgba(0,229,160,0.08)', color: 'var(--sophi-green)' }}
+              style={{ background: 'color-mix(in srgb, var(--sophi-green) 8%, transparent)', color: 'var(--sophi-green)' }}
             >
               {injury.osiics_code}
             </span>

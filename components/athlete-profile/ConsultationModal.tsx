@@ -104,7 +104,7 @@ export function ConsultationModal({ athleteId, consultation, onClose, onSaved, o
           <p className="text-sm font-bold" style={{ color: 'var(--sophi-text)' }}>
             {isEdit ? 'Editar Consulta' : 'Nova Consulta SOAP'}
           </p>
-          <button type="button" onClick={onClose} className="rounded-lg p-1 hover:bg-white/10 transition-colors">
+          <button type="button" onClick={onClose} className="rounded-lg p-1 hover:bg-[var(--sophi-bg4)] transition-colors">
             <X size={15} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
@@ -121,7 +121,7 @@ export function ConsultationModal({ athleteId, consultation, onClose, onSaved, o
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-accent)]"
                 style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }}
               />
             </div>
@@ -133,7 +133,7 @@ export function ConsultationModal({ athleteId, consultation, onClose, onSaved, o
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-accent)]"
                 style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }}
               />
             </div>
@@ -146,7 +146,7 @@ export function ConsultationModal({ athleteId, consultation, onClose, onSaved, o
                 value={clinician}
                 onChange={(e) => setClinician(e.target.value)}
                 placeholder="Nome do clínico"
-                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-accent)]"
                 style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }}
               />
             </div>
@@ -163,7 +163,7 @@ export function ConsultationModal({ athleteId, consultation, onClose, onSaved, o
                 value={soap[key]}
                 onChange={(e) => setSoap((prev) => ({ ...prev, [key]: e.target.value }))}
                 placeholder={placeholder}
-                className="w-full rounded-lg border px-3 py-2 text-sm resize-none outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+                className="w-full rounded-lg border px-3 py-2 text-sm resize-none outline-none focus:ring-1 focus:ring-[var(--sophi-accent)]"
                 style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }}
               />
             </div>
@@ -200,7 +200,7 @@ export function ConsultationModal({ athleteId, consultation, onClose, onSaved, o
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg text-xs font-medium border transition-colors hover:bg-white/5"
+              className="px-4 py-2 rounded-lg text-xs font-medium border transition-colors hover:bg-[var(--sophi-accent-bg)]"
               style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)' }}
             >
               Cancelar
@@ -210,7 +210,7 @@ export function ConsultationModal({ athleteId, consultation, onClose, onSaved, o
               onClick={handleSave}
               disabled={saving}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-colors"
-              style={{ background: 'var(--sophi-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
             >
               {saving && <Loader2 size={12} className="animate-spin" />}
               {isEdit ? 'Guardar' : 'Criar Consulta'}

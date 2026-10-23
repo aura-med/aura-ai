@@ -20,7 +20,7 @@ interface SquadRow {
 }
 
 const ROLE_COLORS: Record<string, { bg: string; color: string }> = {
-  owner:         { bg: 'rgba(0,229,160,0.12)',  color: 'var(--sophi-green)' },
+  owner:         { bg: 'color-mix(in srgb, var(--sophi-accent) 12%, transparent)',  color: 'var(--sophi-accent)' },
   doctor:        { bg: 'rgba(77,154,255,0.12)', color: 'var(--sophi-blue)' },
   physio:        { bg: 'rgba(77,154,255,0.12)', color: 'var(--sophi-blue)' },
   masseur:       { bg: 'rgba(77,154,255,0.12)', color: 'var(--sophi-blue)' },
@@ -30,7 +30,7 @@ const ROLE_COLORS: Record<string, { bg: string; color: string }> = {
   director:      { bg: 'rgba(180,141,252,0.12)', color: 'var(--sophi-purple)' },
   scout:         { bg: 'rgba(180,141,252,0.12)', color: 'var(--sophi-purple)' },
   team_manager:  { bg: 'rgba(180,141,252,0.12)', color: 'var(--sophi-purple)' },
-  athlete:       { bg: 'rgba(255,255,255,0.08)', color: 'var(--sophi-text2)' },
+  athlete:       { bg: 'var(--sophi-bg4)', color: 'var(--sophi-text2)' },
 }
 
 const ROLE_OPTIONS: UserRole[] = [
@@ -119,9 +119,9 @@ function SquadAssignmentDropdown({
                     {saving === squad.id ? <Loader2 size={11} className="animate-spin shrink-0" /> : (
                       <span
                         className="w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center"
-                        style={{ borderColor: 'var(--sophi-border2)', background: assigned ? 'var(--sophi-green)' : 'transparent' }}
+                        style={{ borderColor: 'var(--sophi-border2)', background: assigned ? 'var(--sophi-accent)' : 'transparent' }}
                       >
-                        {assigned && <Check size={10} color="#000" />}
+                        {assigned && <Check size={10} color="var(--sophi-on-accent)" />}
                       </span>
                     )}
                     {squad.name}
@@ -293,7 +293,7 @@ export default function UsersPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
           {t('title')}
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--sophi-text3)' }}>{t('description')}</p>
@@ -305,7 +305,7 @@ export default function UsersPage() {
         style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
       >
         <div className="flex items-center gap-2">
-          <UserPlus size={14} style={{ color: 'var(--sophi-green)' }} />
+          <UserPlus size={14} style={{ color: 'var(--sophi-accent)' }} />
           <span className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>{t('inviteUser')}</span>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -314,7 +314,7 @@ export default function UsersPage() {
             <input
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
-              placeholder="email@exemplo.com"
+              placeholder="user@example.com"
               type="email"
               className="w-full px-3 py-2 rounded-md text-sm border focus:outline-none"
               style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)', fontFamily: 'var(--font-mono)' }}
@@ -373,7 +373,7 @@ export default function UsersPage() {
                 <div className="flex items-center gap-3">
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                    style={{ background: 'rgba(0,229,160,0.1)', color: 'var(--sophi-green)' }}
+                    style={{ background: 'color-mix(in srgb, var(--sophi-accent) 10%, transparent)', color: 'var(--sophi-accent)' }}
                   >
                     {(u.full_name ?? '?')[0].toUpperCase()}
                   </div>

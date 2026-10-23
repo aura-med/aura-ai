@@ -16,7 +16,7 @@ import type { AthleteAvailabilityStatus } from '@/types'
 // attach a diagnosis — regardless of where it's opened from.
 
 export const STATUS_CONFIG: Record<AthleteAvailabilityStatus, { label: string; color: string; bg: string; dot: string }> = {
-  available:       { label: 'Disponível',      color: 'var(--sophi-green)',  bg: 'rgba(0,229,160,0.1)',   dot: '#00e5a0' },
+  available:       { label: 'Disponível',      color: 'var(--sophi-green)',  bg: 'color-mix(in srgb, var(--sophi-green) 10%, transparent)',   dot: 'var(--sophi-green)' },
   evaluation:      { label: 'Em Avaliação',    color: 'var(--sophi-warn)',   bg: 'rgba(246,173,85,0.1)',  dot: '#f6ad55' },
   load_management: { label: 'Gestão de Carga', color: 'var(--sophi-orange)', bg: 'rgba(204,85,0,0.1)',    dot: '#cc5500' },
   unavailable:     { label: 'Indisponível',    color: 'var(--sophi-danger)', bg: 'rgba(255,77,109,0.1)',  dot: '#ff4d6d' },
@@ -340,7 +340,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                   <button
                     onClick={() => setConfirmResolveDiagnosis(true)}
                     disabled={resolvingDiagnosis}
-                    style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, padding: '3px 7px', borderRadius: 6, border: '1px solid rgba(0,229,160,0.3)', background: 'rgba(0,229,160,0.06)', color: 'var(--sophi-green)', cursor: 'pointer', flexShrink: 0 }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, padding: '3px 7px', borderRadius: 6, border: '1px solid color-mix(in srgb, var(--sophi-green) 30%, transparent)', background: 'color-mix(in srgb, var(--sophi-green) 6%, transparent)', color: 'var(--sophi-green)', cursor: 'pointer', flexShrink: 0 }}
                   >
                     <CheckCircle2 size={9} />
                     Resolver diagnóstico
@@ -437,7 +437,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                       <button
                         onClick={handleUpdateRecord}
                         disabled={isPending}
-                        style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: 'none', background: 'var(--sophi-green)', color: '#000', fontWeight: 700, cursor: 'pointer' }}
+                        style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: 'none', background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)', fontWeight: 700, cursor: 'pointer' }}
                       >
                         {isPending ? 'A guardar...' : 'Guardar'}
                       </button>
@@ -524,7 +524,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                 <button
                   onClick={handleAddRecord}
                   disabled={isPending}
-                  style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: 'none', background: 'var(--sophi-green)', color: '#000', fontWeight: 700, cursor: 'pointer' }}
+                  style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: 'none', background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)', fontWeight: 700, cursor: 'pointer' }}
                 >
                   {isPending ? 'A guardar...' : 'Guardar'}
                 </button>
@@ -638,7 +638,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                 <button
                   onClick={handleUpdate}
                   disabled={isPending}
-                  style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: 'none', background: 'var(--sophi-green)', color: '#000', fontWeight: 700, cursor: 'pointer' }}
+                  style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, border: 'none', background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)', fontWeight: 700, cursor: 'pointer' }}
                 >
                   {isPending ? 'A guardar...' : 'Guardar'}
                 </button>
@@ -706,7 +706,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                 <button
                   onClick={handleResolve}
                   disabled={isPending}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(0,229,160,0.3)', background: 'rgba(0,229,160,0.06)', color: 'var(--sophi-green)', cursor: 'pointer' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid color-mix(in srgb, var(--sophi-green) 30%, transparent)', background: 'color-mix(in srgb, var(--sophi-green) 6%, transparent)', color: 'var(--sophi-green)', cursor: 'pointer' }}
                 >
                   <Check size={11} />
                   Resolver

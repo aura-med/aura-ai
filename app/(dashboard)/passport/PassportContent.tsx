@@ -1,13 +1,16 @@
 'use client'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import type { PassportAthleteDTO } from '@/lib/dal/passport'
 import { togglePassportShare } from '@/lib/actions/passport'
 
 interface Props {
   initialAthletes: PassportAthleteDTO[]
+  orgName?: string | null
 }
 
-export function PassportContent({ initialAthletes }: Props) {
+export function PassportContent({ initialAthletes, orgName }: Props) {
+  const t = useTranslations('passport')
   const [athletes] = useState<PassportAthleteDTO[]>(initialAthletes)
   const [selected, setSelected] = useState<string>(initialAthletes[0]?.id ?? '')
   const [shared, setShared] = useState<Record<string, boolean>>({})
@@ -48,7 +51,7 @@ export function PassportContent({ initialAthletes }: Props) {
         <div className="g2">
           {/* Left: passport card */}
           <div>
-            <div className="card" style={{ marginBottom: 12, borderColor: isShareable ? 'rgba(0,229,160,0.3)' : 'var(--border)' }}>
+            <div className="card" style={{ marginBottom: 12, borderColor: isShareable ? 'color-mix(in srgb, var(--sophi-green) 30%, transparent)' : 'var(--border)' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
                 <div>
                   <div style={{ fontFamily: 'var(--display)', fontSize: 22, fontWeight: 900 }}>{athlete.name}</div>
@@ -120,14 +123,14 @@ export function PassportContent({ initialAthletes }: Props) {
               <div className="ctitle">Simulação — Novo clube recebe passaporte</div>
               <div style={{ background: 'var(--bg3)', borderRadius: 8, padding: 14, marginBottom: 12 }}>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text3)', letterSpacing: 1.5, marginBottom: 10 }}>
-                  CENÁRIO: TRANSFERÊNCIA PARA CLUBE CLIENTE SOPHI
+                  CENÁRIO: TRANSFERÊNCIA PARA CLUBE CLIENTE SOPHI SPORTS
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                   <div style={{ fontSize: 24 }}>🏟️</div>
                   <div><div style={{ fontSize: 13, fontWeight: 600 }}>Clube actual</div><div style={{ fontSize: 11, color: 'var(--text2)' }}>Clube actual</div></div>
                   <div style={{ fontSize: 20, color: 'var(--text3)' }}>→</div>
                   <div style={{ fontSize: 24 }}>🏟️</div>
-                  <div><div style={{ fontSize: 13, fontWeight: 600 }}>Novo Clube</div><div style={{ fontSize: 11, color: 'var(--text2)' }}>Cliente Sophi</div></div>
+                  <div><div style={{ fontSize: 13, fontWeight: 600 }}>Novo Clube</div><div style={{ fontSize: 11, color: 'var(--text2)' }}>Cliente Sophi Sports</div></div>
                 </div>
                 <button onClick={() => setShared(s => ({ ...s, [selected]: !isShared }))}
                   style={{ width: '100%', padding: 10, borderRadius: 8, border: 'none', marginBottom: 10, cursor: 'pointer', fontWeight: 600, background: isShared ? 'var(--green2)' : 'var(--bg4)', color: isShared ? '#000' : 'var(--text2)', fontSize: 13 }}>
@@ -135,22 +138,22 @@ export function PassportContent({ initialAthletes }: Props) {
                 </button>
 
                 {isShared ? (
-                  <div style={{ background: 'var(--green4)', border: '1px solid rgba(0,229,160,0.2)', borderRadius: 8, padding: 12 }}>
+                  <div style={{ background: 'var(--green4)', border: '1px solid color-mix(in srgb, var(--sophi-green) 20%, transparent)', borderRadius: 8, padding: 12 }}>
                     <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--green2)', letterSpacing: 1.5, marginBottom: 8 }}>NOVO CLUBE RECEBE:</div>
                     <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.8 }}>
                       ✓ Historial completo de lesões ({injuries.length} episódios)<br />
                       {perf?.vmax && <>✓ Vmax de referência: {perf.vmax} km/h<br /></>}
                       {(passport?.passport_data as { hrv_baseline_ms?: number } | undefined | null)?.hrv_baseline_ms && <>✓ HRV baseline: {(passport?.passport_data as { hrv_baseline_ms?: number })?.hrv_baseline_ms} ms<br /></>}
                       {profile && <>✓ Perfil de recuperação calibrado<br /></>}
-                      ✓ Verificado pela FPF
+                      ✓ {orgName ? t('verifiedBy', { org: orgName }) : t('verified')}
                     </div>
-                    <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(0,229,160,0.15)', fontSize: 11, color: 'var(--text3)' }}>
+                    <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid color-mix(in srgb, var(--sophi-green) 15%, transparent)', fontSize: 11, color: 'var(--text3)' }}>
                       Tempo de onboarding: 0 dias. Baseline imediato.
                     </div>
                   </div>
                 ) : (
                   <div style={{ background: 'var(--bg4)', borderRadius: 8, padding: 12, fontSize: 12, color: 'var(--text3)' }}>
-                    Sem Sophi: o novo clube começa do zero. Nenhum historial, nenhum baseline.
+                    Sem a Sophi Sports: o novo clube começa do zero. Nenhum historial, nenhum baseline.
                   </div>
                 )}
               </div>

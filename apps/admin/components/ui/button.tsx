@@ -5,7 +5,7 @@ type ButtonVariant = 'default' | 'outline' | 'ghost' | 'secondary'
 type ButtonSize = 'default' | 'sm' | 'icon' | 'icon-sm'
 
 const variantClass: Record<ButtonVariant, string> = {
-  default: 'border-transparent bg-[var(--sophi-green)] text-[var(--sophi-bg)] hover:opacity-85',
+  default: 'border-transparent bg-[var(--sophi-primary)] text-[var(--sophi-on-primary)] hover:opacity-85',
   outline: 'border-[var(--sophi-border2)] bg-transparent text-[var(--sophi-text2)] hover:bg-[var(--sophi-bg3)] hover:text-[var(--sophi-text)]',
   ghost: 'border-transparent bg-transparent text-[var(--sophi-text2)] hover:bg-[var(--sophi-bg3)] hover:text-[var(--sophi-text)]',
   secondary: 'border-transparent bg-[var(--sophi-bg3)] text-[var(--sophi-text)] hover:opacity-85',

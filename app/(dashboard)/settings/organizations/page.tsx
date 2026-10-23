@@ -85,7 +85,7 @@ export default function OrganizationsPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
           {t('title')}
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--sophi-text3)' }}>{t('description')}</p>
@@ -100,9 +100,9 @@ export default function OrganizationsPage() {
             <div className="flex items-center gap-3 pb-3 border-b" style={{ borderColor: 'var(--sophi-border)' }}>
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center"
-                style={{ background: 'rgba(0,229,160,0.1)' }}
+                style={{ background: 'color-mix(in srgb, var(--sophi-accent) 10%, transparent)' }}
               >
-                <Building2 size={18} style={{ color: 'var(--sophi-green)' }} />
+                <Building2 size={18} style={{ color: 'var(--sophi-accent)' }} />
               </div>
               <div>
                 <div className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>{org.name}</div>
@@ -151,7 +151,7 @@ export default function OrganizationsPage() {
               onClick={handleSave}
               disabled={saving}
               className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
-              style={{ background: 'var(--sophi-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
             >
               <Save size={14} />
               {saving ? tc('saving') : saved ? tc('saved') : tc('save')}

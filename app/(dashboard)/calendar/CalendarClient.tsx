@@ -157,7 +157,7 @@ export function CalendarClient({ dto }: { dto: CalendarPageDTO }) {
               <div style={{ fontSize: 11, fontWeight: 600, color: tCol, marginBottom: 3 }}>{ev.label ?? TYPE_LABELS[ev.event_type ?? 'rest'] ?? 'Evento'}</div>
               {ev.intensity && <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: INT_COLORS[ev.intensity] ?? 'var(--text2)' }}>{ev.intensity.toUpperCase()}</div>}
 
-              <div style={{ marginTop: 8, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ marginTop: 8, paddingTop: 6, borderTop: '1px solid var(--sophi-border)' }}>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text3)', marginBottom: 1 }}>
                   {isMatch ? 'Risco entrada' : 'Score proj.'}
                 </div>

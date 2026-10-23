@@ -30,9 +30,9 @@ export interface MonthCalendarEvent {
 const TYPE_STYLES: Record<string, { bg: string; color: string; border: string }> = {
   match:    { bg: 'rgba(246,173,85,0.14)', color: 'var(--sophi-warn)',   border: 'rgba(246,173,85,0.35)' },
   training: { bg: 'rgba(77,154,255,0.12)', color: 'var(--sophi-blue)',   border: 'rgba(77,154,255,0.30)' },
-  recovery: { bg: 'rgba(0,229,160,0.10)',  color: 'var(--sophi-green)',  border: 'rgba(0,229,160,0.28)' },
+  recovery: { bg: 'color-mix(in srgb, var(--sophi-green) 10%, transparent)',  color: 'var(--sophi-green)',  border: 'color-mix(in srgb, var(--sophi-green) 28%, transparent)' },
   travel:   { bg: 'rgba(180,141,252,0.12)', color: 'var(--sophi-purple)', border: 'rgba(180,141,252,0.30)' },
-  rest:     { bg: 'rgba(255,255,255,0.05)', color: 'var(--sophi-text3)', border: 'var(--sophi-border)' },
+  rest:     { bg: 'var(--sophi-bg4)', color: 'var(--sophi-text3)', border: 'var(--sophi-border)' },
 }
 
 const TYPE_OPTIONS: Array<{ value: string; label: string }> = [
@@ -237,7 +237,7 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
     <div style={{ marginTop: 4 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
           Calendário
         </span>
         {canManage && (
@@ -299,8 +299,8 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
                 minHeight: 84,
                 borderRadius: 8,
                 padding: '6px 6px 4px',
-                background: isToday ? 'rgba(0,229,160,0.07)' : isPast ? 'var(--sophi-bg)' : 'var(--sophi-bg2)',
-                border: isToday ? '1px solid var(--sophi-green)' : '1px solid var(--sophi-border)',
+                background: isToday ? 'color-mix(in srgb, var(--sophi-accent) 7%, transparent)' : isPast ? 'var(--sophi-bg)' : 'var(--sophi-bg2)',
+                border: isToday ? '1px solid var(--sophi-accent)' : '1px solid var(--sophi-border)',
                 opacity: isPast ? 0.5 : 1,
                 display: 'flex',
                 flexDirection: 'column',
@@ -327,8 +327,8 @@ export function MonthCalendar({ events, initialDate }: { events: MonthCalendarEv
                     fontSize: 10,
                     fontFamily: 'var(--font-dm-mono)',
                     fontWeight: isToday ? 700 : 400,
-                    color: isToday ? '#000' : 'var(--sophi-text3)',
-                    background: isToday ? 'var(--sophi-green)' : 'transparent',
+                    color: isToday ? 'var(--sophi-on-accent)' : 'var(--sophi-text3)',
+                    background: isToday ? 'var(--sophi-accent)' : 'transparent',
                     borderRadius: 999,
                     minWidth: 18,
                     height: 18,
@@ -493,7 +493,7 @@ function EventEditor({
     >
       <div style={{ background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', borderRadius: 14, padding: 20, width: '100%', maxWidth: 420 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
             {event ? 'Editar evento' : 'Adicionar evento'}
           </span>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sophi-text3)' }}>
@@ -516,7 +516,7 @@ function EventEditor({
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <div>
                 <label style={labelStyle}>Adversário</label>
-                <input type="text" placeholder="Ex: Benfica" value={opponent} onChange={(e) => setOpponent(e.target.value)} style={inputStyle} />
+                <input type="text" placeholder="Ex: Nome do adversário" value={opponent} onChange={(e) => setOpponent(e.target.value)} style={inputStyle} />
               </div>
               <div>
                 <label style={labelStyle}>Local</label>
@@ -541,7 +541,7 @@ function EventEditor({
             <button
               onClick={handleSave}
               disabled={saving || !eventDate}
-              style={{ fontSize: 12, fontWeight: 700, padding: '7px 14px', borderRadius: 7, border: 'none', background: 'var(--sophi-green)', color: '#000', cursor: 'pointer', opacity: saving ? 0.7 : 1 }}
+              style={{ fontSize: 12, fontWeight: 700, padding: '7px 14px', borderRadius: 7, border: 'none', background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)', cursor: 'pointer', opacity: saving ? 0.7 : 1 }}
             >
               {saving ? 'A guardar…' : 'Guardar'}
             </button>
@@ -719,7 +719,7 @@ function DayHistoryPanel({ date, squadId, onClose }: { date: string; squadId: st
     >
       <div style={{ background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', borderRadius: 14, padding: 20, width: '100%', maxWidth: 480, maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexShrink: 0 }}>
-          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
             {formatDisplayDate(date)}
           </span>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sophi-text3)' }}>

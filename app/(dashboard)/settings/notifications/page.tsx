@@ -29,7 +29,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
     <button
       onClick={() => onChange(!checked)}
       className="relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors"
-      style={{ background: checked ? 'var(--sophi-green)' : 'var(--sophi-border2)' }}
+      style={{ background: checked ? 'var(--sophi-accent)' : 'var(--sophi-border2)' }}
       role="switch"
       aria-checked={checked}
     >
@@ -114,7 +114,7 @@ export default function NotificationsPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
           {t('title')}
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--sophi-text3)' }}>{t('description')}</p>
@@ -145,7 +145,7 @@ export default function NotificationsPage() {
         onClick={handleSave}
         disabled={saving}
         className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
-        style={{ background: 'var(--sophi-green)', color: '#000' }}
+        style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
       >
         <Save size={14} />
         {saving ? tc('saving') : saved ? tc('saved') : tc('save')}

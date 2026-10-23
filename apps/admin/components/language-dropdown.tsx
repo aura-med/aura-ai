@@ -31,7 +31,7 @@ export function LanguageDropdown({ currentLocale }: LanguageDropdownProps) {
           onClick={() => setLocale(code)}
           style={
             currentLocale === code
-              ? { background: 'var(--sophi-green-bg)', color: 'var(--sophi-green)' }
+              ? { background: 'var(--sophi-accent-bg)', color: 'var(--sophi-accent)' }
               : { color: 'var(--sophi-text3)' }
           }
           type="button"

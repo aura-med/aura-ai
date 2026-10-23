@@ -76,8 +76,8 @@ export function RtpCriteriaSection({ planId, initialCriteria, canEdit }: RtpCrit
           <button
             type="button"
             onClick={() => setShowAdd((v) => !v)}
-            className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]"
-            style={{ color: 'var(--sophi-green)' }}
+            className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-accent-bg)]"
+            style={{ color: 'var(--sophi-accent)' }}
           >
             <Plus size={10} /> Adicionar
           </button>
@@ -116,7 +116,7 @@ export function RtpCriteriaSection({ planId, initialCriteria, canEdit }: RtpCrit
                 type="button"
                 onClick={() => remove(c.id)}
                 disabled={isPending}
-                className="shrink-0 p-0.5 rounded hover:bg-white/10 opacity-40 hover:opacity-100 transition-opacity"
+                className="shrink-0 p-0.5 rounded hover:bg-[var(--sophi-bg4)] opacity-40 hover:opacity-100 transition-opacity"
               >
                 <Trash2 size={11} style={{ color: 'var(--sophi-danger)' }} />
               </button>
@@ -142,7 +142,7 @@ export function RtpCriteriaSection({ planId, initialCriteria, canEdit }: RtpCrit
                       const next: RtpCriterion = { id: crypto.randomUUID(), label: preset, done: false }
                       persist([...criteria, next])
                     }}
-                    className="text-[10px] px-2 py-1 rounded-full border hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)] transition-colors"
+                    className="text-[10px] px-2 py-1 rounded-full border hover:border-[var(--sophi-accent)] hover:text-[var(--sophi-accent)] transition-colors"
                     style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)', background: 'var(--sophi-bg3)' }}
                   >
                     + {preset}
@@ -170,7 +170,7 @@ export function RtpCriteriaSection({ planId, initialCriteria, canEdit }: RtpCrit
                 onClick={addCriterion}
                 disabled={!newLabel.trim() || isPending}
                 className="flex items-center gap-1 text-[10px] font-bold px-2 py-1.5 rounded-lg"
-                style={{ background: 'var(--sophi-green)', color: '#000', opacity: !newLabel.trim() ? 0.5 : 1 }}
+                style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)', opacity: !newLabel.trim() ? 0.5 : 1 }}
               >
                 {isPending ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
                 OK
@@ -178,7 +178,7 @@ export function RtpCriteriaSection({ planId, initialCriteria, canEdit }: RtpCrit
               <button
                 type="button"
                 onClick={() => { setShowAdd(false); setNewLabel('') }}
-                className="text-[10px] px-2 py-1.5 rounded-lg border hover:bg-white/5"
+                className="text-[10px] px-2 py-1.5 rounded-lg border hover:bg-[var(--sophi-accent-bg)]"
                 style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text3)' }}
               >
                 Fechar

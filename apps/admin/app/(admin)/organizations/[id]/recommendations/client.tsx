@@ -33,8 +33,8 @@ function ActionFeedback({ success, error }: { success?: boolean; error?: string 
     <div
       className="flex items-center gap-2 rounded-md px-3 py-2 text-xs"
       style={{
-        background: success ? 'rgba(0,229,160,0.08)' : 'rgba(239,68,68,0.08)',
-        color: success ? 'var(--sophi-green)' : '#ef4444',
+        background: success ? 'color-mix(in srgb, var(--sophi-green) 8%, transparent)' : 'color-mix(in srgb, var(--risk-critical) 8%, transparent)',
+        color: success ? 'var(--sophi-green)' : 'var(--risk-critical)',
       }}
     >
       {success ? <Check size={12} /> : <AlertTriangle size={12} />}
@@ -51,7 +51,7 @@ function ThresholdsEditor({ orgId, thresholds }: { orgId: string; thresholds: { 
   const [feedback, setFeedback] = useState<{ success?: boolean; error?: string }>({})
 
   const RISK_COLORS: Record<string, string> = {
-    medium: '#f59e0b', high: '#f97316', critical: '#ef4444',
+    medium: 'var(--risk-medium)', high: 'var(--risk-high)', critical: 'var(--risk-critical)',
   }
 
   function handleSave() {
@@ -76,9 +76,9 @@ function ThresholdsEditor({ orgId, thresholds }: { orgId: string; thresholds: { 
       <div className="relative h-5 w-full overflow-hidden rounded-full" style={{ background: 'var(--sophi-bg3)' }}>
         {[
           { from: 0,             to: vals.medium,   color: 'var(--sophi-green)', label: 'Low' },
-          { from: vals.medium,   to: vals.high,     color: '#f59e0b',           label: 'Medium' },
-          { from: vals.high,     to: vals.critical, color: '#f97316',           label: 'High' },
-          { from: vals.critical, to: 100,           color: '#ef4444',           label: 'Critical' },
+          { from: vals.medium,   to: vals.high,     color: 'var(--risk-medium)',           label: 'Medium' },
+          { from: vals.high,     to: vals.critical, color: 'var(--risk-high)',           label: 'High' },
+          { from: vals.critical, to: 100,           color: 'var(--risk-critical)',           label: 'Critical' },
         ].map((band) => (
           <div
             key={band.label}
@@ -86,7 +86,7 @@ function ThresholdsEditor({ orgId, thresholds }: { orgId: string; thresholds: { 
             style={{
               left:       `${band.from}%`,
               width:      `${band.to - band.from}%`,
-              background: `${band.color}40`,
+              background: `color-mix(in srgb, ${band.color} 25%, transparent)`,
               color:      band.color,
             }}
           >
@@ -119,7 +119,7 @@ function ThresholdsEditor({ orgId, thresholds }: { orgId: string; thresholds: { 
           onClick={handleSave}
           disabled={isPending}
           className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold"
-          style={{ background: 'var(--sophi-green)', color: 'var(--sophi-bg)' }}
+          style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
         >
           <Save size={13} />
           {isPending ? 'A guardar...' : 'Guardar limiares'}
@@ -179,7 +179,7 @@ function WeightsEditor({ orgId, weights, weightsSum }: { orgId: string; weights:
                 </label>
                 <span
                   className="text-xs font-bold"
-                  style={{ color: 'var(--sophi-green)', fontFamily: 'var(--font-dm-mono)' }}
+                  style={{ color: 'var(--sophi-accent)', fontFamily: 'var(--font-dm-mono)' }}
                 >
                   {pct}%
                 </span>
@@ -191,12 +191,12 @@ function WeightsEditor({ orgId, weights, weightsSum }: { orgId: string; weights:
                 step={0.01}
                 value={w}
                 onChange={(e) => handleChange(variable, parseFloat(e.target.value))}
-                className="w-full accent-[var(--sophi-green)]"
+                className="w-full accent-[var(--sophi-accent)]"
               />
               <div className="h-1.5 w-full overflow-hidden rounded-full" style={{ background: 'var(--sophi-bg3)' }}>
                 <div
                   className="h-full rounded-full transition-all"
-                  style={{ width: `${(w / 0.40) * 100}%`, background: 'var(--sophi-green)' }}
+                  style={{ width: `${(w / 0.40) * 100}%`, background: 'var(--sophi-accent)' }}
                 />
               </div>
             </div>
@@ -208,8 +208,8 @@ function WeightsEditor({ orgId, weights, weightsSum }: { orgId: string; weights:
         <div
           className="rounded px-2 py-1 text-xs font-bold"
           style={{
-            background: sumOk ? 'rgba(0,229,160,0.1)' : 'rgba(239,68,68,0.1)',
-            color: sumOk ? 'var(--sophi-green)' : '#ef4444',
+            background: sumOk ? 'color-mix(in srgb, var(--sophi-green) 10%, transparent)' : 'color-mix(in srgb, var(--risk-critical) 10%, transparent)',
+            color: sumOk ? 'var(--sophi-green)' : 'var(--risk-critical)',
             fontFamily: 'var(--font-dm-mono)',
           }}
         >
@@ -219,7 +219,7 @@ function WeightsEditor({ orgId, weights, weightsSum }: { orgId: string; weights:
           onClick={handleSave}
           disabled={isPending || !sumOk}
           className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold disabled:opacity-40"
-          style={{ background: 'var(--sophi-green)', color: 'var(--sophi-bg)' }}
+          style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
         >
           <Save size={13} />
           {isPending ? 'A guardar...' : 'Guardar pesos'}
@@ -266,7 +266,7 @@ function OverrideForm({ orgId }: { orgId: string }) {
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors hover:border-[var(--sophi-green)]"
+          className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors hover:border-[var(--sophi-accent)]"
           style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}
         >
           <Plus size={13} />
@@ -334,7 +334,7 @@ function OverrideForm({ orgId }: { orgId: string }) {
 
           {form.override_type === 'deactivate' && (
             <div>
-              <label className="mb-1 block text-xs font-medium" style={{ color: '#ef4444' }}>
+              <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--risk-critical)' }}>
                 Clinical justification * (required for deactivations — logged to audit trail)
               </label>
               <textarea
@@ -351,9 +351,9 @@ function OverrideForm({ orgId }: { orgId: string }) {
           {form.override_type === 'text_only' && (
             <div
               className="flex items-start gap-2 rounded-md p-3 text-xs"
-              style={{ background: 'rgba(0,229,160,0.06)', color: 'var(--sophi-text2)' }}
+              style={{ background: 'color-mix(in srgb, var(--sophi-accent) 6%, transparent)', color: 'var(--sophi-text2)' }}
             >
-              <AlertTriangle size={12} style={{ color: 'var(--sophi-green)', flexShrink: 0, marginTop: 1 }} />
+              <AlertTriangle size={12} style={{ color: 'var(--sophi-accent)', flexShrink: 0, marginTop: 1 }} />
               Text-only override preserves the clinical direction — the recommendation's intent cannot be altered.
             </div>
           )}
@@ -361,7 +361,7 @@ function OverrideForm({ orgId }: { orgId: string }) {
           {form.override_type === 'deactivate' && (
             <div
               className="flex items-start gap-2 rounded-md p-3 text-xs"
-              style={{ background: 'rgba(239,68,68,0.06)', color: '#ef4444' }}
+              style={{ background: 'color-mix(in srgb, var(--risk-critical) 6%, transparent)', color: 'var(--risk-critical)' }}
             >
               <AlertTriangle size={12} style={{ flexShrink: 0, marginTop: 1 }} />
               Safety-critical rules (locked) cannot be deactivated regardless of override. Only rules marked as overridable will be hidden.
@@ -373,7 +373,7 @@ function OverrideForm({ orgId }: { orgId: string }) {
               onClick={handleSubmit}
               disabled={isPending}
               className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold disabled:opacity-40"
-              style={{ background: 'var(--sophi-green)', color: 'var(--sophi-bg)' }}
+              style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
             >
               <Save size={13} />
               {isPending ? 'A guardar...' : 'Save override'}
@@ -435,7 +435,7 @@ export function RecommendationConfigClient({
                 onClick={() => handleContextSave('context_type', ct)}
                 className="flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold transition-all"
                 style={contextType === ct
-                  ? { borderColor: 'var(--sophi-green)', color: 'var(--sophi-green)', background: 'rgba(0,229,160,0.08)' }
+                  ? { borderColor: 'var(--sophi-accent)', color: 'var(--sophi-accent)', background: 'color-mix(in srgb, var(--sophi-accent) 8%, transparent)' }
                   : { borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }
                 }
               >
@@ -449,7 +449,7 @@ export function RecommendationConfigClient({
                 onClick={() => handleContextSave('language', lang)}
                 className="rounded-md border px-3 py-2 text-sm font-semibold uppercase transition-all"
                 style={language === lang
-                  ? { borderColor: 'var(--sophi-green)', color: 'var(--sophi-green)', background: 'rgba(0,229,160,0.08)' }
+                  ? { borderColor: 'var(--sophi-accent)', color: 'var(--sophi-accent)', background: 'color-mix(in srgb, var(--sophi-accent) 8%, transparent)' }
                   : { borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }
                 }
               >
@@ -461,7 +461,7 @@ export function RecommendationConfigClient({
           {contextType === 'federation' && (
             <div
               className="rounded-md p-3 text-xs"
-              style={{ background: 'rgba(245,158,11,0.08)', color: '#f59e0b' }}
+              style={{ background: 'color-mix(in srgb, var(--risk-medium) 8%, transparent)', color: 'var(--risk-medium)' }}
             >
               ⚠ Federation context: ACWR is structurally limited in early camp days (insufficient chronic window).
               Within-camp metrics and the Day 1 arrival protocol substitute for canonical ACWR.

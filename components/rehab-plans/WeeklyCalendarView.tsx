@@ -127,7 +127,7 @@ export function WeeklyCalendarView({ plans, canEdit, onCellClick }: WeeklyCalend
         </button>
         <button
           onClick={() => setWeekStart(mondayOf(todayStr()))}
-          style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', padding: '4px 10px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-green)', cursor: 'pointer', marginLeft: 4 }}
+          style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', padding: '4px 10px', borderRadius: 6, border: '1px solid var(--sophi-border)', background: 'transparent', color: 'var(--sophi-accent)', cursor: 'pointer', marginLeft: 4 }}
         >
           Esta semana
         </button>
@@ -155,11 +155,11 @@ export function WeeklyCalendarView({ plans, canEdit, onCellClick }: WeeklyCalend
                   <th key={date} style={{
                     padding: '6px 4px', textAlign: 'center',
                     borderBottom: '1px solid var(--sophi-border)',
-                    background: h.isToday ? 'rgba(0,229,160,0.05)' : 'var(--sophi-bg2)',
+                    background: h.isToday ? 'color-mix(in srgb, var(--sophi-accent) 5%, transparent)' : 'var(--sophi-bg2)',
                     borderLeft: '1px solid var(--sophi-border)',
                   }}>
-                    <div style={{ fontSize: 9, fontFamily: 'var(--font-dm-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', color: h.isToday ? 'var(--sophi-green)' : 'var(--sophi-text3)' }}>{h.dow}</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: h.isToday ? 'var(--sophi-green)' : 'var(--sophi-text)', marginTop: 1 }}>{h.day}</div>
+                    <div style={{ fontSize: 9, fontFamily: 'var(--font-dm-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', color: h.isToday ? 'var(--sophi-accent)' : 'var(--sophi-text3)' }}>{h.dow}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: h.isToday ? 'var(--sophi-accent)' : 'var(--sophi-text)', marginTop: 1 }}>{h.day}</div>
                   </th>
                 )
               })}
@@ -193,7 +193,7 @@ export function WeeklyCalendarView({ plans, canEdit, onCellClick }: WeeklyCalend
                       padding: 0, verticalAlign: 'top',
                       borderBottom: '1px solid var(--sophi-border)',
                       borderLeft: '1px solid var(--sophi-border)',
-                      background: h.isToday ? 'rgba(0,229,160,0.03)' : undefined,
+                      background: h.isToday ? 'color-mix(in srgb, var(--sophi-accent) 3%, transparent)' : undefined,
                       minWidth: 80,
                     }}>
                       {PERIODS.map((period) => {
@@ -210,9 +210,9 @@ export function WeeklyCalendarView({ plans, canEdit, onCellClick }: WeeklyCalend
                               minHeight: 30,
                               borderBottom: period === 'morning' ? '1px dashed var(--sophi-border)' : 'none',
                               cursor: canEdit ? 'pointer' : 'default',
-                              background: isRestDay ? 'rgba(246,173,85,0.05)' : isEmpty ? undefined : 'rgba(0,229,160,0.04)',
+                              background: isRestDay ? 'rgba(246,173,85,0.05)' : isEmpty ? undefined : 'color-mix(in srgb, var(--sophi-green) 4%, transparent)',
                             }}
-                            className={canEdit ? 'hover:bg-white/5 transition-colors' : ''}
+                            className={canEdit ? 'hover:bg-[var(--sophi-accent-bg)] transition-colors' : ''}
                           >
                             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
                               <span style={{ color: period === 'morning' ? 'var(--sophi-warn)' : 'var(--sophi-purple)', opacity: 0.7, flexShrink: 0, marginTop: 1 }}>
@@ -244,7 +244,7 @@ export function WeeklyCalendarView({ plans, canEdit, onCellClick }: WeeklyCalend
           <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: 'rgba(246,173,85,0.3)' }} /> Folga
         </span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: 'rgba(0,229,160,0.2)' }} /> Sessão planificada
+          <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: 'color-mix(in srgb, var(--sophi-accent) 20%, transparent)' }} /> Sessão planificada
         </span>
       </div>
     </div>

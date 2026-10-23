@@ -17,8 +17,8 @@ export function ToastContainer({ toasts, dismiss }: Props) {
           key={t.id}
           className="flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl pointer-events-auto"
           style={{
-            background: t.type === 'success' ? 'rgba(0,229,160,0.08)' : 'rgba(255,77,109,0.08)',
-            borderColor: t.type === 'success' ? 'rgba(0,229,160,0.25)' : 'rgba(255,77,109,0.25)',
+            background: t.type === 'success' ? 'color-mix(in srgb, var(--sophi-green) 8%, transparent)' : 'rgba(255,77,109,0.08)',
+            borderColor: t.type === 'success' ? 'color-mix(in srgb, var(--sophi-green) 25%, transparent)' : 'rgba(255,77,109,0.25)',
             backdropFilter: 'blur(12px)',
             minWidth: '280px',
           }}

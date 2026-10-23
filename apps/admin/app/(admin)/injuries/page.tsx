@@ -16,7 +16,7 @@ import type { OsiicsCode } from '@/types'
 const SEVERITY_COLOR: Record<string, string> = {
   Minor:    'var(--sophi-green)',
   Moderate: 'var(--sophi-warn)',
-  Major:    '#ff9330',
+  Major:    'var(--risk-high)',
   Severe:   'var(--sophi-danger)',
 }
 
@@ -126,7 +126,7 @@ export default function InjuriesPage() {
         <div>
           <h1
             className="text-2xl font-bold"
-            style={{ fontFamily: 'var(--font-syne)', color: 'var(--sophi-text)' }}
+            style={{ fontFamily: 'var(--font-display)', color: 'var(--sophi-text)' }}
           >
             Gestão de Lesões
           </h1>
@@ -296,7 +296,7 @@ export default function InjuriesPage() {
                     <td className="px-4 py-3">
                       <span
                         className="font-mono font-bold text-xs px-2 py-1 rounded"
-                        style={{ background: 'rgba(0,229,160,0.08)', color: 'var(--sophi-green)' }}
+                        style={{ background: 'color-mix(in srgb, var(--sophi-accent) 8%, transparent)', color: 'var(--sophi-accent)' }}
                       >
                         {c.code}
                       </span>

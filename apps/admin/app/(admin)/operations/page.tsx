@@ -36,7 +36,7 @@ export default async function OperationsPage() {
                   <div className="text-sm" style={{ color: 'var(--sophi-text)' }}>{org.name}</div>
                   <div className="text-xs" style={{ color: 'var(--sophi-text3)' }}>{org.last_data_at ? formatDateTime(org.last_data_at) : 'No check-ins found'}</div>
                 </div>
-                <Link href={`/organizations/${org.id}`} style={{ color: 'var(--sophi-green)' }} className="text-xs font-semibold">Open</Link>
+                <Link href={`/organizations/${org.id}`} style={{ color: 'var(--sophi-accent)' }} className="text-xs font-semibold">Open</Link>
               </div>
             ))}
           </div>

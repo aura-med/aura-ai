@@ -30,9 +30,9 @@ export function AuthControls() {
             onClick={() => handleLocale(loc)}
             className="text-[10px] font-medium px-1.5 py-0.5 rounded uppercase transition-colors"
             style={{
-              background: locale === loc ? 'var(--sophi-green)' : 'transparent',
+              background: locale === loc ? 'var(--sophi-primary)' : 'transparent',
               color: locale === loc ? 'var(--sophi-bg)' : 'var(--sophi-text3)',
-              border: `1px solid ${locale === loc ? 'var(--sophi-green)' : 'var(--sophi-border2)'}`,
+              border: `1px solid ${locale === loc ? 'var(--sophi-primary)' : 'var(--sophi-border2)'}`,
             }}
           >
             {loc}

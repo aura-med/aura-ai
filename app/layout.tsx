@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { DM_Mono, Inter, Syne } from "next/font/google";
+import { DM_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getLocale } from 'next-intl/server'
 
-const inter = Inter({
-  variable: "--font-inter",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 const dmMono = DM_Mono({
@@ -17,13 +18,8 @@ const dmMono = DM_Mono({
   weight: ["300", "400", "500"],
 });
 
-const syne = Syne({
-  variable: "--font-syne",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Sophi — Health & Performance Intelligence",
+  title: "Sophi Sports — Health & Performance Intelligence",
   description: "Predictive injury risk management platform for elite football",
 };
 
@@ -35,8 +31,17 @@ export default function RootLayout({
   return (
     <html
       lang="pt"
-      className={`dark ${inter.variable} ${dmMono.variable} ${syne.variable} h-full`}
+      className={`light ${poppins.variable} ${dmMono.variable} h-full`}
+      suppressHydrationWarning
     >
+      <head>
+        {/* Apply the persisted theme before first paint (default: light) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var s=JSON.parse(localStorage.getItem('sophi-ui')||'{}');var t=s&&s.state&&s.state.theme==='dark'?'dark':'light';var c=document.documentElement.classList;c.remove('light','dark');c.add(t);}catch(e){}`,
+          }}
+        />
+      </head>
       <body className="h-full antialiased">
         <Suspense fallback={null}>
           <LocaleProviders>{children}</LocaleProviders>

@@ -25,14 +25,14 @@ interface Props {
 }
 
 const RISK_CONFIG = {
-  low:      { color: 'var(--sophi-green)',  bg: 'rgba(0,229,160,0.08)',  label: 'Baixo Risco' },
+  low:      { color: 'var(--sophi-green)',  bg: 'color-mix(in srgb, var(--sophi-green) 8%, transparent)',  label: 'Baixo Risco' },
   medium:   { color: '#f59e0b',            bg: 'rgba(245,158,11,0.08)', label: 'Risco Moderado' },
   high:     { color: '#f97316',            bg: 'rgba(249,115,22,0.08)', label: 'Risco Elevado' },
   critical: { color: '#ef4444',            bg: 'rgba(239,68,68,0.08)',  label: 'Risco Crítico' },
 }
 
 const REC_TYPE_CONFIG = {
-  success:  { color: 'var(--sophi-green)', bg: 'rgba(0,229,160,0.06)' },
+  success:  { color: 'var(--sophi-green)', bg: 'color-mix(in srgb, var(--sophi-green) 6%, transparent)' },
   info:     { color: '#3b82f6',           bg: 'rgba(59,130,246,0.06)' },
   warning:  { color: '#f97316',           bg: 'rgba(249,115,22,0.06)' },
   critical: { color: '#ef4444',           bg: 'rgba(239,68,68,0.06)' },
@@ -72,7 +72,7 @@ function RecCard({ rec }: { rec: Recommendation }) {
           <span
             className="mt-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
             style={{
-              background: `${cfg.color}20`,
+              background: `color-mix(in srgb, ${cfg.color} 12%, transparent)`,
               color: cfg.color,
               fontFamily: 'var(--font-mono, monospace)',
             }}
@@ -94,7 +94,7 @@ function ConfidencePill({ confidence }: { confidence: 'high' | 'medium' | 'low' 
   return (
     <span
       className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold"
-      style={{ background: `${cfg.color}15`, color: cfg.color }}
+      style={{ background: `color-mix(in srgb, ${cfg.color} 9%, transparent)`, color: cfg.color }}
     >
       <span className="h-1.5 w-1.5 rounded-full" style={{ background: cfg.color }} />
       {cfg.label}
@@ -164,7 +164,7 @@ export function RecommendationsPanel({
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-3"
-        style={{ background: riskCfg.bg, borderBottom: `1px solid ${riskCfg.color}30` }}
+        style={{ background: riskCfg.bg, borderBottom: `1px solid color-mix(in srgb, ${riskCfg.color} 19%, transparent)` }}
       >
         <div className="flex items-center gap-2.5">
           <div className="h-2 w-2 rounded-full" style={{ background: riskCfg.color }} />
@@ -190,7 +190,7 @@ export function RecommendationsPanel({
               className="flex-1 px-4 py-2.5 text-xs font-semibold transition-colors"
               style={
                 activeTab === tab.key
-                  ? { color: 'var(--sophi-green)', borderBottom: '2px solid var(--sophi-green)' }
+                  ? { color: 'var(--sophi-accent)', borderBottom: '2px solid var(--sophi-accent)' }
                   : { color: 'var(--sophi-text3)', borderBottom: '2px solid transparent' }
               }
             >
@@ -241,7 +241,7 @@ export function RecommendationsPanel({
             className="flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-semibold transition-all disabled:opacity-50"
             style={
               isAcknowledged
-                ? { background: 'rgba(0,229,160,0.1)', color: 'var(--sophi-green)' }
+                ? { background: 'color-mix(in srgb, var(--sophi-green) 10%, transparent)', color: 'var(--sophi-green)' }
                 : { background: 'var(--sophi-bg3)', color: 'var(--sophi-text2)', border: '1px solid var(--sophi-border)' }
             }
           >

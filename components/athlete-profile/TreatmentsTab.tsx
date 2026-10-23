@@ -56,7 +56,7 @@ function Section({
   return (
     <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
       <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
-        <Icon size={13} style={{ color: 'var(--sophi-green)' }} />
+        <Icon size={13} style={{ color: 'var(--sophi-accent)' }} />
         <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>
           {title}
         </p>
@@ -76,7 +76,7 @@ function EmptyState({ label, cta, onClick }: { label: string; cta: string; onCli
       <button
         type="button"
         onClick={onClick}
-        className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
+        className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-accent)] hover:text-[var(--sophi-accent)]"
         style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}
       >
         <Plus size={11} />
@@ -96,7 +96,7 @@ function RehabRow({ s, occurrenceLabel, planLabel, onEdit }: { s: RehabSession; 
           <p className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>
             {formatDate(s.session_date)}
           </p>
-          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-green-bg)', color: 'var(--sophi-green)' }}>
+          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-accent-bg)', color: 'var(--sophi-accent)' }}>
             {SESSION_TYPE_LABEL[s.session_type] ?? s.session_type}
           </span>
           {s.duration_minutes && (
@@ -132,7 +132,7 @@ function RehabRow({ s, occurrenceLabel, planLabel, onEdit }: { s: RehabSession; 
         )}
       </div>
       {onEdit && (
-        <button type="button" onClick={onEdit} className="p-1 rounded hover:bg-white/10 shrink-0">
+        <button type="button" onClick={onEdit} className="p-1 rounded hover:bg-[var(--sophi-bg4)] shrink-0">
           <Edit2 size={11} style={{ color: 'var(--sophi-text3)' }} />
         </button>
       )}
@@ -202,7 +202,7 @@ function MedAdminModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="w-full max-w-sm rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
-        <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
           Registar Administração
         </h3>
         <div className="space-y-3">
@@ -250,7 +250,7 @@ function MedAdminModal({
           </button>
           <button type="button" onClick={handleSave} disabled={saving}
             className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1"
-            style={{ background: 'var(--sophi-green)', color: '#000' }}>
+            style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
             {saving && <Loader2 size={12} className="animate-spin" />} Guardar
           </button>
         </div>
@@ -383,8 +383,8 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
             <button
               type="button"
               onClick={() => { setEditingRehab(null); setShowRehabModal(true) }}
-              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg transition-colors hover:bg-[var(--sophi-green-bg)]"
-              style={{ color: 'var(--sophi-green)' }}
+              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg transition-colors hover:bg-[var(--sophi-accent-bg)]"
+              style={{ color: 'var(--sophi-accent)' }}
             >
               <Plus size={10} /> Nova
             </button>
@@ -427,8 +427,8 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
             <button
               type="button"
               onClick={() => setShowMedAdminModal(true)}
-              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg transition-colors hover:bg-[var(--sophi-green-bg)]"
-              style={{ color: 'var(--sophi-green)' }}
+              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg transition-colors hover:bg-[var(--sophi-accent-bg)]"
+              style={{ color: 'var(--sophi-accent)' }}
             >
               <Plus size={10} /> Registar
             </button>

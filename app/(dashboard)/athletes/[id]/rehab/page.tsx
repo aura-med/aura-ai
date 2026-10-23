@@ -55,7 +55,7 @@ async function RehabContent({
       <div>
         <h1
           className="text-2xl font-bold"
-          style={{ fontFamily: 'var(--font-syne)', color: 'var(--sophi-text)' }}
+          style={{ fontFamily: 'var(--font-display)', color: 'var(--sophi-text)' }}
         >
           Reabilitação · {athlete.name}
         </h1>

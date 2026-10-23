@@ -13,7 +13,7 @@ export default async function OverviewPage() {
     <div className="space-y-6">
       <PageHeader
         title="Platform overview"
-        description="Aggregate operational health for Sophi organizations, users, data freshness, consent coverage, notifications, and support activity."
+        description="Aggregate operational health for Sophi Sports organizations, users, data freshness, consent coverage, notifications, and support activity."
       />
 
       <div className="grid gap-3 md:grid-cols-4">
@@ -48,7 +48,7 @@ export default async function OverviewPage() {
                     </div>
                   </div>
                 </div>
-                <Link className="text-xs font-semibold" href={`/organizations/${org.id}`} style={{ color: 'var(--sophi-green)' }}>
+                <Link className="text-xs font-semibold" href={`/organizations/${org.id}`} style={{ color: 'var(--sophi-accent)' }}>
                   Inspect
                 </Link>
               </div>
@@ -154,7 +154,7 @@ export default async function OverviewPage() {
         <Link className="inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-semibold" href="/users" style={{ background: 'var(--sophi-bg3)', color: 'var(--sophi-text)' }}>
           <Users size={15} /> Users <ArrowRight size={14} />
         </Link>
-        <Link className="inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-semibold" href="/users" style={{ background: 'var(--sophi-green)', color: 'var(--sophi-bg)' }}>
+        <Link className="inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-semibold" href="/users" style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
           <UserPlus size={15} /> Invite user
         </Link>
       </div>

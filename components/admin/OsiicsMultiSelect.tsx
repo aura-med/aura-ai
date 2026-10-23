@@ -66,9 +66,9 @@ export function OsiicsMultiSelect({
                 key={code}
                 className="inline-flex items-center gap-1.5 pl-2 pr-1 py-0.5 rounded-full text-xs"
                 style={{
-                  background: 'rgba(0,229,160,0.1)',
-                  color: 'var(--sophi-green)',
-                  border: '1px solid rgba(0,229,160,0.25)',
+                  background: 'color-mix(in srgb, var(--sophi-accent) 10%, transparent)',
+                  color: 'var(--sophi-accent)',
+                  border: '1px solid color-mix(in srgb, var(--sophi-accent) 25%, transparent)',
                 }}
               >
                 <span className="font-mono font-bold">{code}</span>
@@ -145,7 +145,7 @@ export function OsiicsMultiSelect({
               >
                 <span
                   className="font-mono font-bold text-xs shrink-0"
-                  style={{ color: 'var(--sophi-green)' }}
+                  style={{ color: 'var(--sophi-accent)' }}
                 >
                   {c.code}
                 </span>

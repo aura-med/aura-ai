@@ -4,11 +4,11 @@ import { Moon, Sun } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+  const [theme, setTheme] = useState<'dark' | 'light'>('light')
 
   useEffect(() => {
     const stored = localStorage.getItem('sophi-theme')
-    setTheme(stored === 'light' ? 'light' : 'dark')
+    setTheme(stored === 'dark' ? 'dark' : 'light')
   }, [])
 
   function toggle() {
@@ -23,7 +23,7 @@ export function ThemeToggle() {
   return (
     <button
       aria-label="Toggle theme"
-      className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-white/5"
+      className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-[var(--sophi-accent-bg)]"
       onClick={toggle}
       style={{ color: 'var(--sophi-text3)' }}
       type="button"

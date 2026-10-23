@@ -1,5 +1,5 @@
 // 14-day fatigue/risk projection model
-// Port of projectScore() from Aura_Demo_FPF.html
+// Port of projectScore() from Sophi_Demo_FPF.html
 // Models accumulated match fatigue with individual recovery profiles
 
 import type { CalendarEvent, FatigueProfile } from '@/types'

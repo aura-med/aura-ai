@@ -37,7 +37,7 @@ export default async function AnalyticsPage({
               className="min-h-8 rounded-md px-3 text-xs font-medium"
               style={
                 String(range) === r.value
-                  ? { background: 'var(--sophi-green-bg)', color: 'var(--sophi-green)' }
+                  ? { background: 'var(--sophi-accent-bg)', color: 'var(--sophi-accent)' }
                   : { color: 'var(--sophi-text2)' }
               }
             >

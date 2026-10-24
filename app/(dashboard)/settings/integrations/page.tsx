@@ -18,7 +18,7 @@ const INTEGRATIONS: Integration[] = [
 ]
 
 const CATEGORY_COLORS: Record<string, { bg: string; color: string }> = {
-  GPS:      { bg: 'rgba(0,229,160,0.1)',  color: 'var(--sophi-green)' },
+  GPS:      { bg: 'color-mix(in srgb, var(--sophi-accent) 10%, transparent)',  color: 'var(--sophi-accent)' },
   HRV:      { bg: 'rgba(77,154,255,0.1)', color: 'var(--sophi-blue)' },
   Wearable: { bg: 'rgba(255,211,0,0.1)',  color: 'var(--sophi-warn)' },
   Sleep:    { bg: 'rgba(177,77,255,0.1)', color: '#b14dff' },
@@ -40,7 +40,7 @@ function IntegrationsContent() {
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
           {t('title')}
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--sophi-text3)' }}>{t('description')}</p>
@@ -79,7 +79,7 @@ function IntegrationsContent() {
                 </span>
                 <span
                   className="px-2.5 py-1 rounded-md text-xs font-medium"
-                  style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--sophi-text3)', border: '1px solid var(--sophi-border2)' }}
+                  style={{ background: 'var(--sophi-bg4)', color: 'var(--sophi-text3)', border: '1px solid var(--sophi-border2)' }}
                 >
                   {tc('comingSoon')}
                 </span>
@@ -91,7 +91,7 @@ function IntegrationsContent() {
 
       <div
         className="rounded-xl border px-4 py-3 text-xs"
-        style={{ background: 'rgba(0,229,160,0.04)', borderColor: 'rgba(0,229,160,0.15)', color: 'var(--sophi-text3)' }}
+        style={{ background: 'color-mix(in srgb, var(--sophi-accent) 4%, transparent)', borderColor: 'color-mix(in srgb, var(--sophi-accent) 15%, transparent)', color: 'var(--sophi-text3)' }}
       >
         {t('note')}
       </div>

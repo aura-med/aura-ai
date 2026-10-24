@@ -178,7 +178,7 @@ export function EditInjuryModal({
           <div>
             <h2
               className="text-base font-bold"
-              style={{ fontFamily: 'var(--font-syne)', color: 'var(--sophi-text)' }}
+              style={{ fontFamily: 'var(--font-display)', color: 'var(--sophi-text)' }}
             >
               Editar Sessão
             </h2>
@@ -338,7 +338,7 @@ export function EditInjuryModal({
               onClick={handleSave}
               disabled={saving || deleting || !isDirty || !injuryDate || !startDate}
               className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-40"
-              style={{ background: 'var(--sophi-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
             >
               <Save size={13} />
               {saving ? 'A guardar…' : 'Guardar Alterações'}

@@ -16,6 +16,7 @@ import { UserMenuDropdown } from '@/components/layout/UserMenuDropdown'
 import { useUiStore } from '@/stores/uiStore'
 import { getSquadIdParam } from '@/lib/squad-url'
 import type { TopbarDTO } from '@/lib/data/types'
+import { SophiLogo } from '@/components/brand/SophiLogo'
 
 function formatDate(): string {
   return new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -111,15 +112,9 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
         <Link
           href={dashboardHref}
           aria-label="Dashboard"
-          className="text-xl font-bold tracking-tight"
-          style={{
-            fontFamily: 'var(--font-syne)',
-            background: 'linear-gradient(135deg, var(--sophi-green) 0%, var(--sophi-blue) 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
+          className="flex items-center"
         >
-          Sophi
+          <SophiLogo className="h-10 w-auto" />
         </Link>
         {dto.org && (
           <div
@@ -128,7 +123,7 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
           >
             <span
               className="truncate text-base font-bold leading-none"
-              style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}
+              style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}
             >
               {dto.org.name}
             </span>

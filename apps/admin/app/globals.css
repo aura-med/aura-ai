@@ -6,41 +6,187 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-poppins);
   --font-mono: var(--font-dm-mono);
-  --font-display: var(--font-syne);
+  --font-display: var(--font-poppins);
 }
 
+/* Sophi Sports — light theme (default). Values follow landing_page/assets/style.css */
 :root {
-  --font-inter: Inter, ui-sans-serif, system-ui, sans-serif;
-  --font-dm-mono: "DM Mono", "SFMono-Regular", Consolas, monospace;
-  --font-syne: Syne, Inter, ui-sans-serif, system-ui, sans-serif;
+  color-scheme: light;
 
-  --background: #0a0d12;
-  --foreground: #e8eaf2;
-  --border: rgba(255, 255, 255, 0.07);
-  --input: rgba(255, 255, 255, 0.07);
-  --ring: rgba(0, 229, 160, 0.35);
+  /* Fonts (plain :root vars so inline `var(--font-*)` always resolves) */
+  --font-display: var(--font-poppins), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, "SFMono-Regular", Consolas, monospace;
 
-  --sophi-bg: #0a0d12;
-  --sophi-bg2: #111520;
-  --sophi-bg3: #181e2e;
-  --sophi-bg4: #1e2638;
-  --sophi-green: #00e5a0;
-  --sophi-green-bg: rgba(0, 229, 160, 0.08);
-  --sophi-blue: #4d9aff;
-  --sophi-blue-bg: rgba(77, 154, 255, 0.12);
-  --sophi-warn: #f6ad55;
-  --sophi-warn-bg: rgba(246, 173, 85, 0.12);
-  --sophi-danger: #ff4d6d;
-  --sophi-danger-bg: rgba(255, 77, 109, 0.12);
+  /* Backgrounds */
+  --background: #eef1f8;
+  --card: #ffffff;
+  --muted: #e4eafb;
+  --popover: #ffffff;
+
+  /* Borders */
+  --border: rgba(24, 32, 58, 0.12);
+  --input: rgba(24, 32, 58, 0.12);
+  --ring: rgba(55, 99, 217, 0.45);
+
+  /* Text */
+  --foreground: #18203a;
+  --card-foreground: #18203a;
+  --popover-foreground: #18203a;
+  --muted-foreground: #5a6480;
+
+  /* Primary = Sophi navy */
+  --primary: #000056;
+  --primary-foreground: #ffffff;
+
+  /* Secondary = accent blue (soft) */
+  --secondary: #e4eafb;
+  --secondary-foreground: #3763d9;
+
+  /* Accent = hover / selected surface */
+  --accent: #e4eafb;
+  --accent-foreground: #000056;
+
+  /* Semantic */
+  --destructive: #b83a3a;
+  --success: #23804f;
+  --warning: #946510;
+  --info: #3763d9;
+
+  /* Radius */
+  --radius: 0.5rem;
+
+  /* Sidebar */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #5a6480;
+  --sidebar-primary: #000056;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(0, 0, 86, 0.05);
+  --sidebar-accent-foreground: #000056;
+  --sidebar-border: rgba(24, 32, 58, 0.12);
+  --sidebar-ring: rgba(55, 99, 217, 0.35);
+
+  /* Sophi tokens used directly in components */
+  --sophi-bg:     #eef1f8;
+  --sophi-bg2:    #ffffff;
+  --sophi-bg3:    #f5f7fd;
+  --sophi-bg4:    #e4eafb;
+  --sophi-text:   #18203a;
+  --sophi-text2:  #5a6480;
+  --sophi-text3:  #6a7490;
+  --sophi-border: rgba(24, 32, 58, 0.12);
+  --sophi-border2: rgba(24, 32, 58, 0.2);
+
+  /* Brand */
+  --sophi-logo:       #000056;
+  --sophi-primary:    #000056;
+  --sophi-on-primary: #ffffff;
+  --sophi-accent:     #3763d9;
+  --sophi-accent-bg:  #e4eafb;
+  --sophi-on-accent:  #ffffff;
+
+  /* Status colours — semantic only (risk / success / warning / danger) */
+  --sophi-green:  #23804f;
+  --sophi-green-bg: rgba(35, 128, 79, 0.1);
+  --sophi-blue:   #3763d9;
+  --sophi-blue-bg: rgba(55, 99, 217, 0.1);
+  --sophi-warn:   #946510;
+  --sophi-warn-bg: rgba(148, 101, 16, 0.12);
+  --sophi-danger: #b83a3a;
+  --sophi-danger-bg: rgba(184, 58, 58, 0.1);
+  --sophi-purple: #6b35c9;
+  --sophi-purple-bg: rgba(107, 53, 201, 0.1);
+  --sophi-orange: #b8540f;
+  --sophi-orange-bg: rgba(184, 84, 15, 0.12);
+  --sophi-yellow: #8a6408;
+  --sophi-yellow-bg: rgba(138, 100, 8, 0.12);
+}
+
+/* Sophi Sports — dark theme (deep navy family derived from #000056) */
+html.dark {
+  color-scheme: dark;
+
+  --background: #05061e;
+  --card: #0b0d33;
+  --muted: #141847;
+  --popover: #0b0d33;
+
+  --border: rgba(255, 255, 255, 0.09);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: rgba(124, 156, 242, 0.5);
+
+  --foreground: #eef1f8;
+  --card-foreground: #eef1f8;
+  --popover-foreground: #eef1f8;
+  --muted-foreground: #a3accb;
+
+  --primary: #ffffff;
+  --primary-foreground: #000056;
+
+  --secondary: rgba(124, 156, 242, 0.14);
+  --secondary-foreground: #9db4f7;
+
+  --accent: rgba(124, 156, 242, 0.14);
+  --accent-foreground: #c5d3fa;
+
+  --destructive: #f06a6a;
+  --success: #4cc38a;
+  --warning: #e6b04e;
+  --info: #7c9cf2;
+
+  --sidebar: #070826;
+  --sidebar-foreground: #a3accb;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #000056;
+  --sidebar-accent: rgba(255, 255, 255, 0.06);
+  --sidebar-accent-foreground: #eef1f8;
+  --sidebar-border: rgba(255, 255, 255, 0.09);
+  --sidebar-ring: rgba(124, 156, 242, 0.4);
+
+  --sophi-bg:     #05061e;
+  --sophi-bg2:    #0b0d33;
+  --sophi-bg3:    #141847;
+  --sophi-bg4:    #1b2060;
+  --sophi-text:   #eef1f8;
+  --sophi-text2:  #a3accb;
+  --sophi-text3:  #6c7699;
+  --sophi-border: rgba(255, 255, 255, 0.09);
+  --sophi-border2: rgba(255, 255, 255, 0.16);
+
+  --sophi-logo:       #ffffff;
+  --sophi-primary:    #ffffff;
+  --sophi-on-primary: #000056;
+  --sophi-accent:     #7c9cf2;
+  --sophi-accent-bg:  rgba(124, 156, 242, 0.14);
+  --sophi-on-accent:  #05061e;
+
+  --sophi-green:  #4cc38a;
+  --sophi-green-bg: rgba(76, 195, 138, 0.12);
+  --sophi-blue:   #7c9cf2;
+  --sophi-blue-bg: rgba(124, 156, 242, 0.14);
+  --sophi-warn:   #e6b04e;
+  --sophi-warn-bg: rgba(230, 176, 78, 0.12);
+  --sophi-danger: #f06a6a;
+  --sophi-danger-bg: rgba(240, 106, 106, 0.12);
   --sophi-purple: #b48dfc;
   --sophi-purple-bg: rgba(180, 141, 252, 0.12);
-  --sophi-text: #e8eaf2;
-  --sophi-text2: #8892a4;
-  --sophi-text3: #4a5568;
-  --sophi-border: rgba(255, 255, 255, 0.07);
-  --sophi-border2: rgba(255, 255, 255, 0.14);
+  --sophi-orange: #f08a47;
+  --sophi-orange-bg: rgba(240, 138, 71, 0.12);
+  --sophi-yellow: #e0b23a;
+  --sophi-yellow-bg: rgba(224, 178, 58, 0.12);
+}
+
+/* Risk bands (low <40, medium 40–64, high 65–84, critical ≥85) */
+:root {
+  --risk-low:      var(--sophi-green);
+  --risk-low-bg:   var(--sophi-green-bg);
+  --risk-medium:   var(--sophi-warn);
+  --risk-medium-bg: var(--sophi-warn-bg);
+  --risk-high:     var(--sophi-orange);
+  --risk-high-bg:  var(--sophi-orange-bg);
+  --risk-critical: var(--sophi-danger);
+  --risk-critical-bg: var(--sophi-danger-bg);
 }
 
 * {
@@ -58,7 +204,7 @@ body {
   margin: 0;
   background: var(--sophi-bg);
   color: var(--sophi-text);
-  font-family: var(--font-inter), sans-serif;
+  font-family: var(--font-poppins), system-ui, sans-serif;
 }
 
 button,
@@ -74,7 +220,7 @@ a {
 }
 
 :focus-visible {
-  outline: 2px solid var(--sophi-green);
+  outline: 2px solid var(--sophi-accent);
   outline-offset: 2px;
 }
 
@@ -103,34 +249,11 @@ a {
 }
 
 .admin-table tbody tr:hover td {
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--sophi-accent-bg);
 }
 
-/* ── Light mode overrides ─────────────────────────────────────────────────── */
-html.light {
-  --background: #f4f6fa;
-  --foreground: #1a1f2e;
-  --border:  rgba(0, 0, 0, 0.08);
-  --input:   rgba(0, 0, 0, 0.08);
-  --ring:    rgba(0, 0, 0, 0.15);
-
-  --sophi-bg:      #f4f6fa;
-  --sophi-bg2:     #ffffff;
-  --sophi-bg3:     #e8edf5;
-  --sophi-bg4:     #dde3ee;
-  --sophi-text:    #1a1f2e;
-  --sophi-text2:   #5a6478;
-  --sophi-text3:   #9aa3b2;
-  --sophi-border:  rgba(0, 0, 0, 0.08);
-  --sophi-border2: rgba(0, 0, 0, 0.15);
-  --sophi-green:   #00b37a;
-  --sophi-green-bg: rgba(0, 179, 122, 0.1);
-  --sophi-blue:    #2a6fd4;
-  --sophi-blue-bg: rgba(42, 111, 212, 0.1);
-  --sophi-warn:    #d97706;
-  --sophi-warn-bg: rgba(217, 119, 6, 0.1);
-  --sophi-danger:  #dc2626;
-  --sophi-danger-bg: rgba(220, 38, 38, 0.1);
-  --sophi-purple:  #6b35c9;
-  --sophi-purple-bg: rgba(107, 53, 201, 0.1);
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }

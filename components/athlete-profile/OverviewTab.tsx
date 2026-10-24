@@ -269,7 +269,7 @@ function OrphanDiagnosisRow({
             <button type="button" onClick={() => setShowEdit(true)} className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80" style={{ color: 'var(--sophi-text2)' }}>
               <Pencil size={10} /> Editar
             </button>
-            <button type="button" onClick={() => setConfirming(true)} disabled={resolving} className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80" style={{ color: 'var(--sophi-green)' }}>
+            <button type="button" onClick={() => setConfirming(true)} disabled={resolving} className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80" style={{ color: 'var(--sophi-accent)' }}>
               <CheckCircle2 size={10} /> Resolver
             </button>
           </>
@@ -279,7 +279,7 @@ function OrphanDiagnosisRow({
         <div className="flex items-center gap-2 rounded-lg border px-2 py-1.5" style={{ background: 'var(--sophi-green-bg)', borderColor: 'var(--sophi-green)' }}>
           <p className="text-[10px] flex-1" style={{ color: 'var(--sophi-text2)' }}>Confirma que este diagnóstico fica resolvido?</p>
           <button type="button" onClick={() => setConfirming(false)} disabled={resolving} className="text-[10px] font-medium hover:opacity-80 shrink-0" style={{ color: 'var(--sophi-text3)' }}>Cancelar</button>
-          <button type="button" onClick={handleResolve} disabled={resolving} className="flex items-center gap-1 text-[10px] font-bold hover:opacity-80 shrink-0" style={{ color: 'var(--sophi-green)' }}>
+          <button type="button" onClick={handleResolve} disabled={resolving} className="flex items-center gap-1 text-[10px] font-bold hover:opacity-80 shrink-0" style={{ color: 'var(--sophi-accent)' }}>
             {resolving ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle2 size={10} />} Confirmar
           </button>
         </div>

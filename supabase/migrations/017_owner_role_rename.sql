@@ -6,7 +6,7 @@
 --
 -- NOTE: this 'owner' is unrelated to platform_admins.level = 'owner' (see
 -- 004_platform_admin_control.sql) — that is a separate table gating the
--- standalone apps/admin console for Aura's own staff. Same word, different
+-- standalone apps/admin console for Sophi's own staff. Same word, different
 -- concept; no code path connects them.
 --
 -- Squad scoping (staff_squads, get_user_squad_ids()) is added in the next

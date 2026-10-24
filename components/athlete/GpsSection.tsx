@@ -15,7 +15,7 @@ export function GpsSection({ sessions }: { sessions: GpsSessionRow[] }) {
       className="rounded-xl border p-5"
       style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
     >
-      <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+      <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
         GPS Recente
       </h3>
       <div className="overflow-x-auto">

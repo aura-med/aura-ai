@@ -160,7 +160,7 @@ export function AnamnesisTab({ profile }: { profile: AthleteProfileData }) {
     <div className="space-y-4 max-w-3xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <ClipboardList size={14} style={{ color: 'var(--sophi-green)' }} />
+          <ClipboardList size={14} style={{ color: 'var(--sophi-accent)' }} />
           <p className="text-sm font-semibold" style={{ color: 'var(--sophi-text)' }}>
             Anamnese — Avaliação Pré-Época
           </p>
@@ -183,7 +183,7 @@ export function AnamnesisTab({ profile }: { profile: AthleteProfileData }) {
               <button
                 type="button"
                 onClick={startEdit}
-                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
+                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed transition-colors hover:border-[var(--sophi-accent)] hover:text-[var(--sophi-accent)]"
                 style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}
               >
                 <Edit2 size={11} /> Preencher anamnese
@@ -197,7 +197,7 @@ export function AnamnesisTab({ profile }: { profile: AthleteProfileData }) {
                     type="button"
                     onClick={startEdit}
                     className="flex items-center gap-1 text-[10px] font-medium hover:opacity-70"
-                    style={{ color: 'var(--sophi-green)' }}
+                    style={{ color: 'var(--sophi-accent)' }}
                   >
                     <Edit2 size={10} /> Editar
                   </button>
@@ -284,7 +284,7 @@ export function AnamnesisTab({ profile }: { profile: AthleteProfileData }) {
               onClick={handleSave}
               disabled={saving}
               className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
-              style={{ background: 'var(--sophi-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
             >
               {saving && <Loader2 size={13} className="animate-spin" />}
               Guardar

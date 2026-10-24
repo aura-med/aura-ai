@@ -34,7 +34,7 @@ export function Pagination({ page, total, pageSize }: PaginationProps) {
       </span>
       <div className="flex gap-1">
         <button
-          className="min-h-8 rounded-md px-3 text-xs disabled:opacity-30 hover:bg-white/5"
+          className="min-h-8 rounded-md px-3 text-xs disabled:opacity-30 hover:bg-[var(--sophi-accent-bg)]"
           disabled={page <= 1}
           onClick={() => go(page - 1)}
           style={{ color: 'var(--sophi-text2)' }}
@@ -43,7 +43,7 @@ export function Pagination({ page, total, pageSize }: PaginationProps) {
           ← Prev
         </button>
         <button
-          className="min-h-8 rounded-md px-3 text-xs disabled:opacity-30 hover:bg-white/5"
+          className="min-h-8 rounded-md px-3 text-xs disabled:opacity-30 hover:bg-[var(--sophi-accent-bg)]"
           disabled={page >= totalPages}
           onClick={() => go(page + 1)}
           style={{ color: 'var(--sophi-text2)' }}

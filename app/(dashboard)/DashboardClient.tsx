@@ -66,7 +66,7 @@ const STATUS_CONFIG: Record<AthleteAvailabilityStatus, {
   dot: string
   priority: number
 }> = {
-  available:       { label: 'Disponível',      color: 'var(--sophi-green)',  bg: 'rgba(0,229,160,0.06)',   border: 'rgba(0,229,160,0.2)',   dot: '#00e5a0', priority: 5 },
+  available:       { label: 'Disponível',      color: 'var(--sophi-green)',  bg: 'color-mix(in srgb, var(--sophi-green) 6%, transparent)',   border: 'color-mix(in srgb, var(--sophi-green) 20%, transparent)',   dot: 'var(--sophi-green)', priority: 5 },
   evaluation:      { label: 'Em Avaliação',    color: 'var(--sophi-yellow)', bg: 'rgba(212,160,23,0.06)',  border: 'rgba(212,160,23,0.3)',  dot: '#d4a017', priority: 2 },
   load_management: { label: 'Gestão de Carga', color: 'var(--sophi-orange)', bg: 'rgba(249,115,22,0.06)',  border: 'rgba(249,115,22,0.25)', dot: '#f97316', priority: 3 },
   unavailable:     { label: 'Indisponível',    color: 'var(--sophi-danger)', bg: 'rgba(255,77,109,0.06)',  border: 'rgba(255,77,109,0.2)',  dot: '#ff4d6d', priority: 1 },
@@ -134,7 +134,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
               </span>
               <span style={{ width: 1, height: 14, background: 'var(--sophi-border2)' }} />
               <span style={{
-                fontFamily: 'var(--font-syne)', fontSize: 13, fontWeight: 700,
+                fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 700,
                 color: microcycle.mdOffset === 0 ? 'var(--sophi-danger)'
                   : Math.abs(microcycle.mdOffset) <= 2 ? 'var(--sophi-warn)'
                   : 'var(--sophi-text)',
@@ -171,8 +171,8 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
             style={{
               padding: '8px 16px', fontSize: 13, fontWeight: 500, cursor: 'pointer',
               background: 'transparent', border: 'none',
-              borderBottom: tab === t ? '2px solid var(--sophi-green)' : '2px solid transparent',
-              color: tab === t ? 'var(--sophi-green)' : 'var(--sophi-text2)',
+              borderBottom: tab === t ? '2px solid var(--sophi-accent)' : '2px solid transparent',
+              color: tab === t ? 'var(--sophi-accent)' : 'var(--sophi-text2)',
               marginBottom: -1,
             }}
           >
@@ -198,7 +198,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
                 style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, cursor: canReadClinical ? 'pointer' : 'default' }}
               >
                 <Hourglass size={15} color="var(--sophi-yellow)" className="animate-pulse" />
-                <span style={{ fontFamily: 'var(--font-syne)', fontSize: 13, fontWeight: 700, color: 'var(--sophi-yellow)' }}>
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 700, color: 'var(--sophi-yellow)' }}>
                   A Reavaliar
                 </span>
                 <span style={{
@@ -284,13 +284,13 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
                     }}
                   >
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: cfg.dot, flexShrink: 0 }} />
-                    <span style={{ fontFamily: 'var(--font-syne)', fontSize: 12, fontWeight: 700, color: cfg.color }}>
+                    <span style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, color: cfg.color }}>
                       {cfg.label}
                     </span>
                     <span style={{
                       fontFamily: 'var(--font-dm-mono)', fontSize: 11,
                       fontWeight: 700, color: cfg.color,
-                      background: `${cfg.dot}22`, borderRadius: 999, padding: '1px 8px',
+                      background: `color-mix(in srgb, ${cfg.dot} 13%, transparent)`, borderRadius: 999, padding: '1px 8px',
                     }}>
                       {group.length}
                     </span>
@@ -423,7 +423,7 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
               <button
                 type="button"
                 onClick={() => setSquadQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-white/10"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[var(--sophi-bg4)]"
                 aria-label="Limpar pesquisa"
               >
                 <X size={12} style={{ color: 'var(--sophi-text3)' }} />

@@ -39,7 +39,7 @@ export function DialogHeader({ className, ...props }: ComponentProps<'div'>) {
 }
 
 export function DialogTitle({ className, ...props }: ComponentProps<'h2'>) {
-  return <h2 className={cn('text-lg font-semibold', className)} style={{ fontFamily: 'var(--font-syne)' }} {...props} />
+  return <h2 className={cn('text-lg font-semibold', className)} style={{ fontFamily: 'var(--font-display)' }} {...props} />
 }
 
 export function DialogFooter({ className, ...props }: ComponentProps<'div'>) {

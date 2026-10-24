@@ -147,8 +147,8 @@ export function InputClient({ dto }: { dto: InputPageDTO }) {
             style={{
               minHeight: 40,
               padding: '7px 16px', borderRadius: 8, border: 'none',
-              background: saved ? 'var(--green)' : 'var(--green2)',
-              color: '#000', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+              background: saved ? 'var(--green2)' : 'var(--sophi-primary)',
+              color: saved ? '#000' : 'var(--sophi-on-primary)', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             }}
           >
             {isPending ? 'A guardar...' : saved ? 'Guardado' : 'Guardar'}
@@ -174,9 +174,9 @@ export function InputClient({ dto }: { dto: InputPageDTO }) {
                   style={{
                     flex: 1, minHeight: 40, padding: 8, borderRadius: 8, cursor: 'pointer',
                     fontFamily: 'var(--mono)', fontSize: 11, transition: 'all .15s',
-                    border: `1px solid ${history === v ? 'var(--green2)' : 'var(--border)'}`,
-                    background: history === v ? 'var(--green3)' : 'var(--bg3)',
-                    color: history === v ? 'var(--green2)' : 'var(--text2)',
+                    border: `1px solid ${history === v ? 'var(--sophi-accent)' : 'var(--border)'}`,
+                    background: history === v ? 'var(--sophi-accent-bg)' : 'var(--bg3)',
+                    color: history === v ? 'var(--sophi-accent)' : 'var(--text2)',
                   }}
                 >
                   {v === 0 ? '0 lesoes' : v === 1 ? '1 lesao' : '2+ mesmo seg.'}
@@ -197,7 +197,7 @@ export function InputClient({ dto }: { dto: InputPageDTO }) {
                     type="range" min={s.min} max={s.max} step={s.step}
                     value={values[s.k] ?? cur}
                     onChange={(e) => setValues((v) => ({ ...v, [s.k]: parseFloat(e.target.value) }))}
-                    style={{ flex: 1, accentColor: 'var(--green2)', cursor: 'pointer' }}
+                    style={{ flex: 1, accentColor: 'var(--sophi-accent)', cursor: 'pointer' }}
                     aria-label={s.label}
                   />
                   <span className="slider-val" style={{ color: col }}>

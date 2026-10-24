@@ -54,7 +54,7 @@ function toEditablePhase(p: RehabPhase, idx: number): EditablePhase {
     range: p.range ?? '',
     d1: p.d1 ?? 0,
     d2: p.d2 ?? 0,
-    color: p.color ?? '#00e5a0',
+    color: p.color ?? '#3763d9',
     exercises: Array.isArray(p.exercises) ? p.exercises : [],
     criteria: p.criteria
       ? p.criteria.split(/[;\n]/).map((s) => s.trim()).filter(Boolean)
@@ -79,11 +79,11 @@ function UefaPreview({ code }: { code: OsiicsCode | null }) {
   return (
     <div
       className="rounded-lg p-3 border space-y-1"
-      style={{ background: 'rgba(0,229,160,0.05)', borderColor: 'var(--sophi-green)' }}
+      style={{ background: 'color-mix(in srgb, var(--sophi-green) 5%, transparent)', borderColor: 'var(--sophi-green)' }}
     >
       <p
         className="text-[10px] font-semibold uppercase tracking-wider"
-        style={{ color: 'var(--sophi-green)' }}
+        style={{ color: 'var(--sophi-accent)' }}
       >
         Referência UEFA
       </p>
@@ -317,7 +317,7 @@ function ProtocolSandbox({
                     type="button"
                     onClick={() => addCriterion(phase.tempId)}
                     className="flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-md transition-colors hover:bg-[var(--sophi-bg3)]"
-                    style={{ color: 'var(--sophi-green)' }}
+                    style={{ color: 'var(--sophi-accent)' }}
                   >
                     <Plus size={11} />
                     Adicionar critério
@@ -711,7 +711,7 @@ export function RecordInjuryModal({
           <div>
             <h2
               className="text-base font-bold"
-              style={{ fontFamily: 'var(--font-syne)', color: 'var(--sophi-text)' }}
+              style={{ fontFamily: 'var(--font-display)', color: 'var(--sophi-text)' }}
             >
               Registar Lesão
             </h2>
@@ -902,7 +902,7 @@ export function RecordInjuryModal({
                             borderColor: 'var(--sophi-border)',
                             background:
                               selectedCode?.code === c.code
-                                ? 'rgba(0,229,160,0.08)'
+                                ? 'color-mix(in srgb, var(--sophi-green) 8%, transparent)'
                                 : undefined,
                           }}
                         >
@@ -910,7 +910,7 @@ export function RecordInjuryModal({
                             className="font-mono font-bold text-[11px] shrink-0 px-1.5 py-0.5 rounded"
                             style={{
                               color: 'var(--sophi-green)',
-                              background: 'rgba(0,229,160,0.08)',
+                              background: 'color-mix(in srgb, var(--sophi-green) 8%, transparent)',
                             }}
                           >
                             {c.code}
@@ -956,7 +956,7 @@ export function RecordInjuryModal({
                   className="rounded-lg p-3 border text-xs"
                   style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border)' }}
                 >
-                  <span className="font-mono font-bold" style={{ color: 'var(--sophi-green)' }}>
+                  <span className="font-mono font-bold" style={{ color: 'var(--sophi-accent)' }}>
                     {selectedCode.code}
                   </span>
                   <span className="ml-2" style={{ color: 'var(--sophi-text2)' }}>
@@ -1095,7 +1095,7 @@ export function RecordInjuryModal({
               disabled={step === 'athlete' && (!athleteId || !injuryDate)}
               onClick={() => setStep(STEPS[currentStepIdx + 1])}
               className="px-5 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-40"
-              style={{ background: 'var(--sophi-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
             >
               Seguinte →
             </button>
@@ -1105,7 +1105,7 @@ export function RecordInjuryModal({
               disabled={saving}
               onClick={handleSubmit}
               className="px-5 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-40"
-              style={{ background: 'var(--sophi-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
             >
               {saving ? 'A guardar…' : 'Confirmar e Guardar'}
             </button>

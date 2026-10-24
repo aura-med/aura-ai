@@ -30,7 +30,7 @@ export default async function OrganizationDetailPage({
                 Platform admins see aggregate data by default. Scoped sensitive inspection requires a ticketed,
                 timeboxed support session and every read is audited.
               </p>
-              <Link className="mt-4 inline-flex min-h-10 items-center rounded-md px-3 text-sm font-semibold" href="/" style={{ background: 'var(--sophi-green)', color: 'var(--sophi-bg)' }}>
+              <Link className="mt-4 inline-flex min-h-10 items-center rounded-md px-3 text-sm font-semibold" href="/" style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
                 Start Support Mode
               </Link>
             </div>

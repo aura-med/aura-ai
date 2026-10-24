@@ -151,9 +151,9 @@ export function InjuryFormModal({ open, onClose, onSuccess, toast }: Props) {
   }
 
   const baseInput =
-    'mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--sophi-green)] transition-colors'
+    'mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--sophi-accent)] transition-colors'
   const baseTextarea =
-    'mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--sophi-green)] transition-colors resize-none'
+    'mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--sophi-accent)] transition-colors resize-none'
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -285,7 +285,7 @@ export function InjuryFormModal({ open, onClose, onSuccess, toast }: Props) {
                 onClick={() => setField('has_uefa_data', !form.has_uefa_data)}
                 className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus-visible:ring-2"
                 style={{
-                  background: form.has_uefa_data ? 'var(--sophi-green)' : 'var(--sophi-bg4)',
+                  background: form.has_uefa_data ? 'var(--sophi-accent)' : 'var(--sophi-bg4)',
                 }}
               >
                 <span

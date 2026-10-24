@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { AuthControls } from '@/components/auth/AuthControls'
+import { SophiLogo } from '@/components/brand/SophiLogo'
 
 export default function ForgotPasswordPage() {
   const t = useTranslations('auth')
@@ -42,16 +43,8 @@ export default function ForgotPasswordPage() {
       >
         <AuthControls />
         <div className="text-center mb-8">
-          <h1
-            className="text-3xl font-bold"
-            style={{
-              fontFamily: 'var(--font-syne)',
-              background: 'linear-gradient(135deg, var(--sophi-green) 0%, var(--sophi-blue) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            Sophi
+          <h1 className="mt-4 flex justify-center">
+            <SophiLogo className="h-20 w-auto" />
           </h1>
           <p className="text-xs mt-1" style={{ color: 'var(--sophi-text3)' }}>
             {t('brandSubtitle')}
@@ -62,7 +55,7 @@ export default function ForgotPasswordPage() {
           <div className="space-y-4">
             <p
               className="text-xs px-3 py-2 rounded-lg"
-              style={{ background: 'var(--sophi-green-bg)', color: 'var(--sophi-green)' }}
+              style={{ background: 'var(--sophi-accent-bg)', color: 'var(--sophi-accent)' }}
             >
               {t('forgot.success')}
             </p>
@@ -92,7 +85,7 @@ export default function ForgotPasswordPage() {
                   borderColor: 'var(--sophi-border2)',
                   color: 'var(--sophi-text)',
                 }}
-                placeholder="medico@fpf.pt"
+                placeholder="user@example.com"
               />
             </div>
 
@@ -110,9 +103,9 @@ export default function ForgotPasswordPage() {
               disabled={loading}
               className="w-full py-2.5 rounded-lg text-sm font-semibold transition-opacity disabled:opacity-50"
               style={{
-                background: 'var(--sophi-green)',
-                color: 'var(--sophi-bg)',
-                fontFamily: 'var(--font-syne)',
+                background: 'var(--sophi-primary)',
+                color: 'var(--sophi-on-primary)',
+                fontFamily: 'var(--font-display)',
               }}
             >
               {loading ? t('forgot.submitting') : t('forgot.submit')}

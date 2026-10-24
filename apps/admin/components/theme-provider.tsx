@@ -8,12 +8,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       ? localStorage.getItem('sophi-theme')
       : null
     const html = document.documentElement
-    if (stored === 'light') {
-      html.classList.remove('dark')
-      html.classList.add('light')
-    } else {
+    if (stored === 'dark') {
       html.classList.remove('light')
       html.classList.add('dark')
+    } else {
+      html.classList.remove('dark')
+      html.classList.add('light')
     }
   }, [])
 

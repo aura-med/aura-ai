@@ -66,10 +66,10 @@ export function TabNavigation({ activeTab, badges = {} }: TabNavigationProps) {
               className={cn(
                 'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-all whitespace-nowrap',
                 isActive
-                  ? 'border-[var(--sophi-green)] text-[var(--sophi-green)]'
+                  ? 'border-[var(--sophi-accent)] text-[var(--sophi-accent)]'
                   : 'border-transparent hover:border-[var(--sophi-border2)] hover:text-[var(--sophi-text)]',
               )}
-              style={{ color: isActive ? 'var(--sophi-green)' : 'var(--sophi-text2)' }}
+              style={{ color: isActive ? 'var(--sophi-accent)' : 'var(--sophi-text2)' }}
             >
               <Icon size={14} />
               {tab.label}
@@ -99,7 +99,7 @@ export function TabNavigation({ activeTab, badges = {} }: TabNavigationProps) {
           }}
         >
           <span className="flex items-center gap-2">
-            <activeTabData.icon size={14} style={{ color: 'var(--sophi-green)' }} />
+            <activeTabData.icon size={14} style={{ color: 'var(--sophi-accent)' }} />
             {activeTabData.label}
           </span>
           <ChevronDown

@@ -19,7 +19,7 @@ export default function SubscriptionPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
           {t('title')}
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--sophi-text3)' }}>{t('description')}</p>
@@ -34,9 +34,9 @@ export default function SubscriptionPage() {
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-lg flex items-center justify-center"
-              style={{ background: 'rgba(0,229,160,0.1)' }}
+              style={{ background: 'color-mix(in srgb, var(--sophi-accent) 10%, transparent)' }}
             >
-              <CreditCard size={18} style={{ color: 'var(--sophi-green)' }} />
+              <CreditCard size={18} style={{ color: 'var(--sophi-accent)' }} />
             </div>
             <div>
               <div className="text-sm font-semibold" style={{ color: 'var(--sophi-text)' }}>{t('planName')}</div>
@@ -47,7 +47,7 @@ export default function SubscriptionPage() {
           </div>
           <span
             className="px-2.5 py-1 rounded-full text-xs font-medium"
-            style={{ background: 'rgba(0,229,160,0.1)', color: 'var(--sophi-green)' }}
+            style={{ background: 'color-mix(in srgb, var(--sophi-accent) 10%, transparent)', color: 'var(--sophi-accent)' }}
           >
             {t('planActive')}
           </span>
@@ -96,14 +96,14 @@ export default function SubscriptionPage() {
       {/* Upgrade CTA */}
       <div
         className="rounded-xl border p-5 space-y-3"
-        style={{ background: 'var(--sophi-bg2)', borderColor: 'rgba(0,229,160,0.2)' }}
+        style={{ background: 'var(--sophi-bg2)', borderColor: 'color-mix(in srgb, var(--sophi-accent) 20%, transparent)' }}
       >
         <div className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>{t('upgradeTitle')}</div>
         <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>{t('upgradeDescription')}</p>
         <a
-          href="mailto:aura@fpf.pt"
+          href="mailto:info@sophisports.com"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium"
-          style={{ background: 'rgba(0,229,160,0.1)', color: 'var(--sophi-green)', border: '1px solid rgba(0,229,160,0.25)' }}
+          style={{ background: 'color-mix(in srgb, var(--sophi-accent) 10%, transparent)', color: 'var(--sophi-accent)', border: '1px solid color-mix(in srgb, var(--sophi-accent) 25%, transparent)' }}
         >
           <Mail size={14} />
           {t('contactUpgrade')}

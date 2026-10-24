@@ -96,7 +96,7 @@ export default function ProtocolsPage() {
         <div>
           <h1
             className="text-2xl font-bold"
-            style={{ fontFamily: 'var(--font-syne)', color: 'var(--sophi-text)' }}
+            style={{ fontFamily: 'var(--font-display)', color: 'var(--sophi-text)' }}
           >
             Protocolos de Reabilitação
           </h1>

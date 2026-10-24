@@ -96,7 +96,7 @@ function RegisterModal({
         borderRadius: 14, padding: 24, width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
             Registar Ocorrência
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sophi-text3)' }}>
@@ -230,7 +230,7 @@ function RegisterModal({
           <button
             onClick={handleSubmit}
             disabled={isPending || !form.athleteId}
-            style={{ fontSize: 12, padding: '8px 16px', borderRadius: 8, border: 'none', background: 'var(--sophi-green)', color: '#000', fontWeight: 700, cursor: 'pointer', opacity: isPending ? 0.7 : 1 }}
+            style={{ fontSize: 12, padding: '8px 16px', borderRadius: 8, border: 'none', background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)', fontWeight: 700, cursor: 'pointer', opacity: isPending ? 0.7 : 1 }}
           >
             {isPending ? 'A registar...' : 'Registar Ocorrência'}
           </button>
@@ -316,8 +316,8 @@ export function OccurrencesClient({
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '8px 14px', borderRadius: 8,
-              background: 'var(--sophi-green)', border: 'none',
-              color: '#000', fontWeight: 700, fontSize: 12, cursor: 'pointer',
+              background: 'var(--sophi-primary)', border: 'none',
+              color: 'var(--sophi-on-primary)', fontWeight: 700, fontSize: 12, cursor: 'pointer',
             }}
           >
             <Plus size={13} />
@@ -335,9 +335,9 @@ export function OccurrencesClient({
             style={{
               fontSize: 11, padding: '5px 12px', borderRadius: 6, cursor: 'pointer',
               fontFamily: 'var(--font-dm-mono)',
-              background: filter === v ? 'var(--sophi-green)' : 'var(--sophi-bg3)',
+              background: filter === v ? 'var(--sophi-primary)' : 'var(--sophi-bg3)',
               border: filter === v ? 'none' : '1px solid var(--sophi-border)',
-              color: filter === v ? '#000' : 'var(--sophi-text2)',
+              color: filter === v ? 'var(--sophi-on-primary)' : 'var(--sophi-text2)',
               fontWeight: filter === v ? 700 : 400,
             }}
           >

@@ -176,10 +176,10 @@ export function calcScore(
 // ─── Risk level helpers ───────────────────────────────────────────
 
 export function riskColor(score: number): string {
-  if (score < 40) return '#00e5a0'
-  if (score < 65) return '#ffb347'
-  if (score < 85) return '#ff7043'
-  return '#ff4d6d'
+  if (score < 40) return 'var(--risk-low)'
+  if (score < 65) return 'var(--risk-medium)'
+  if (score < 85) return 'var(--risk-high)'
+  return 'var(--risk-critical)'
 }
 
 export function riskLabel(score: number): string {
@@ -200,19 +200,19 @@ export function riskLevel(score: number): 'low' | 'medium' | 'high' | 'critical'
 
 export function getMenstrualPhase(day: number, _cycleLength = 28): MenstrualPhase {
   if (day <= 5) return {
-    phase: 'menstrual', label: 'Fase menstrual', color: '#ff4d6d',
+    phase: 'menstrual', label: 'Fase menstrual', color: 'var(--risk-critical)',
     lca_risk: 1.1, note: 'Dor possível. Monitorizar intensidade.'
   }
   if (day <= 13) return {
-    phase: 'follicular', label: 'Fase folicular', color: '#00e5a0',
+    phase: 'follicular', label: 'Fase folicular', color: 'var(--risk-low)',
     lca_risk: 1.0, note: 'Fase de maior resiliência. Ideal para carga alta.'
   }
   if (day === 14) return {
-    phase: 'ovulatory', label: 'Ovulação', color: '#ff7043',
+    phase: 'ovulatory', label: 'Ovulação', color: 'var(--risk-high)',
     lca_risk: 1.4, note: 'Pico estrogénio: risco LCA +40%. Evitar arranques bruscos.'
   }
   return {
-    phase: 'luteal', label: 'Fase lútea', color: '#ffb347',
+    phase: 'luteal', label: 'Fase lútea', color: 'var(--risk-medium)',
     lca_risk: 1.2, note: 'Maior laxidez ligamentar. Reforço proprioceptivo recomendado.'
   }
 }

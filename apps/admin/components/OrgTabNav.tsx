@@ -18,7 +18,7 @@ export function OrgTabNav({ orgId, active }: { orgId: string; active: OrgTab }) 
             href={tab.href(orgId)}
             className="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors"
             style={{
-              borderColor: isActive ? 'var(--sophi-green)' : 'transparent',
+              borderColor: isActive ? 'var(--sophi-accent)' : 'transparent',
               color: isActive ? 'var(--sophi-text)' : 'var(--sophi-text2)',
             }}
           >

@@ -37,7 +37,7 @@ interface RehabPlansClientProps {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  active:    { label: 'Ativo',      color: 'var(--sophi-green)',  bg: 'var(--sophi-green-bg)' },
+  active:    { label: 'Ativo',      color: 'var(--sophi-accent)',  bg: 'var(--sophi-accent-bg)' },
   completed: { label: 'Concluído',  color: 'var(--sophi-text2)',  bg: 'var(--sophi-bg4)' },
   archived:  { label: 'Arquivado',  color: 'var(--sophi-text3)',  bg: 'var(--sophi-bg4)' },
 }
@@ -192,8 +192,8 @@ export function RehabPlansClient({ plans, athletes, occurrences, role, initialAt
               title="Vista lista"
               style={{
                 display: 'flex', alignItems: 'center', padding: '6px 10px', cursor: 'pointer', border: 'none',
-                background: view === 'list' ? 'var(--sophi-green)' : 'var(--sophi-bg3)',
-                color: view === 'list' ? '#000' : 'var(--sophi-text3)',
+                background: view === 'list' ? 'var(--sophi-primary)' : 'var(--sophi-bg3)',
+                color: view === 'list' ? 'var(--sophi-on-primary)' : 'var(--sophi-text3)',
               }}
             >
               <List size={13} />
@@ -204,8 +204,8 @@ export function RehabPlansClient({ plans, athletes, occurrences, role, initialAt
               style={{
                 display: 'flex', alignItems: 'center', padding: '6px 10px', cursor: 'pointer', border: 'none',
                 borderLeft: '1px solid var(--sophi-border)',
-                background: view === 'calendar' ? 'var(--sophi-green)' : 'var(--sophi-bg3)',
-                color: view === 'calendar' ? '#000' : 'var(--sophi-text3)',
+                background: view === 'calendar' ? 'var(--sophi-primary)' : 'var(--sophi-bg3)',
+                color: view === 'calendar' ? 'var(--sophi-on-primary)' : 'var(--sophi-text3)',
               }}
             >
               <LayoutGrid size={13} />
@@ -218,8 +218,8 @@ export function RehabPlansClient({ plans, athletes, occurrences, role, initialAt
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '8px 14px', borderRadius: 8,
-                background: 'var(--sophi-green)', border: 'none',
-                color: '#000', fontWeight: 700, fontSize: 12, cursor: 'pointer',
+                background: 'var(--sophi-primary)', border: 'none',
+                color: 'var(--sophi-on-primary)', fontWeight: 700, fontSize: 12, cursor: 'pointer',
               }}
             >
               <Plus size={13} />
@@ -252,9 +252,9 @@ export function RehabPlansClient({ plans, athletes, occurrences, role, initialAt
                 style={{
                   fontSize: 11, padding: '5px 12px', borderRadius: 6, cursor: 'pointer',
                   fontFamily: 'var(--font-dm-mono)',
-                  background: filter === v ? 'var(--sophi-green)' : 'var(--sophi-bg3)',
+                  background: filter === v ? 'var(--sophi-primary)' : 'var(--sophi-bg3)',
                   border: filter === v ? 'none' : '1px solid var(--sophi-border)',
-                  color: filter === v ? '#000' : 'var(--sophi-text2)',
+                  color: filter === v ? 'var(--sophi-on-primary)' : 'var(--sophi-text2)',
                   fontWeight: filter === v ? 700 : 400,
                 }}
               >

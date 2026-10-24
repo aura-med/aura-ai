@@ -69,7 +69,7 @@ function ScoreInput({
   onChange: (v: number | null) => void
   hint?: string
 }) {
-  const inputClass = "w-20 rounded-lg border px-3 py-1.5 text-sm text-right font-mono outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+  const inputClass = "w-20 rounded-lg border px-3 py-1.5 text-sm text-right font-mono outline-none focus:ring-1 focus:ring-[var(--sophi-accent)]"
   const inputStyle = { background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }
 
   return (
@@ -238,7 +238,7 @@ export function Scat6Modal({ athleteId, existing, onClose, onSaved }: Props) {
   }
 
   // ── Shared styles ─────────────────────────────────────────────────────────
-  const inputClass = "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+  const inputClass = "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-accent)]"
   const inputStyle = { background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -250,7 +250,7 @@ export function Scat6Modal({ athleteId, existing, onClose, onSaved }: Props) {
       >
         {/* Header */}
         <div className="flex items-center gap-3 px-5 py-4 border-b shrink-0" style={{ borderColor: 'var(--sophi-border)' }}>
-          <Brain size={16} style={{ color: 'var(--sophi-green)' }} />
+          <Brain size={16} style={{ color: 'var(--sophi-accent)' }} />
           <div className="flex-1">
             <p className="text-sm font-bold" style={{ color: 'var(--sophi-text)' }}>
               {isEdit ? 'Editar SCAT-6' : isBaseline ? 'Nova Avaliação SCAT-6 Baseline' : 'Nova Avaliação SCAT-6'}
@@ -261,21 +261,21 @@ export function Scat6Modal({ athleteId, existing, onClose, onSaved }: Props) {
                   <div
                     className="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold transition-colors"
                     style={{
-                      background: i < step ? 'var(--sophi-green)' : i === step ? 'var(--sophi-green-bg)' : 'var(--sophi-bg3)',
-                      color:      i < step ? '#000' : i === step ? 'var(--sophi-green)' : 'var(--sophi-text3)',
+                      background: i < step ? 'var(--sophi-primary)' : i === step ? 'var(--sophi-accent-bg)' : 'var(--sophi-bg3)',
+                      color:      i < step ? 'var(--sophi-on-primary)' : i === step ? 'var(--sophi-accent)' : 'var(--sophi-text3)',
                     }}
                   >
                     {i < step ? <Check size={9} /> : i + 1}
                   </div>
                   {i < STEPS.length - 1 && (
-                    <div className="w-4 h-px" style={{ background: i < step ? 'var(--sophi-green)' : 'var(--sophi-border)' }} />
+                    <div className="w-4 h-px" style={{ background: i < step ? 'var(--sophi-accent)' : 'var(--sophi-border)' }} />
                   )}
                 </div>
               ))}
               <p className="ml-2 text-[10px]" style={{ color: 'var(--sophi-text3)' }}>{STEPS[step]}</p>
             </div>
           </div>
-          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-white/10">
+          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-[var(--sophi-bg4)]">
             <X size={15} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
@@ -292,7 +292,7 @@ export function Scat6Modal({ athleteId, existing, onClose, onSaved }: Props) {
                     type="checkbox"
                     checked={isBaseline}
                     onChange={(e) => setIsBaseline(e.target.checked)}
-                    className="w-4 h-4 accent-[var(--sophi-green)] rounded"
+                    className="w-4 h-4 accent-[var(--sophi-accent)] rounded"
                   />
                   <span className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>Esta é uma avaliação baseline</span>
                 </label>
@@ -356,7 +356,7 @@ export function Scat6Modal({ athleteId, existing, onClose, onSaved }: Props) {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={loc} onChange={(e) => setLoc(e.target.checked)} className="w-4 h-4 accent-[var(--sophi-green)]" />
+                        <input type="checkbox" checked={loc} onChange={(e) => setLoc(e.target.checked)} className="w-4 h-4 accent-[var(--sophi-accent)]" />
                         <span className="text-sm" style={{ color: 'var(--sophi-text)' }}>Perda de consciência</span>
                       </label>
                       {loc && (
@@ -372,7 +372,7 @@ export function Scat6Modal({ athleteId, existing, onClose, onSaved }: Props) {
                     </div>
                     <div className="space-y-2">
                       <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={pta} onChange={(e) => setPta(e.target.checked)} className="w-4 h-4 accent-[var(--sophi-green)]" />
+                        <input type="checkbox" checked={pta} onChange={(e) => setPta(e.target.checked)} className="w-4 h-4 accent-[var(--sophi-accent)]" />
                         <span className="text-sm" style={{ color: 'var(--sophi-text)' }}>Amnésia pós-traumática</span>
                       </label>
                       {pta && (
@@ -540,8 +540,8 @@ export function Scat6Modal({ athleteId, existing, onClose, onSaved }: Props) {
                 className="rounded-xl p-4 flex items-center justify-between"
                 style={{ background: 'var(--sophi-green-bg)', border: '1px solid var(--sophi-green)' }}
               >
-                <p className="text-sm font-bold" style={{ color: 'var(--sophi-green)' }}>Score SCAT-6 Total</p>
-                <p className="text-2xl font-bold font-mono" style={{ color: 'var(--sophi-green)' }}>{totalScat6Score}</p>
+                <p className="text-sm font-bold" style={{ color: 'var(--sophi-accent)' }}>Score SCAT-6 Total</p>
+                <p className="text-2xl font-bold font-mono" style={{ color: 'var(--sophi-accent)' }}>{totalScat6Score}</p>
               </div>
               {error && (
                 <p className="text-xs rounded-lg px-3 py-2" style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}>
@@ -557,7 +557,7 @@ export function Scat6Modal({ athleteId, existing, onClose, onSaved }: Props) {
           <button
             type="button"
             onClick={() => step > 0 ? setStep((s) => (s - 1) as Step) : onClose()}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium border hover:bg-white/5"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium border hover:bg-[var(--sophi-accent-bg)]"
             style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)' }}
           >
             <ChevronLeft size={12} />
@@ -569,7 +569,7 @@ export function Scat6Modal({ athleteId, existing, onClose, onSaved }: Props) {
               type="button"
               onClick={() => setStep((s) => (s + 1) as Step)}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold"
-              style={{ background: 'var(--sophi-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
             >
               Próximo
               <ChevronRight size={12} />
@@ -580,7 +580,7 @@ export function Scat6Modal({ athleteId, existing, onClose, onSaved }: Props) {
               onClick={handleSave}
               disabled={saving}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50"
-              style={{ background: 'var(--sophi-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
             >
               {saving ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
               {saving ? 'A guardar…' : 'Guardar SCAT-6'}

@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { TopbarClient } from '@/components/layout/TopbarClient'
 import { getTopbarDTO } from '@/lib/data/topbar'
+import { SophiLogo } from '@/components/brand/SophiLogo'
 
 export function Topbar() {
   return (
@@ -26,15 +27,9 @@ function TopbarShell() {
       <Link
         href="/"
         aria-label="Dashboard"
-        className="text-xl font-bold tracking-tight"
-        style={{
-          fontFamily: 'var(--font-syne)',
-          background: 'linear-gradient(135deg, var(--sophi-green) 0%, var(--sophi-blue) 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-        }}
+        className="flex items-center"
       >
-        Sophi
+        <SophiLogo className="h-10 w-auto" />
       </Link>
     </header>
   )

@@ -88,7 +88,7 @@ export function NotificationCenter({
       <button
         ref={triggerRef}
         onClick={() => setOpen(!open)}
-        className="relative flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--sophi-green)]"
+        className="relative flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--sophi-accent)]"
         style={{ color: open ? 'var(--sophi-text)' : 'var(--sophi-text2)' }}
         aria-label={`${t('title')}${unreadCount ? `, ${unreadCount} por ler` : ''}`}
         aria-expanded={open}
@@ -121,7 +121,7 @@ export function NotificationCenter({
           >
             <span
               className="text-sm font-semibold"
-              style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}
+              style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}
             >
               {t('title')}
               {unreadCount > 0 && (
@@ -138,7 +138,7 @@ export function NotificationCenter({
                 <button
                   onClick={handleMarkAllRead}
                   disabled={isPending}
-                  className="flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-md transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--sophi-green)]"
+                  className="flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-md transition-colors hover:bg-[var(--sophi-accent-bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--sophi-accent)]"
                   style={{ color: 'var(--sophi-text3)' }}
                   aria-label={t('markAllRead')}
                   title={t('markAllRead')}
@@ -151,7 +151,7 @@ export function NotificationCenter({
                   setOpen(false)
                   triggerRef.current?.focus()
                 }}
-                className="flex size-9 items-center justify-center rounded-md transition-colors hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--sophi-green)]"
+                className="flex size-9 items-center justify-center rounded-md transition-colors hover:bg-[var(--sophi-accent-bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--sophi-accent)]"
                 style={{ color: 'var(--sophi-text3)' }}
                 aria-label="Fechar notificacoes"
               >
@@ -175,7 +175,7 @@ export function NotificationCenter({
                     role="listitem"
                     className={cn(
                       'flex gap-3 border-b px-4 py-3 transition-colors',
-                      !isRead && 'bg-white/[0.02]'
+                      !isRead && 'bg-[var(--sophi-bg3)]'
                     )}
                     style={{ borderColor: 'var(--sophi-border)' }}
                     aria-label={`${n.title}. ${n.status.ariaLabel}`}

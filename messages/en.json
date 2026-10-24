@@ -7,20 +7,19 @@
       "fitness_coach": "Fitness Coach",
       "admin": "Admin"
     },
-    "fpfPilot": "FPF Pilot",
     "langToggle": "Language",
     "squad": "Squad",
     "org": "Organization"
   },
   "auth": {
-    "brandSubtitle": "Health & Performance Intelligence · FPF",
+    "brandSubtitle": "Health & Performance Intelligence",
     "emailLabel": "Email",
     "login": {
       "passwordLabel": "Password",
       "forgotPassword": "Forgot password?",
       "submit": "Sign in",
       "submitting": "Signing in...",
-      "restrictedAccess": "Access restricted to FPF clinical and technical staff"
+      "restrictedAccess": "Access restricted to clinical and technical staff"
     },
     "forgot": {
       "success": "Check your email. We sent you a link to reset your password.",
@@ -75,7 +74,11 @@
       "collapse_sidebar": "Collapse sidebar",
       "expand_sidebar": "Expand sidebar"
     },
-    "version": "Sophi v1.1 · FPF Pilot"
+    "version": "Sophi Sports v1.1"
+  },
+  "passport": {
+    "verifiedBy": "Verified by {org}",
+    "verified": "Verified"
   },
   "risk": {
     "low": "Low",
@@ -326,7 +329,7 @@
       "createSquad": "New Squad",
       "newSquad": "Create Squad",
       "squadName": "Name",
-      "squadNamePlaceholder": "E.g.: National A",
+      "squadNamePlaceholder": "E.g.: First Team",
       "squadType": "Type",
       "typeMale": "Male",
       "typeFemale": "Female",
@@ -373,12 +376,12 @@
     "integrations": {
       "title": "Integrations",
       "description": "Connect external devices and platforms.",
-      "note": "Integrations will be rolled out progressively. Contact the Sophi team for early access."
+      "note": "Integrations will be rolled out progressively. Contact the Sophi Sports team for early access."
     },
     "subscription": {
       "title": "Subscription",
       "description": "Plan details and included features.",
-      "planName": "FPF Pilot",
+      "planName": "Pilot",
       "planType": "Pilot Plan",
       "planActive": "Active",
       "validFrom": "Valid from",
@@ -393,7 +396,7 @@
       "featureSupport": "Dedicated technical support",
       "upgradeTitle": "Interested in expanding?",
       "upgradeDescription": "Contact us to explore full plan options, additional integrations, or deployment in other organizations.",
-      "contactUpgrade": "Contact Sophi team"
+      "contactUpgrade": "Contact Sophi Sports team"
     },
     "privacy": {
       "title": "Privacy & GDPR",

@@ -49,7 +49,7 @@ export default async function SecurityPage({
       {isOwner && (
         <Card>
           <div className="mb-4 flex items-center gap-2">
-            <ShieldPlus size={15} style={{ color: 'var(--sophi-green)' }} />
+            <ShieldPlus size={15} style={{ color: 'var(--sophi-accent)' }} />
             <h2 className="text-sm font-semibold">Admin Registry</h2>
           </div>
           <form action={inviteAdmin} className="mb-5 grid gap-3 sm:grid-cols-[1fr_160px_auto]">

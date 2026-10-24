@@ -157,7 +157,7 @@ export default function CalendarSettingsPage() {
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)', marginBottom: 4 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-display)', marginBottom: 4 }}>
           Calendário da Temporada
         </h2>
         <p style={{ fontSize: 13, color: 'var(--sophi-text3)' }}>
@@ -180,7 +180,7 @@ export default function CalendarSettingsPage() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Trophy size={15} style={{ color: 'var(--sophi-warn)' }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
               Dias de Jogo
             </span>
             <span style={{
@@ -224,7 +224,7 @@ export default function CalendarSettingsPage() {
                 <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Adversário</label>
                 <input
                   type="text"
-                  placeholder="Ex: Benfica"
+                  placeholder="Ex: Nome do adversário"
                   value={matchForm.opponent}
                   onChange={(e) => setMatchForm((f) => ({ ...f, opponent: e.target.value }))}
                   style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)' }}
@@ -309,7 +309,7 @@ export default function CalendarSettingsPage() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Dumbbell size={15} style={{ color: 'var(--sophi-blue)' }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
               Sessões de Treino
             </span>
             <span style={{
@@ -427,8 +427,8 @@ export default function CalendarSettingsPage() {
         )}
       </div>
 
-      <div style={{ marginTop: 24, padding: '12px 16px', borderRadius: 8, background: 'rgba(0,229,160,0.04)', border: '1px solid rgba(0,229,160,0.15)' }}>
-        <div style={{ fontSize: 11, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-green)', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+      <div style={{ marginTop: 24, padding: '12px 16px', borderRadius: 8, background: 'color-mix(in srgb, var(--sophi-accent) 4%, transparent)', border: '1px solid color-mix(in srgb, var(--sophi-accent) 15%, transparent)' }}>
+        <div style={{ fontSize: 11, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-accent)', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Como funciona o cálculo do Microciclo
         </div>
         <div style={{ fontSize: 12, color: 'var(--sophi-text2)', lineHeight: 1.5 }}>

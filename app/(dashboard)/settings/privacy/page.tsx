@@ -82,7 +82,7 @@ export default function PrivacyPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+        <h1 className="text-lg font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
           {t('title')}
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--sophi-text3)' }}>{t('description')}</p>
@@ -100,7 +100,7 @@ export default function PrivacyPage() {
             className="rounded-xl border p-3 text-center"
             style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
           >
-            <div className="text-2xl font-bold" style={{ color, fontFamily: 'var(--font-syne)' }}>{value}</div>
+            <div className="text-2xl font-bold" style={{ color, fontFamily: 'var(--font-display)' }}>{value}</div>
             <div className="text-xs mt-1" style={{ color: 'var(--sophi-text3)' }}>{label}</div>
           </div>
         ))}
@@ -116,7 +116,7 @@ export default function PrivacyPage() {
             onClick={exportCSV}
             disabled={exporting || athletes.length === 0}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors disabled:opacity-50"
-            style={{ background: 'rgba(0,229,160,0.1)', color: 'var(--sophi-green)', border: '1px solid rgba(0,229,160,0.2)' }}
+            style={{ background: 'color-mix(in srgb, var(--sophi-green) 10%, transparent)', color: 'var(--sophi-green)', border: '1px solid color-mix(in srgb, var(--sophi-green) 20%, transparent)' }}
           >
             <Download size={12} />
             {t('exportCsv')}
@@ -171,7 +171,7 @@ export default function PrivacyPage() {
       {/* GDPR note */}
       <div
         className="rounded-xl border px-4 py-3 space-y-1.5"
-        style={{ background: 'rgba(0,229,160,0.03)', borderColor: 'rgba(0,229,160,0.12)' }}
+        style={{ background: 'color-mix(in srgb, var(--sophi-green) 3%, transparent)', borderColor: 'color-mix(in srgb, var(--sophi-green) 12%, transparent)' }}
       >
         <div className="flex items-center gap-2">
           <ShieldCheck size={14} style={{ color: 'var(--sophi-green)' }} />

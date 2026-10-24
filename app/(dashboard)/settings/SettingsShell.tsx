@@ -50,11 +50,11 @@ export function SettingsShell({ children }: { children: React.ReactNode }) {
               href={href}
               className={cn(
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap shrink-0 transition-colors',
-                active ? 'font-medium' : 'hover:bg-white/5'
+                active ? 'font-medium' : 'hover:bg-[var(--sophi-accent-bg)]'
               )}
               style={{
-                color: active ? 'var(--sophi-green)' : 'var(--sophi-text2)',
-                background: active ? 'rgba(0,229,160,0.10)' : undefined,
+                color: active ? 'var(--sophi-accent)' : 'var(--sophi-text2)',
+                background: active ? 'color-mix(in srgb, var(--sophi-accent) 10%, transparent)' : undefined,
               }}
             >
               <Icon size={13} />
@@ -64,7 +64,7 @@ export function SettingsShell({ children }: { children: React.ReactNode }) {
         })}
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap shrink-0 transition-colors hover:bg-white/5"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap shrink-0 transition-colors hover:bg-[var(--sophi-accent-bg)]"
           style={{ color: 'var(--sophi-text2)' }}
         >
           <LogOut size={13} />
@@ -95,16 +95,16 @@ export function SettingsShell({ children }: { children: React.ReactNode }) {
                 href={href}
                 className={cn(
                   'flex items-center gap-3 px-4 py-2.5 text-sm transition-colors',
-                  active ? 'font-medium' : 'hover:bg-white/5'
+                  active ? 'font-medium' : 'hover:bg-[var(--sophi-accent-bg)]'
                 )}
                 style={{
-                  color: active ? 'var(--sophi-green)' : 'var(--sophi-text2)',
-                  background: active ? 'rgba(0,229,160,0.06)' : undefined,
+                  color: active ? 'var(--sophi-accent)' : 'var(--sophi-text2)',
+                  background: active ? 'color-mix(in srgb, var(--sophi-accent) 6%, transparent)' : undefined,
                 }}
               >
                 <Icon size={15} />
                 <span>{t(`nav.${key}`)}</span>
-                {active && <ChevronRight size={12} className="ml-auto" style={{ color: 'var(--sophi-green)' }} />}
+                {active && <ChevronRight size={12} className="ml-auto" style={{ color: 'var(--sophi-accent)' }} />}
               </Link>
             )
           })}
@@ -112,7 +112,7 @@ export function SettingsShell({ children }: { children: React.ReactNode }) {
 
         <button
           onClick={handleSignOut}
-          className="m-3 flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-white/5"
+          className="m-3 flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-[var(--sophi-accent-bg)]"
           style={{ color: 'var(--sophi-text2)' }}
         >
           <LogOut size={15} />

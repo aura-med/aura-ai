@@ -10,7 +10,7 @@ export function riskColor(level: RiskLevel): string {
   switch (level) {
     case 'low':      return 'var(--sophi-green)'
     case 'medium':   return 'var(--sophi-warn)'
-    case 'high':     return '#ff9330'
+    case 'high':     return 'var(--risk-high)'
     case 'critical': return 'var(--sophi-danger)'
   }
 }
@@ -36,7 +36,7 @@ export function riskBgClass(level: RiskLevel): string {
 export function partialBarColor(partial: number): string {
   if (partial < 0.4)  return 'var(--sophi-green)'
   if (partial < 0.65) return 'var(--sophi-warn)'
-  if (partial < 0.85) return '#ff9330'
+  if (partial < 0.85) return 'var(--risk-high)'
   return 'var(--sophi-danger)'
 }
 

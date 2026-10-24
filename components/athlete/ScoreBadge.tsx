@@ -21,7 +21,7 @@ export function ScoreBadge({ score, level, confidence, size = 'md', className }:
       <div className={cn('flex flex-col items-center gap-1', className)}>
         <div
           className="relative flex items-center justify-center w-24 h-24 rounded-full border-2"
-          style={{ borderColor: color, background: `${color}12` }}
+          style={{ borderColor: color, background: `color-mix(in srgb, ${color} 7%, transparent)` }}
         >
           <div className="text-center">
             <div
@@ -35,7 +35,7 @@ export function ScoreBadge({ score, level, confidence, size = 'md', className }:
         </div>
         <span
           className="text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border"
-          style={{ color, borderColor: `${color}40`, background: `${color}12` }}
+          style={{ color, borderColor: `color-mix(in srgb, ${color} 25%, transparent)`, background: `color-mix(in srgb, ${color} 7%, transparent)` }}
         >
           {label}
         </span>
@@ -62,7 +62,7 @@ export function ScoreBadge({ score, level, confidence, size = 'md', className }:
         </span>
         <span
           className="text-[10px] px-1.5 py-0.5 rounded font-medium"
-          style={{ background: `${color}15`, color }}
+          style={{ background: `color-mix(in srgb, ${color} 9%, transparent)`, color }}
         >
           {label}
         </span>
@@ -83,7 +83,7 @@ export function ScoreBadge({ score, level, confidence, size = 'md', className }:
       <div className="flex flex-col">
         <span
           className="text-xs font-semibold px-2 py-0.5 rounded-full border"
-          style={{ color, borderColor: `${color}40`, background: `${color}12` }}
+          style={{ color, borderColor: `color-mix(in srgb, ${color} 25%, transparent)`, background: `color-mix(in srgb, ${color} 7%, transparent)` }}
         >
           {label}
         </span>

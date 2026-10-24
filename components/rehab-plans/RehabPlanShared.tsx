@@ -53,7 +53,7 @@ export function formatShort(dateStr: string | null | undefined) {
   return `${d}/${m}/${y}`
 }
 
-const inputClass = 'w-full rounded-lg border px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[var(--sophi-green)]'
+const inputClass = 'w-full rounded-lg border px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-[var(--sophi-accent)]'
 const inputStyle = { background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }
 const labelClass = 'text-[10px] font-semibold uppercase tracking-wider block mb-1'
 
@@ -164,10 +164,10 @@ export function PlanModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="w-full max-w-md rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+          <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
             {isEdit ? 'Editar Plano de Reabilitação' : 'Novo Plano de Reabilitação'}
           </h3>
-          <button type="button" onClick={onClose} className="p-1 rounded hover:bg-white/10">
+          <button type="button" onClick={onClose} className="p-1 rounded hover:bg-[var(--sophi-bg4)]">
             <X size={16} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
@@ -220,7 +220,7 @@ export function PlanModal({
             Cancelar
           </button>
           <button type="button" onClick={handleSave} disabled={saving}
-            className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2" style={{ background: 'var(--sophi-green)', color: '#000' }}>
+            className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2" style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
             {saving && <Loader2 size={13} className="animate-spin" />} Guardar
           </button>
         </div>
@@ -273,10 +273,10 @@ function PhaseModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="w-full max-w-md rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-syne)' }}>
+          <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
             {isEdit ? 'Editar Critério de Progressão' : 'Novo Critério de Progressão'}
           </h3>
-          <button type="button" onClick={onClose} className="p-1 rounded hover:bg-white/10">
+          <button type="button" onClick={onClose} className="p-1 rounded hover:bg-[var(--sophi-bg4)]">
             <X size={16} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
@@ -313,7 +313,7 @@ function PhaseModal({
             Cancelar
           </button>
           <button type="button" onClick={handleSave} disabled={saving}
-            className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2" style={{ background: 'var(--sophi-green)', color: '#000' }}>
+            className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2" style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
             {saving && <Loader2 size={13} className="animate-spin" />} Guardar
           </button>
         </div>
@@ -412,12 +412,12 @@ function DayEntryModal({
       <div className="w-full max-w-lg rounded-2xl border shadow-2xl flex flex-col max-h-[90vh]" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
         <div className="flex items-center justify-between px-5 py-4 border-b shrink-0" style={{ borderColor: 'var(--sophi-border)' }}>
           <div className="flex items-center gap-2">
-            <CalendarClock size={14} style={{ color: 'var(--sophi-green)' }} />
+            <CalendarClock size={14} style={{ color: 'var(--sophi-accent)' }} />
             <p className="text-sm font-bold" style={{ color: 'var(--sophi-text)' }}>
               {formatDisplayDate(date)} · {periodLabel}
             </p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-white/10">
+          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-[var(--sophi-bg4)]">
             <X size={14} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
@@ -490,7 +490,7 @@ function DayEntryModal({
                     </div>
                   ) : (
                     <button type="button" onClick={() => handleMove(false)} disabled={moving || (moveDate === date && movePeriod === period)}
-                      className="text-[11px] font-bold px-3 py-1.5 rounded-lg disabled:opacity-40" style={{ background: 'var(--sophi-green)', color: '#000' }}>
+                      className="text-[11px] font-bold px-3 py-1.5 rounded-lg disabled:opacity-40" style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
                       {moving ? <Loader2 size={11} className="animate-spin" /> : 'Mover'}
                     </button>
                   )}
@@ -511,11 +511,11 @@ function DayEntryModal({
             )}
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-xs font-medium border hover:bg-white/5" style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)' }}>
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-xs font-medium border hover:bg-[var(--sophi-accent-bg)]" style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)' }}>
               Cancelar
             </button>
             <button type="button" onClick={handleSave} disabled={saving || deleting}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50" style={{ background: 'var(--sophi-green)', color: '#000' }}>
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50" style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
               {saving ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
               Guardar
             </button>
@@ -565,8 +565,8 @@ function WeekBlock({
           const testPhase = phases.find((ph) => ph.test_date === date)
           return (
             <div key={date} className="border-l first:border-l-0 border-b" style={{ borderColor: 'var(--sophi-border)' }}>
-              <div className="px-2 py-1.5 text-center" style={{ background: isToday ? 'var(--sophi-green-bg)' : 'var(--sophi-bg3)' }}>
-                <p className="text-[10px] font-semibold" style={{ color: isToday ? 'var(--sophi-green)' : 'var(--sophi-text2)' }}>{WEEKDAY_LABELS[i]}</p>
+              <div className="px-2 py-1.5 text-center" style={{ background: isToday ? 'var(--sophi-accent-bg)' : 'var(--sophi-bg3)' }}>
+                <p className="text-[10px] font-semibold" style={{ color: isToday ? 'var(--sophi-accent)' : 'var(--sophi-text2)' }}>{WEEKDAY_LABELS[i]}</p>
                 <p className="text-[9px] font-mono" style={{ color: 'var(--sophi-text3)' }}>{md.label} · {formatShort(date)}</p>
                 {testPhase && (
                   <p className="text-[8px] font-bold mt-0.5 px-1 py-0.5 rounded" style={{ background: 'var(--sophi-purple)', color: '#fff' }} title={testPhase.name}>
@@ -802,23 +802,23 @@ export function PlanDetail({
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <button type="button" onClick={handleExportPDF} disabled={loading || loadError}
-              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-white/5 disabled:opacity-40 disabled:hover:bg-transparent" style={{ color: 'var(--sophi-text2)' }}>
+              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-accent-bg)] disabled:opacity-40 disabled:hover:bg-transparent" style={{ color: 'var(--sophi-text2)' }}>
               <Download size={10} /> Exportar PDF
             </button>
             {canEdit && (
               <>
                 <button type="button" onClick={() => setShowPlanModal(true)}
-                  className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-white/5" style={{ color: 'var(--sophi-text2)' }}>
+                  className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-accent-bg)]" style={{ color: 'var(--sophi-text2)' }}>
                   <Pencil size={10} /> Editar
                 </button>
                 {plan.is_active && (
                   <>
                     <button type="button" onClick={handleConcluirClick} disabled={closing !== null}
-                      className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]" style={{ color: 'var(--sophi-green)' }}>
+                      className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-accent-bg)]" style={{ color: 'var(--sophi-accent)' }}>
                       {closing === 'complete' ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />} Concluir
                     </button>
                     <button type="button" onClick={() => handleClose(false)} disabled={closing !== null}
-                      className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-white/5" style={{ color: 'var(--sophi-text3)' }}>
+                      className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-accent-bg)]" style={{ color: 'var(--sophi-text3)' }}>
                       {closing === 'archive' ? <Loader2 size={10} className="animate-spin" /> : <Flag size={10} />} Arquivar
                     </button>
                   </>
@@ -850,7 +850,7 @@ export function PlanDetail({
                   value={d.id}
                   checked={selectedDiagId === d.id}
                   onChange={() => setSelectedDiagId(d.id)}
-                  className="accent-[var(--sophi-green)]"
+                  className="accent-[var(--sophi-accent)]"
                 />
                 <span className="text-xs" style={{ color: 'var(--sophi-text2)' }}>{d.label}</span>
               </label>
@@ -862,7 +862,7 @@ export function PlanDetail({
                 value=""
                 checked={selectedDiagId === ''}
                 onChange={() => setSelectedDiagId('')}
-                className="accent-[var(--sophi-green)]"
+                className="accent-[var(--sophi-accent)]"
               />
               <span className="text-xs" style={{ color: 'var(--sophi-text3)' }}>Nenhum (só concluir o plano)</span>
             </label>
@@ -873,7 +873,7 @@ export function PlanDetail({
               disabled={closing !== null}
               onClick={() => handleClose(true, selectedDiagId || null)}
               className="flex items-center gap-1 text-[10px] font-bold px-3 py-1.5 rounded-lg"
-              style={{ background: 'var(--sophi-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
             >
               {closing === 'complete' ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />} Confirmar conclusão
             </button>
@@ -881,7 +881,7 @@ export function PlanDetail({
               type="button"
               disabled={closing !== null}
               onClick={() => setDiagPicker(null)}
-              className="text-[10px] font-medium px-3 py-1.5 rounded-lg hover:bg-white/5"
+              className="text-[10px] font-medium px-3 py-1.5 rounded-lg hover:bg-[var(--sophi-accent-bg)]"
               style={{ color: 'var(--sophi-text3)' }}
             >
               Cancelar
@@ -896,7 +896,7 @@ export function PlanDetail({
           <p className="text-[11px] font-semibold uppercase tracking-wider flex-1" style={{ color: 'var(--sophi-text2)' }}>Fases & Critérios de Progressão</p>
           {canEdit && plan.is_active && (
             <button type="button" onClick={() => { setEditingPhase(null); setShowPhaseModal(true) }}
-              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-green-bg)]" style={{ color: 'var(--sophi-green)' }}>
+              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-accent-bg)]" style={{ color: 'var(--sophi-accent)' }}>
               <Plus size={10} /> Novo Critério
             </button>
           )}
@@ -921,10 +921,10 @@ export function PlanDetail({
                     </div>
                     {canEdit && confirmDeletePhaseId !== ph.id && (
                       <div className="flex items-center gap-1 shrink-0">
-                        <button type="button" onClick={() => { setEditingPhase(ph); setShowPhaseModal(true) }} className="p-1 rounded hover:bg-white/10">
+                        <button type="button" onClick={() => { setEditingPhase(ph); setShowPhaseModal(true) }} className="p-1 rounded hover:bg-[var(--sophi-bg4)]">
                           <Pencil size={11} style={{ color: 'var(--sophi-text3)' }} />
                         </button>
-                        <button type="button" onClick={() => setConfirmDeletePhaseId(ph.id)} className="p-1 rounded hover:bg-white/10">
+                        <button type="button" onClick={() => setConfirmDeletePhaseId(ph.id)} className="p-1 rounded hover:bg-[var(--sophi-bg4)]">
                           <Trash2 size={11} style={{ color: 'var(--sophi-danger)' }} />
                         </button>
                       </div>
@@ -965,7 +965,7 @@ export function PlanDetail({
         <div className="flex flex-col items-center gap-2 py-8">
           <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>Não foi possível carregar o calendário do plano.</p>
           <button type="button" onClick={loadDetail}
-            className="text-[11px] font-medium px-3 py-1.5 rounded-lg hover:bg-white/5" style={{ color: 'var(--sophi-text2)' }}>
+            className="text-[11px] font-medium px-3 py-1.5 rounded-lg hover:bg-[var(--sophi-accent-bg)]" style={{ color: 'var(--sophi-text2)' }}>
             Tentar novamente
           </button>
         </div>
@@ -993,7 +993,7 @@ export function PlanDetail({
                 − Remover dia
               </button>
               <button type="button" onClick={() => setExtraDays((d) => d + 1)}
-                className="flex-1 py-2 rounded-lg border border-dashed text-xs font-medium hover:border-[var(--sophi-green)] hover:text-[var(--sophi-green)]"
+                className="flex-1 py-2 rounded-lg border border-dashed text-xs font-medium hover:border-[var(--sophi-accent)] hover:text-[var(--sophi-accent)]"
                 style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text3)' }}>
                 + Adicionar dia
               </button>

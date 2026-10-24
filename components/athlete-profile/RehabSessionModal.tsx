@@ -52,7 +52,7 @@ export function RehabSessionModal({ athleteId, existing, occurrences, plans, onC
   const [deleting, setDeleting] = useState(false)
   const [error,    setError]    = useState<string | null>(null)
 
-  const inputClass = "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-green)]"
+  const inputClass = "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--sophi-accent)]"
   const inputStyle = { background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)', color: 'var(--sophi-text)' }
 
   function updateExercise(index: number, patch: Partial<RehabSessionExercise>) {
@@ -134,12 +134,12 @@ export function RehabSessionModal({ athleteId, existing, occurrences, plans, onC
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b shrink-0" style={{ borderColor: 'var(--sophi-border)' }}>
           <div className="flex items-center gap-2">
-            <Activity size={14} style={{ color: 'var(--sophi-green)' }} />
+            <Activity size={14} style={{ color: 'var(--sophi-accent)' }} />
             <p className="text-sm font-bold" style={{ color: 'var(--sophi-text)' }}>
               {isEdit ? 'Editar Sessão' : 'Nova Sessão de Reabilitação'}
             </p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-white/10">
+          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-[var(--sophi-bg4)]">
             <X size={14} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
@@ -191,9 +191,9 @@ export function RehabSessionModal({ athleteId, existing, occurrences, plans, onC
                   onClick={() => setSessionType(t.value)}
                   className="px-3 py-1.5 rounded-lg border text-xs font-medium transition-all"
                   style={{
-                    borderColor: sessionType === t.value ? 'var(--sophi-green)' : 'var(--sophi-border)',
-                    background:  sessionType === t.value ? 'var(--sophi-green-bg)' : 'var(--sophi-bg2)',
-                    color:       sessionType === t.value ? 'var(--sophi-green)' : 'var(--sophi-text3)',
+                    borderColor: sessionType === t.value ? 'var(--sophi-accent)' : 'var(--sophi-border)',
+                    background:  sessionType === t.value ? 'var(--sophi-accent-bg)' : 'var(--sophi-bg2)',
+                    color:       sessionType === t.value ? 'var(--sophi-accent)' : 'var(--sophi-text3)',
                   }}
                 >
                   {t.label}
@@ -271,7 +271,7 @@ export function RehabSessionModal({ athleteId, existing, occurrences, plans, onC
                 type="button"
                 onClick={() => setExercises((prev) => [...prev, emptyExercise()])}
                 className="flex items-center gap-1 text-[11px] font-medium hover:opacity-80"
-                style={{ color: 'var(--sophi-green)' }}
+                style={{ color: 'var(--sophi-accent)' }}
               >
                 <Plus size={12} /> Adicionar
               </button>
@@ -395,7 +395,7 @@ export function RehabSessionModal({ athleteId, existing, occurrences, plans, onC
           <div className="flex items-center gap-2">
             <button
               type="button" onClick={onClose}
-              className="px-4 py-2 rounded-lg text-xs font-medium border hover:bg-white/5"
+              className="px-4 py-2 rounded-lg text-xs font-medium border hover:bg-[var(--sophi-accent-bg)]"
               style={{ borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)' }}
             >
               Cancelar
@@ -404,7 +404,7 @@ export function RehabSessionModal({ athleteId, existing, occurrences, plans, onC
               type="button" onClick={handleSave}
               disabled={saving || deleting}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50"
-              style={{ background: 'var(--sophi-green)', color: '#000' }}
+              style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
             >
               {saving ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
               {saving ? 'A guardar…' : isEdit ? 'Guardar' : 'Criar Sessão'}

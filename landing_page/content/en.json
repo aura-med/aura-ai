@@ -146,7 +146,7 @@
     "consent": "I agree to receive Sophi's monthly newsletter. I can unsubscribe at any time.",
     "privacyLink": "How we handle your data",
     "note": "We will send you a confirmation email. Your address goes no further.",
-    "success": "Almost there. Check your inbox and click the confirmation link.",
+    "success": "Thanks for subscribing. A confirmation email has been sent to your inbox.",
     "error": "That did not go through. Please try again, or email us instead."
   },
   "footer": {

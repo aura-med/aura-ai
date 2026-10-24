@@ -25,6 +25,15 @@ test('root message bundles include auth copy for login and auth controls', () =>
   }
 })
 
+test('root message bundles include passport verification copy', () => {
+  for (const locale of locales) {
+    const messages = JSON.parse(readFileSync(`messages/${locale}.json`, 'utf8')) as Record<string, unknown>
+
+    assert.match(String(readPath(messages, 'passport.verifiedBy')), /\{org\}/, `${locale}: passport.verifiedBy`)
+    assert.equal(typeof readPath(messages, 'passport.verified'), 'string', `${locale}: passport.verified`)
+  }
+})
+
 function readPath(source: unknown, path: string) {
   return path.split('.').reduce<unknown>((value, key) => {
     if (!value || typeof value !== 'object') return undefined

@@ -6,7 +6,7 @@ import Link from 'next/link'
 import type { AthleteAvailabilityStatus } from '@/types'
 
 const STATUS_CONFIG: Record<AthleteAvailabilityStatus, { label: string; color: string; dot: string; bg: string }> = {
-  available:       { label: 'Disponível',      color: 'var(--sophi-green)',  dot: '#00e5a0', bg: 'rgba(0,229,160,0.08)' },
+  available:       { label: 'Disponível',      color: 'var(--sophi-green)',  dot: 'var(--sophi-green)', bg: 'color-mix(in srgb, var(--sophi-green) 8%, transparent)' },
   evaluation:      { label: 'Em Avaliação',    color: 'var(--sophi-warn)',   dot: '#f6ad55', bg: 'rgba(246,173,85,0.08)' },
   load_management: { label: 'Gestão de Carga', color: 'var(--sophi-orange)', dot: '#cc5500', bg: 'rgba(204,85,0,0.08)' },
   unavailable:     { label: 'Indisponível',    color: 'var(--sophi-danger)', dot: '#ff4d6d', bg: 'rgba(255,77,109,0.08)' },
@@ -71,7 +71,7 @@ export default async function ClinicalFilePage({
                   <Link key={a.id} href={withSquadParam(`/athletes/${a.id}`, squadId)} style={{ textDecoration: 'none' }}>
                     <div style={{
                       display: 'flex', alignItems: 'center', gap: 6,
-                      background: cfg.bg, border: `1px solid ${cfg.dot}33`,
+                      background: cfg.bg, border: `1px solid color-mix(in srgb, ${cfg.dot} 20%, transparent)`,
                       borderRadius: 20, padding: '4px 10px 4px 4px',
                     }}>
                       <div style={{ borderRadius: '50%', padding: 1, background: cfg.dot }}>

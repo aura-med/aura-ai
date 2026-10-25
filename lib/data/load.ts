@@ -16,6 +16,7 @@ export async function getLoadPageDTO(squadId: string | null): Promise<LoadPageDT
     .order('session_date', { ascending: false })
     .limit(100)
 
+  query = query.eq('athletes.active', true)
   if (squadId) query = query.eq('athletes.squad_id', squadId)
 
   const { data } = await query

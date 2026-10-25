@@ -1,11 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import Link from 'next/link'
-import { ChevronDown, ChevronUp, Download, Hourglass, Search, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { ChevronDown, ChevronUp, Download, Hourglass, LayoutGrid, List, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
 import { AthleteCard } from '@/components/ui/AthleteCard'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { withSquadParam } from '@/lib/squad-url'
+import { useUiStore } from '@/stores/uiStore'
+import { PlayerFormDialog, type PlayerFormSquad, type PlayerFormInitial } from '@/components/squad/PlayerFormDialog'
+import { RemovePlayerDialog } from '@/components/squad/RemovePlayerDialog'
+import { SquadListView } from '@/components/squad/SquadListView'
+import { InactivePlayersSection, type InactiveAthlete } from '@/components/squad/InactivePlayersSection'
 import type { MicrocycleStatus } from '@/lib/utils/microcycle'
 import type { DashboardOccurrenceRow, ClinicalStaffMember } from '@/lib/utils/pdf-export'
 import { MonthCalendar, type MonthCalendarEvent } from '@/components/dashboard/MonthCalendar'
@@ -28,6 +34,11 @@ interface DashboardAthlete {
   photo_url: string | null
   position: string | null
   club: string | null
+  date_of_birth: string | null
+  squad_id: string | null
+  nationality: string | null
+  menstrual_day: number | null
+  cycle_length: number | null
   availability_status: AthleteAvailabilityStatus
   status: string
   score: number
@@ -38,6 +49,7 @@ interface DashboardAthlete {
 interface DashboardClientProps {
   athletes: DashboardAthlete[]
   squadId: string | null
+  initialTab: 'overview' | 'squad' | 'calendar'
   currentDate: string
   microcycle: MicrocycleStatus
   calendarEvents: MonthCalendarEvent[]
@@ -56,6 +68,15 @@ interface DashboardClientProps {
   canApplyLoadManagement: boolean
   clinicalStaff: ClinicalStaffMember[]
   orgName: string | null
+  // Matches the athletes_insert RLS policy (owner, or doctor/physio on their squads).
+  canAddPlayer: boolean
+  // Edit / Remove on cards and rows — owner/doctor only (canManageAthletes).
+  canManage: boolean
+  // Disabled players — only populated for owner/doctor (canManageAthletes).
+  inactiveAthletes: InactiveAthlete[]
+  addPlayerSquads: PlayerFormSquad[]
+  addPlayerOrg: { type: string; name: string } | null
+  clubs: string[]
 }
 
 const STATUS_CONFIG: Record<AthleteAvailabilityStatus, {
@@ -82,9 +103,36 @@ const STATUS_ORDER: AthleteAvailabilityStatus[] = ['unavailable', 'evaluation', 
 // normal training plan).
 const TRAFFIC_LIGHT_ORDER: AthleteAvailabilityStatus[] = ['available', 'load_management', 'unavailable', 'rtp']
 
-export function DashboardClient({ athletes, squadId, currentDate, microcycle, calendarEvents, clinicalOccurrences, reasonByAthleteId, canReadClinical, canApplyLoadManagement, clinicalStaff, orgName }: DashboardClientProps) {
-  const [tab, setTab] = useState<'overview' | 'squad' | 'calendar'>('overview')
+function editInitial(a: DashboardAthlete): PlayerFormInitial {
+  return {
+    athleteId: a.id,
+    squad_id: a.squad_id ?? '',
+    name: a.name,
+    shirt_number: a.shirt_number,
+    position: a.position,
+    date_of_birth: a.date_of_birth,
+    nationality: a.nationality,
+    club: a.club,
+    menstrual_day: a.menstrual_day,
+    cycle_length: a.cycle_length,
+    photo_url: a.photo_url,
+  }
+}
+
+export function DashboardClient({ athletes, squadId, initialTab, currentDate, microcycle, calendarEvents, clinicalOccurrences, reasonByAthleteId, canReadClinical, canApplyLoadManagement, clinicalStaff, orgName, canAddPlayer, canManage, inactiveAthletes, addPlayerSquads, addPlayerOrg, clubs }: DashboardClientProps) {
+  const [tab, setTab] = useState<'overview' | 'squad' | 'calendar'>(initialTab)
   const [squadQuery, setSquadQuery] = useState('')
+  const [addPlayerOpen, setAddPlayerOpen] = useState(false)
+  const [showInactive, setShowInactive] = useState(false)
+  const [editingAthlete, setEditingAthlete] = useState<DashboardAthlete | null>(null)
+  const [removingAthlete, setRemovingAthlete] = useState<DashboardAthlete | null>(null)
+  const router = useRouter()
+  // The persisted view only applies after hydration; until then render cards
+  // (the default) so server and client markup match.
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false)
+  const storedSquadView = useUiStore((s) => s.squadView)
+  const setSquadView = useUiStore((s) => s.setSquadView)
+  const squadView = mounted ? storedSquadView : 'cards'
   // Which status group is expanded to show each athlete's reason inline —
   // 'evaluation' covers the "A Reavaliar" strip too, sharing one toggle with
   // the traffic-light grid below it.
@@ -410,7 +458,8 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
       {/* ── Tab: Plantel ─────────────────────────────────────────────── */}
       {tab === 'squad' && (
         <div>
-          <div className="relative max-w-xs mb-5">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
+          <div className="relative w-full max-w-xs">
             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--sophi-text3)' }} />
             <input
               value={squadQuery}
@@ -431,6 +480,62 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
             )}
           </div>
 
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginLeft: 'auto' }}>
+              <div role="group" aria-label="Vista do plantel" style={{ display: 'flex', border: '1px solid var(--sophi-border)', borderRadius: 8, overflow: 'hidden' }}>
+                {([['cards', 'Vista cartões', LayoutGrid], ['list', 'Vista lista', List]] as const).map(([view, title, Icon], i) => (
+                  <button
+                    key={view}
+                    type="button"
+                    title={title}
+                    aria-label={title}
+                    aria-pressed={squadView === view}
+                    onClick={() => setSquadView(view)}
+                    style={{
+                      padding: '6px 10px', cursor: 'pointer', border: 'none',
+                      borderLeft: i === 1 ? '1px solid var(--sophi-border)' : 'none',
+                      background: squadView === view ? 'var(--sophi-primary)' : 'var(--sophi-bg3)',
+                      color: squadView === view ? 'var(--sophi-on-primary)' : 'var(--sophi-text3)',
+                      display: 'flex', alignItems: 'center',
+                    }}
+                  >
+                    <Icon size={13} />
+                  </button>
+                ))}
+              </div>
+
+              {inactiveAthletes.length > 0 && (
+                <button
+                  type="button"
+                  aria-pressed={showInactive}
+                  onClick={() => setShowInactive((v) => !v)}
+                  style={{
+                    padding: '7px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                    border: '1px solid var(--sophi-border)',
+                    background: showInactive ? 'var(--sophi-primary)' : 'var(--sophi-bg3)',
+                    color: showInactive ? 'var(--sophi-on-primary)' : 'var(--sophi-text2)',
+                  }}
+                >
+                  Inativos ({inactiveAthletes.length})
+                </button>
+              )}
+
+              {canAddPlayer && (
+                <button
+                  type="button"
+                  onClick={() => setAddPlayerOpen(true)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 8,
+                    fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none',
+                    background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)',
+                  }}
+                >
+                  <Plus size={13} />
+                  Adicionar jogador
+                </button>
+              )}
+            </div>
+          </div>
+
           {squadQuery && squadAthletes.length === 0 && (
             <div style={{ fontSize: 12, color: 'var(--sophi-text3)', textAlign: 'center', padding: '24px 0' }}>
               Sem jogadores para &quot;{squadQuery}&quot;
@@ -449,15 +554,49 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
                 }}>
                   {posLabels[pos]}
                 </div>
+                {squadView === 'list' ? (
+                  <SquadListView
+                    athletes={group}
+                    squadId={squadId}
+                    statusConfig={STATUS_CONFIG}
+                    positionCode={posCodes[pos] ?? pos}
+                    onEdit={canManage ? (id) => setEditingAthlete(athletes.find((x) => x.id === id) ?? null) : undefined}
+                    onRemove={canManage ? (id) => setRemovingAthlete(athletes.find((x) => x.id === id) ?? null) : undefined}
+                  />
+                ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4">
                   {group.map((a) => {
                     const cfg = STATUS_CONFIG[a.availability_status]
                     return (
                       <div key={a.id} style={{
+                        position: 'relative',
                         borderRadius: 16, overflow: 'hidden',
                         border: `2px solid ${cfg.dot}`,
                         background: 'var(--sophi-bg2)',
                       }}>
+                        {canManage && (
+                          <div style={{ position: 'absolute', top: 6, right: 6, zIndex: 2, display: 'flex', gap: 4 }}>
+                            {([
+                              ['Edit', Pencil, () => setEditingAthlete(a)],
+                              ['Remove', Trash2, () => setRemovingAthlete(a)],
+                            ] as const).map(([label, Icon, onClick]) => (
+                              <button
+                                key={label}
+                                type="button"
+                                title={`${label} ${a.name}`}
+                                aria-label={`${label} ${a.name}`}
+                                onClick={onClick}
+                                style={{
+                                  width: 26, height: 26, borderRadius: 8, border: 'none', cursor: 'pointer',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  background: 'rgba(0,0,0,0.55)', color: '#fff',
+                                }}
+                              >
+                                <Icon size={13} />
+                              </button>
+                            ))}
+                          </div>
+                        )}
                         <AthleteCard
                           href={withSquadParam(`/athletes/${a.id}`, squadId)}
                           name={a.name}
@@ -473,9 +612,47 @@ export function DashboardClient({ athletes, squadId, currentDate, microcycle, ca
                     )
                   })}
                 </div>
+                )}
               </div>
             )
           })}
+
+          {canManage && addPlayerOrg && editingAthlete && (
+            <PlayerFormDialog
+              open
+              onClose={() => setEditingAthlete(null)}
+              mode="edit"
+              initial={editInitial(editingAthlete)}
+              squads={addPlayerSquads}
+              org={addPlayerOrg}
+              clubs={clubs}
+            />
+          )}
+          {canManage && removingAthlete && (
+            <RemovePlayerDialog
+              open
+              onClose={() => setRemovingAthlete(null)}
+              athleteId={removingAthlete.id}
+              name={removingAthlete.name}
+              onRemoved={() => router.refresh()}
+            />
+          )}
+
+          {showInactive && inactiveAthletes.length > 0 && (
+            <InactivePlayersSection athletes={inactiveAthletes} squadId={squadId} />
+          )}
+
+          {canAddPlayer && addPlayerOrg && (
+            <PlayerFormDialog
+              mode="create"
+              open={addPlayerOpen}
+              onClose={() => setAddPlayerOpen(false)}
+              squads={addPlayerSquads}
+              defaultSquadId={squadId}
+              org={addPlayerOrg}
+              clubs={clubs}
+            />
+          )}
         </div>
       )}
     </div>

@@ -80,6 +80,7 @@ export async function recalculateAthleteScore(id: string, supabase?: SupabaseCli
       .from('athletes')
       .select('org_id, squad_id')
       .eq('id', id)
+      .eq('active', true)
       .maybeSingle(),
   ])
 

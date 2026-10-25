@@ -1,4 +1,5 @@
 import type { UserRole } from '@/types'
+import { buildInviteOptions } from '@/lib/auth/invite'
 import { ApiError, parsePagination } from './errors.ts'
 import { type ApiViewer } from './auth.ts'
 import { createServiceRoleClient } from '@/lib/supabase/service'
@@ -46,19 +47,28 @@ async function getViewerSquadIds(service: SupabaseServiceClient, viewer: ApiView
 }
 
 async function currentViewer(service: SupabaseServiceClient, viewer: ApiViewer): Promise<ApiViewer> {
-  const [{ data: profile, error }, { data: authUser, error: authError }] = await Promise.all([
+  const [profileResult, { data: authUser, error: authError }] = await Promise.all([
     service
       .from('profiles')
-      .select('org_id, role')
+      .select('org_id, role, active')
       .eq('id', viewer.userId)
       .maybeSingle(),
     service.auth.admin.getUserById(viewer.userId),
   ])
+  let { data: profile, error } = profileResult
+  if (error && /active/i.test(error.message)) {
+    // profiles.active comes from migration 093 — keep working until it's applied.
+    const legacy = await service.from('profiles').select('org_id, role').eq('id', viewer.userId).maybeSingle()
+    profile = legacy.data ? { ...legacy.data, active: true } : null
+    error = legacy.error
+  }
 
   if (error) throw new ApiError(error.message, 500)
   if (authError || !authUser.user || !profile?.org_id || !profile?.role) {
     throw new ApiError('Unauthorized', 401)
   }
+  // Removed users (profiles.active = false) lose API access immediately.
+  if (profile.active === false) throw new ApiError('Unauthorized', 401)
 
   return {
     userId: viewer.userId,
@@ -151,9 +161,10 @@ export function createSupabaseUsersService(): ApiUsersService {
       const freshViewer = await currentViewer(service, viewer)
       requireAdmin(freshViewer)
 
-      const { data, error } = await service.auth.admin.inviteUserByEmail(input.email, {
-        data: input.full_name ? { full_name: input.full_name } : undefined,
-      })
+      const { data, error } = await service.auth.admin.inviteUserByEmail(
+        input.email,
+        buildInviteOptions(input.full_name, process.env.NEXT_PUBLIC_WEB_APP_URL),
+      )
       if (error) throw new ApiError(error.message, 500)
       if (!data.user) throw new ApiError('User invitation failed', 500)
 
@@ -215,6 +226,7 @@ export async function getAthlete(id: string, viewer: ApiViewer) {
     .select('id, name, shirt_number, position, status, squad_id, org_id, active, created_at, updated_at')
     .eq('id', id)
     .eq('org_id', freshViewer.orgId)
+    .eq('active', true)
   if (freshViewer.role === 'athlete') {
     // Athletes see only their own self-linked row, mirroring the athletes RLS.
     query = query.eq('user_id', freshViewer.userId)
@@ -237,6 +249,7 @@ export async function listInjuries(request: Request, viewer: ApiViewer) {
     .from('injury_events')
     .select('id, athlete_id, injury_date, return_date, diagnosis, location, mechanism, severity, days_absent, is_recurrence, notes, created_at, athletes!inner(id, name, org_id, squad_id)', { count: 'exact' })
     .eq('athletes.org_id', freshViewer.orgId)
+    .eq('athletes.active', true)
     .order('injury_date', { ascending: false })
     .range(pagination.from, pagination.to)
   if (freshViewer.role === 'athlete') {
@@ -262,6 +275,7 @@ export async function getInjury(id: string, viewer: ApiViewer) {
     .select('id, athlete_id, injury_date, return_date, diagnosis, location, mechanism, severity, days_absent, is_recurrence, notes, created_at, athletes!inner(id, name, org_id, squad_id)')
     .eq('id', id)
     .eq('athletes.org_id', freshViewer.orgId)
+    .eq('athletes.active', true)
   if (freshViewer.role === 'athlete') {
     // Athletes see only their own injuries via the self-link, mirroring the
     // injury_events_athlete RLS — not staff_squads assignments.

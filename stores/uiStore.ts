@@ -26,6 +26,8 @@ interface UiState {
   setOrg: (org: OrgInfo | null) => void
   athleteId: string | null
   setAthleteId: (athleteId: string | null) => void
+  squadView: 'cards' | 'list'
+  setSquadView: (view: 'cards' | 'list') => void
 }
 
 export const useUiStore = create<UiState>()(
@@ -53,6 +55,8 @@ export const useUiStore = create<UiState>()(
       setOrg: (org) => set({ selectedOrg: org }),
       athleteId: null,
       setAthleteId: (athleteId) => set({ athleteId }),
+      squadView: 'cards',
+      setSquadView: (squadView) => set({ squadView }),
     }),
     {
       name: 'sophi-ui',
@@ -64,6 +68,7 @@ export const useUiStore = create<UiState>()(
         selectedSquadId: s.selectedSquadId,
         selectedOrg: s.selectedOrg,
         athleteId: s.athleteId,
+        squadView: s.squadView,
       }),
     }
   )

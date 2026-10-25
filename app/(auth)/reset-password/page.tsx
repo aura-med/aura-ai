@@ -7,6 +7,8 @@ import { createClient } from '@/lib/supabase/client'
 import { AuthControls } from '@/components/auth/AuthControls'
 import { SophiLogo } from '@/components/brand/SophiLogo'
 
+const MIN_PASSWORD_LENGTH = 8
+
 export default function ResetPasswordPage() {
   const router = useRouter()
   const t = useTranslations('auth')
@@ -16,6 +18,8 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null)
   const [ready, setReady] = useState(false)
   const [checking, setChecking] = useState(true)
+  // Invitees (flagged at invite time) get welcome copy and clear the flag on submit.
+  const [isInvite, setIsInvite] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -32,7 +36,10 @@ export default function ResetPasswordPage() {
       .getSession()
       .then(({ data: { session } }) => {
         if (!active) return
-        if (session) setReady(true)
+        if (session) {
+          setReady(true)
+          setIsInvite(session.user.user_metadata?.needs_password === true)
+        }
         setChecking(false)
       })
       .catch(() => {
@@ -56,13 +63,17 @@ export default function ResetPasswordPage() {
 
     setLoading(true)
     const supabase = createClient()
-    const { error } = await supabase.auth.updateUser({ password })
+    const { error } = await supabase.auth.updateUser({
+      password,
+      ...(isInvite ? { data: { needs_password: false } } : {}),
+    })
     setLoading(false)
 
     if (error) {
       setError(error.message)
     } else {
-      router.push('/login')
+      router.replace('/')
+      router.refresh()
     }
   }
 
@@ -110,6 +121,16 @@ export default function ResetPasswordPage() {
           </div>
         ) : (
           <form onSubmit={handleUpdatePassword} className="space-y-4">
+            {isInvite && (
+              <div className="text-center">
+                <h2 className="text-base font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
+                  {t('reset.inviteTitle')}
+                </h2>
+                <p className="text-xs mt-1" style={{ color: 'var(--sophi-text3)' }}>
+                  {t('reset.inviteSubtitle', { min: MIN_PASSWORD_LENGTH })}
+                </p>
+              </div>
+            )}
             <div>
               <label htmlFor="rp-password" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--sophi-text2)' }}>
                 {t('reset.passwordLabel')}
@@ -120,7 +141,8 @@ export default function ResetPasswordPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={MIN_PASSWORD_LENGTH}
+                autoComplete="new-password"
                 className="w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-1"
                 style={{
                   background: 'var(--sophi-bg3)',
@@ -139,7 +161,8 @@ export default function ResetPasswordPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={MIN_PASSWORD_LENGTH}
+                autoComplete="new-password"
                 className="w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-1"
                 style={{
                   background: 'var(--sophi-bg3)',

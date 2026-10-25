@@ -49,8 +49,9 @@ async function getData(squadId: string | null) {
     .from('medication_administrations')
     .select(`
       id, athlete_id, medication_name, dose, route, administered_by_name, administered_at, notes,
-      athletes ( id, name, shirt_number, photo_url, position )
+      athletes!inner ( id, name, shirt_number, photo_url, position )
     `)
+    .eq('athletes.active', true)
     .order('administered_at', { ascending: false })
     .limit(500)
 

@@ -542,4 +542,25 @@ export interface AthleteProfileData {
   // Recommendations
   recommendations: LatestRecommendations | null
   viewerRole: UserRole
+  // false = disabled player (soft-deleted); only owner/doctor can open the page
+  active: boolean
+  // Data for the Edit dialog; null unless the viewer is owner/doctor
+  editor: {
+    initial: {
+      athleteId: string
+      squad_id: string
+      name: string
+      shirt_number: number | null
+      position: string | null
+      date_of_birth: string | null
+      nationality: string | null
+      club: string | null
+      menstrual_day: number | null
+      cycle_length: number | null
+      photo_url: string | null
+    }
+    squads: { id: string; name: string; type: string }[]
+    org: { type: string; name: string }
+    clubs: string[]
+  } | null
 }

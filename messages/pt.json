@@ -19,7 +19,8 @@
       "forgotPassword": "Esqueceu a palavra-passe?",
       "submit": "Entrar",
       "submitting": "A entrar...",
-      "restrictedAccess": "Acesso restrito a staff clínico e técnico"
+      "restrictedAccess": "Acesso restrito a staff clínico e técnico",
+      "inactive": "A sua conta foi desativada. Contacte o administrador da organização."
     },
     "forgot": {
       "success": "Verifique o seu email. Enviámos um link para repor a sua palavra-passe.",
@@ -35,7 +36,15 @@
       "confirmPasswordLabel": "Confirmar palavra-passe",
       "mismatch": "As palavras-passe não coincidem.",
       "submit": "Atualizar palavra-passe",
-      "submitting": "A atualizar..."
+      "submitting": "A atualizar...",
+      "inviteTitle": "Bem-vindo ao Sophi Sports",
+      "inviteSubtitle": "Escolha uma palavra-passe para concluir a configuração da sua conta (mínimo {min} caracteres)."
+    },
+    "confirm": {
+      "description": "Por segurança, confirme para continuar. Este link só pode ser usado uma vez.",
+      "button": "Continuar",
+      "continuing": "A verificar...",
+      "invalid": "Este link é inválido ou expirou. Solicite um novo."
     },
     "controls": {
       "toggleTheme": "Alternar tema"
@@ -335,7 +344,12 @@
       "typeFemale": "Feminino",
       "athletes": "atletas",
       "confirmDelete": "Tens a certeza?",
-      "noSquads": "Ainda não existem squads criados."
+      "noSquads": "Ainda não existem squads criados.",
+      "editSquad": "Editar squad",
+      "season": "Época",
+      "activeUsers": "utilizadores ativos",
+      "orgTotal": "Total de utilizadores ativos na organização: {count}",
+      "edit": "Editar"
     },
     "preferences": {
       "title": "Preferências",
@@ -343,7 +357,10 @@
       "theme": "Tema",
       "themeDark": "Escuro",
       "themeLight": "Claro",
-      "language": "Idioma"
+      "language": "Idioma",
+      "defaultSquad": "Equipa predefinida ao iniciar sessão",
+      "defaultSquadHint": "Selecionada automaticamente sempre que inicia sessão.",
+      "defaultSquadNone": "Primeira (por ordem alfabética)"
     },
     "users": {
       "title": "Utilizadores",
@@ -353,7 +370,56 @@
       "inviteRole": "Função",
       "inviteComingSoon": "O envio de convites por email estará disponível em breve.",
       "noUsers": "Nenhum utilizador encontrado.",
-      "noName": "Sem nome"
+      "noName": "Sem nome",
+      "activeUsers": "Utilizadores ativos",
+      "organization": "organização",
+      "currentSquad": "squad atual",
+      "invite": "Convidar",
+      "addSquad": "Squad",
+      "search": "Procurar utilizador…",
+      "showInactive": "Mostrar inativos ({count})",
+      "noSquads": "Sem squads",
+      "lastSignIn": "Último acesso",
+      "never": "nunca",
+      "status": {
+        "active": "Ativo",
+        "pending": "Pendente",
+        "inactive": "Inativo"
+      },
+      "edit": "Editar",
+      "resetPassword": "Repor palavra-passe",
+      "remove": "Remove",
+      "reactivate": "Reativar",
+      "resendInvite": "Reenviar convite",
+      "inviteTitle": "Convidar utilizador",
+      "inviteDescription": "O convite é enviado por email e dá acesso a {org}.",
+      "fullName": "Nome",
+      "squads": "Squads",
+      "sendInvite": "Enviar convite",
+      "sending": "A enviar…",
+      "inviteSent": "Convite enviado para {email}.",
+      "inviteResent": "Convite reenviado para {email}.",
+      "editTitle": "Editar utilizador",
+      "cancel": "Cancelar",
+      "working": "A processar…",
+      "resetSent": "Enviámos um email de reposição de palavra-passe para {email}.",
+      "confirm": {
+        "remove": {
+          "title": "Remove {name}?",
+          "description": "O utilizador deixa de poder entrar na aplicação. Nenhum dado é apagado — pode ser reativado a qualquer momento.",
+          "button": "Remove"
+        },
+        "reactivate": {
+          "title": "Reativar {name}?",
+          "description": "O utilizador volta a poder entrar na aplicação com os mesmos acessos.",
+          "button": "Reativar"
+        },
+        "reset": {
+          "title": "Repor palavra-passe de {name}?",
+          "description": "Será enviado um email com um link para escolher uma nova palavra-passe.",
+          "button": "Enviar email"
+        }
+      }
     },
     "notifications": {
       "title": "Notificações",

@@ -52,7 +52,7 @@ export const getViewerContext = cache(async (): Promise<ViewerContextDTO> => {
       .single(),
     squadsQuery,
     role === 'athlete'
-      ? supabase.from('athletes').select('id').eq('user_id', user.id).maybeSingle()
+      ? supabase.from('athletes').select('id').eq('user_id', user.id).eq('active', true).maybeSingle()
       : Promise.resolve({ data: null }),
   ])
 

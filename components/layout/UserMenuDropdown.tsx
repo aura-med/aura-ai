@@ -63,6 +63,7 @@ export function UserMenuDropdown({ user, role }: UserMenuDropdownProps) {
   async function handleSignOut() {
     const supabase = createClient()
     await supabase.auth.signOut()
+    useUiStore.getState().setSquad(null)
     router.push('/login')
   }
 

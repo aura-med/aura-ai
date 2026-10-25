@@ -3,6 +3,7 @@ import { Topbar } from '@/components/layout/Topbar'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { MainContent } from '@/components/layout/MainContent'
 import { DashboardSkeleton } from '@/components/ui/DashboardSkeleton'
+import { ActiveUserGuard } from '@/components/layout/ActiveUserGuard'
 
 export default function DashboardLayout({
   children,
@@ -11,6 +12,7 @@ export default function DashboardLayout({
 }) {
   return (
     <Suspense fallback={<DashboardShellFallback />}>
+      <ActiveUserGuard />
       <Topbar />
       <Suspense fallback={null}>
         <Sidebar />

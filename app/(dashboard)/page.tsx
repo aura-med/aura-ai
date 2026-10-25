@@ -4,8 +4,10 @@ import { getSquadIdParam } from '@/lib/squad-url'
 import { calcScore, riskColor, riskLabel } from '@/lib/scoring'
 import { calculateMDStatus, todayStr, addDays } from '@/lib/utils/microcycle'
 import { DashboardClient } from './DashboardClient'
-import { OWNER_ROLE, CLINICAL_ROLES } from '@/lib/roles'
-import type { AthleteAvailabilityStatus } from '@/types'
+import { OWNER_ROLE, CLINICAL_ROLES, REHAB_ROLES, canManageAthletes } from '@/lib/roles'
+import { getViewerContext } from '@/lib/data/auth'
+import { listOrgClubs } from '@/lib/data/clubs'
+import type { AthleteAvailabilityStatus, UserRole } from '@/types'
 
 async function getData(squadId: string | null, date: string) {
   const supabase = await createClient()
@@ -54,7 +56,8 @@ async function getData(squadId: string | null, date: string) {
   let athleteQuery = supabase
     .from('athletes')
     .select(`
-      id, name, shirt_number, photo_url, position, club, status,
+      id, name, shirt_number, photo_url, position, club, status, date_of_birth,
+      squad_id, nationality, menstrual_day, cycle_length,
       availability_status,
       wellness_checkins(*), injury_events(*), score_history(*)
     `)
@@ -64,6 +67,23 @@ async function getData(squadId: string | null, date: string) {
   if (squadId) athleteQuery = athleteQuery.eq('squad_id', squadId)
 
   const { data: athletes } = await athleteQuery
+
+  // Disabled players (owner/doctor only): shown in the Plantel tab's "Inativos"
+  // view so they can be reviewed or reactivated.
+  let inactiveAthletes: {
+    id: string; name: string; shirt_number: number | null; photo_url: string | null
+    position: string | null; club: string | null
+  }[] = []
+  if (canManageAthletes(viewerRole)) {
+    let inactiveQuery = supabase
+      .from('athletes')
+      .select('id, name, shirt_number, photo_url, position, club')
+      .eq('active', false)
+      .order('shirt_number')
+    if (squadId) inactiveQuery = inactiveQuery.eq('squad_id', squadId)
+    const { data } = await inactiveQuery
+    inactiveAthletes = data ?? []
+  }
 
   // Fetch match days for microcycle calculation
   let matchQuery = supabase
@@ -223,7 +243,7 @@ async function getData(squadId: string | null, date: string) {
   }
 
   return {
-    athletes: athletes ?? [], microcycle, calendarEvents: calendarEvents ?? [], occurrences, looseDiagnoses,
+    athletes: athletes ?? [], inactiveAthletes, microcycle, calendarEvents: calendarEvents ?? [], occurrences, looseDiagnoses,
     latestRecordByOccurrenceId, clinicalStaff, orgName, canReadClinical, canApplyLoadManagement,
     loadManagementRestrictionsByAthleteId,
   }
@@ -240,15 +260,27 @@ export default async function Dashboard({
   await connection()
   const params = searchParams ? await searchParams : {}
   const squadId = getSquadIdParam(params)
+  // ?tab=squad deep-links to the Plantel tab (e.g. the athlete page's back link).
+  const initialTab = params.tab === 'squad' ? 'squad' : params.tab === 'calendar' ? 'calendar' : 'overview'
   // The dashboard always shows today — there's no more date-navigation UI to
   // request a historical day (the reconstructed "as of that day" snapshot
   // was inherently unreliable; see the calendar tab for actual day history).
   const currentDate = todayStr()
 
   const {
-    athletes, microcycle, calendarEvents, occurrences, looseDiagnoses, latestRecordByOccurrenceId,
+    athletes, inactiveAthletes, microcycle, calendarEvents, occurrences, looseDiagnoses, latestRecordByOccurrenceId,
     clinicalStaff, orgName, canReadClinical, canApplyLoadManagement, loadManagementRestrictionsByAthleteId,
   } = await getData(squadId, currentDate)
+
+  // Mirrors athletes_insert RLS (018): owner, or doctor/physio on their own
+  // squads. getViewerContext().squads is already scoped to those squads.
+  const viewer = await getViewerContext()
+  const canAddPlayer = viewer.role === OWNER_ROLE || REHAB_ROLES.includes(viewer.role as UserRole)
+  const addPlayerSquads = canAddPlayer ? viewer.squads.map(({ id, name, type }) => ({ id, name, type })) : []
+  const addPlayerOrg = canAddPlayer && viewer.org ? { type: viewer.org.type, name: viewer.org.name } : null
+  const clubs = addPlayerOrg && addPlayerOrg.type !== 'club' && viewer.org
+    ? await listOrgClubs(await createClient(), viewer.org.id)
+    : []
 
   // One row per athlete, not per occurrence — an athlete with several open
   // occurrences previously produced one export row each, sometimes with
@@ -448,6 +480,11 @@ export default async function Dashboard({
       photo_url: (a as { photo_url?: string | null }).photo_url ?? null,
       position: a.position as string | null,
       club: a.club as string | null,
+      date_of_birth: (a as { date_of_birth?: string | null }).date_of_birth ?? null,
+      squad_id: (a as { squad_id?: string | null }).squad_id ?? null,
+      nationality: (a as { nationality?: string | null }).nationality ?? null,
+      menstrual_day: (a as { menstrual_day?: number | null }).menstrual_day ?? null,
+      cycle_length: (a as { cycle_length?: number | null }).cycle_length ?? null,
       status: a.status as string,
       availability_status: (availabilityStatus as AthleteAvailabilityStatus),
       score: result.score,
@@ -460,6 +497,7 @@ export default async function Dashboard({
     <DashboardClient
       athletes={withScores}
       squadId={squadId}
+      initialTab={initialTab}
       currentDate={currentDate}
       microcycle={microcycle}
       calendarEvents={calendarEvents}
@@ -469,6 +507,12 @@ export default async function Dashboard({
       canApplyLoadManagement={canApplyLoadManagement}
       clinicalStaff={clinicalStaff}
       orgName={orgName}
+      canAddPlayer={canAddPlayer}
+      canManage={canManageAthletes(viewer.role)}
+      inactiveAthletes={inactiveAthletes}
+      addPlayerSquads={addPlayerSquads}
+      addPlayerOrg={addPlayerOrg}
+      clubs={clubs}
     />
   )
 }

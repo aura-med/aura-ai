@@ -1,14 +1,25 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
+import { useUiStore } from '@/stores/uiStore'
 import { AuthControls } from '@/components/auth/AuthControls'
 import { SophiLogo } from '@/components/brand/SophiLogo'
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  )
+}
+
+function LoginForm() {
   const router = useRouter()
+  // /auth/inactive signs a removed user out and sends them here.
+  const inactive = useSearchParams().get('error') === 'inactive'
   const t = useTranslations('auth')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -24,9 +35,13 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setError(error.message)
+      // A removed user is banned in Supabase Auth.
+      setError(/banned/i.test(error.message) ? t('login.inactive') : error.message)
       setLoading(false)
     } else {
+      // A fresh login starts from the saved default squad, not whichever one
+      // was last picked in this browser (see TopbarClient / resolveSquadId).
+      useUiStore.getState().setSquad(null)
       router.push('/')
       router.refresh()
     }
@@ -95,12 +110,12 @@ export default function LoginPage() {
             />
           </div>
 
-          {error && (
+          {(error || inactive) && (
             <p
               className="text-xs px-3 py-2 rounded-lg"
               style={{ background: 'var(--sophi-danger-bg)', color: 'var(--sophi-danger)' }}
             >
-              {error}
+              {error ?? t('login.inactive')}
             </p>
           )}
 

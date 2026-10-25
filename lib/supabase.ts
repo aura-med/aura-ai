@@ -43,6 +43,7 @@ export async function getAthlete(id: string) {
       score_history ( * )
     `)
     .eq('id', id)
+    .eq('active', true)
     .single()
 
   if (error) throw error

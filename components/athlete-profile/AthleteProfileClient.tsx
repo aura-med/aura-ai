@@ -3,12 +3,16 @@
 import { useState, useRef } from 'react'
 import { Suspense } from 'react'
 import dynamic from 'next/dynamic'
-import { Camera, Loader2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Camera, Loader2, Pencil, Power, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { uploadAthletePhoto } from '@/lib/athlete-photo'
+import { setAthleteActive } from '@/app/(dashboard)/athletes/actions'
+import { PlayerFormDialog } from '@/components/squad/PlayerFormDialog'
+import { RemovePlayerDialog } from '@/components/squad/RemovePlayerDialog'
+import { Button } from '@/components/ui/button'
 import { TabNavigation }      from './TabNavigation'
 import type { AthleteProfileData, TabId } from '@/types/athlete-profile'
-
-const PHOTO_BUCKET = 'athlete-photos'
 
 // ── Loading skeleton ──────────────────────────────────────────────────────────
 
@@ -53,34 +57,30 @@ function AthleteHeader({ profile }: { profile: AthleteProfileData }) {
   const [photoUrl,    setPhotoUrl]    = useState<string | null>(profile.photo_url)
   const [uploading,   setUploading]   = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter()
+  const [editOpen,    setEditOpen]    = useState(false)
+  const [removeOpen,  setRemoveOpen]  = useState(false)
+  const [toggling,    setToggling]    = useState(false)
+  const [toggleError, setToggleError] = useState<string | null>(null)
+
+  async function reactivate() {
+    setToggling(true)
+    setToggleError(null)
+    const result = await setAthleteActive(profile.id, true)
+    setToggling(false)
+    if (!result.success) {
+      setToggleError(result.error)
+      return
+    }
+    router.refresh()
+  }
 
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
     setUploading(true)
     try {
-      const supabase = createClient()
-      const ext      = file.name.split('.').pop()
-      const path     = `${profile.id}/profile.${ext}`
-
-      // Upload (upsert)
-      const { error: upErr } = await supabase.storage
-        .from(PHOTO_BUCKET)
-        .upload(path, file, { cacheControl: '3600', upsert: true })
-      if (upErr) throw upErr
-
-      // Signed URL (private bucket)
-      const { data: signed } = await supabase.storage
-        .from(PHOTO_BUCKET)
-        .createSignedUrl(path, 60 * 60 * 24 * 365) // 1 year
-      const url = signed?.signedUrl ?? null
-
-      // Persist on athlete row
-      await supabase
-        .from('athletes')
-        .update({ photo_url: url })
-        .eq('id', profile.id)
-
+      const url = await uploadAthletePhoto(createClient(), profile.id, file)
       setPhotoUrl(url)
     } catch (err) {
       console.error('[photo-upload]', err)
@@ -153,6 +153,28 @@ function AthleteHeader({ profile }: { profile: AthleteProfileData }) {
             {profile.age ? ` · ${profile.age} anos` : ''}
             {profile.club ? ` · ${profile.club}` : ''}
           </p>
+          {profile.editor && (
+            <div className="flex items-center gap-2 mt-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+                <Pencil size={12} />
+                Editar
+              </Button>
+              {profile.active ? (
+                <Button type="button" variant="outline" size="sm" onClick={() => setRemoveOpen(true)}>
+                  <Trash2 size={12} />
+                  Remove
+                </Button>
+              ) : (
+                <Button type="button" size="sm" disabled={toggling} onClick={() => void reactivate()}>
+                  <Power size={12} />
+                  {toggling ? 'A reativar…' : 'Reativar'}
+                </Button>
+              )}
+            </div>
+          )}
+          {toggleError && (
+            <p className="text-xs mt-1" style={{ color: 'var(--sophi-danger)' }}>{toggleError}</p>
+          )}
         </div>
       </div>
 
@@ -176,6 +198,28 @@ function AthleteHeader({ profile }: { profile: AthleteProfileData }) {
           </div>
         ))}
       </div>
+
+      {profile.editor && (
+        <>
+          <PlayerFormDialog
+            open={editOpen}
+            onClose={() => setEditOpen(false)}
+            mode="edit"
+            initial={profile.editor.initial}
+            squads={profile.editor.squads}
+            org={profile.editor.org}
+            clubs={profile.editor.clubs}
+          />
+          <RemovePlayerDialog
+            open={removeOpen}
+            onClose={() => setRemoveOpen(false)}
+            athleteId={profile.id}
+            name={profile.name}
+            // Removed players leave the UI; take the user back to the Plantel tab.
+            onRemoved={() => router.push('/?tab=squad')}
+          />
+        </>
+      )}
     </div>
   )
 }
@@ -219,6 +263,15 @@ export function AthleteProfileClient({ profile, activeTab }: AthleteProfileClien
 
   return (
     <div className="space-y-5">
+      {!profile.active && (
+        <div
+          className="rounded-lg border px-4 py-2.5 text-xs"
+          style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)' }}
+        >
+          Jogador inativo — não aparece no resto da aplicação. Os dados e o histórico estão preservados.
+        </div>
+      )}
+
       {/* Athlete header */}
       <AthleteHeader profile={profile} />
 

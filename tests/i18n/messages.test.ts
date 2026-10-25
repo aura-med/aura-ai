@@ -13,6 +13,12 @@ const requiredAuthPaths = [
   'login.submitting',
   'login.restrictedAccess',
   'controls.toggleTheme',
+  'reset.inviteTitle',
+  'reset.inviteSubtitle',
+  'confirm.description',
+  'confirm.button',
+  'confirm.continuing',
+  'confirm.invalid',
 ] as const
 
 test('root message bundles include auth copy for login and auth controls', () => {

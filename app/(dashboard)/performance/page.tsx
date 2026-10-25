@@ -25,6 +25,7 @@ export default async function PerformancePage({
     .select(`*, athletes!inner(id, name, position, shirt_number, club, squad_id)`)
     .order('session_date', { ascending: false })
 
+  query = query.eq('athletes.active', true)
   if (squadId) query = query.eq('athletes.squad_id', squadId)
 
   const { data: perfData } = await query

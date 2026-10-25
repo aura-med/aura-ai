@@ -34,14 +34,25 @@ export async function proxy(request: NextRequest) {
 
   const isAuthPage = (
     request.nextUrl.pathname.startsWith('/login') ||
-    request.nextUrl.pathname.startsWith('/forgot-password') ||
-    request.nextUrl.pathname.startsWith('/reset-password')
+    request.nextUrl.pathname.startsWith('/forgot-password')
   )
+  // Reachable without a session (legacy recovery links), but a session must not bounce
+  // the user away: /auth/confirm signs them in and then sends them here to set a password.
+  const isResetPassword = request.nextUrl.pathname.startsWith('/reset-password')
+  const isAuthConfirm = request.nextUrl.pathname.startsWith('/auth/confirm')
   const isApiRoute = request.nextUrl.pathname.startsWith('/api')
 
-  if (!user && !isAuthPage && !isApiRoute) {
+  if (!user && !isAuthPage && !isResetPassword && !isAuthConfirm && !isApiRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
+
+  // Invited users must choose a password before using the app (UX gate, not authorization).
+  if (user?.user_metadata?.needs_password === true && !isResetPassword && !isAuthConfirm && !isApiRoute) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/reset-password'
+    url.search = ''
     return NextResponse.redirect(url)
   }
 

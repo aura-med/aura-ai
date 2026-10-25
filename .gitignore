@@ -66,3 +66,6 @@ docs/
 !docs/
 docs/*
 !docs/openapi.yaml
+
+# local SMTP smoke test (contains credentials)
+test_email.ipynb

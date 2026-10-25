@@ -1,0 +1,8 @@
+{
+  "confirm-signup": "Confirme o seu email · Confirm your email",
+  "invite": "Convite para o Sophi Sports · You are invited",
+  "magic-link": "O seu link de acesso · Your sign-in link",
+  "change-email": "Confirme o novo email · Confirm your new email",
+  "reset-password": "Redefinir palavra-passe · Reset your password",
+  "reauthentication": "O seu código de verificação: {{ .Token }}"
+}

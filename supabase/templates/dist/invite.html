@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Bem-vindo ao Sophi Sports</title>
+  </head>
+  <body style="margin:0;padding:0;background-color:#eef1f8;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">Aceite o convite e escolha a sua palavra-passe.</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#eef1f8;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background-color:#ffffff;border-radius:16px;border:1px solid #dde2f0;">
+            <tr>
+              <td align="center" bgcolor="#000056" style="background-color:#000056;border-radius:16px 16px 0 0;padding:8px 32px;">
+                <img src="{{ .SiteURL }}/email/sophi-logo.png" alt="Sophi Sports" width="150" style="display:block;height:auto;border:0;" />
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:16px 32px 0 32px;font-family:Poppins,'Helvetica Neue',Helvetica,Arial,sans-serif;color:#18203a;font-size:15px;line-height:1.6;">
+                <h1 style="margin:0 0 12px 0;font-size:20px;font-weight:600;color:#000056;">Bem-vindo ao Sophi Sports</h1>
+                <p style="margin:0 0 12px 0;">Olá{{ if .Data.full_name }} {{ .Data.full_name }}{{ end }},</p>
+                <p style="margin:0 0 12px 0;">Foi convidado(a) para aceder ao Sophi Sports. Aceite o convite e escolha a sua palavra-passe para começar.</p>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding:0 32px 24px 32px;">
+                <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=invite" style="display:inline-block;background-color:#000056;color:#ffffff;font-family:Poppins,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:10px;">Aceitar convite</a>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 32px 24px 32px;font-family:Poppins,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:#5b6486;">
+                Se o botão não funcionar, copie este endereço para o navegador · If the button doesn't work, copy this address into your browser:<br />
+                <span style="word-break:break-all;color:#3763d9;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=invite</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 32px;"><hr style="border:0;border-top:1px solid #dde2f0;margin:0;" /></td>
+            </tr>
+            <tr>
+              <td style="padding:20px 32px 32px 32px;font-family:Poppins,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;line-height:1.6;color:#5b6486;">
+                <strong style="color:#18203a;">You've been invited to Sophi Sports</strong><br />
+                Hi{{ if .Data.full_name }} {{ .Data.full_name }}{{ end }},<br />
+                Use the button above to accept the invitation and choose your password.
+              </td>
+            </tr>
+          </table>
+          <p style="margin:16px 0 0 0;font-family:Poppins,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:11px;color:#8a92b2;">
+            Sophi Sports — behind your team
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

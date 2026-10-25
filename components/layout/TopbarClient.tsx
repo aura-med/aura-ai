@@ -14,7 +14,7 @@ import {
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { UserMenuDropdown } from '@/components/layout/UserMenuDropdown'
 import { useUiStore } from '@/stores/uiStore'
-import { getSquadIdParam } from '@/lib/squad-url'
+import { getSquadIdParam, resolveSquadId } from '@/lib/squad-url'
 import type { TopbarDTO } from '@/lib/data/types'
 import { SophiLogo } from '@/components/brand/SophiLogo'
 
@@ -64,11 +64,13 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
 
   const selectedFromUrl = getSquadIdParam(searchParams)
   const validSquadIds = useMemo(() => new Set(squads.map((s) => s.id)), [squads])
-  const resolvedSquadId =
-    (selectedFromUrl && validSquadIds.has(selectedFromUrl) && selectedFromUrl) ||
-    (selectedSquadId && validSquadIds.has(selectedSquadId) && selectedSquadId) ||
-    squads[0]?.id ||
-    null
+  const resolvedSquadId = resolveSquadId({
+    urlSquadId: selectedFromUrl,
+    storedSquadId: selectedSquadId,
+    defaultSquadId: dto.defaultSquadId,
+    validSquadIds,
+    firstSquadId: squads[0]?.id ?? null,
+  })
   const selectedSquad = squads.find((s) => s.id === resolvedSquadId)
   const dashboardHref = resolvedSquadId ? `/?squadId=${encodeURIComponent(resolvedSquadId)}` : '/'
 

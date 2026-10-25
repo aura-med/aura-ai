@@ -117,8 +117,11 @@ export async function inviteUser(formData: FormData) {
     if (!validRoles.includes(role)) throw new Error('Invalid role')
 
     const service = createAdminClient()
+    // needs_password: the main app holds the invitee on /set-password until they pick one.
+    const webAppUrl = process.env.NEXT_PUBLIC_WEB_APP_URL?.trim().replace(/\/+$/, '')
     const { data, error } = await service.auth.admin.inviteUserByEmail(email, {
-      data: fullName ? { full_name: fullName } : undefined,
+      data: { ...(fullName ? { full_name: fullName } : {}), needs_password: true },
+      ...(webAppUrl ? { redirectTo: `${webAppUrl}/auth/confirm` } : {}),
     })
     if (error) throw new Error(error.message)
 

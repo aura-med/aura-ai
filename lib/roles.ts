@@ -14,3 +14,9 @@ export function isOwner(role: UserRole | null | undefined): boolean {
 export function isSquadScoped(role: UserRole | null | undefined): boolean {
   return role !== OWNER_ROLE && role !== 'athlete'
 }
+
+// Edit / disable / reactivate players. Narrower than athletes_update RLS (which
+// also lets physios update) — enforced in the server actions, not the database.
+export function canManageAthletes(role: UserRole | string | null | undefined): boolean {
+  return role === OWNER_ROLE || role === 'doctor'
+}

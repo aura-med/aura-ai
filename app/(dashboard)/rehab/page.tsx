@@ -32,9 +32,10 @@ async function getData(squadId: string | null) {
     .select(`
       id, athlete_id, occurrence_id, title, start_date, expected_end_date,
       is_active, is_completed, closed_at, rtp_criteria, created_at, updated_at,
-      athletes ( id, name, shirt_number, photo_url, position )
+      athletes!inner ( id, name, shirt_number, photo_url, position )
     `)
     .eq('org_id', orgId)
+    .eq('athletes.active', true)
     .order('is_active', { ascending: false })
     .order('start_date', { ascending: false })
 

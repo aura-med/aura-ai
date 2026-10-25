@@ -10,6 +10,8 @@ import { getSquadIdParam, withSquadParam } from '@/lib/squad-url'
 import { AthleteProfileClient } from '@/components/athlete-profile/AthleteProfileClient'
 import { getLatestRecommendations } from '@/lib/actions/recommendations'
 import { getViewerContext } from '@/lib/data/auth'
+import { listOrgClubs } from '@/lib/data/clubs'
+import { canManageAthletes } from '@/lib/roles'
 import type { UserRole } from '@/types'
 import type { AthleteProfileData, TabId, InjuryEventSummary, ActiveOccurrence, ActiveDiagnosis, ActiveRehabPlanRef, AthleteAnamnesis } from '@/types/athlete-profile'
 
@@ -63,6 +65,7 @@ async function AthleteDetailContent({
     .from('athletes')
     .select(`
       id, name, shirt_number, photo_url, position, date_of_birth, club, status, availability_status,
+      squad_id, nationality, menstrual_day, cycle_length, active,
       score_history (score_date, total_score, acwr_partial, hrv_partial, fatigue_partial, sleep_partial, tqr_partial, history_partial, stress_partial, decel_partial, confidence, days_since_match)
     `)
     .eq('id', id)
@@ -71,6 +74,11 @@ async function AthleteDetailContent({
     .single()
 
   if (error || !athlete) notFound()
+
+  // Disabled players (active=false) are hidden everywhere; only owner/doctor
+  // can still open the profile (to reactivate or review it).
+  const canManage = canManageAthletes(viewer.role)
+  if (athlete.active === false && !canManage) notFound()
 
   const [activeInjuriesResult, resolvedInjuriesResult] = await Promise.all([
     supabase
@@ -307,6 +315,28 @@ async function AthleteDetailContent({
   const availabilityStatus = rawAthlete.availability_status
     ?? (athlete.status === 'rehab' ? 'rtp' : 'available')
 
+  // Edit form data — owner/doctor only (updateAthlete re-checks on the server).
+  const editor: AthleteProfileData['editor'] = canManage && viewer.org
+    ? {
+        initial: {
+          athleteId:     athlete.id,
+          squad_id:      athlete.squad_id ?? '',
+          name:          athlete.name,
+          shirt_number:  athlete.shirt_number ?? null,
+          position:      athlete.position ?? null,
+          date_of_birth: athlete.date_of_birth ?? null,
+          nationality:   athlete.nationality ?? null,
+          club:          athlete.club ?? null,
+          menstrual_day: athlete.menstrual_day ?? null,
+          cycle_length:  athlete.cycle_length ?? null,
+          photo_url:     rawAthlete.photo_url ?? null,
+        },
+        squads: viewer.squads.map(({ id, name, type }) => ({ id, name, type })),
+        org: { type: viewer.org.type, name: viewer.org.name },
+        clubs: viewer.org.type === 'club' ? [] : await listOrgClubs(supabase, viewer.org.id),
+      }
+    : null
+
   const profile: AthleteProfileData = {
     id:                athlete.id,
     name:              athlete.name,
@@ -339,13 +369,15 @@ async function AthleteDetailContent({
     consultationCount: consultationCount ?? 0,
     recommendations,
     viewerRole,
+    active:            athlete.active !== false,
+    editor,
   }
 
   return (
     <div className="space-y-5 max-w-5xl">
       {/* Back link */}
       <Link
-        href={withSquadParam('/athletes', squadId)}
+        href={withSquadParam('/?tab=squad', squadId)}
         className="inline-flex items-center gap-1.5 text-xs transition-colors hover:text-[var(--sophi-text)]"
         style={{ color: 'var(--sophi-text3)' }}
       >

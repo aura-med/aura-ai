@@ -73,7 +73,8 @@ async function getData(squadId: string | null) {
 
   let weightQuery = supabase
     .from('athlete_daily_weight')
-    .select('id, athlete_id, measurement_date, weight_kg, recorded_by_name, athletes ( id, name, shirt_number, photo_url, position )')
+    .select('id, athlete_id, measurement_date, weight_kg, recorded_by_name, athletes!inner ( id, name, shirt_number, photo_url, position )')
+    .eq('athletes.active', true)
     .order('measurement_date', { ascending: false })
     .limit(500)
   if (squadId) {
@@ -86,8 +87,9 @@ async function getData(squadId: string | null) {
     .select(`
       id, athlete_id, assessment_date, urine_specific_gravity,
       ${SKINFOLD_FIELDS.map((f) => f.key).join(', ')},
-      athletes ( id, name, shirt_number, photo_url, position )
+      athletes!inner ( id, name, shirt_number, photo_url, position )
     `)
+    .eq('athletes.active', true)
     .order('assessment_date', { ascending: false })
     .limit(500)
   if (squadId) {

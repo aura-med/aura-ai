@@ -23,7 +23,7 @@ async function RehabContent({
   const supabase = await createClient()
 
   const [{ data: athlete }, { data: session }] = await Promise.all([
-    supabase.from('athletes').select('name, shirt_number').eq('id', id).single(),
+    supabase.from('athletes').select('name, shirt_number').eq('id', id).eq('active', true).single(),
     supabase
       .from('rehab_sessions')
       .select('*, rehab_protocols(*)')

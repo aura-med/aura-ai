@@ -19,7 +19,8 @@
       "forgotPassword": "¿Has olvidado la contraseña?",
       "submit": "Entrar",
       "submitting": "Entrando...",
-      "restrictedAccess": "Acceso restringido al personal clínico y técnico"
+      "restrictedAccess": "Acceso restringido al personal clínico y técnico",
+      "inactive": "Su cuenta ha sido desactivada. Póngase en contacto con el administrador de su organización."
     },
     "forgot": {
       "success": "Revisa tu email. Te hemos enviado un enlace para restablecer tu contraseña.",
@@ -35,7 +36,15 @@
       "confirmPasswordLabel": "Confirmar contraseña",
       "mismatch": "Las contraseñas no coinciden.",
       "submit": "Actualizar contraseña",
-      "submitting": "Actualizando..."
+      "submitting": "Actualizando...",
+      "inviteTitle": "Bienvenido a Sophi Sports",
+      "inviteSubtitle": "Elige una contraseña para terminar de configurar tu cuenta (mínimo {min} caracteres)."
+    },
+    "confirm": {
+      "description": "Por seguridad, confirma para continuar. Este enlace solo se puede usar una vez.",
+      "button": "Continuar",
+      "continuing": "Verificando...",
+      "invalid": "Este enlace no es válido o ha caducado. Solicita uno nuevo."
     },
     "controls": {
       "toggleTheme": "Cambiar tema"
@@ -335,7 +344,12 @@
       "typeFemale": "Femenino",
       "athletes": "atletas",
       "confirmDelete": "¿Estás seguro?",
-      "noSquads": "Todavía no hay equipos creados."
+      "noSquads": "Todavía no hay equipos creados.",
+      "editSquad": "Editar squad",
+      "season": "Temporada",
+      "activeUsers": "usuarios activos",
+      "orgTotal": "Total de usuarios activos en la organización: {count}",
+      "edit": "Editar"
     },
     "preferences": {
       "title": "Preferencias",
@@ -343,7 +357,10 @@
       "theme": "Tema",
       "themeDark": "Oscuro",
       "themeLight": "Claro",
-      "language": "Idioma"
+      "language": "Idioma",
+      "defaultSquad": "Equipo predeterminado al iniciar sesión",
+      "defaultSquadHint": "Se selecciona automáticamente cada vez que inicia sesión.",
+      "defaultSquadNone": "Primero (orden alfabético)"
     },
     "users": {
       "title": "Usuarios",
@@ -353,7 +370,56 @@
       "inviteRole": "Rol",
       "inviteComingSoon": "El envío de invitaciones por email estará disponible próximamente.",
       "noUsers": "No se encontraron usuarios.",
-      "noName": "Sin nombre"
+      "noName": "Sin nombre",
+      "activeUsers": "Usuarios activos",
+      "organization": "organización",
+      "currentSquad": "squad actual",
+      "invite": "Invitar",
+      "addSquad": "Squad",
+      "search": "Buscar usuario…",
+      "showInactive": "Mostrar inactivos ({count})",
+      "noSquads": "Sin squads",
+      "lastSignIn": "Último acceso",
+      "never": "nunca",
+      "status": {
+        "active": "Activo",
+        "pending": "Pendiente",
+        "inactive": "Inactivo"
+      },
+      "edit": "Editar",
+      "resetPassword": "Restablecer contraseña",
+      "remove": "Remove",
+      "reactivate": "Reactivar",
+      "resendInvite": "Reenviar invitación",
+      "inviteTitle": "Invitar usuario",
+      "inviteDescription": "La invitación se envía por correo y da acceso a {org}.",
+      "fullName": "Nombre",
+      "squads": "Squads",
+      "sendInvite": "Enviar invitación",
+      "sending": "Enviando…",
+      "inviteSent": "Invitación enviada a {email}.",
+      "inviteResent": "Invitación reenviada a {email}.",
+      "editTitle": "Editar usuario",
+      "cancel": "Cancelar",
+      "working": "Procesando…",
+      "resetSent": "Hemos enviado un correo para restablecer la contraseña a {email}.",
+      "confirm": {
+        "remove": {
+          "title": "Remove {name}?",
+          "description": "El usuario ya no podrá iniciar sesión. No se borra nada: puede reactivarse en cualquier momento.",
+          "button": "Remove"
+        },
+        "reactivate": {
+          "title": "¿Reactivar a {name}?",
+          "description": "El usuario podrá volver a iniciar sesión con los mismos accesos.",
+          "button": "Reactivar"
+        },
+        "reset": {
+          "title": "¿Restablecer la contraseña de {name}?",
+          "description": "Se enviará un correo con un enlace para elegir una nueva contraseña.",
+          "button": "Enviar correo"
+        }
+      }
     },
     "notifications": {
       "title": "Notificaciones",

@@ -1,0 +1,70 @@
+<!--
+  Supabase Auth "Reset password" email template — Sophi Sports.
+  Source of truth: paste into Dashboard > Authentication > Email Templates > Reset password.
+  Suggested subject: Repor palavra-passe — Sophi Sports / Reset your Sophi Sports password
+  Sent by "Repor palavra-passe" in Settings > Users and by the forgot-password page.
+
+  Requires: Auth > URL Configuration > Site URL = main web app origin, and the logo
+  served at {{ .SiteURL }}/email/sophi-logo.png (public/email/sophi-logo.png).
+-->
+<!DOCTYPE html>
+<html lang="pt">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Repor palavra-passe — Sophi Sports</title>
+  </head>
+  <body style="margin:0;padding:0;background-color:#eef1f8;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#eef1f8;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background-color:#ffffff;border-radius:16px;border:1px solid #dde2f0;">
+            <tr>
+              <td align="center" style="padding:32px 32px 8px 32px;">
+                <img src="{{ .SiteURL }}/email/sophi-logo.png" alt="Sophi Sports" width="160" style="display:block;height:auto;border:0;" />
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:16px 32px 0 32px;font-family:Poppins,'Helvetica Neue',Arial,sans-serif;color:#18203a;font-size:15px;line-height:1.6;">
+                <h1 style="margin:0 0 12px 0;font-size:20px;font-weight:600;color:#000056;">Repor palavra-passe</h1>
+                <p style="margin:0 0 12px 0;">
+                  Olá{{ if .Data.full_name }} {{ .Data.full_name }}{{ end }},
+                </p>
+                <p style="margin:0 0 24px 0;">
+                  Recebemos um pedido para repor a palavra-passe da sua conta Sophi Sports. Clique no botão abaixo para escolher uma nova palavra-passe.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding:0 32px 24px 32px;">
+                <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=recovery"
+                   style="display:inline-block;background-color:#000056;color:#ffffff;font-family:Poppins,'Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:10px;">
+                  Repor palavra-passe
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 32px 24px 32px;font-family:Poppins,'Helvetica Neue',Arial,sans-serif;font-size:12px;line-height:1.6;color:#5b6486;">
+                Se o botão não funcionar, copie e cole este endereço no navegador:<br />
+                <span style="word-break:break-all;color:#3763d9;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=recovery</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 32px;"><hr style="border:0;border-top:1px solid #dde2f0;margin:0;" /></td>
+            </tr>
+            <tr>
+              <td style="padding:20px 32px 32px 32px;font-family:Poppins,'Helvetica Neue',Arial,sans-serif;font-size:13px;line-height:1.6;color:#5b6486;">
+                <strong style="color:#18203a;">Reset your Sophi Sports password.</strong><br />
+                Use the button above to choose a new password. If you didn't request this, you can safely ignore this email.
+              </td>
+            </tr>
+          </table>
+          <p style="margin:16px 0 0 0;font-family:Poppins,'Helvetica Neue',Arial,sans-serif;font-size:11px;color:#8a92b2;">
+            Sophi Sports — behind your team
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -1,6 +1,7 @@
 'use server'
 import { createClient } from '@/lib/supabase/server'
 import { PreferencesSchema } from '@/lib/schemas/preferences'
+import { getViewerContext } from '@/lib/data/auth'
 import { z } from 'zod'
 
 const ThemePreferenceSchema = z.enum(['dark', 'light'])
@@ -9,6 +10,13 @@ export async function savePreferences(payload: unknown) {
   const result = PreferencesSchema.safeParse(payload)
   if (!result.success) {
     return { success: false as const, error: result.error.issues[0]?.message ?? 'Validation failed' }
+  }
+  // RLS only checks user_id, so make sure the default squad is one this user can access.
+  if (result.data.default_squad_id) {
+    const viewer = await getViewerContext()
+    if (!viewer.squads.some((s) => s.id === result.data.default_squad_id)) {
+      return { success: false as const, error: 'Invalid default squad' }
+    }
   }
   const supabase = await createClient()
   const { error } = await supabase.from('user_preferences').upsert(result.data)

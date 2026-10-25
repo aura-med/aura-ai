@@ -15,9 +15,9 @@ function notificationStatus(type: string) {
 export async function getTopbarDTO(): Promise<TopbarDTO> {
   const viewer = await getViewerContext()
   const supabase = await createClient()
-  const themePreference = await getThemePreference(supabase, viewer.userId)
+  const { theme: themePreference, defaultSquadId } = await getUserPreferences(supabase, viewer.userId)
 
-  if (!viewer.org?.id) return { ...viewer, notifications: [], unreadNotificationCount: 0, themePreference }
+  if (!viewer.org?.id) return { ...viewer, notifications: [], unreadNotificationCount: 0, themePreference, defaultSquadId }
 
   const notificationsQuery = supabase
     .from('notifications')
@@ -55,21 +55,25 @@ export async function getTopbarDTO(): Promise<TopbarDTO> {
     }
   }).filter((notification) => notification.id)
 
-  return { ...viewer, notifications, unreadNotificationCount: unreadResult.count ?? 0, themePreference }
+  return { ...viewer, notifications, unreadNotificationCount: unreadResult.count ?? 0, themePreference, defaultSquadId }
 }
 
-async function getThemePreference(
+async function getUserPreferences(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string | null,
-): Promise<'dark' | 'light' | null> {
-  if (!userId) return null
+): Promise<{ theme: 'dark' | 'light' | null; defaultSquadId: string | null }> {
+  if (!userId) return { theme: null, defaultSquadId: null }
 
   const { data } = await supabase
     .from('user_preferences')
-    .select('theme')
+    .select('theme, default_squad_id')
     .eq('user_id', userId)
     .limit(1)
 
-  const theme = asString(asRecordArray(data)[0]?.theme)
-  return theme === 'dark' || theme === 'light' ? theme : null
+  const row = asRecordArray(data)[0]
+  const theme = asString(row?.theme)
+  return {
+    theme: theme === 'dark' || theme === 'light' ? theme : null,
+    defaultSquadId: asString(row?.default_squad_id),
+  }
 }

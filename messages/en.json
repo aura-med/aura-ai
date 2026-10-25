@@ -19,7 +19,8 @@
       "forgotPassword": "Forgot password?",
       "submit": "Sign in",
       "submitting": "Signing in...",
-      "restrictedAccess": "Access restricted to clinical and technical staff"
+      "restrictedAccess": "Access restricted to clinical and technical staff",
+      "inactive": "Your account has been deactivated. Please contact your organization administrator."
     },
     "forgot": {
       "success": "Check your email. We sent you a link to reset your password.",
@@ -35,7 +36,15 @@
       "confirmPasswordLabel": "Confirm password",
       "mismatch": "Passwords do not match.",
       "submit": "Update password",
-      "submitting": "Updating..."
+      "submitting": "Updating...",
+      "inviteTitle": "Welcome to Sophi Sports",
+      "inviteSubtitle": "Choose a password to finish setting up your account (minimum {min} characters)."
+    },
+    "confirm": {
+      "description": "For your security, confirm to continue. This link can only be used once.",
+      "button": "Continue",
+      "continuing": "Verifying...",
+      "invalid": "This link is invalid or has expired. Request a new one."
     },
     "controls": {
       "toggleTheme": "Toggle theme"
@@ -335,7 +344,12 @@
       "typeFemale": "Female",
       "athletes": "athletes",
       "confirmDelete": "Are you sure?",
-      "noSquads": "No squads created yet."
+      "noSquads": "No squads created yet.",
+      "editSquad": "Edit squad",
+      "season": "Season",
+      "activeUsers": "active users",
+      "orgTotal": "Total active users in the organization: {count}",
+      "edit": "Edit"
     },
     "preferences": {
       "title": "Preferences",
@@ -343,7 +357,10 @@
       "theme": "Theme",
       "themeDark": "Dark",
       "themeLight": "Light",
-      "language": "Language"
+      "language": "Language",
+      "defaultSquad": "Default squad at login",
+      "defaultSquadHint": "Selected automatically every time you sign in.",
+      "defaultSquadNone": "First (alphabetical)"
     },
     "users": {
       "title": "Users",
@@ -353,7 +370,56 @@
       "inviteRole": "Role",
       "inviteComingSoon": "Email invites will be available soon.",
       "noUsers": "No users found.",
-      "noName": "No name"
+      "noName": "No name",
+      "activeUsers": "Active users",
+      "organization": "organization",
+      "currentSquad": "current squad",
+      "invite": "Invite",
+      "addSquad": "Squad",
+      "search": "Search user…",
+      "showInactive": "Show inactive ({count})",
+      "noSquads": "No squads",
+      "lastSignIn": "Last sign-in",
+      "never": "never",
+      "status": {
+        "active": "Active",
+        "pending": "Pending",
+        "inactive": "Inactive"
+      },
+      "edit": "Edit",
+      "resetPassword": "Reset password",
+      "remove": "Remove",
+      "reactivate": "Reactivate",
+      "resendInvite": "Resend invite",
+      "inviteTitle": "Invite user",
+      "inviteDescription": "The invitation is sent by email and gives access to {org}.",
+      "fullName": "Name",
+      "squads": "Squads",
+      "sendInvite": "Send invite",
+      "sending": "Sending…",
+      "inviteSent": "Invitation sent to {email}.",
+      "inviteResent": "Invitation resent to {email}.",
+      "editTitle": "Edit user",
+      "cancel": "Cancel",
+      "working": "Working…",
+      "resetSent": "We sent a password reset email to {email}.",
+      "confirm": {
+        "remove": {
+          "title": "Remove {name}?",
+          "description": "The user can no longer sign in. Nothing is deleted — they can be reactivated at any time.",
+          "button": "Remove"
+        },
+        "reactivate": {
+          "title": "Reactivate {name}?",
+          "description": "The user can sign in again with the same access.",
+          "button": "Reactivate"
+        },
+        "reset": {
+          "title": "Reset password for {name}?",
+          "description": "An email with a link to choose a new password will be sent.",
+          "button": "Send email"
+        }
+      }
     },
     "notifications": {
       "title": "Notifications",

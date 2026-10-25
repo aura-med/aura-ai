@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
+import { useUiStore } from '@/stores/uiStore'
 
 const SETTINGS_NAV = [
   { href: '/settings/profile', icon: User, key: 'profile' },
@@ -31,6 +32,7 @@ export function SettingsShell({ children }: { children: React.ReactNode }) {
   async function handleSignOut() {
     const supabase = createClient()
     await supabase.auth.signOut()
+    useUiStore.getState().setSquad(null)
     router.push('/login')
   }
 

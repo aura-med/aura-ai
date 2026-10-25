@@ -22,7 +22,7 @@ const LOCALE_OPTIONS = [
 export default function PreferencesPage() {
   const t = useTranslations('settings.preferences')
   const tc = useTranslations('settings.common')
-  const { theme, setTheme, locale, setLocale } = useUiStore()
+  const { theme, setTheme, locale, setLocale, squads } = useUiStore()
   const [prefs, setPrefs] = useState<Preferences>({ locale: 'pt', theme: 'dark', default_squad_id: null })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -122,6 +122,26 @@ export default function PreferencesPage() {
             ))}
           </div>
         </div>
+
+        {/* Default squad at login — only useful with more than one squad */}
+        {squads.length > 1 && (
+          <div className="space-y-2">
+            <label htmlFor="default-squad" className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>
+              {t('defaultSquad')}
+            </label>
+            <select
+              id="default-squad"
+              value={prefs.default_squad_id ?? ''}
+              onChange={(e) => setPrefs(p => ({ ...p, default_squad_id: e.target.value || null }))}
+              className="w-full px-3 py-2 rounded-lg text-sm border outline-none focus:border-[var(--sophi-accent)]"
+              style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
+            >
+              <option value="">{t('defaultSquadNone')}</option>
+              {squads.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+            <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>{t('defaultSquadHint')}</p>
+          </div>
+        )}
 
         {/* Language */}
         <div className="space-y-2">

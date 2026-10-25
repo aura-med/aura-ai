@@ -47,9 +47,9 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/performance',   labelKey: 'performance',       icon: TrendingUp,      roles: PERFORMANCE_ROLES, inDevelopment: true, sectionKey: 'performance' },
   { href: '/readiness',     labelKey: 'readiness',         icon: Heart,           roles: PERFORMANCE_ROLES, inDevelopment: true, sectionKey: 'performance' },
   { href: '/input',         labelKey: 'input',             icon: ClipboardList,   roles: PERFORMANCE_ROLES, inDevelopment: true, sectionKey: 'performance' },
-  // Intelligence
-  { href: '/calendar',      labelKey: 'calendar',          icon: Calendar,        roles: ALL_ROLES,        sectionKey: 'intelligence' },
-  { href: '/passport',      labelKey: 'passport',          icon: BookOpen,        roles: ALL_ROLES,        sectionKey: 'intelligence' },
+  // Intelligence — visible to all, marked as in development
+  { href: '/calendar',      labelKey: 'calendar',          icon: Calendar,        roles: ALL_ROLES,        inDevelopment: true, sectionKey: 'intelligence' },
+  { href: '/passport',      labelKey: 'passport',          icon: BookOpen,        roles: ALL_ROLES,        inDevelopment: true, sectionKey: 'intelligence' },
   // System
   { href: '/settings',      labelKey: 'settings',          icon: Settings,        roles: ALL_ROLES,        sectionKey: 'system' },
 ]

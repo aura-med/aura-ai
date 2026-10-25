@@ -39,6 +39,8 @@ export interface TopbarDTO extends ViewerContextDTO {
   notifications: NotificationDTO[]
   unreadNotificationCount: number
   themePreference: 'dark' | 'light' | null
+  // Saved in Settings → Preferences; applied at login by TopbarClient
+  defaultSquadId: string | null
 }
 
 export interface InputAthleteDTO extends SelectOptionDTO {

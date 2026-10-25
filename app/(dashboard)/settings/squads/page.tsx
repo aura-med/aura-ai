@@ -3,8 +3,11 @@
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
-import { Users, Plus, Trash2, X } from 'lucide-react'
-import { createSquad } from '@/lib/actions/squad'
+import { Users, Plus, Trash2, Pencil } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useUiStore } from '@/stores/uiStore'
+import { getUserCounts, type UserCounts } from '@/lib/actions/users'
+import { SquadFormDialog, type SquadFormInitial } from '@/components/settings/SquadFormDialog'
 
 interface SquadRow {
   id: string
@@ -20,10 +23,11 @@ export default function SquadsPage() {
   const [squads, setSquads] = useState<SquadRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showCreate, setShowCreate] = useState(false)
-  const [newName, setNewName] = useState('')
-  const [newType, setNewType] = useState<'male' | 'female'>('male')
-  const [creating, setCreating] = useState(false)
+  const router = useRouter()
+  const storeSquads = useUiStore((s) => s.squads)
+  const [counts, setCounts] = useState<UserCounts | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [editing, setEditing] = useState<SquadFormInitial | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
 
@@ -59,43 +63,22 @@ export default function SquadsPage() {
       })
     )
     setSquads(withCounts)
+    // Owner/doctor only — for everyone else the call fails and counts/edit stay hidden.
+    const countsResult = await getUserCounts()
+    setCounts(countsResult.success ? countsResult.counts : null)
     setLoading(false)
   }
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchSquads() }, [])
 
-  async function handleCreate() {
-    if (!newName.trim()) return
-    setCreating(true)
-    setError(null)
-    try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('org_id')
-        .eq('id', user.id)
-        .single()
-
-      const result = await createSquad({
-        name: newName.trim(),
-        type: newType,
-        org_id: profile?.org_id,
-      })
-      if (!result.success) throw new Error(result.error)
-      setNewName('')
-      setNewType('male')
-      setShowCreate(false)
-      await fetchSquads()
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error creating squad')
-    } finally {
-      setCreating(false)
-    }
+  // A new squad also changes the Topbar's squad list (a doctor is auto-assigned).
+  function afterSaved() {
+    router.refresh()
+    void fetchSquads()
   }
+
+  const editableIds = new Set(storeSquads.map((sq) => sq.id))
 
   async function handleDelete(id: string) {
     setDeleting(true)
@@ -129,71 +112,23 @@ export default function SquadsPage() {
             {t('title')}
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--sophi-text3)' }}>{t('description')}</p>
+          {counts && (
+            <p className="text-xs mt-2" style={{ color: 'var(--sophi-text2)', fontFamily: 'var(--font-mono)' }}>
+              {t('orgTotal', { count: counts.orgTotal })}
+            </p>
+          )}
         </div>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
-          style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
-        >
-          <Plus size={14} />
-          {t('createSquad')}
-        </button>
+        {counts && (
+          <button
+            onClick={() => setCreateOpen(true)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+            style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
+          >
+            <Plus size={14} />
+            {t('createSquad')}
+          </button>
+        )}
       </div>
-
-      {showCreate && (
-        <div
-          className="rounded-xl border p-4 space-y-3"
-          style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>{t('newSquad')}</span>
-            <button onClick={() => setShowCreate(false)} style={{ color: 'var(--sophi-text3)' }}>
-              <X size={14} />
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>{t('squadName')}</label>
-              <input
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder={t('squadNamePlaceholder')}
-                className="w-full px-3 py-2 rounded-md text-sm border focus:outline-none"
-                style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)', fontFamily: 'var(--font-mono)' }}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>{t('squadType')}</label>
-              <select
-                value={newType}
-                onChange={(e) => setNewType(e.target.value as 'male' | 'female')}
-                className="w-full px-3 py-2 rounded-md text-sm border focus:outline-none"
-                style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)', fontFamily: 'var(--font-mono)' }}
-              >
-                <option value="male">{t('typeMale')}</option>
-                <option value="female">{t('typeFemale')}</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleCreate}
-              disabled={creating || !newName.trim()}
-              className="px-4 py-1.5 rounded-md text-sm font-medium disabled:opacity-50"
-              style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
-            >
-              {creating ? tc('saving') : tc('create')}
-            </button>
-            <button
-              onClick={() => setShowCreate(false)}
-              className="px-4 py-1.5 rounded-md text-sm"
-              style={{ color: 'var(--sophi-text2)', background: 'var(--sophi-bg3)', border: '1px solid var(--sophi-border2)' }}
-            >
-              {tc('cancel')}
-            </button>
-          </div>
-        </div>
-      )}
 
       {error && (
         <div className="text-sm px-3 py-2 rounded-md" style={{ background: 'rgba(255,77,109,0.1)', color: 'var(--sophi-danger)' }}>
@@ -227,7 +162,7 @@ export default function SquadsPage() {
                 <div>
                   <div className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>{sq.name}</div>
                   <div className="text-xs" style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-mono)' }}>
-                    {sq.type} · {sq.athlete_count} {t('athletes')}
+                    {sq.type} · {sq.athlete_count} {t('athletes')}{counts ? ` · ${counts.bySquad[sq.id] ?? 0} ${t('activeUsers')}` : ''}
                   </div>
                 </div>
               </div>
@@ -252,18 +187,34 @@ export default function SquadsPage() {
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={() => setDeleteId(sq.id)}
-                  className="p-1.5 rounded-md transition-colors hover:bg-[var(--sophi-accent-bg)]"
-                  style={{ color: 'var(--sophi-text3)' }}
-                >
-                  <Trash2 size={14} />
-                </button>
+                <div className="flex items-center gap-1">
+                  {counts && editableIds.has(sq.id) && (
+                    <button
+                      onClick={() => setEditing({ id: sq.id, name: sq.name, type: sq.type, season: sq.season })}
+                      title={t('edit')}
+                      aria-label={`${t('edit')} ${sq.name}`}
+                      className="p-1.5 rounded-md transition-colors hover:bg-[var(--sophi-accent-bg)]"
+                      style={{ color: 'var(--sophi-text3)' }}
+                    >
+                      <Pencil size={14} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setDeleteId(sq.id)}
+                    className="p-1.5 rounded-md transition-colors hover:bg-[var(--sophi-accent-bg)]"
+                    style={{ color: 'var(--sophi-text3)' }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               )}
             </div>
           ))
         )}
       </div>
+
+      <SquadFormDialog open={createOpen} onClose={() => setCreateOpen(false)} onSaved={afterSaved} />
+      <SquadFormDialog open={!!editing} squad={editing ?? undefined} onClose={() => setEditing(null)} onSaved={afterSaved} />
     </div>
   )
 }

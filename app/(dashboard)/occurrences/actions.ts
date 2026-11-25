@@ -158,30 +158,27 @@ export async function updateOccurrence(input: UpdateOccurrenceInput) {
 export async function resolveOccurrence(
   occurrenceId: string,
   athleteId: string,
-  resolutionStatus: AvailabilityStatus
+  resolutionStatus: AvailabilityStatus,
+  resolvedAt?: string | null
 ) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
-  // Trust the occurrence row's own athlete_id (returned from the update), not the
-  // client-supplied athleteId, so we never recompute availability for the wrong athlete.
-  // Guard on is_resolved=false so a stale/double resolve doesn't overwrite the
-  // original resolved_at/resolved_by on an already-resolved row.
-  const { data: resolved, error: resolveError } = await supabase
-    .from('occurrences')
-    .update({
-      is_resolved: true,
-      resolved_at: new Date().toISOString(),
-      resolved_by: user?.id,
-      availability_status: resolutionStatus,
-    })
-    .eq('id', occurrenceId)
-    .eq('is_resolved', false)
-    .select('athlete_id')
-    .maybeSingle()
+  // resolve_occurrence_with_date (094) does the is_resolved=false guard and
+  // the resolved_at/resolved_by derivation itself (via set_occurrence_audit,
+  // trusting a backdated resolvedAt only through this RPC's own
+  // app.trusted_resolved_at GUC — see 094's header). Trust the occurrence
+  // row's own athlete_id from the RPC's return, not the client-supplied
+  // athleteId, so we never recompute availability for the wrong athlete.
+  const { data: resolvedRows, error: resolveError } = await supabase.rpc('resolve_occurrence_with_date', {
+    p_occurrence_id: occurrenceId,
+    p_resolution_status: resolutionStatus,
+    p_resolved_at: resolvedAt ?? null,
+  })
 
-  // No row updated (stale or RLS-filtered id) → nothing was resolved; abort
-  // before touching availability so a crafted call can't move an athlete's state.
+  // No row returned (stale id, already resolved, or RLS-filtered) → nothing
+  // was resolved; abort before touching availability so a crafted call can't
+  // move an athlete's state.
+  const resolved = resolvedRows?.[0]
   if (resolveError || !resolved?.athlete_id) {
     throw new Error(resolveError?.message ?? 'Ocorrência não encontrada')
   }

@@ -63,6 +63,19 @@ export interface OccurrenceDiagnosis {
   load_management_restrictions?: string[]
   load_management_notes?: string | null
   is_resolved: boolean
+  diagnosis_date?: string | null
+  context?: string | null
+  match_minute?: number | null
+  mechanism?: string | null
+  contact_type?: string | null
+  player_action?: string | null
+  foul_involved?: boolean | null
+  body_region?: string | null
+  body_side?: string | null
+  tissue_type?: string | null
+  is_recurrence?: boolean | null
+  related_diagnosis_id?: string | null
+  claim_filed?: boolean | null
 }
 
 export interface Occurrence {
@@ -110,6 +123,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
   const [showEditDiagnosis, setShowEditDiagnosis] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [reevalData, setReevalData] = useState({
+    recordDate: todayStr(),
     observations: '',
     availability_status: occ.availability_status as AthleteAvailabilityStatus,
     // Defaults to the occurrence's own current restrictions/notes — a
@@ -120,6 +134,10 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
     restrictions: occ.load_management_restrictions ?? [] as string[],
     notes: occ.load_management_notes ?? '',
   })
+  const [confirmResolve, setConfirmResolve] = useState(false)
+  const [resolveDate, setResolveDate] = useState(todayStr())
+  const [resolvingOccurrence, setResolvingOccurrence] = useState(false)
+  const [resolveDiagnosisDate, setResolveDiagnosisDate] = useState(todayStr())
   const [editData, setEditData] = useState({
     title: occ.title ?? '',
     occurrenceDate: occ.occurrence_date,
@@ -152,9 +170,15 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
     || a.name
 
   function handleResolve() {
+    setResolvingOccurrence(true)
     startTransition(async () => {
-      await resolveOccurrence(occ.id, occ.athlete_id, 'available')
-      onRevalidate()
+      try {
+        await resolveOccurrence(occ.id, occ.athlete_id, 'available', resolveDate)
+        onRevalidate()
+      } finally {
+        setResolvingOccurrence(false)
+        setConfirmResolve(false)
+      }
     })
   }
 
@@ -163,7 +187,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
       await addOccurrenceRecord({
         occurrenceId: occ.id,
         athleteId: occ.athlete_id,
-        recordDate: todayStr(),
+        recordDate: reevalData.recordDate,
         subjective: '',
         objective: '',
         assessment: reevalData.observations,
@@ -174,6 +198,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
       })
       setShowReeval(false)
       setReevalData({
+        recordDate: todayStr(),
         observations: '',
         availability_status: occ.availability_status,
         restrictions: occ.load_management_restrictions ?? [],
@@ -205,7 +230,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
     setResolvingDiagnosis(true)
     try {
       // Author/recompute handled server-side.
-      await resolveDiagnosis(activeDiagnosis.id, occ.athlete_id)
+      await resolveDiagnosis(activeDiagnosis.id, occ.athlete_id, resolveDiagnosisDate)
       onRevalidate()
     } finally {
       setResolvingDiagnosis(false)
@@ -338,7 +363,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                 )}
                 {canCreateDiagnosis && !confirmResolveDiagnosis && (
                   <button
-                    onClick={() => setConfirmResolveDiagnosis(true)}
+                    onClick={() => { setResolveDiagnosisDate(todayStr()); setConfirmResolveDiagnosis(true) }}
                     disabled={resolvingDiagnosis}
                     style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, padding: '3px 7px', borderRadius: 6, border: '1px solid color-mix(in srgb, var(--sophi-green) 30%, transparent)', background: 'color-mix(in srgb, var(--sophi-green) 6%, transparent)', color: 'var(--sophi-green)', cursor: 'pointer', flexShrink: 0 }}
                   >
@@ -355,9 +380,15 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
               )}
               {confirmResolveDiagnosis && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, borderRadius: 6, border: '1px solid var(--sophi-green)', background: 'var(--sophi-green-bg)', padding: '6px 8px' }}>
-                  <p style={{ fontSize: 10, flex: 1, color: 'var(--sophi-text2)' }}>
-                    Confirma que este diagnóstico fica resolvido?
+                  <p style={{ fontSize: 10, color: 'var(--sophi-text2)' }}>
+                    Resolvido em
                   </p>
+                  <input
+                    type="date"
+                    value={resolveDiagnosisDate}
+                    onChange={(e) => setResolveDiagnosisDate(e.target.value)}
+                    style={{ flex: 1, borderRadius: 4, padding: '3px 5px', fontSize: 11, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)', fontFamily: 'inherit' }}
+                  />
                   <button
                     onClick={() => setConfirmResolveDiagnosis(false)}
                     disabled={resolvingDiagnosis}
@@ -479,6 +510,21 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
           {showReeval && !occ.is_resolved && (
             <div style={{ background: 'var(--sophi-bg3)', borderRadius: 8, padding: 12, marginBottom: 10 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--sophi-text2)', marginBottom: 8 }}>Nova Reavaliação</div>
+              <div style={{ marginBottom: 6 }}>
+                <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
+                  Data
+                </label>
+                <input
+                  type="date"
+                  value={reevalData.recordDate}
+                  onChange={(e) => setReevalData((d) => ({ ...d, recordDate: e.target.value }))}
+                  style={{
+                    borderRadius: 6, padding: '6px 8px', fontSize: 12,
+                    background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)',
+                    color: 'var(--sophi-text)', fontFamily: 'inherit',
+                  }}
+                />
+              </div>
               <div style={{ marginBottom: 6 }}>
                 <label style={{ fontSize: 10, fontFamily: 'var(--font-dm-mono)', color: 'var(--sophi-text3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 2 }}>
                   Observações
@@ -690,6 +736,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                     // other action changed this same occurrence) for a while
                     // before "Reavaliar" gets clicked.
                     setReevalData((d) => (showReeval ? d : {
+                      recordDate: todayStr(),
                       observations: '',
                       availability_status: occ.availability_status as AthleteAvailabilityStatus,
                       restrictions: occ.load_management_restrictions ?? [],
@@ -703,14 +750,41 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                   <Plus size={11} />
                   Reavaliar
                 </button>
-                <button
-                  onClick={handleResolve}
-                  disabled={isPending}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid color-mix(in srgb, var(--sophi-green) 30%, transparent)', background: 'color-mix(in srgb, var(--sophi-green) 6%, transparent)', color: 'var(--sophi-green)', cursor: 'pointer' }}
-                >
-                  <Check size={11} />
-                  Resolver
-                </button>
+                {!confirmResolve ? (
+                  <button
+                    onClick={() => { setResolveDate(todayStr()); setConfirmResolve(true) }}
+                    disabled={isPending}
+                    style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid color-mix(in srgb, var(--sophi-green) 30%, transparent)', background: 'color-mix(in srgb, var(--sophi-green) 6%, transparent)', color: 'var(--sophi-green)', cursor: 'pointer' }}
+                  >
+                    <Check size={11} />
+                    Resolver
+                  </button>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 6, border: '1px solid var(--sophi-green)', background: 'var(--sophi-green-bg)', padding: '4px 8px' }}>
+                    <span style={{ fontSize: 10, color: 'var(--sophi-text2)' }}>Resolvida em</span>
+                    <input
+                      type="date"
+                      value={resolveDate}
+                      onChange={(e) => setResolveDate(e.target.value)}
+                      style={{ borderRadius: 4, padding: '3px 5px', fontSize: 11, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)', fontFamily: 'inherit' }}
+                    />
+                    <button
+                      onClick={() => setConfirmResolve(false)}
+                      disabled={resolvingOccurrence}
+                      style={{ fontSize: 10, color: 'var(--sophi-text3)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleResolve}
+                      disabled={resolvingOccurrence}
+                      style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 700, color: 'var(--sophi-green)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                    >
+                      {resolvingOccurrence ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />}
+                      Confirmar
+                    </button>
+                  </div>
+                )}
                 {canCreateDiagnosis && !activeDiagnosis && (
                   <button
                     onClick={() => setShowDiagnosisModal(true)}
@@ -753,6 +827,19 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
             load_management_restrictions: activeDiagnosis.load_management_restrictions,
             load_management_notes: activeDiagnosis.load_management_notes,
             occurrence_id:       occ.id,
+            diagnosis_date:      activeDiagnosis.diagnosis_date,
+            context:             activeDiagnosis.context,
+            match_minute:        activeDiagnosis.match_minute,
+            mechanism:           activeDiagnosis.mechanism,
+            contact_type:        activeDiagnosis.contact_type,
+            player_action:       activeDiagnosis.player_action,
+            foul_involved:       activeDiagnosis.foul_involved,
+            body_region:         activeDiagnosis.body_region,
+            body_side:           activeDiagnosis.body_side,
+            tissue_type:         activeDiagnosis.tissue_type,
+            is_recurrence:       activeDiagnosis.is_recurrence,
+            related_diagnosis_id: activeDiagnosis.related_diagnosis_id,
+            claim_filed:         activeDiagnosis.claim_filed,
           }}
           onClose={() => setShowEditDiagnosis(false)}
           onSaved={() => { setShowEditDiagnosis(false); onRevalidate() }}

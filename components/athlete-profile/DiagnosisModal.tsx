@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Search, X, Loader2, Activity, CheckCircle2 } from 'lucide-react'
-import { createDiagnosis, updateDiagnosis, getSuggestedProtocol, startRehabProtocol } from '@/lib/actions/clinical'
-import type { SuggestedProtocol } from '@/lib/actions/clinical'
+import { useState, useMemo, useEffect } from 'react'
+import { Search, X, Loader2, Activity, CheckCircle2, ChevronDown, ChevronRight } from 'lucide-react'
+import { createDiagnosis, updateDiagnosis, getSuggestedProtocol, startRehabProtocol, getAthletePastInjuryDiagnoses } from '@/lib/actions/clinical'
+import type { SuggestedProtocol, PastInjuryDiagnosis } from '@/lib/actions/clinical'
 import { searchOsiics, OSIICS_FOOTBALL } from '@/lib/data/osiics'
 import { LoadManagementFields } from '@/components/shared/LoadManagementFields'
 import type { OsiicsEntry } from '@/lib/data/osiics'
@@ -28,7 +28,73 @@ export interface ExistingDiagnosis {
   load_management_restrictions?: string[]
   load_management_notes?: string | null
   occurrence_id: string | null
+  diagnosis_date?: string | null
+  context?: string | null
+  match_minute?: number | null
+  mechanism?: string | null
+  contact_type?: string | null
+  player_action?: string | null
+  foul_involved?: boolean | null
+  body_region?: string | null
+  body_side?: string | null
+  tissue_type?: string | null
+  is_recurrence?: boolean | null
+  related_diagnosis_id?: string | null
+  claim_filed?: boolean | null
 }
+
+function todayStr() {
+  return new Date().toISOString().split('T')[0]
+}
+
+const CONTEXT_OPTIONS = [
+  { value: 'training', label: 'Treino' },
+  { value: 'match', label: 'Jogo' },
+  { value: 'outside_activity', label: 'Fora da atividade desportiva' },
+]
+const MECHANISM_OPTIONS = [
+  { value: 'traumatic', label: 'Traumática (início súbito)' },
+  { value: 'overuse', label: 'Sobrecarga (início gradual)' },
+]
+const CONTACT_TYPE_OPTIONS = [
+  { value: 'direct_contact', label: 'Contacto direto' },
+  { value: 'indirect_contact', label: 'Contacto indireto' },
+  { value: 'non_contact', label: 'Sem contacto' },
+]
+const PLAYER_ACTION_OPTIONS = [
+  { value: 'sprint', label: 'Sprint / corrida' },
+  { value: 'deceleration', label: 'Desaceleração' },
+  { value: 'jump_landing', label: 'Salto / aterragem' },
+  { value: 'shoot_pass', label: 'Remate / passe' },
+  { value: 'tackle', label: 'Carrinho (tackle)' },
+  { value: 'change_of_direction', label: 'Mudança de direção' },
+  { value: 'other', label: 'Outro' },
+]
+const BODY_REGION_OPTIONS = [
+  { value: 'head_face', label: 'Cabeça / face' },
+  { value: 'neck', label: 'Pescoço' },
+  { value: 'trunk_spine', label: 'Tronco / coluna' },
+  { value: 'shoulder_arm', label: 'Ombro / braço' },
+  { value: 'hip_groin', label: 'Anca / virilha' },
+  { value: 'thigh', label: 'Coxa' },
+  { value: 'knee', label: 'Joelho' },
+  { value: 'lower_leg', label: 'Perna' },
+  { value: 'ankle', label: 'Tornozelo' },
+  { value: 'foot', label: 'Pé' },
+]
+const BODY_SIDE_OPTIONS = [
+  { value: 'left', label: 'Esquerdo' },
+  { value: 'right', label: 'Direito' },
+  { value: 'bilateral', label: 'Bilateral' },
+]
+const TISSUE_TYPE_OPTIONS = [
+  { value: 'muscle_tendon', label: 'Muscular / tendinoso' },
+  { value: 'ligament', label: 'Ligamentar' },
+  { value: 'bone', label: 'Ósseo' },
+  { value: 'joint_cartilage', label: 'Articular / cartilagem' },
+  { value: 'nerve', label: 'Nervoso' },
+  { value: 'skin', label: 'Cutâneo' },
+]
 
 interface DiagnosisModalProps {
   athleteId: string
@@ -66,6 +132,29 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
   const [suggestion,      setSuggestion]      = useState<SuggestedProtocol | null | 'loading'>(null)
   const [startingRehab,   setStartingRehab]   = useState(false)
 
+  // Injury characterization (FIFA/UEFA consensus, phase 1) — only meaningful
+  // for diagnosisType === 'injury'. All optional.
+  const [diagnosisDate,   setDiagnosisDate]   = useState(existing?.diagnosis_date ?? todayStr())
+  const [charExpanded,    setCharExpanded]    = useState(!!(existing?.context || existing?.mechanism || existing?.body_region))
+  const [context,         setContext]         = useState<'' | 'training' | 'match' | 'outside_activity'>((existing?.context as 'training' | 'match' | 'outside_activity') ?? '')
+  const [matchMinute,     setMatchMinute]     = useState(existing?.match_minute != null ? String(existing.match_minute) : '')
+  const [mechanism,       setMechanism]       = useState<'' | 'traumatic' | 'overuse'>((existing?.mechanism as 'traumatic' | 'overuse') ?? '')
+  const [contactType,     setContactType]     = useState<'' | 'direct_contact' | 'indirect_contact' | 'non_contact'>((existing?.contact_type as 'direct_contact' | 'indirect_contact' | 'non_contact') ?? '')
+  const [playerAction,    setPlayerAction]    = useState<'' | 'sprint' | 'deceleration' | 'jump_landing' | 'shoot_pass' | 'tackle' | 'change_of_direction' | 'other'>((existing?.player_action as 'sprint' | 'deceleration' | 'jump_landing' | 'shoot_pass' | 'tackle' | 'change_of_direction' | 'other') ?? '')
+  const [foulInvolved,    setFoulInvolved]    = useState<boolean | null>(existing?.foul_involved ?? null)
+  const [bodyRegion,      setBodyRegion]      = useState<'' | 'head_face' | 'neck' | 'trunk_spine' | 'shoulder_arm' | 'hip_groin' | 'thigh' | 'knee' | 'lower_leg' | 'ankle' | 'foot'>((existing?.body_region as 'head_face' | 'neck' | 'trunk_spine' | 'shoulder_arm' | 'hip_groin' | 'thigh' | 'knee' | 'lower_leg' | 'ankle' | 'foot') ?? '')
+  const [bodySide,        setBodySide]        = useState<'' | 'left' | 'right' | 'bilateral'>((existing?.body_side as 'left' | 'right' | 'bilateral') ?? '')
+  const [tissueType,      setTissueType]      = useState<'' | 'muscle_tendon' | 'ligament' | 'bone' | 'joint_cartilage' | 'nerve' | 'skin'>((existing?.tissue_type as 'muscle_tendon' | 'ligament' | 'bone' | 'joint_cartilage' | 'nerve' | 'skin') ?? '')
+  const [isRecurrence,    setIsRecurrence]    = useState(existing?.is_recurrence ?? false)
+  const [relatedDiagnosisId, setRelatedDiagnosisId] = useState(existing?.related_diagnosis_id ?? '')
+  const [claimFiled,      setClaimFiled]      = useState(existing?.claim_filed ?? null)
+  const [pastInjuries,    setPastInjuries]    = useState<PastInjuryDiagnosis[]>([])
+
+  useEffect(() => {
+    if (!isRecurrence || pastInjuries.length > 0) return
+    getAthletePastInjuryDiagnoses(athleteId).then(setPastInjuries).catch(() => {})
+  }, [isRecurrence, athleteId, pastInjuries.length])
+
   async function handleSave() {
     if (!selectedOsiics && !customDesc.trim()) {
       setError('Seleciona um diagnóstico OSIICS ou escreve uma descrição')
@@ -74,6 +163,23 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
     setSaving(true)
     setError(null)
     try {
+      // Characterization only travels for injuries — a disease diagnosis
+      // has none of this to say, and sending it would just be noise.
+      const characterization = diagnosisType === 'injury' ? {
+        diagnosisDate,
+        context: context || null,
+        matchMinute: context === 'match' && matchMinute ? Number(matchMinute) : null,
+        mechanism: mechanism || null,
+        contactType: mechanism === 'traumatic' ? (contactType || null) : null,
+        playerAction: playerAction || null,
+        foulInvolved,
+        bodyRegion: bodyRegion || null,
+        bodySide: bodySide || null,
+        tissueType: tissueType || null,
+        isRecurrence,
+        relatedDiagnosisId: isRecurrence ? (relatedDiagnosisId || null) : null,
+        claimFiled,
+      } : { diagnosisDate }
       if (isEdit && existing) {
         await updateDiagnosis({
           diagnosisId:        existing.id,
@@ -85,6 +191,7 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
           loadManagementRestrictions: restrictions,
           loadManagementNotes: notes.trim() || null,
           occurrenceId:       occurrenceId || null,
+          ...characterization,
         })
         onSaved()
       } else {
@@ -98,6 +205,7 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
           loadManagementRestrictions: restrictions,
           loadManagementNotes: notes.trim() || null,
           occurrenceId:       occurrenceId || null,
+          ...characterization,
         })
         // After creation, check for a suggested protocol (injury only)
         if (selectedOsiics?.protocolKey && diagnosisType === 'injury') {
@@ -243,6 +351,191 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
             style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
           />
         </div>
+
+        {/* Diagnosis date — the clinical date, distinct from the immutable
+            authorship timestamp (diagnosed_at), so a diagnosis can be
+            logged for a day other than today (historical backfill). */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>
+            Data do diagnóstico
+          </label>
+          <input
+            type="date"
+            value={diagnosisDate}
+            onChange={(e) => setDiagnosisDate(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
+            style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
+          />
+        </div>
+
+        {/* Injury characterization — FIFA/UEFA consensus, phase 1 */}
+        {diagnosisType === 'injury' && (
+          <div className="rounded-lg border" style={{ borderColor: 'var(--sophi-border)' }}>
+            <button
+              type="button"
+              onClick={() => setCharExpanded((v) => !v)}
+              className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium"
+              style={{ color: 'var(--sophi-text2)' }}
+            >
+              <span>Caracterização da Lesão (opcional)</span>
+              {charExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </button>
+            {charExpanded && (
+              <div className="px-3 pb-3 space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <label className="text-[11px]" style={{ color: 'var(--sophi-text3)' }}>Contexto</label>
+                    <select
+                      value={context}
+                      onChange={(e) => setContext(e.target.value as typeof context)}
+                      className="w-full px-2 py-1.5 rounded-md text-xs border"
+                      style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
+                    >
+                      <option value="">—</option>
+                      {CONTEXT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  {context === 'match' && (
+                    <div className="space-y-1">
+                      <label className="text-[11px]" style={{ color: 'var(--sophi-text3)' }}>Minuto da lesão</label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={130}
+                        value={matchMinute}
+                        onChange={(e) => setMatchMinute(e.target.value)}
+                        className="w-full px-2 py-1.5 rounded-md text-xs border"
+                        style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
+                      />
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    <label className="text-[11px]" style={{ color: 'var(--sophi-text3)' }}>Mecanismo</label>
+                    <select
+                      value={mechanism}
+                      onChange={(e) => setMechanism(e.target.value as typeof mechanism)}
+                      className="w-full px-2 py-1.5 rounded-md text-xs border"
+                      style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
+                    >
+                      <option value="">—</option>
+                      {MECHANISM_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  {mechanism === 'traumatic' && (
+                    <div className="space-y-1">
+                      <label className="text-[11px]" style={{ color: 'var(--sophi-text3)' }}>Tipo de contacto</label>
+                      <select
+                        value={contactType}
+                        onChange={(e) => setContactType(e.target.value as typeof contactType)}
+                        className="w-full px-2 py-1.5 rounded-md text-xs border"
+                        style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
+                      >
+                        <option value="">—</option>
+                        {CONTACT_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    <label className="text-[11px]" style={{ color: 'var(--sophi-text3)' }}>Ação no momento</label>
+                    <select
+                      value={playerAction}
+                      onChange={(e) => setPlayerAction(e.target.value as typeof playerAction)}
+                      className="w-full px-2 py-1.5 rounded-md text-xs border"
+                      style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
+                    >
+                      <option value="">—</option>
+                      {PLAYER_ACTION_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  {context === 'match' && (
+                    <div className="space-y-1">
+                      <label className="text-[11px]" style={{ color: 'var(--sophi-text3)' }}>Falta assinalada?</label>
+                      <select
+                        value={foulInvolved === null ? '' : foulInvolved ? 'yes' : 'no'}
+                        onChange={(e) => setFoulInvolved(e.target.value === '' ? null : e.target.value === 'yes')}
+                        className="w-full px-2 py-1.5 rounded-md text-xs border"
+                        style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
+                      >
+                        <option value="">—</option>
+                        <option value="yes">Sim</option>
+                        <option value="no">Não</option>
+                      </select>
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    <label className="text-[11px]" style={{ color: 'var(--sophi-text3)' }}>Região anatómica</label>
+                    <select
+                      value={bodyRegion}
+                      onChange={(e) => setBodyRegion(e.target.value as typeof bodyRegion)}
+                      className="w-full px-2 py-1.5 rounded-md text-xs border"
+                      style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
+                    >
+                      <option value="">—</option>
+                      {BODY_REGION_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px]" style={{ color: 'var(--sophi-text3)' }}>Lado</label>
+                    <select
+                      value={bodySide}
+                      onChange={(e) => setBodySide(e.target.value as typeof bodySide)}
+                      className="w-full px-2 py-1.5 rounded-md text-xs border"
+                      style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
+                    >
+                      <option value="">—</option>
+                      {BODY_SIDE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px]" style={{ color: 'var(--sophi-text3)' }}>Tecido afetado</label>
+                    <select
+                      value={tissueType}
+                      onChange={(e) => setTissueType(e.target.value as typeof tissueType)}
+                      className="w-full px-2 py-1.5 rounded-md text-xs border"
+                      style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
+                    >
+                      <option value="">—</option>
+                      {TISSUE_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px]" style={{ color: 'var(--sophi-text3)' }}>Participação de sinistro?</label>
+                    <select
+                      value={claimFiled === null ? '' : claimFiled ? 'yes' : 'no'}
+                      onChange={(e) => setClaimFiled(e.target.value === '' ? null : e.target.value === 'yes')}
+                      className="w-full px-2 py-1.5 rounded-md text-xs border"
+                      style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
+                    >
+                      <option value="">—</option>
+                      <option value="yes">Sim</option>
+                      <option value="no">Não</option>
+                    </select>
+                  </div>
+                </div>
+
+                <label className="flex items-center gap-2 text-[11px]" style={{ color: 'var(--sophi-text2)' }}>
+                  <input type="checkbox" checked={isRecurrence} onChange={(e) => setIsRecurrence(e.target.checked)} />
+                  É recorrência de uma lesão anterior
+                </label>
+                {isRecurrence && (
+                  <select
+                    value={relatedDiagnosisId}
+                    onChange={(e) => setRelatedDiagnosisId(e.target.value)}
+                    className="w-full px-2 py-1.5 rounded-md text-xs border"
+                    style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}
+                  >
+                    <option value="">— Diagnóstico anterior —</option>
+                    {pastInjuries.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.diagnosis_date} · {(p.osiics_description ?? p.custom_description ?? '—').slice(0, 40)}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Availability status */}
         <div className="space-y-1.5">

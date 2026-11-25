@@ -32,7 +32,25 @@ async function recomputeAndPersistAvailability(
   if (error) throw new Error(`Não foi possível atualizar a disponibilidade: ${error.message}`)
 }
 
-export interface CreateDiagnosisInput {
+// FIFA/UEFA consensus-aligned injury characterization — all optional, only
+// meaningful when diagnosisType === 'injury'. See migration 094.
+export interface InjuryCharacterizationFields {
+  diagnosisDate: string | null // date, defaults to today in the RPC when omitted
+  context: 'training' | 'match' | 'outside_activity' | null
+  matchMinute: number | null // only meaningful when context === 'match'
+  mechanism: 'traumatic' | 'overuse' | null
+  contactType: 'direct_contact' | 'indirect_contact' | 'non_contact' | null // only meaningful when mechanism === 'traumatic'
+  playerAction: 'sprint' | 'deceleration' | 'jump_landing' | 'shoot_pass' | 'tackle' | 'change_of_direction' | 'other' | null
+  foulInvolved: boolean | null
+  bodyRegion: 'head_face' | 'neck' | 'trunk_spine' | 'shoulder_arm' | 'hip_groin' | 'thigh' | 'lower_leg' | 'knee' | 'ankle' | 'foot' | null
+  bodySide: 'left' | 'right' | 'bilateral' | null
+  tissueType: 'muscle_tendon' | 'ligament' | 'bone' | 'joint_cartilage' | 'nerve' | 'skin' | null
+  isRecurrence: boolean | null
+  relatedDiagnosisId: string | null // only meaningful when isRecurrence
+  claimFiled: boolean | null // "participação de sinistro" — administrative, optional
+}
+
+export interface CreateDiagnosisInput extends Partial<InjuryCharacterizationFields> {
   athleteId: string
   osiicsCode: string | null
   osiicsDescription: string | null
@@ -92,6 +110,19 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
     p_load_management_restrictions: input.loadManagementRestrictions,
     p_load_management_notes: input.loadManagementNotes,
     p_occurrence_id: input.occurrenceId,
+    p_diagnosis_date: input.diagnosisDate ?? null,
+    p_context: input.context ?? null,
+    p_match_minute: input.matchMinute ?? null,
+    p_mechanism: input.mechanism ?? null,
+    p_contact_type: input.contactType ?? null,
+    p_player_action: input.playerAction ?? null,
+    p_foul_involved: input.foulInvolved ?? null,
+    p_body_region: input.bodyRegion ?? null,
+    p_body_side: input.bodySide ?? null,
+    p_tissue_type: input.tissueType ?? null,
+    p_is_recurrence: input.isRecurrence ?? null,
+    p_related_diagnosis_id: input.relatedDiagnosisId ?? null,
+    p_claim_filed: input.claimFiled ?? null,
   })
   if (error) throw new Error(error.message)
 
@@ -102,7 +133,7 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
   revalidatePath('/')
 }
 
-export interface UpdateDiagnosisInput {
+export interface UpdateDiagnosisInput extends Partial<InjuryCharacterizationFields> {
   diagnosisId: string
   osiicsCode: string | null
   osiicsDescription: string | null
@@ -154,6 +185,19 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
     p_load_management_restrictions: input.loadManagementRestrictions,
     p_load_management_notes: input.loadManagementNotes,
     p_occurrence_id: input.occurrenceId,
+    p_diagnosis_date: input.diagnosisDate ?? null,
+    p_context: input.context ?? null,
+    p_match_minute: input.matchMinute ?? null,
+    p_mechanism: input.mechanism ?? null,
+    p_contact_type: input.contactType ?? null,
+    p_player_action: input.playerAction ?? null,
+    p_foul_involved: input.foulInvolved ?? null,
+    p_body_region: input.bodyRegion ?? null,
+    p_body_side: input.bodySide ?? null,
+    p_tissue_type: input.tissueType ?? null,
+    p_is_recurrence: input.isRecurrence ?? null,
+    p_related_diagnosis_id: input.relatedDiagnosisId ?? null,
+    p_claim_filed: input.claimFiled ?? null,
   })
   if (error) throw new Error(error.message)
   const updated = updatedRows?.[0]
@@ -168,7 +212,7 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
   revalidatePath('/')
 }
 
-export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
+export async function resolveDiagnosis(diagnosisId: string, athleteId: string, resolvedAt?: string | null) {
   const supabase = await createClient()
 
   // resolve_diagnosis_and_cleanup (080) does all of this atomically, in one
@@ -188,6 +232,7 @@ export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
   // here.
   const { data: rows, error } = await supabase.rpc('resolve_diagnosis_and_cleanup', {
     p_diagnosis_id: diagnosisId,
+    p_resolved_at: resolvedAt ?? null,
   })
   if (error) throw new Error(error.message)
   const resolved = rows?.[0]
@@ -202,6 +247,32 @@ export async function resolveDiagnosis(diagnosisId: string, athleteId: string) {
 }
 
 // ── Protocol suggestion ─────────────────────────────────────────────────────
+
+export interface PastInjuryDiagnosis {
+  id: string
+  diagnosis_date: string
+  osiics_description: string | null
+  custom_description: string | null
+}
+
+// Candidates for the "recorrência de qual diagnóstico anterior?" picker —
+// the athlete's own resolved injury diagnoses, most recent first. Excludes
+// disease diagnoses (recurrence, per the FIFA/UEFA consensus, is an injury
+// concept) and the still-open ones (a recurrence is only meaningful once
+// the prior injury has actually resolved).
+export async function getAthletePastInjuryDiagnoses(athleteId: string): Promise<PastInjuryDiagnosis[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('diagnoses')
+    .select('id, diagnosis_date, osiics_description, custom_description')
+    .eq('athlete_id', athleteId)
+    .eq('diagnosis_type', 'injury')
+    .eq('is_resolved', true)
+    .order('diagnosis_date', { ascending: false })
+    .limit(20)
+  if (error) throw new Error(error.message)
+  return data ?? []
+}
 
 export interface SuggestedProtocol {
   id: string

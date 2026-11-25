@@ -63,6 +63,12 @@ export interface CreateDiagnosisInput extends Partial<InjuryCharacterizationFiel
 }
 
 export async function createDiagnosis(input: CreateDiagnosisInput) {
+  // RTP is only ever reached via a rehab plan's RTP-type phase (B7) — the UI
+  // already excludes it from this form's options; this is defense in depth
+  // against a crafted call.
+  if (input.availabilityStatus === 'rtp') {
+    throw new Error('RTP só pode ser atingido através da fase de RTP de um plano de reabilitação.')
+  }
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { data: prof } = await supabase
@@ -150,6 +156,9 @@ export interface UpdateDiagnosisInput extends Partial<InjuryCharacterizationFiel
 // diagnosis has already migrated into the athlete's injury history and the UI
 // never renders an edit affordance for it, but the guard is repeated here too.
 export async function updateDiagnosis(input: UpdateDiagnosisInput) {
+  if (input.availabilityStatus === 'rtp') {
+    throw new Error('RTP só pode ser atingido através da fase de RTP de um plano de reabilitação.')
+  }
   const supabase = await createClient()
 
   // Same one-active-diagnosis-per-occurrence guard as createDiagnosis, excluding

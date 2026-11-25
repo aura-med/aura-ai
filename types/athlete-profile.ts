@@ -531,7 +531,6 @@ export interface AthleteProfileData {
   position: string | null
   date_of_birth: string | null
   club: string | null
-  status: string
   availabilityStatus: string
   // Score
   score: number | null

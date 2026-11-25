@@ -64,7 +64,7 @@ async function AthleteDetailContent({
   const { data: athlete, error } = await supabase
     .from('athletes')
     .select(`
-      id, name, shirt_number, photo_url, position, date_of_birth, club, status, availability_status,
+      id, name, shirt_number, photo_url, position, date_of_birth, club, availability_status,
       squad_id, nationality, menstrual_day, cycle_length, active,
       score_history (score_date, total_score, acwr_partial, hrv_partial, fatigue_partial, sleep_partial, tqr_partial, history_partial, stress_partial, decel_partial, confidence, days_since_match)
     `)
@@ -312,8 +312,7 @@ async function AthleteDetailContent({
 
   // ── Assemble profile ──────────────────────────────────────────────────────
   const rawAthlete = athlete as typeof athlete & { availability_status?: string | null }
-  const availabilityStatus = rawAthlete.availability_status
-    ?? (athlete.status === 'rehab' ? 'rtp' : 'available')
+  const availabilityStatus = rawAthlete.availability_status ?? 'available'
 
   // Edit form data — owner/doctor only (updateAthlete re-checks on the server).
   const editor: AthleteProfileData['editor'] = canManage && viewer.org
@@ -345,7 +344,6 @@ async function AthleteDetailContent({
     position:          athlete.position ?? null,
     date_of_birth:     athlete.date_of_birth ?? null,
     club:              athlete.club ?? null,
-    status:            athlete.status ?? 'available',
     availabilityStatus,
     score,
     riskLevel,

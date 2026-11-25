@@ -200,7 +200,7 @@ export async function listAthletes(request: Request, viewer: ApiViewer) {
   const pagination = parsePagination(request.url)
   let query = service
     .from('athletes')
-    .select('id, name, shirt_number, position, status, squad_id, org_id, active, created_at, updated_at', { count: 'exact' })
+    .select('id, name, shirt_number, position, availability_status, squad_id, org_id, active, created_at, updated_at', { count: 'exact' })
     .eq('org_id', freshViewer.orgId)
     .eq('active', true)
     .order('shirt_number')
@@ -223,7 +223,7 @@ export async function getAthlete(id: string, viewer: ApiViewer) {
   const freshViewer = await currentViewer(service, viewer)
   let query = service
     .from('athletes')
-    .select('id, name, shirt_number, position, status, squad_id, org_id, active, created_at, updated_at')
+    .select('id, name, shirt_number, position, availability_status, squad_id, org_id, active, created_at, updated_at')
     .eq('id', id)
     .eq('org_id', freshViewer.orgId)
     .eq('active', true)

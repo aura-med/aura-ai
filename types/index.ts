@@ -3,7 +3,6 @@
 // Merge: ZIP types + tipos internos do projecto
 // ─────────────────────────────────────────────
 
-export type AthleteStatus = 'available' | 'rehab'
 export type Position = 'GK' | 'DEF' | 'MID' | 'FWD'
 export type SessionType = 'training' | 'match' | 'recovery' | 'rest' | 'travel'
 export type Intensity = 'low' | 'medium' | 'high' | 'max'
@@ -46,7 +45,6 @@ export interface Athlete {
   position: Position | null
   date_of_birth: string | null
   club: string | null
-  status: AthleteStatus
   menstrual_day: number | null
   cycle_length: number | null
   consent_date: string | null
@@ -494,7 +492,6 @@ export interface ActiveRehabSession {
     name: string
     shirt_number: number
     position: string
-    status: AthleteStatus
   } | null
   rehab_protocols: {
     id: string

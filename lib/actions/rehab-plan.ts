@@ -203,6 +203,7 @@ export interface UpsertRehabPlanPhaseInput {
   planId: string
   name: string
   criteria: string | null
+  phaseType: 'standard' | 'rtp'
   startDate: string
   testDate: string | null
 }
@@ -221,10 +222,15 @@ export async function upsertRehabPlanPhase(input: UpsertRehabPlanPhaseInput) {
   if (input.phaseId) {
     const { error } = await supabase
       .from('rehab_plan_phases')
-      .update({ name: input.name, criteria: input.criteria, start_date: input.startDate, test_date: input.testDate })
+      .update({ name: input.name, criteria: input.criteria, phase_type: input.phaseType, start_date: input.startDate, test_date: input.testDate })
       .eq('id', input.phaseId)
       .eq('plan_id', input.planId)
-    if (error) throw new Error(error.message)
+    // 23505 = unique_violation on rehab_plan_phases_one_rtp_per_plan (096) —
+    // a second phase was marked RTP while one already exists for this plan.
+    if (error) {
+      if (error.code === '23505') throw new Error('Este plano já tem uma fase de RTP.')
+      throw new Error(error.message)
+    }
   } else {
     // phase_number is derived server-side (max + 1) rather than client-supplied,
     // so two clinicians adding a phase near-simultaneously can't collide on the
@@ -244,14 +250,23 @@ export async function upsertRehabPlanPhase(input: UpsertRehabPlanPhaseInput) {
       phase_number: nextNumber,
       name:         input.name,
       criteria:     input.criteria,
+      phase_type:   input.phaseType,
       start_date:   input.startDate,
       test_date:    input.testDate,
       created_by:   userId,
     })
     if (error) {
-      // 23505 = unique_violation on (plan_id, phase_number) — a near-simultaneous
-      // second "Nova Fase" submit raced this one's max+1 computation.
-      if (error.code === '23505') throw new Error('Outra fase foi criada ao mesmo tempo — tenta novamente.')
+      // 23505 = unique_violation on either (plan_id, phase_number) — a
+      // near-simultaneous second "Nova Fase" submit raced this one's max+1
+      // computation — or rehab_plan_phases_one_rtp_per_plan (096), if this
+      // was meant to be the plan's RTP phase and another already is.
+      if (error.code === '23505') {
+        throw new Error(
+          input.phaseType === 'rtp'
+            ? 'Este plano já tem uma fase de RTP.'
+            : 'Outra fase foi criada ao mesmo tempo — tenta novamente.'
+        )
+      }
       throw new Error(error.message)
     }
   }
@@ -272,6 +287,125 @@ export async function deleteRehabPlanPhase(phaseId: string, planId: string) {
   // rehab_plan_days.phase_id is ON DELETE SET NULL — any day tagged with this
   // phase just loses the tag, its content is untouched.
   const { error } = await supabase.from('rehab_plan_phases').delete().eq('id', phaseId).eq('plan_id', planId)
+  if (error) throw new Error(error.message)
+
+  revalidatePath(`/athletes/${plan.athlete_id}`)
+}
+
+// ── Phase criteria (096) ─────────────────────────────────────────────────────
+
+export interface UpsertRehabPhaseCriterionInput {
+  criterionId?: string
+  phaseId: string
+  description: string
+  metricLabel: string | null
+  thresholdOperator: 'gte' | 'lte' | 'gt' | 'lt' | 'eq' | null
+  thresholdValue: number | null
+  unit: string | null
+  displayOrder: number
+}
+
+// Resolves the criterion's own plan's athlete_id for revalidation — joined
+// through rehab_plan_phases since rehab_phase_criteria has no athlete_id of
+// its own (RLS already scopes both reads to plans the caller can see).
+async function athleteIdForPhase(supabase: Awaited<ReturnType<typeof createClient>>, phaseId: string): Promise<string> {
+  const { data: phase, error: phaseError } = await supabase
+    .from('rehab_plan_phases')
+    .select('plan_id')
+    .eq('id', phaseId)
+    .single()
+  if (phaseError || !phase?.plan_id) throw new Error(phaseError?.message ?? 'Fase não encontrada')
+
+  const { data: plan, error: planError } = await supabase
+    .from('rehab_plans')
+    .select('athlete_id')
+    .eq('id', phase.plan_id)
+    .single()
+  if (planError || !plan?.athlete_id) throw new Error(planError?.message ?? 'Plano não encontrado')
+  return plan.athlete_id
+}
+
+export async function upsertRehabPhaseCriterion(input: UpsertRehabPhaseCriterionInput) {
+  const supabase = await createClient()
+  const userId = await currentUserId(supabase)
+  const athleteId = await athleteIdForPhase(supabase, input.phaseId)
+
+  if (input.criterionId) {
+    const { error } = await supabase
+      .from('rehab_phase_criteria')
+      .update({
+        description: input.description,
+        metric_label: input.metricLabel,
+        threshold_operator: input.thresholdOperator,
+        threshold_value: input.thresholdValue,
+        unit: input.unit,
+        display_order: input.displayOrder,
+      })
+      .eq('id', input.criterionId)
+      .eq('phase_id', input.phaseId)
+    if (error) throw new Error(error.message)
+  } else {
+    const { error } = await supabase.from('rehab_phase_criteria').insert({
+      phase_id: input.phaseId,
+      description: input.description,
+      metric_label: input.metricLabel,
+      threshold_operator: input.thresholdOperator,
+      threshold_value: input.thresholdValue,
+      unit: input.unit,
+      display_order: input.displayOrder,
+      created_by: userId,
+    })
+    if (error) throw new Error(error.message)
+  }
+
+  revalidatePath(`/athletes/${athleteId}`)
+}
+
+export async function deleteRehabPhaseCriterion(criterionId: string, phaseId: string) {
+  const supabase = await createClient()
+  const athleteId = await athleteIdForPhase(supabase, phaseId)
+
+  const { error } = await supabase.from('rehab_phase_criteria').delete().eq('id', criterionId).eq('phase_id', phaseId)
+  if (error) throw new Error(error.message)
+
+  revalidatePath(`/athletes/${athleteId}`)
+}
+
+// set_rehab_criterion_completion (096) derives completed_by/completed_at
+// from the session server-side — never client-supplied, so a sign-off can't
+// be forged (same pattern as diagnosed_by/diagnosed_at elsewhere).
+export async function setRehabCriterionCompletion(criterionId: string, phaseId: string, isCompleted: boolean, measuredValue?: number | null) {
+  const supabase = await createClient()
+  const athleteId = await athleteIdForPhase(supabase, phaseId)
+
+  const { data, error } = await supabase.rpc('set_rehab_criterion_completion', {
+    p_criterion_id: criterionId,
+    p_is_completed: isCompleted,
+    p_measured_value: measuredValue ?? null,
+  })
+  if (error) throw new Error(error.message)
+  if (!data?.[0]) throw new Error('Critério não encontrado')
+
+  revalidatePath(`/athletes/${athleteId}`)
+  return data[0]
+}
+
+// advance_rehab_plan_phase (096) raises if the plan's current phase still
+// has incomplete criteria — a genuine gate, not just a UI affordance.
+export async function advanceRehabPlanPhase(planId: string, nextPhaseId: string) {
+  const supabase = await createClient()
+
+  const { data: plan, error: planError } = await supabase
+    .from('rehab_plans')
+    .select('athlete_id')
+    .eq('id', planId)
+    .single()
+  if (planError || !plan?.athlete_id) throw new Error(planError?.message ?? 'Plano não encontrado')
+
+  const { error } = await supabase.rpc('advance_rehab_plan_phase', {
+    p_plan_id: planId,
+    p_next_phase_id: nextPhaseId,
+  })
   if (error) throw new Error(error.message)
 
   revalidatePath(`/athletes/${plan.athlete_id}`)

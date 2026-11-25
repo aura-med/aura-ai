@@ -15,14 +15,15 @@ import { createClient } from '@/lib/supabase/client'
 import { addDays, todayStr, calculateMDStatus, formatDisplayDate } from '@/lib/utils/microcycle'
 import {
   createRehabPlan, updateRehabPlan, closeRehabPlan,
-  upsertRehabPlanPhase, deleteRehabPlanPhase,
+  upsertRehabPlanPhase, deleteRehabPlanPhase, advanceRehabPlanPhase,
   upsertRehabPlanDay, deleteRehabPlanDay, moveRehabPlanDay,
   getActiveInjuryDiagnoses,
 } from '@/lib/actions/rehab-plan'
 import { REHAB_DAY_OCCUPIED_ERROR } from '@/lib/actions/rehab-plan-errors'
 import { exportRehabPlanPDF } from '@/lib/utils/pdf-export'
-import type { RehabPlan, RehabPlanPhase, RehabPlanDay, RehabPlanPeriod } from '@/types/athlete-profile'
+import type { RehabPlan, RehabPlanPhase, RehabPlanDay, RehabPlanPeriod, RehabPhaseCriterion, RehabPhaseType } from '@/types/athlete-profile'
 import { RtpCriteriaSection } from './RtpCriteriaSection'
+import { PhaseCriteriaSection } from './PhaseCriteriaSection'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -85,9 +86,18 @@ export async function fetchPlanDetail(planId: string) {
     supabase.from('rehab_plan_days').select('*').eq('plan_id', planId).order('entry_date', { ascending: true }),
   ])
   if (phaseError || dayError) throw phaseError ?? dayError
+  const phases = (phaseRows ?? []) as RehabPlanPhase[]
+
+  const phaseIds = phases.map((p) => p.id)
+  const { data: criteriaRows, error: criteriaError } = phaseIds.length
+    ? await supabase.from('rehab_phase_criteria').select('*').in('phase_id', phaseIds).order('display_order', { ascending: true })
+    : { data: [], error: null }
+  if (criteriaError) throw criteriaError
+
   return {
-    phases: (phaseRows ?? []) as RehabPlanPhase[],
+    phases,
     days: (dayRows ?? []) as RehabPlanDay[],
+    criteria: (criteriaRows ?? []) as RehabPhaseCriterion[],
   }
 }
 
@@ -232,20 +242,26 @@ export function PlanModal({
 // ── Phase create/edit modal ──────────────────────────────────────────────────
 
 function PhaseModal({
-  planId, existing, onClose, onSaved,
+  planId, existing, hasRtpPhase, onClose, onSaved,
 }: {
   planId: string
   existing: RehabPlanPhase | null
+  hasRtpPhase: boolean
   onClose: () => void
   onSaved: () => void
 }) {
   const isEdit = !!existing
   const [name, setName] = useState(existing?.name ?? '')
   const [criteria, setCriteria] = useState(existing?.criteria ?? '')
+  const [phaseType, setPhaseType] = useState<RehabPhaseType>(existing?.phase_type ?? 'standard')
   const [startDate, setStartDate] = useState(existing?.start_date ?? todayStr())
   const [testDate, setTestDate] = useState(existing?.test_date ?? '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Disabled once another phase already holds the plan's single RTP slot
+  // (096's partial unique index) — unless this edit is itself that phase.
+  const rtpDisabled = hasRtpPhase && existing?.phase_type !== 'rtp'
 
   async function handleSave() {
     if (!name.trim()) { setError('Nome do critério obrigatório'); return }
@@ -257,6 +273,7 @@ function PhaseModal({
         planId,
         name: name.trim(),
         criteria: criteria.trim() || null,
+        phaseType,
         startDate,
         testDate: testDate || null,
       })
@@ -285,6 +302,36 @@ function PhaseModal({
           <label className={labelClass} style={{ color: 'var(--sophi-text3)' }}>Nome da fase</label>
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="ex: Fase 2 — Exercícios Excêntricos"
             className={inputClass} style={inputStyle} />
+        </div>
+
+        <div>
+          <label className={labelClass} style={{ color: 'var(--sophi-text3)' }}>Tipo de fase</label>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => setPhaseType('standard')}
+              className="flex-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors"
+              style={{
+                background: phaseType === 'standard' ? 'var(--sophi-accent)' : 'var(--sophi-bg3)',
+                color: phaseType === 'standard' ? 'var(--sophi-on-accent)' : 'var(--sophi-text2)',
+                borderColor: phaseType === 'standard' ? 'var(--sophi-accent)' : 'var(--sophi-border)',
+              }}>
+              Fase normal
+            </button>
+            <button type="button" onClick={() => !rtpDisabled && setPhaseType('rtp')} disabled={rtpDisabled}
+              title={rtpDisabled ? 'Este plano já tem uma fase de RTP' : undefined}
+              className="flex-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                background: phaseType === 'rtp' ? 'var(--sophi-purple)' : 'var(--sophi-bg3)',
+                color: phaseType === 'rtp' ? 'var(--sophi-on-accent)' : 'var(--sophi-text2)',
+                borderColor: phaseType === 'rtp' ? 'var(--sophi-purple)' : 'var(--sophi-border)',
+              }}>
+              Fase de RTP
+            </button>
+          </div>
+          {phaseType === 'rtp' && (
+            <p className="text-[10px] mt-1" style={{ color: 'var(--sophi-text3)' }}>
+              A fase terminal, de trabalho de campo — a disponibilidade do atleta só mostra "Em RTP" quando esta é a fase atual.
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -638,6 +685,7 @@ export function PlanDetail({
 }) {
   const [phases, setPhases] = useState<RehabPlanPhase[]>([])
   const [days, setDays] = useState<RehabPlanDay[]>([])
+  const [criteria, setCriteria] = useState<RehabPhaseCriterion[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
   const [detailVersion, setDetailVersion] = useState(0)
@@ -654,8 +702,12 @@ export function PlanDetail({
   const [selectedDiagId, setSelectedDiagId] = useState<string>('')
   const [confirmDeletePhaseId, setConfirmDeletePhaseId] = useState<string | null>(null)
   const [deletingPhase, setDeletingPhase] = useState(false)
+  const [advancingPhaseId, setAdvancingPhaseId] = useState<string | null>(null)
+  const [advanceError, setAdvanceError] = useState<string | null>(null)
 
   const loadDetail = useCallback(() => setDetailVersion((v) => v + 1), [])
+
+  const hasRtpPhase = phases.some((ph) => ph.phase_type === 'rtp')
 
   async function handleDeletePhase(phaseId: string) {
     setDeletingPhase(true)
@@ -668,13 +720,27 @@ export function PlanDetail({
     }
   }
 
+  async function handleAdvancePhase(nextPhaseId: string) {
+    setAdvancingPhaseId(nextPhaseId)
+    setAdvanceError(null)
+    try {
+      await advanceRehabPlanPhase(plan.id, nextPhaseId)
+      onPlanChanged()
+      loadDetail()
+    } catch (e) {
+      setAdvanceError((e as Error).message)
+    } finally {
+      setAdvancingPhaseId(null)
+    }
+  }
+
   useEffect(() => {
     let cancelled = false
     const load = async () => {
       setLoading(true)
       try {
-        const { phases: phaseRows, days: dayRows } = await fetchPlanDetail(plan.id)
-        if (!cancelled) { setPhases(phaseRows); setDays(dayRows); setLoadError(false) }
+        const { phases: phaseRows, days: dayRows, criteria: criteriaRows } = await fetchPlanDetail(plan.id)
+        if (!cancelled) { setPhases(phaseRows); setDays(dayRows); setCriteria(criteriaRows); setLoadError(false) }
       } catch {
         if (!cancelled) setLoadError(true)
       } finally {
@@ -906,13 +972,24 @@ export function PlanDetail({
             <p className="text-xs text-center py-3" style={{ color: 'var(--sophi-text3)' }}>Sem critérios definidos</p>
           ) : (
             <div className="space-y-2">
-              {phases.map((ph) => (
-                <div key={ph.id} className="rounded-lg border p-3" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
+              {phases.map((ph) => {
+                const isCurrent = plan.current_phase_id === ph.id
+                const phaseCriteria = criteria.filter((c) => c.phase_id === ph.id)
+                return (
+                <div key={ph.id} className="rounded-lg border p-3" style={{ borderColor: isCurrent ? 'var(--sophi-accent)' : 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>
-                        {/^fase\s*\d/i.test(ph.name) ? ph.name : `Fase ${ph.phase_number} — ${ph.name}`}
-                      </p>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <p className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>
+                          {/^fase\s*\d/i.test(ph.name) ? ph.name : `Fase ${ph.phase_number} — ${ph.name}`}
+                        </p>
+                        {ph.phase_type === 'rtp' && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(180,141,252,0.12)', color: 'var(--sophi-purple)' }}>RTP</span>
+                        )}
+                        {isCurrent && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-accent-bg)', color: 'var(--sophi-accent)' }}>Fase atual</span>
+                        )}
+                      </div>
                       <p className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>
                         a partir de {formatShort(ph.start_date)}
                         {ph.test_date ? ` · Teste de critérios: ${formatShort(ph.test_date)}` : ''}
@@ -921,6 +998,13 @@ export function PlanDetail({
                     </div>
                     {canEdit && confirmDeletePhaseId !== ph.id && (
                       <div className="flex items-center gap-1 shrink-0">
+                        {plan.is_active && !isCurrent && (
+                          <button type="button" onClick={() => handleAdvancePhase(ph.id)} disabled={advancingPhaseId !== null}
+                            className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-accent-bg)]" style={{ color: 'var(--sophi-accent)' }}>
+                            {advancingPhaseId === ph.id ? <Loader2 size={10} className="animate-spin" /> : null}
+                            Tornar fase atual
+                          </button>
+                        )}
                         <button type="button" onClick={() => { setEditingPhase(ph); setShowPhaseModal(true) }} className="p-1 rounded hover:bg-[var(--sophi-bg4)]">
                           <Pencil size={11} style={{ color: 'var(--sophi-text3)' }} />
                         </button>
@@ -944,9 +1028,19 @@ export function PlanDetail({
                       </button>
                     </div>
                   )}
+                  <PhaseCriteriaSection
+                    phaseId={ph.id}
+                    initialCriteria={phaseCriteria}
+                    canEdit={canEdit}
+                    onChanged={loadDetail}
+                  />
                 </div>
-              ))}
+                )
+              })}
             </div>
+          )}
+          {advanceError && (
+            <p className="text-xs mt-2" style={{ color: 'var(--sophi-danger)' }}>{advanceError}</p>
           )}
         </div>
       </div>
@@ -1008,7 +1102,7 @@ export function PlanDetail({
           onSaved={() => { setShowPlanModal(false); onPlanChanged() }} />
       )}
       {showPhaseModal && (
-        <PhaseModal planId={plan.id} existing={editingPhase}
+        <PhaseModal planId={plan.id} existing={editingPhase} hasRtpPhase={hasRtpPhase}
           onClose={() => setShowPhaseModal(false)}
           onSaved={() => { setShowPhaseModal(false); loadDetail() }} />
       )}

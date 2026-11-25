@@ -190,9 +190,12 @@ export interface RehabPlan {
   is_completed: boolean
   closed_at: string | null
   rtp_criteria: RtpCriterion[]
+  current_phase_id: string | null
   created_at: string
   updated_at: string
 }
+
+export type RehabPhaseType = 'standard' | 'rtp'
 
 export interface RehabPlanPhase {
   id: string
@@ -200,8 +203,30 @@ export interface RehabPlanPhase {
   phase_number: number
   name: string
   criteria: string | null
+  phase_type: RehabPhaseType
   start_date: string
   test_date: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ThresholdOperator = 'gte' | 'lte' | 'gt' | 'lt' | 'eq'
+
+export interface RehabPhaseCriterion {
+  id: string
+  phase_id: string
+  description: string
+  metric_label: string | null
+  threshold_operator: ThresholdOperator | null
+  threshold_value: number | null
+  unit: string | null
+  measured_value: number | null
+  is_completed: boolean
+  completed_by: string | null
+  completed_by_name: string | null
+  completed_at: string | null
+  display_order: number
+  created_by: string | null
   created_at: string
   updated_at: string
 }

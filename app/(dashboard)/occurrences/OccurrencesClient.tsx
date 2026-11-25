@@ -162,9 +162,12 @@ function RegisterModal({
               onChange={(e) => setForm((f) => ({ ...f, availabilityStatus: e.target.value as AthleteAvailabilityStatus }))}
               style={{ width: '100%', borderRadius: 6, padding: '7px 10px', fontSize: 12, background: 'var(--sophi-bg3)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)' }}
             >
-              {/* RTP não é um estado que se regista aqui — é atribuído pelo protocolo de reabilitação */}
+              {/* Abrir uma ocorrência só decide entre Apto e A Avaliar — as
+                  restantes conclusões (Gestão de Carga, Indisponível, RTP)
+                  só se chega através de uma reavaliação médica/fisio ou do
+                  plano de reabilitação, nunca no momento de abertura. */}
               {Object.entries(STATUS_CONFIG)
-                .filter(([v]) => v !== 'rtp')
+                .filter(([v]) => v === 'available' || v === 'evaluation')
                 .map(([v, cfg]) => (
                   <option key={v} value={v}>{cfg.label}</option>
                 ))}

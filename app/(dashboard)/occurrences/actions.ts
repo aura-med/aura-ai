@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import type { InjuryCharacterizationFields } from '@/lib/actions/clinical'
 
 type AvailabilityStatus = 'available' | 'evaluation' | 'unavailable' | 'rtp' | 'load_management'
 
@@ -57,6 +58,13 @@ async function getClinician(supabase: Awaited<ReturnType<typeof createClient>>) 
 }
 
 export async function registerOccurrence(input: RegisterOccurrenceInput) {
+  // Opening an occurrence only ever decides between Apto and A Avaliar — every
+  // other outcome (Gestão de Carga, Indisponível, RTP) is only ever reached
+  // through a reassessment or the rehab plan. The UI already restricts the
+  // select to these two; this is defense in depth against a crafted call.
+  if (input.availabilityStatus !== 'available' && input.availabilityStatus !== 'evaluation') {
+    throw new Error('Uma ocorrência só pode abrir como Disponível ou A Avaliar.')
+  }
   const supabase = await createClient()
   const clinician = await getClinician(supabase)
 
@@ -244,6 +252,70 @@ export async function addOccurrenceRecord(input: {
   // Recompute from all active occurrences/diagnoses so a less-restrictive
   // reassessment on one issue doesn't clear a still-active one elsewhere.
   await recomputeAndPersistAvailability(supabase, targetAthleteId, input.availabilityStatus)
+
+  revalidatePath('/occurrences')
+  revalidatePath('/')
+  revalidatePath(`/athletes/${targetAthleteId}`)
+}
+
+// Concludes a reassessment as Indisponível together with its now-mandatory
+// diagnosis, in one atomic call — mirrors addOccurrenceRecord above but goes
+// through conclude_reassessment_with_diagnosis (098) instead of 070, which
+// inserts the diagnosis first and errors if diagnosisType is missing (the
+// trigger added in 098 enforces the same rule even for a direct Data API
+// call, so this isn't the only thing preventing a diagnosis-less
+// Indisponível — just the one that gives the UI a clean, atomic save).
+export async function addOccurrenceRecordWithDiagnosis(input: {
+  occurrenceId: string
+  athleteId: string
+  recordDate: string
+  subjective: string
+  objective: string
+  assessment: string
+  plan: string
+  loadManagementRestrictions: string[]
+  loadManagementNotes: string | null
+  diagnosisType: 'injury' | 'disease'
+  osiicsCode: string | null
+  osiicsDescription: string | null
+  customDescription: string | null
+} & Partial<InjuryCharacterizationFields>) {
+  const supabase = await createClient()
+
+  const { data: rows, error } = await supabase.rpc('conclude_reassessment_with_diagnosis', {
+    p_occurrence_id: input.occurrenceId,
+    p_record_date: input.recordDate,
+    p_subjective: input.subjective,
+    p_objective: input.objective,
+    p_assessment: input.assessment,
+    p_plan: input.plan,
+    p_availability_status: 'unavailable',
+    p_load_management_restrictions: input.loadManagementRestrictions,
+    p_load_management_notes: input.loadManagementNotes,
+    p_diagnosis_type: input.diagnosisType,
+    p_osiics_code: input.osiicsCode,
+    p_osiics_description: input.osiicsDescription,
+    p_custom_description: input.customDescription,
+    p_diagnosis_date: input.diagnosisDate ?? null,
+    p_context: input.context ?? null,
+    p_match_minute: input.matchMinute ?? null,
+    p_mechanism: input.mechanism ?? null,
+    p_contact_type: input.contactType ?? null,
+    p_player_action: input.playerAction ?? null,
+    p_foul_involved: input.foulInvolved ?? null,
+    p_body_region: input.bodyRegion ?? null,
+    p_body_side: input.bodySide ?? null,
+    p_tissue_type: input.tissueType ?? null,
+    p_is_recurrence: input.isRecurrence ?? null,
+    p_related_diagnosis_id: input.relatedDiagnosisId ?? null,
+    p_claim_filed: input.claimFiled ?? null,
+  })
+  if (error) throw new Error(error.message)
+  const record = rows?.[0]
+  if (!record?.athlete_id) throw new Error('Ocorrência já resolvida ou inexistente')
+  const targetAthleteId = record.athlete_id
+
+  await recomputeAndPersistAvailability(supabase, targetAthleteId, 'unavailable')
 
   revalidatePath('/occurrences')
   revalidatePath('/')

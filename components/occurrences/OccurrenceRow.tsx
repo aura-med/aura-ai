@@ -5,10 +5,16 @@ import Link from 'next/link'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { DiagnosisModal } from '@/components/athlete-profile/DiagnosisModal'
 import { ChevronDown, ChevronUp, Plus, Check, Pencil, CheckCircle2, Loader2 } from 'lucide-react'
-import { resolveOccurrence, addOccurrenceRecord, updateOccurrence, updateOccurrenceRecord } from '@/app/(dashboard)/occurrences/actions'
+import { resolveOccurrence, addOccurrenceRecord, addOccurrenceRecordWithDiagnosis, updateOccurrence, updateOccurrenceRecord } from '@/app/(dashboard)/occurrences/actions'
 import { resolveDiagnosis } from '@/lib/actions/clinical'
 import { todayStr } from '@/lib/utils/microcycle'
 import { LoadManagementFields, restrictionLabels } from '@/components/shared/LoadManagementFields'
+import {
+  DiagnosisCoreFields,
+  initialDiagnosisCoreValue,
+  diagnosisCoreValueToCharacterization,
+  type DiagnosisCoreValue,
+} from '@/components/athlete-profile/DiagnosisCoreFields'
 import type { AthleteAvailabilityStatus } from '@/types'
 
 // Shared between the Ocorrências page and the athlete profile's Overview tab
@@ -134,6 +140,10 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
     restrictions: occ.load_management_restrictions ?? [] as string[],
     notes: occ.load_management_notes ?? '',
   })
+  // Only relevant while reevalData.availability_status === 'unavailable' —
+  // migration 098 makes a diagnosis mandatory in that same action.
+  const [reevalDiagnosis, setReevalDiagnosis] = useState<DiagnosisCoreValue>(() => initialDiagnosisCoreValue(null))
+  const [reevalDiagnosisError, setReevalDiagnosisError] = useState<string | null>(null)
   const [confirmResolve, setConfirmResolve] = useState(false)
   const [resolveDate, setResolveDate] = useState(todayStr())
   const [resolvingOccurrence, setResolvingOccurrence] = useState(false)
@@ -183,19 +193,46 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
   }
 
   function handleAddRecord() {
+    if (reevalData.availability_status === 'unavailable' && !reevalDiagnosis.osiicsCode && !reevalDiagnosis.customDesc.trim()) {
+      setReevalDiagnosisError('Seleciona um diagnóstico OSIICS ou escreve uma descrição')
+      return
+    }
+    setReevalDiagnosisError(null)
     startTransition(async () => {
-      await addOccurrenceRecord({
-        occurrenceId: occ.id,
-        athleteId: occ.athlete_id,
-        recordDate: reevalData.recordDate,
-        subjective: '',
-        objective: '',
-        assessment: reevalData.observations,
-        plan: '',
-        availabilityStatus: reevalData.availability_status,
-        loadManagementRestrictions: reevalData.restrictions,
-        loadManagementNotes: reevalData.notes.trim() || null,
-      })
+      if (reevalData.availability_status === 'unavailable') {
+        // conclude_reassessment_with_diagnosis (098) inserts the diagnosis
+        // and the reassessment atomically — the trigger it also installs
+        // would otherwise reject this same reassessment if saved on its own.
+        await addOccurrenceRecordWithDiagnosis({
+          occurrenceId: occ.id,
+          athleteId: occ.athlete_id,
+          recordDate: reevalData.recordDate,
+          subjective: '',
+          objective: '',
+          assessment: reevalData.observations,
+          plan: '',
+          loadManagementRestrictions: reevalData.restrictions,
+          loadManagementNotes: reevalData.notes.trim() || null,
+          diagnosisType: reevalDiagnosis.diagnosisType,
+          osiicsCode: reevalDiagnosis.osiicsCode,
+          osiicsDescription: reevalDiagnosis.osiicsDescription,
+          customDescription: reevalDiagnosis.customDesc.trim() || null,
+          ...diagnosisCoreValueToCharacterization(reevalDiagnosis),
+        })
+      } else {
+        await addOccurrenceRecord({
+          occurrenceId: occ.id,
+          athleteId: occ.athlete_id,
+          recordDate: reevalData.recordDate,
+          subjective: '',
+          objective: '',
+          assessment: reevalData.observations,
+          plan: '',
+          availabilityStatus: reevalData.availability_status,
+          loadManagementRestrictions: reevalData.restrictions,
+          loadManagementNotes: reevalData.notes.trim() || null,
+        })
+      }
       setShowReeval(false)
       setReevalData({
         recordDate: todayStr(),
@@ -204,6 +241,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
         restrictions: occ.load_management_restrictions ?? [],
         notes: occ.load_management_notes ?? '',
       })
+      setReevalDiagnosis(initialDiagnosisCoreValue(null))
       onRevalidate()
     })
   }
@@ -439,7 +477,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                           onChange={(e) => setRecordEditData((d) => ({ ...d, availability_status: e.target.value as AthleteAvailabilityStatus }))}
                           style={{ width: '100%', borderRadius: 6, padding: '6px 8px', fontSize: 12, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', color: 'var(--sophi-text)', fontFamily: 'inherit' }}
                         >
-                          {Object.entries(STATUS_CONFIG).map(([v, cfg]) => (
+                          {Object.entries(STATUS_CONFIG).filter(([v]) => v !== 'rtp').map(([v, cfg]) => (
                             <option key={v} value={v}>{cfg.label}</option>
                           ))}
                         </select>
@@ -553,7 +591,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                     color: 'var(--sophi-text)', fontFamily: 'inherit',
                   }}
                 >
-                  {Object.entries(STATUS_CONFIG).map(([v, cfg]) => (
+                  {Object.entries(STATUS_CONFIG).filter(([v]) => v !== 'rtp').map(([v, cfg]) => (
                     <option key={v} value={v}>{cfg.label}</option>
                   ))}
                 </select>
@@ -565,6 +603,21 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                   notes={reevalData.notes}
                   onNotesChange={(next) => setReevalData((d) => ({ ...d, notes: next }))}
                 />
+              )}
+              {reevalData.availability_status === 'unavailable' && (
+                <div style={{ marginBottom: 8, background: 'var(--sophi-bg2)', border: '1px solid var(--sophi-border)', borderRadius: 8, padding: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--sophi-text2)', marginBottom: 8 }}>
+                    Diagnóstico (obrigatório para Indisponível)
+                  </div>
+                  <DiagnosisCoreFields
+                    athleteId={occ.athlete_id}
+                    value={reevalDiagnosis}
+                    onChange={(patch) => setReevalDiagnosis((d) => ({ ...d, ...patch }))}
+                  />
+                  {reevalDiagnosisError && (
+                    <p style={{ fontSize: 11, color: 'var(--sophi-danger)', marginTop: 6 }}>{reevalDiagnosisError}</p>
+                  )}
+                </div>
               )}
               <div style={{ display: 'flex', gap: 6 }}>
                 <button
@@ -667,7 +720,7 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                     color: 'var(--sophi-text)', fontFamily: 'inherit',
                   }}
                 >
-                  {Object.entries(STATUS_CONFIG).map(([v, cfg]) => (
+                  {Object.entries(STATUS_CONFIG).filter(([v]) => v !== 'rtp').map(([v, cfg]) => (
                     <option key={v} value={v}>{cfg.label}</option>
                   ))}
                 </select>
@@ -742,6 +795,10 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
                       restrictions: occ.load_management_restrictions ?? [],
                       notes: occ.load_management_notes ?? '',
                     }))
+                    if (!showReeval) {
+                      setReevalDiagnosis(initialDiagnosisCoreValue(null))
+                      setReevalDiagnosisError(null)
+                    }
                     setShowReeval((v) => !v)
                     setShowEdit(false)
                   }}

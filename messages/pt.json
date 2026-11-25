@@ -328,6 +328,8 @@
       "description": "Gere os dados da tua organização.",
       "orgName": "Nome da Organização",
       "orgType": "Tipo",
+      "orgLogo": "Logótipo",
+      "uploadLogo": "Carregar logótipo",
       "memberSince": "desde",
       "adminOnly": "Apenas administradores podem alterar o nome da organização.",
       "noOrg": "Não estás associado a nenhuma organização."

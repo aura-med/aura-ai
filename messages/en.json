@@ -328,6 +328,8 @@
       "description": "Manage your organization's details.",
       "orgName": "Organization Name",
       "orgType": "Type",
+      "orgLogo": "Logo",
+      "uploadLogo": "Upload logo",
       "memberSince": "since",
       "adminOnly": "Only administrators can change the organization name.",
       "noOrg": "You are not associated with any organization."

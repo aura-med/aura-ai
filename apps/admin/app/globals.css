@@ -11,7 +11,10 @@
   --font-display: var(--font-poppins);
 }
 
-/* Sophi Sports — light theme (default). Values follow landing_page/assets/style.css */
+/* Sophi Sports — light theme (default).
+   Kept in sync manually with app/globals.css and landing_page/assets/
+   style.css — the three brand color-token sets are deliberately
+   duplicated, not shared, so update all three together. */
 :root {
   color-scheme: light;
 

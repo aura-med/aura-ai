@@ -120,21 +120,32 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
         </Link>
         {dto.org && (
           <div
-            className="hidden min-w-0 items-baseline gap-2 border-l pl-3 md:flex"
+            className="hidden min-w-0 items-center gap-2 border-l pl-3 md:flex"
             style={{ borderColor: 'var(--sophi-border)' }}
           >
-            <span
-              className="truncate text-base font-bold leading-none"
-              style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}
-            >
-              {dto.org.name}
-            </span>
-            <span
-              className="text-[10px] font-mono uppercase tracking-wide"
-              style={{ color: 'var(--sophi-text3)' }}
-            >
-              {dto.org.type}
-            </span>
+            {dto.org.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- external/storage URL, no next/image domain config
+              <img
+                src={dto.org.logoUrl}
+                alt={dto.org.name}
+                className="h-8 w-8 shrink-0 object-contain"
+              />
+            ) : (
+              <div className="flex items-baseline gap-2">
+                <span
+                  className="truncate text-base font-bold leading-none"
+                  style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}
+                >
+                  {dto.org.name}
+                </span>
+                <span
+                  className="text-[10px] font-mono uppercase tracking-wide"
+                  style={{ color: 'var(--sophi-text3)' }}
+                >
+                  {dto.org.type}
+                </span>
+              </div>
+            )}
           </div>
         )}
 

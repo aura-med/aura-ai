@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
-import { Building2, Save } from 'lucide-react'
+import { Building2, Save, Upload, Loader2 } from 'lucide-react'
 import { isOwner } from '@/lib/roles'
 
 interface OrgData {
@@ -11,6 +11,7 @@ interface OrgData {
   name: string
   type: string
   created_at: string
+  logo_url: string | null
 }
 
 export default function OrganizationsPage() {
@@ -23,6 +24,9 @@ export default function OrganizationsPage() {
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isOwnerRole, setIsOwnerRole] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [logoError, setLogoError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -40,7 +44,7 @@ export default function OrganizationsPage() {
         if (profile.org_id) {
           const { data: orgData } = await supabase
             .from('organizations')
-            .select('id, name, type, created_at')
+            .select('id, name, type, created_at, logo_url')
             .eq('id', profile.org_id)
             .single()
           if (orgData) {
@@ -52,6 +56,42 @@ export default function OrganizationsPage() {
       setLoading(false)
     })
   }, [])
+
+  async function handleLogoUpload(file: File) {
+    if (!org || !isOwnerRole) return
+    setUploadingLogo(true)
+    setLogoError(null)
+    try {
+      const supabase = createClient()
+      const ext = file.name.split('.').pop() ?? 'png'
+      // Fixed filename (not the original) so a re-upload replaces the crest
+      // in place rather than accumulating orphaned files under this org's
+      // folder — the org-logos bucket's write policy scopes by this exact
+      // <org_id>/… prefix.
+      const path = `${org.id}/logo.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from('org-logos')
+        .upload(path, file, { upsert: true })
+      if (uploadError) throw uploadError
+
+      const { data: publicUrlData } = supabase.storage.from('org-logos').getPublicUrl(path)
+      // Cache-bust so the new crest shows immediately even though the path
+      // (and therefore the browser/CDN cache key) didn't change.
+      const logoUrl = `${publicUrlData.publicUrl}?v=${Date.now()}`
+
+      const { error: updateError } = await supabase
+        .from('organizations')
+        .update({ logo_url: logoUrl })
+        .eq('id', org.id)
+      if (updateError) throw updateError
+
+      setOrg((prev) => prev ? { ...prev, logo_url: logoUrl } : prev)
+    } catch (e) {
+      setLogoError(e instanceof Error ? e.message : 'Error uploading logo')
+    } finally {
+      setUploadingLogo(false)
+    }
+  }
 
   async function handleSave() {
     if (!org || !isOwnerRole) return
@@ -98,12 +138,17 @@ export default function OrganizationsPage() {
             style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
           >
             <div className="flex items-center gap-3 pb-3 border-b" style={{ borderColor: 'var(--sophi-border)' }}>
-              <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center"
-                style={{ background: 'color-mix(in srgb, var(--sophi-accent) 10%, transparent)' }}
-              >
-                <Building2 size={18} style={{ color: 'var(--sophi-accent)' }} />
-              </div>
+              {org.logo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element -- external/storage URL, no next/image domain config
+                <img src={org.logo_url} alt={org.name} className="w-10 h-10 rounded-lg object-contain" />
+              ) : (
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center"
+                  style={{ background: 'color-mix(in srgb, var(--sophi-accent) 10%, transparent)' }}
+                >
+                  <Building2 size={18} style={{ color: 'var(--sophi-accent)' }} />
+                </div>
+              )}
               <div>
                 <div className="text-sm font-medium" style={{ color: 'var(--sophi-text)' }}>{org.name}</div>
                 <div className="text-xs" style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-mono)' }}>
@@ -111,6 +156,36 @@ export default function OrganizationsPage() {
                 </div>
               </div>
             </div>
+
+            {isOwnerRole && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>{t('orgLogo')}</label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) handleLogoUpload(file)
+                    e.target.value = ''
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingLogo}
+                  className="flex items-center gap-2 px-3 py-2 rounded-md text-sm border transition-colors disabled:opacity-50"
+                  style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text2)' }}
+                >
+                  {uploadingLogo ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                  {uploadingLogo ? tc('saving') : t('uploadLogo')}
+                </button>
+                {logoError && (
+                  <p className="text-[11px]" style={{ color: 'var(--sophi-danger)' }}>{logoError}</p>
+                )}
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <label className="text-xs font-medium" style={{ color: 'var(--sophi-text2)' }}>{t('orgName')}</label>

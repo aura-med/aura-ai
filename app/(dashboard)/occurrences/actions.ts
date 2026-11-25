@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { logAudit } from '@/lib/audit'
 import type { InjuryCharacterizationFields } from '@/lib/actions/clinical'
 
 type AvailabilityStatus = 'available' | 'evaluation' | 'unavailable' | 'rtp' | 'load_management'
@@ -51,10 +52,10 @@ async function getClinician(supabase: Awaited<ReturnType<typeof createClient>>) 
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, role')
+    .select('full_name, role, org_id')
     .eq('id', user?.id ?? '')
     .single()
-  return { userId: user?.id, name: profile?.full_name ?? '', role: profile?.role ?? '' }
+  return { userId: user?.id, email: user?.email ?? '', name: profile?.full_name ?? '', role: profile?.role ?? '', orgId: profile?.org_id ?? '' }
 }
 
 export async function registerOccurrence(input: RegisterOccurrenceInput) {
@@ -68,7 +69,7 @@ export async function registerOccurrence(input: RegisterOccurrenceInput) {
   const supabase = await createClient()
   const clinician = await getClinician(supabase)
 
-  const { error } = await supabase.from('occurrences').insert({
+  const { data: inserted, error } = await supabase.from('occurrences').insert({
     athlete_id: input.athleteId,
     org_id: input.orgId,
     squad_id: input.squadId,
@@ -87,13 +88,19 @@ export async function registerOccurrence(input: RegisterOccurrenceInput) {
     clinician_name: clinician.name,
     clinician_role: clinician.role,
     is_resolved: false,
-  })
+  }).select('id').single()
 
   if (error) throw new Error(error.message)
 
   // Recompute from all active issues so a less-restrictive new occurrence
   // doesn't clear a still-active unavailable/rtp one.
   await recomputeAndPersistAvailability(supabase, input.athleteId, input.availabilityStatus)
+
+  await logAudit({
+    userId: clinician.userId ?? '', userEmail: clinician.email, orgId: input.orgId,
+    action: 'occurrence.create', resourceType: 'occurrence', resourceId: inserted?.id,
+    metadata: { athleteId: input.athleteId },
+  })
 
   revalidatePath('/occurrences')
   revalidatePath('/')
@@ -116,6 +123,7 @@ export interface UpdateOccurrenceInput {
 // This corrects the original entry itself rather than logging a new event.
 export async function updateOccurrence(input: UpdateOccurrenceInput) {
   const supabase = await createClient()
+  const clinician = await getClinician(supabase)
 
   // update_occurrence_own_edit (068) locks the row first, so decisionChanged
   // (whether to bump updated_at / mark decision_source: 'own') is derived
@@ -158,6 +166,11 @@ export async function updateOccurrence(input: UpdateOccurrenceInput) {
     await recomputeAndPersistAvailability(supabase, targetAthleteId, input.availabilityStatus)
   }
 
+  await logAudit({
+    userId: clinician.userId ?? '', userEmail: clinician.email, orgId: clinician.orgId,
+    action: 'occurrence.update', resourceType: 'occurrence', resourceId: input.occurrenceId,
+  })
+
   revalidatePath('/occurrences')
   revalidatePath('/')
   revalidatePath(`/athletes/${targetAthleteId}`)
@@ -170,6 +183,7 @@ export async function resolveOccurrence(
   resolvedAt?: string | null
 ) {
   const supabase = await createClient()
+  const clinician = await getClinician(supabase)
 
   // resolve_occurrence_with_date (094) does the is_resolved=false guard and
   // the resolved_at/resolved_by derivation itself (via set_occurrence_audit,
@@ -198,6 +212,11 @@ export async function resolveOccurrence(
   // fallback when nothing else is open.
   await recomputeAndPersistAvailability(supabase, targetAthleteId, resolutionStatus)
 
+  await logAudit({
+    userId: clinician.userId ?? '', userEmail: clinician.email, orgId: clinician.orgId,
+    action: 'occurrence.resolve', resourceType: 'occurrence', resourceId: occurrenceId,
+  })
+
   revalidatePath('/occurrences')
   revalidatePath('/')
   revalidatePath(`/athletes/${targetAthleteId}`)
@@ -216,6 +235,7 @@ export async function addOccurrenceRecord(input: {
   loadManagementNotes: string | null
 }) {
   const supabase = await createClient()
+  const clinician = await getClinician(supabase)
 
   // add_occurrence_record_and_mirror (070) inserts the reassessment and,
   // only when it's still the most recent source for its occurrence, mirrors
@@ -253,6 +273,12 @@ export async function addOccurrenceRecord(input: {
   // reassessment on one issue doesn't clear a still-active one elsewhere.
   await recomputeAndPersistAvailability(supabase, targetAthleteId, input.availabilityStatus)
 
+  await logAudit({
+    userId: clinician.userId ?? '', userEmail: clinician.email, orgId: clinician.orgId,
+    action: 'occurrence_record.create', resourceType: 'occurrence_record', resourceId: record.id,
+    metadata: { occurrenceId: input.occurrenceId },
+  })
+
   revalidatePath('/occurrences')
   revalidatePath('/')
   revalidatePath(`/athletes/${targetAthleteId}`)
@@ -281,6 +307,7 @@ export async function addOccurrenceRecordWithDiagnosis(input: {
   customDescription: string | null
 } & Partial<InjuryCharacterizationFields>) {
   const supabase = await createClient()
+  const clinician = await getClinician(supabase)
 
   const { data: rows, error } = await supabase.rpc('conclude_reassessment_with_diagnosis', {
     p_occurrence_id: input.occurrenceId,
@@ -316,6 +343,17 @@ export async function addOccurrenceRecordWithDiagnosis(input: {
   const targetAthleteId = record.athlete_id
 
   await recomputeAndPersistAvailability(supabase, targetAthleteId, 'unavailable')
+
+  await logAudit({
+    userId: clinician.userId ?? '', userEmail: clinician.email, orgId: clinician.orgId,
+    action: 'occurrence_record.create', resourceType: 'occurrence_record', resourceId: record.id,
+    metadata: { occurrenceId: input.occurrenceId },
+  })
+  await logAudit({
+    userId: clinician.userId ?? '', userEmail: clinician.email, orgId: clinician.orgId,
+    action: 'diagnosis.create', resourceType: 'diagnosis',
+    metadata: { occurrenceId: input.occurrenceId, diagnosisType: input.diagnosisType },
+  })
 
   revalidatePath('/occurrences')
   revalidatePath('/')

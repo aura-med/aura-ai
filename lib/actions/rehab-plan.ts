@@ -10,10 +10,16 @@ import { revalidatePath } from 'next/cache'
 import type { RehabPlanPeriod } from '@/types/athlete-profile'
 import { REHAB_DAY_OCCUPIED_ERROR } from '@/lib/actions/rehab-plan-errors'
 import { resolveDiagnosis } from '@/lib/actions/clinical'
+import { logAudit } from '@/lib/audit'
 
 async function currentUserId(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: { user } } = await supabase.auth.getUser()
   return user?.id ?? null
+}
+
+async function currentUser(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const { data: { user } } = await supabase.auth.getUser()
+  return { id: user?.id ?? '', email: user?.email ?? '' }
 }
 
 // The FK on rehab_plans.occurrence_id only checks the occurrence exists,
@@ -47,7 +53,8 @@ export interface CreateRehabPlanInput {
 
 export async function createRehabPlan(input: CreateRehabPlanInput) {
   const supabase = await createClient()
-  const userId = await currentUserId(supabase)
+  const user = await currentUser(supabase)
+  const userId = user.id
   const { data: profile } = await supabase
     .from('profiles')
     .select('org_id')
@@ -91,6 +98,12 @@ export async function createRehabPlan(input: CreateRehabPlanInput) {
     if (error.code === '23505') throw new Error('Este atleta já tem um plano de reabilitação ativo. Termina-o antes de criar um novo.')
     throw new Error(error.message)
   }
+
+  await logAudit({
+    userId: user.id, userEmail: user.email, orgId: data.org_id ?? '',
+    action: 'rehab_plan.create', resourceType: 'rehab_plan', resourceId: data.id,
+    metadata: { athleteId: input.athleteId },
+  })
 
   revalidatePath(`/athletes/${input.athleteId}`)
   return data
@@ -146,6 +159,7 @@ export async function closeRehabPlan(
   secondaryPreventionNote?: string | null,
 ) {
   const supabase = await createClient()
+  const user = await currentUser(supabase)
 
   const { data, error } = await supabase
     .from('rehab_plans')
@@ -156,7 +170,7 @@ export async function closeRehabPlan(
     })
     .eq('id', planId)
     .eq('is_active', true)
-    .select('athlete_id, occurrence_id')
+    .select('athlete_id, occurrence_id, org_id')
     .maybeSingle()
   if (error || !data?.athlete_id) throw new Error(error?.message ?? 'Plano já encerrado ou inexistente')
 
@@ -179,6 +193,12 @@ export async function closeRehabPlan(
       await resolveDiagnosis(targetId, data.athlete_id, null, secondaryPreventionNote)
     }
   }
+
+  await logAudit({
+    userId: user.id, userEmail: user.email, orgId: data.org_id ?? '',
+    action: 'rehab_plan.close', resourceType: 'rehab_plan', resourceId: planId,
+    metadata: { completed },
+  })
 
   revalidatePath('/rehab')
   revalidatePath(`/athletes/${data.athlete_id}`)
@@ -390,6 +410,16 @@ export async function setRehabCriterionCompletion(criterionId: string, phaseId: 
   })
   if (error) throw new Error(error.message)
   if (!data?.[0]) throw new Error('Critério não encontrado')
+
+  if (isCompleted) {
+    const user = await currentUser(supabase)
+    const { data: profile } = await supabase.from('profiles').select('org_id').eq('id', user.id).single()
+    await logAudit({
+      userId: user.id, userEmail: user.email, orgId: profile?.org_id ?? '',
+      action: 'rehab_criterion.complete', resourceType: 'rehab_phase_criterion', resourceId: criterionId,
+      metadata: { phaseId },
+    })
+  }
 
   revalidatePath(`/athletes/${athleteId}`)
   return data[0]

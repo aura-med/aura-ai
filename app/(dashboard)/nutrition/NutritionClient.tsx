@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Apple, Plus, Loader2, X, Scale, Search, AlertTriangle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { registerAthleteWeight } from './actions'
 import { isOwner } from '@/lib/roles'
 import { SKINFOLD_FIELDS, PERIMETER_FIELDS } from '@/types/athlete-profile'
 import type { UserRole } from '@/types'
@@ -119,14 +120,10 @@ function DailyWeightModal({
     setSaving(true)
     setError(null)
     try {
-      const supabase = createClient()
-      const { data, error: upsertError } = await supabase
-        .from('athlete_daily_weight')
-        .upsert({ athlete_id: athlete.id, measurement_date: date, weight_kg: kg }, { onConflict: 'athlete_id,measurement_date' })
-        .select('id, athlete_id, measurement_date, weight_kg, recorded_by_name')
-        .single()
-      if (upsertError || !data) { setError('Não foi possível guardar. Sem permissão ou erro de ligação.'); return }
+      const data = await registerAthleteWeight({ athleteId: athlete.id, measurementDate: date, weightKg: kg })
       onSaved({ ...data, athletes: { id: athlete.id, name: athlete.name, shirt_number: athlete.shirt_number, photo_url: athlete.photo_url, position: athlete.position } })
+    } catch {
+      setError('Não foi possível guardar. Sem permissão ou erro de ligação.')
     } finally {
       setSaving(false)
     }

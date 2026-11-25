@@ -5,6 +5,7 @@
 // (which a tampered request could forge to impersonate another clinician).
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { logAudit } from '@/lib/audit'
 
 type Avail = 'available' | 'evaluation' | 'unavailable' | 'rtp' | 'load_management'
 
@@ -105,7 +106,7 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
   // not passed here — since this function is directly callable via the
   // Data API and a parameter couldn't stop a caller from attributing the
   // diagnosis to someone else.
-  const { error } = await supabase.rpc('create_diagnosis_and_mirror', {
+  const { data: diagRows, error } = await supabase.rpc('create_diagnosis_and_mirror', {
     p_athlete_id: input.athleteId,
     p_org_id: prof?.org_id ?? null,
     p_osiics_code: input.osiicsCode,
@@ -134,6 +135,12 @@ export async function createDiagnosis(input: CreateDiagnosisInput) {
 
   await recomputeAndPersistAvailability(supabase, input.athleteId, input.availabilityStatus)
 
+  await logAudit({
+    userId: user?.id ?? '', userEmail: user?.email ?? '', orgId: prof?.org_id ?? '',
+    action: 'diagnosis.create', resourceType: 'diagnosis', resourceId: diagRows?.[0]?.id,
+    metadata: { athleteId: input.athleteId, diagnosisType: input.diagnosisType },
+  })
+
   revalidatePath(`/athletes/${input.athleteId}`)
   revalidatePath('/occurrences')
   revalidatePath('/')
@@ -160,6 +167,7 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
     throw new Error('RTP só pode ser atingido através da fase de RTP de um plano de reabilitação.')
   }
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   // Same one-active-diagnosis-per-occurrence guard as createDiagnosis, excluding
   // this diagnosis itself so re-saving without changing the link doesn't self-conflict.
@@ -216,6 +224,11 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
 
   await recomputeAndPersistAvailability(supabase, targetAthleteId, input.availabilityStatus)
 
+  await logAudit({
+    userId: user?.id ?? '', userEmail: user?.email ?? '', orgId: updated.org_id ?? '',
+    action: 'diagnosis.update', resourceType: 'diagnosis', resourceId: input.diagnosisId,
+  })
+
   revalidatePath(`/athletes/${targetAthleteId}`)
   revalidatePath('/occurrences')
   revalidatePath('/')
@@ -228,6 +241,7 @@ export async function resolveDiagnosis(
   secondaryPreventionNote?: string | null,
 ) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   // resolve_diagnosis_and_cleanup (080) does all of this atomically, in one
   // transaction: resolves the diagnosis; while it's still the open
@@ -255,6 +269,11 @@ export async function resolveDiagnosis(
 
   const targetAthleteId = resolved.athlete_id
   await recomputeAndPersistAvailability(supabase, targetAthleteId, 'available')
+
+  await logAudit({
+    userId: user?.id ?? '', userEmail: user?.email ?? '', orgId: resolved.org_id ?? '',
+    action: 'diagnosis.resolve', resourceType: 'diagnosis', resourceId: diagnosisId,
+  })
 
   revalidatePath(`/athletes/${targetAthleteId}`)
   revalidatePath('/occurrences')

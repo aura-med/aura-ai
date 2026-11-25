@@ -212,7 +212,12 @@ export async function updateDiagnosis(input: UpdateDiagnosisInput) {
   revalidatePath('/')
 }
 
-export async function resolveDiagnosis(diagnosisId: string, athleteId: string, resolvedAt?: string | null) {
+export async function resolveDiagnosis(
+  diagnosisId: string,
+  athleteId: string,
+  resolvedAt?: string | null,
+  secondaryPreventionNote?: string | null,
+) {
   const supabase = await createClient()
 
   // resolve_diagnosis_and_cleanup (080) does all of this atomically, in one
@@ -233,6 +238,7 @@ export async function resolveDiagnosis(diagnosisId: string, athleteId: string, r
   const { data: rows, error } = await supabase.rpc('resolve_diagnosis_and_cleanup', {
     p_diagnosis_id: diagnosisId,
     p_resolved_at: resolvedAt ?? null,
+    p_secondary_prevention_note: secondaryPreventionNote ?? null,
   })
   if (error) throw new Error(error.message)
   const resolved = rows?.[0]

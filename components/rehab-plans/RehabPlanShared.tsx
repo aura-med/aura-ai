@@ -700,6 +700,7 @@ export function PlanDetail({
   const [closeError, setCloseError] = useState<string | null>(null)
   const [diagPicker, setDiagPicker] = useState<{ diagnoses: { id: string; label: string }[] } | null>(null)
   const [selectedDiagId, setSelectedDiagId] = useState<string>('')
+  const [dischargeNote, setDischargeNote] = useState('')
   const [confirmDeletePhaseId, setConfirmDeletePhaseId] = useState<string | null>(null)
   const [deletingPhase, setDeletingPhase] = useState(false)
   const [advancingPhaseId, setAdvancingPhaseId] = useState<string | null>(null)
@@ -708,6 +709,15 @@ export function PlanDetail({
   const loadDetail = useCallback(() => setDetailVersion((v) => v + 1), [])
 
   const hasRtpPhase = phases.some((ph) => ph.phase_type === 'rtp')
+  // Discharge ("Dar Alta Médica") is gated on the RTP-type phase being
+  // complete — but only when the plan actually has one: a plan built before
+  // 096 (or one whose clinician never added an RTP phase) must not be
+  // permanently blocked from ever closing.
+  const rtpPhase = phases.find((ph) => ph.phase_type === 'rtp')
+  const rtpPhaseComplete = !rtpPhase || (() => {
+    const rtpCriteria = criteria.filter((c) => c.phase_id === rtpPhase.id)
+    return rtpCriteria.length > 0 && rtpCriteria.every((c) => c.is_completed)
+  })()
 
   async function handleDeletePhase(phaseId: string) {
     setDeletingPhase(true)
@@ -804,12 +814,12 @@ export function PlanDetail({
 
   const dayMap = new Map(days.map((d) => [dayKey(d.entry_date, d.period), d]))
 
-  async function handleClose(completed: boolean, diagnosisId?: string | null) {
+  async function handleClose(completed: boolean, diagnosisId?: string | null, secondaryPreventionNote?: string | null) {
     setClosing(completed ? 'complete' : 'archive')
     setCloseError(null)
     setDiagPicker(null)
     try {
-      await closeRehabPlan(plan.id, completed, diagnosisId)
+      await closeRehabPlan(plan.id, completed, diagnosisId, secondaryPreventionNote)
     } catch (e) {
       setCloseError(e instanceof Error ? e.message : 'Erro ao fechar plano')
     } finally {
@@ -818,23 +828,26 @@ export function PlanDetail({
     }
   }
 
+  // "Dar Alta Médica" always opens the confirm panel below — even when the
+  // plan is linked to an occurrence and no diagnosis pick is needed — so
+  // there's always a chance to add a secondary-prevention note before the
+  // plan closes for good.
   async function handleConcluirClick() {
-    // If already linked to an occurrence, close directly (auto-resolve handles it server-side)
-    if (plan.occurrence_id) {
-      await handleClose(true)
+    if (!rtpPhaseComplete) {
+      setCloseError('A fase de RTP ainda tem critérios por cumprir.')
       return
     }
-    // No occurrence_id — fetch active diagnoses to let the user pick which to resolve
     setCloseError(null)
+    setDischargeNote('')
+    if (plan.occurrence_id) {
+      setSelectedDiagId('')
+      setDiagPicker({ diagnoses: [] })
+      return
+    }
     try {
       const diagnoses = await getActiveInjuryDiagnoses(plan.athlete_id)
-      if (diagnoses.length === 0) {
-        // No active diagnoses — just close without resolving anything
-        await handleClose(true, null)
-      } else {
-        setSelectedDiagId('')
-        setDiagPicker({ diagnoses })
-      }
+      setSelectedDiagId('')
+      setDiagPicker({ diagnoses })
     } catch (e) {
       setCloseError(e instanceof Error ? e.message : 'Erro ao carregar diagnósticos')
     }
@@ -880,8 +893,9 @@ export function PlanDetail({
                 {plan.is_active && (
                   <>
                     <button type="button" onClick={handleConcluirClick} disabled={closing !== null}
+                      title={!rtpPhaseComplete ? 'A fase de RTP ainda tem critérios por cumprir' : undefined}
                       className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-accent-bg)]" style={{ color: 'var(--sophi-accent)' }}>
-                      {closing === 'complete' ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />} Concluir
+                      {closing === 'complete' ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />} Dar Alta Médica
                     </button>
                     <button type="button" onClick={() => handleClose(false)} disabled={closing !== null}
                       className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-accent-bg)]" style={{ color: 'var(--sophi-text3)' }}>
@@ -901,47 +915,59 @@ export function PlanDetail({
         </p>
       )}
 
-      {/* Diagnosis picker shown when plan has no occurrence_id */}
+      {/* Discharge confirm panel — diagnosis pick only shown when the plan
+          isn't already linked to one occurrence's diagnosis (closeRehabPlan
+          resolves that one automatically); the secondary-prevention note is
+          always offered. */}
       {diagPicker && (
         <div className="rounded-xl border p-4 space-y-3" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-green)' }}>
           <p className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>
-            Qual diagnóstico fica resolvido com a conclusão deste plano?
+            Dar Alta Médica
           </p>
-          <div className="space-y-2">
-            {diagPicker.diagnoses.map((d) => (
-              <label key={d.id} className="flex items-center gap-2 cursor-pointer group">
+          {diagPicker.diagnoses.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[11px]" style={{ color: 'var(--sophi-text2)' }}>Qual diagnóstico fica resolvido com a conclusão deste plano?</p>
+              {diagPicker.diagnoses.map((d) => (
+                <label key={d.id} className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="radio"
+                    name="resolve-diag"
+                    value={d.id}
+                    checked={selectedDiagId === d.id}
+                    onChange={() => setSelectedDiagId(d.id)}
+                    className="accent-[var(--sophi-accent)]"
+                  />
+                  <span className="text-xs" style={{ color: 'var(--sophi-text2)' }}>{d.label}</span>
+                </label>
+              ))}
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="resolve-diag"
-                  value={d.id}
-                  checked={selectedDiagId === d.id}
-                  onChange={() => setSelectedDiagId(d.id)}
+                  value=""
+                  checked={selectedDiagId === ''}
+                  onChange={() => setSelectedDiagId('')}
                   className="accent-[var(--sophi-accent)]"
                 />
-                <span className="text-xs" style={{ color: 'var(--sophi-text2)' }}>{d.label}</span>
+                <span className="text-xs" style={{ color: 'var(--sophi-text3)' }}>Nenhum (só concluir o plano)</span>
               </label>
-            ))}
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="resolve-diag"
-                value=""
-                checked={selectedDiagId === ''}
-                onChange={() => setSelectedDiagId('')}
-                className="accent-[var(--sophi-accent)]"
-              />
-              <span className="text-xs" style={{ color: 'var(--sophi-text3)' }}>Nenhum (só concluir o plano)</span>
-            </label>
+            </div>
+          )}
+          <div>
+            <label className={labelClass} style={{ color: 'var(--sophi-text3)' }}>Recomendações / programa de prevenção secundária (opcional)</label>
+            <textarea value={dischargeNote} onChange={(e) => setDischargeNote(e.target.value)} rows={3}
+              placeholder="ex: fortalecimento excêntrico dos isquiotibiais 2x/semana, monitorização de carga nas próximas 4 semanas…"
+              className={inputClass} style={{ ...inputStyle, resize: 'vertical' }} />
           </div>
           <div className="flex items-center gap-2 pt-1">
             <button
               type="button"
               disabled={closing !== null}
-              onClick={() => handleClose(true, selectedDiagId || null)}
+              onClick={() => handleClose(true, selectedDiagId || null, dischargeNote.trim() || null)}
               className="flex items-center gap-1 text-[10px] font-bold px-3 py-1.5 rounded-lg"
               style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
             >
-              {closing === 'complete' ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />} Confirmar conclusão
+              {closing === 'complete' ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />} Confirmar alta
             </button>
             <button
               type="button"

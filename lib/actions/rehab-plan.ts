@@ -139,7 +139,12 @@ export async function updateRehabPlan(input: UpdateRehabPlanInput) {
 // closed_at is stamped either way so the history view always shows when a
 // plan stopped being active, not just for the "completed" outcome.
 // Guarded on is_active=true so a stale UI can't re-close an already-closed plan.
-export async function closeRehabPlan(planId: string, completed: boolean, resolveTargetDiagnosisId?: string | null) {
+export async function closeRehabPlan(
+  planId: string,
+  completed: boolean,
+  resolveTargetDiagnosisId?: string | null,
+  secondaryPreventionNote?: string | null,
+) {
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -171,7 +176,7 @@ export async function closeRehabPlan(planId: string, completed: boolean, resolve
       return diag?.id ?? null
     })()
     if (targetId) {
-      await resolveDiagnosis(targetId, data.athlete_id)
+      await resolveDiagnosis(targetId, data.athlete_id, null, secondaryPreventionNote)
     }
   }
 

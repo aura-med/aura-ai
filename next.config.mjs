@@ -7,6 +7,10 @@ const nextConfig = {
   cacheComponents: true,
   outputFileTracingIncludes: {
     '/api/docs/openapi\\.yaml': ['./docs/openapi.yaml'],
+    '/api/docs/assets/*': [
+      './node_modules/swagger-ui-dist/swagger-ui.css',
+      './node_modules/swagger-ui-dist/swagger-ui-bundle.js',
+    ],
   },
   // jspdf ships its own core-js polyfills (via canvg) that are incompatible
   // with Turbopack's module resolution. Marking them as server-external keeps

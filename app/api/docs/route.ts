@@ -5,11 +5,11 @@ export async function GET() {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sophi Sports API Docs</title>
-  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui.css" />
+  <link rel="stylesheet" href="/api/docs/assets/swagger-ui.css" />
 </head>
 <body>
   <div id="swagger-ui"></div>
-  <script src="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"></script>
+  <script src="/api/docs/assets/swagger-ui-bundle.js"></script>
   <script>
     window.ui = SwaggerUIBundle({
       url: '/api/docs/openapi.yaml',
@@ -23,7 +23,7 @@ export async function GET() {
 </html>`, {
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
-      'Content-Security-Policy': "default-src 'none'; connect-src 'self'; img-src data: https://validator.swagger.io; style-src 'self' 'unsafe-inline' https://unpkg.com; script-src 'unsafe-inline' https://unpkg.com; font-src https://unpkg.com",
+      'Content-Security-Policy': "default-src 'none'; connect-src 'self'; img-src data: https://validator.swagger.io; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self'",
     },
   })
 }

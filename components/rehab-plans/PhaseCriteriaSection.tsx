@@ -31,15 +31,17 @@ export function PhaseCriteriaSection({ phaseId, initialCriteria, canEdit, onChan
   const [thresholdOperator, setThresholdOperator] = useState<'' | ThresholdOperator>('')
   const [thresholdValue, setThresholdValue] = useState('')
   const [unit, setUnit] = useState('')
+  const [targetTestDate, setTargetTestDate] = useState('')
   const [measuredInputs, setMeasuredInputs] = useState<Record<string, string>>({})
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
   const criteria = initialCriteria
   const doneCount = criteria.filter((c) => c.is_completed).length
+  const today = new Date().toISOString().slice(0, 10)
 
   function resetForm() {
-    setDescription(''); setMetricLabel(''); setThresholdOperator(''); setThresholdValue(''); setUnit('')
+    setDescription(''); setMetricLabel(''); setThresholdOperator(''); setThresholdValue(''); setUnit(''); setTargetTestDate('')
   }
 
   function startEdit(c: RehabPhaseCriterion) {
@@ -48,6 +50,7 @@ export function PhaseCriteriaSection({ phaseId, initialCriteria, canEdit, onChan
     setThresholdOperator(c.threshold_operator ?? '')
     setThresholdValue(c.threshold_value != null ? String(c.threshold_value) : '')
     setUnit(c.unit ?? '')
+    setTargetTestDate(c.target_test_date ?? '')
     setShowForm(c.id)
   }
 
@@ -65,6 +68,7 @@ export function PhaseCriteriaSection({ phaseId, initialCriteria, canEdit, onChan
           thresholdOperator: thresholdOperator || null,
           thresholdValue: thresholdValue ? Number(thresholdValue) : null,
           unit: unit.trim() || null,
+          targetTestDate: targetTestDate || null,
           displayOrder: criteria.length,
         })
         setShowForm(null)
@@ -115,12 +119,14 @@ export function PhaseCriteriaSection({ phaseId, initialCriteria, canEdit, onChan
       </div>
 
       <div className="space-y-1.5">
-        {criteria.map((c) => (
+        {criteria.map((c) => {
+          const isDue = !c.is_completed && !!c.target_test_date && c.target_test_date <= today
+          return (
           <div key={c.id} className="flex items-start gap-2">
             <button type="button" onClick={() => handleToggle(c)} disabled={isPending || !canEdit} className="shrink-0 mt-0.5">
               {c.is_completed
                 ? <CheckSquare size={13} style={{ color: 'var(--sophi-green)' }} />
-                : <Square size={13} style={{ color: 'var(--sophi-text3)' }} />}
+                : <Square size={13} style={{ color: isDue ? 'var(--sophi-danger)' : 'var(--sophi-text3)' }} />}
             </button>
             <div className="flex-1 min-w-0">
               <span className="text-[11px]" style={{ color: c.is_completed ? 'var(--sophi-text3)' : 'var(--sophi-text)', textDecoration: c.is_completed ? 'line-through' : 'none' }}>
@@ -128,6 +134,11 @@ export function PhaseCriteriaSection({ phaseId, initialCriteria, canEdit, onChan
                 {c.metric_label && c.threshold_operator && c.threshold_value != null && (
                   <span style={{ color: 'var(--sophi-text3)' }}>
                     {' '}({c.metric_label} {OPERATOR_LABELS[c.threshold_operator]} {c.threshold_value}{c.unit ?? ''})
+                  </span>
+                )}
+                {!c.is_completed && c.target_test_date && (
+                  <span className="font-semibold" style={{ color: isDue ? 'var(--sophi-danger)' : 'var(--sophi-text3)' }}>
+                    {' '}· {isDue ? 'teste previsto para' : 'teste previsto:'} {c.target_test_date.slice(8, 10)}/{c.target_test_date.slice(5, 7)}/{c.target_test_date.slice(0, 4)}
                   </span>
                 )}
               </span>
@@ -158,7 +169,8 @@ export function PhaseCriteriaSection({ phaseId, initialCriteria, canEdit, onChan
               </div>
             )}
           </div>
-        ))}
+          )
+        })}
 
         {criteria.length === 0 && !showForm && (
           <p className="text-[10px]" style={{ color: 'var(--sophi-text3)' }}>Sem critérios formais nesta fase.</p>
@@ -187,6 +199,11 @@ export function PhaseCriteriaSection({ phaseId, initialCriteria, canEdit, onChan
               <input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="Unid. (%)"
                 className="text-[10px] px-1.5 py-1 rounded border outline-none" style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }} />
             </div>
+            <label className="block">
+              <span className="text-[9px] font-medium block mb-0.5" style={{ color: 'var(--sophi-text3)' }}>Data prevista do teste</span>
+              <input type="date" value={targetTestDate} onChange={(e) => setTargetTestDate(e.target.value)}
+                className="text-[10px] px-1.5 py-1 rounded border outline-none" style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }} />
+            </label>
             {error && <p className="text-[10px]" style={{ color: 'var(--sophi-danger)' }}>{error}</p>}
             <button type="button" onClick={handleSaveForm} disabled={isPending}
               className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded" style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>

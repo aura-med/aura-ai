@@ -327,6 +327,7 @@ export interface UpsertRehabPhaseCriterionInput {
   thresholdOperator: 'gte' | 'lte' | 'gt' | 'lt' | 'eq' | null
   thresholdValue: number | null
   unit: string | null
+  targetTestDate: string | null
   displayOrder: number
 }
 
@@ -364,6 +365,7 @@ export async function upsertRehabPhaseCriterion(input: UpsertRehabPhaseCriterion
         threshold_operator: input.thresholdOperator,
         threshold_value: input.thresholdValue,
         unit: input.unit,
+        target_test_date: input.targetTestDate,
         display_order: input.displayOrder,
       })
       .eq('id', input.criterionId)
@@ -377,6 +379,7 @@ export async function upsertRehabPhaseCriterion(input: UpsertRehabPhaseCriterion
       threshold_operator: input.thresholdOperator,
       threshold_value: input.thresholdValue,
       unit: input.unit,
+      target_test_date: input.targetTestDate,
       display_order: input.displayOrder,
       created_by: userId,
     })

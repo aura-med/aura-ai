@@ -56,7 +56,7 @@ async function getData(squadId: string | null, date: string) {
   let athleteQuery = supabase
     .from('athletes')
     .select(`
-      id, name, shirt_number, photo_url, position, club, status, date_of_birth,
+      id, name, shirt_number, photo_url, position, club, date_of_birth,
       squad_id, nationality, menstrual_day, cycle_length,
       availability_status,
       wellness_checkins(*), injury_events(*), score_history(*)
@@ -485,7 +485,6 @@ export default async function Dashboard({
       nationality: (a as { nationality?: string | null }).nationality ?? null,
       menstrual_day: (a as { menstrual_day?: number | null }).menstrual_day ?? null,
       cycle_length: (a as { cycle_length?: number | null }).cycle_length ?? null,
-      status: a.status as string,
       availability_status: (availabilityStatus as AthleteAvailabilityStatus),
       score: result.score,
       scoreColor: riskColor(result.score),

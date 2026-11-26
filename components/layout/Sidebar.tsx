@@ -10,7 +10,7 @@ import { OWNER_ROLE, CLINICAL_ROLES, REHAB_ROLES, SQUAD_ROLES } from '@/lib/role
 import {
   LayoutDashboard, Activity, Calendar,
   Heart, Gauge, BookOpen, Settings,
-  ClipboardList, TrendingUp, FileText, AlertCircle, UserCircle, Pill, Apple,
+  ClipboardList, TrendingUp, FileText, AlertCircle, UserCircle, Pill, Apple, Rss,
   ChevronLeft, ChevronRight,
 } from 'lucide-react'
 
@@ -36,6 +36,9 @@ const NAV_ITEMS: NavItem[] = [
   // Overview — visible to all. The squad/"Plantel" view lives as a tab inside
   // the dashboard, so it is intentionally not a separate sidebar entry.
   { href: '/',              labelKey: 'dashboard',         icon: LayoutDashboard, roles: ALL_ROLES,        sectionKey: 'overview' },
+  // Feed — clinical oversight of who did what; same audience as
+  // getClinicalActivityFeed's own role check (owner + clinical staff).
+  { href: '/feed',          labelKey: 'feed',              icon: Rss,             roles: [OWNER_ROLE, ...CLINICAL_ROLES], sectionKey: 'overview' },
   // Clínico — clinical staff only
   { href: '/clinical',      labelKey: 'clinical_file',     icon: FileText,        roles: CLINICAL_ROLES,   sectionKey: 'clinical' },
   { href: '/occurrences',   labelKey: 'occurrences',       icon: AlertCircle,     roles: CLINICAL_ROLES,   sectionKey: 'clinical' },

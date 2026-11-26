@@ -221,6 +221,7 @@ export interface RehabPhaseCriterion {
   threshold_value: number | null
   unit: string | null
   measured_value: number | null
+  target_test_date: string | null
   is_completed: boolean
   completed_by: string | null
   completed_by_name: string | null

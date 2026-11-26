@@ -666,7 +666,7 @@ export async function getSensitiveOrgDetail(orgId: string) {
 
   const [orgResult, athletesResult, profilesResult] = await Promise.all([
     service.from('organizations').select('*').eq('id', orgId).maybeSingle(),
-    service.from('athletes').select('id, name, position, status, active, consent_date, created_at').eq('org_id', orgId).order('name').limit(100),
+    service.from('athletes').select('id, name, position, active, consent_date, created_at').eq('org_id', orgId).order('name').limit(100),
     service.from('profiles').select('id, full_name, role, created_at').eq('org_id', orgId).order('full_name').limit(100),
   ])
 

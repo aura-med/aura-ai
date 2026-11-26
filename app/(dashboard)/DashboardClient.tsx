@@ -3,7 +3,7 @@
 import { useState, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Activity, ChevronDown, ChevronUp, Download, Hourglass, LayoutGrid, List, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, Download, Hourglass, LayoutGrid, List, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
 import { AthleteCard } from '@/components/ui/AthleteCard'
 import { AthleteAvatar } from '@/components/ui/AthleteAvatar'
 import { withSquadParam } from '@/lib/squad-url'
@@ -15,7 +15,6 @@ import { InactivePlayersSection, type InactiveAthlete } from '@/components/squad
 import type { MicrocycleStatus } from '@/lib/utils/microcycle'
 import type { DashboardOccurrenceRow, ClinicalStaffMember } from '@/lib/utils/pdf-export'
 import { MonthCalendar, type MonthCalendarEvent } from '@/components/dashboard/MonthCalendar'
-import { ActivityFeedModal } from '@/components/dashboard/ActivityFeedModal'
 import { restrictionLabels } from '@/components/shared/LoadManagementFields'
 import type { AthleteAvailabilityStatus } from '@/types'
 
@@ -41,7 +40,6 @@ interface DashboardAthlete {
   menstrual_day: number | null
   cycle_length: number | null
   availability_status: AthleteAvailabilityStatus
-  status: string
   score: number
   scoreColor: string
   scoreLabel: string
@@ -127,7 +125,6 @@ export function DashboardClient({ athletes, squadId, initialTab, currentDate, mi
   const [showInactive, setShowInactive] = useState(false)
   const [editingAthlete, setEditingAthlete] = useState<DashboardAthlete | null>(null)
   const [removingAthlete, setRemovingAthlete] = useState<DashboardAthlete | null>(null)
-  const [showFeedModal, setShowFeedModal] = useState(false)
   const router = useRouter()
   // The persisted view only applies after hydration; until then render cards
   // (the default) so server and client markup match.
@@ -194,27 +191,11 @@ export function DashboardClient({ athletes, squadId, initialTab, currentDate, mi
             </div>
           )}
 
-          {canReadClinical && (
-            <button
-              onClick={() => setShowFeedModal(true)}
-              style={{
-                marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6,
-                padding: '8px 12px', borderRadius: 8,
-                background: 'transparent', border: '1px solid var(--sophi-border2)',
-                color: 'var(--sophi-text2)', fontWeight: 600, fontSize: 12,
-                cursor: 'pointer',
-              }}
-            >
-              <Activity size={13} />
-              Feed
-            </button>
-          )}
-
           <button
             onClick={handleExport}
             disabled={athletes.length === 0}
             style={{
-              marginLeft: canReadClinical ? undefined : 'auto', display: 'flex', alignItems: 'center', gap: 6,
+              marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6,
               padding: '8px 12px', borderRadius: 8,
               background: 'transparent', border: '1px solid var(--sophi-border2)',
               color: 'var(--sophi-text2)', fontWeight: 600, fontSize: 12,
@@ -227,8 +208,6 @@ export function DashboardClient({ athletes, squadId, initialTab, currentDate, mi
           </button>
         </div>
       </div>
-
-      {showFeedModal && <ActivityFeedModal onClose={() => setShowFeedModal(false)} />}
 
       {/* ── Tabs ──────────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid var(--sophi-border)', paddingBottom: 0 }}>

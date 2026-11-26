@@ -62,6 +62,7 @@
     },
     "nav": {
       "dashboard": "Dashboard",
+      "feed": "Feed",
       "squad": "Plantel",
       "selecoes": "Seleções",
       "athletes": "Avaliação Atleta",

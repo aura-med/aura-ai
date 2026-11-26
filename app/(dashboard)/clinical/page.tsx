@@ -19,7 +19,7 @@ async function getData(squadId: string | null) {
   const supabase = await createClient()
   let query = supabase
     .from('athletes')
-    .select('id, name, shirt_number, photo_url, position, status, availability_status, squad_id')
+    .select('id, name, shirt_number, photo_url, position, availability_status, squad_id')
     .eq('active', true)
     .order('shirt_number')
   if (squadId) query = query.eq('squad_id', squadId)

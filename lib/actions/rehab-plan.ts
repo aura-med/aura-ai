@@ -160,13 +160,16 @@ export async function closeRehabPlan(
 ) {
   const supabase = await createClient()
   const user = await currentUser(supabase)
+  const { data: closerProfile } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
 
   const { data, error } = await supabase
     .from('rehab_plans')
     .update({
-      is_active:    false,
-      is_completed: completed,
-      closed_at:    new Date().toISOString(),
+      is_active:      false,
+      is_completed:   completed,
+      closed_at:      new Date().toISOString(),
+      closed_by:      user.id || null,
+      closed_by_name: closerProfile?.full_name ?? null,
     })
     .eq('id', planId)
     .eq('is_active', true)

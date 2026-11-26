@@ -1,39 +1,29 @@
 'use server'
 
-// Clinical activity feed (Phase D) — read through a dedicated, role-gated
-// server action with a closed allowlist of audit action types, NOT by
-// widening audit_logs' RLS (owner-only SELECT, scoped to their own org).
-// This keeps the GDPR audit table's access exactly as narrow as it is
-// today while still letting clinical staff (not just owners) see the feed
-// of clinical actions it's meant to surface for oversight.
+// Clinical + administrative activity timeline (Phase D, reworked per user
+// feedback: the audit_logs-only version only showed the handful of events
+// logged since logAudit was wired up this session — not "uma verdadeira
+// timeline de todos os acontecimentos"). Reads through get_org_activity_feed
+// (migration 106), which unions every source table's own authorship columns
+// (full history, no backfill needed) with audit_logs for the administrative
+// actions that have no such columns of their own. Still a dedicated,
+// role-gated server action with a closed allowlist — not a wider RLS grant.
 import { createServiceRoleClient } from '@/lib/supabase/service'
 import { getViewerContext } from '@/lib/data/auth'
 import { OWNER_ROLE, CLINICAL_ROLES } from '@/lib/roles'
-import type { AuditAction } from '@/lib/audit'
-
-const FEED_ACTIONS: AuditAction[] = [
-  'occurrence.create',
-  'occurrence.update',
-  'occurrence.resolve',
-  'occurrence_record.create',
-  'diagnosis.create',
-  'diagnosis.update',
-  'diagnosis.resolve',
-  'weight.create',
-  'wellness.checkin',
-  'rehab_plan.create',
-  'rehab_plan.close',
-  'rehab_criterion.complete',
-]
+import { FEED_ACTIONS, type FeedAction } from '@/lib/data/feed-actions'
 
 export interface ActivityFeedItemDTO {
   id: string
-  userEmail: string
-  action: AuditAction
-  resourceType: string
-  resourceId: string | null
-  metadata: Record<string, unknown> | null
-  createdAt: string
+  eventTime: string
+  action: FeedAction
+  actorUserId: string | null
+  actorName: string
+  athleteId: string | null
+  athleteName: string | null
+  athletePhotoUrl: string | null
+  squadId: string | null
+  detail: Record<string, unknown> | null
 }
 
 export interface ActivityFeedPageDTO {
@@ -41,9 +31,16 @@ export interface ActivityFeedPageDTO {
   hasMore: boolean
 }
 
-const PAGE_SIZE = 20
+export interface GetActivityFeedOptions {
+  page?: number
+  squadId?: string | null
+  athleteId?: string | null
+  actions?: FeedAction[] | null
+}
 
-export async function getClinicalActivityFeed(page = 0): Promise<ActivityFeedPageDTO> {
+const PAGE_SIZE = 25
+
+export async function getClinicalActivityFeed(opts: GetActivityFeedOptions = {}): Promise<ActivityFeedPageDTO> {
   const viewer = await getViewerContext()
   if (!viewer.org?.id || !viewer.role || !(viewer.role === OWNER_ROLE || CLINICAL_ROLES.includes(viewer.role as (typeof CLINICAL_ROLES)[number]))) {
     throw new Error('Forbidden')
@@ -52,29 +49,38 @@ export async function getClinicalActivityFeed(page = 0): Promise<ActivityFeedPag
   const service = createServiceRoleClient()
   if (!service) throw new Error('Service role not configured')
 
-  const from = page * PAGE_SIZE
-  const to = from + PAGE_SIZE // one extra row to detect hasMore without a second count query
+  const page = opts.page ?? 0
+  // Never trust client-supplied action filters beyond the closed allowlist.
+  const safeActions = opts.actions?.filter((a) => (FEED_ACTIONS as readonly string[]).includes(a)) ?? null
 
-  const { data, error } = await service
-    .from('audit_logs')
-    .select('id, user_email, action, resource_type, resource_id, metadata, created_at')
-    .eq('org_id', viewer.org.id)
-    .in('action', FEED_ACTIONS)
-    .order('created_at', { ascending: false })
-    .range(from, to)
+  const { data, error } = await service.rpc('get_org_activity_feed', {
+    p_org_id: viewer.org.id,
+    p_limit: PAGE_SIZE + 1, // one extra row to detect hasMore without a second count query
+    p_offset: page * PAGE_SIZE,
+    p_athlete_id: opts.athleteId ?? null,
+    p_squad_id: opts.squadId ?? null,
+    p_actions: safeActions && safeActions.length > 0 ? safeActions : null,
+  })
 
   if (error) throw new Error(error.message)
 
-  const rows = data ?? []
+  const rows = (data ?? []) as Array<{
+    event_id: string; event_time: string; action: string; actor_user_id: string | null; actor_name: string
+    athlete_id: string | null; athlete_name: string | null; athlete_photo_url: string | null
+    squad_id: string | null; detail: Record<string, unknown> | null
+  }>
   const hasMore = rows.length > PAGE_SIZE
   const items: ActivityFeedItemDTO[] = rows.slice(0, PAGE_SIZE).map((row) => ({
-    id: row.id,
-    userEmail: row.user_email,
-    action: row.action,
-    resourceType: row.resource_type,
-    resourceId: row.resource_id,
-    metadata: row.metadata,
-    createdAt: row.created_at,
+    id: row.event_id,
+    eventTime: row.event_time,
+    action: row.action as FeedAction,
+    actorUserId: row.actor_user_id,
+    actorName: row.actor_name,
+    athleteId: row.athlete_id,
+    athleteName: row.athlete_name,
+    athletePhotoUrl: row.athlete_photo_url,
+    squadId: row.squad_id,
+    detail: row.detail,
   }))
 
   return { items, hasMore }

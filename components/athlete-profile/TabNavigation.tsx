@@ -17,8 +17,8 @@ interface Tab {
 }
 
 const TABS: Tab[] = [
-  { id: 'overview',         label: 'Overview',        icon: LayoutGrid    },
-  { id: 'medical',          label: 'Ficha Clínica',   icon: Stethoscope   },
+  { id: 'overview',         label: 'Resumo',          icon: LayoutGrid    },
+  { id: 'medical',          label: 'Historial Médico', icon: Stethoscope  },
   { id: 'injuries',         label: 'Lesões',          icon: Activity      },
   { id: 'treatments',       label: 'Tratamentos',     icon: Syringe       },
   { id: 'nutrition',        label: 'Nutrição',        icon: Apple         },

@@ -10,6 +10,7 @@ import type { AthleteProfileData, InjuryEventSummary, ActiveDiagnosis, Scat6Asse
 import { RTP_STAGES } from '@/types/athlete-profile'
 
 const DiagnosisModal = dynamic(() => import('./DiagnosisModal').then((m) => m.DiagnosisModal))
+const RehabPlanSection = dynamic(() => import('./RehabPlanSection').then((m) => m.RehabPlanSection))
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -321,6 +322,14 @@ export function InjuriesTab({ profile }: { profile: AthleteProfileData }) {
         ) : (
           <div className="space-y-3">{activeDiags.map((d) => <ActiveInjuryCard key={d.id} diag={d} />)}</div>
         )}
+      </div>
+
+      {/* Rehab plan — the recovery protocol for the active injury above */}
+      <div className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
+          Plano de Reabilitação
+        </p>
+        <RehabPlanSection profile={profile} />
       </div>
 
       {/* Resolved injuries */}

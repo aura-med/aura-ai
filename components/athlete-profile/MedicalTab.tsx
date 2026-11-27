@@ -17,6 +17,7 @@ const ConsultationModal = dynamic(() => import('./ConsultationModal').then((mod)
 const MedicalHistoryModal = dynamic(() => import('./MedicalHistoryModal').then((mod) => mod.MedicalHistoryModal))
 const Scat6Modal = dynamic(() => import('./Scat6Modal').then((mod) => mod.Scat6Modal))
 const AnamnesisModal = dynamic(() => import('./AnamnesisModal').then((mod) => mod.AnamnesisModal))
+const MedicationAdminSection = dynamic(() => import('./MedicationAdminSection').then((mod) => mod.MedicationAdminSection))
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -493,6 +494,10 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
             )}
           </Section>
         </div>
+
+        {/* Medication administration log (antidoping log) — distinct from the
+            prescribed list above, but kept on the same tab now. */}
+        <MedicationAdminSection profile={profile} />
 
         {/* SOAP notes */}
         <Section

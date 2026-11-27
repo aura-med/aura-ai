@@ -42,3 +42,44 @@ Total 62.
 
 ## Profile edits (2026-11-27)
 Edited entity: `athletes_medical_history` row (height_cm, notes) for each of the 26 athletes listed above, same athlete ids, via the athlete page "Dados Clínicos" edit dialog. No new entities created.
+
+## Occurrences (2026-11-27, created via /occurrences UI)
+Row ids are not shown in the UI, so each record is identified by athlete id, title and date (list URL: /occurrences?squadId=8a078001-a960-40ce-ac97-c494e051fdea). All carry "FICTIONAL TEST DATA - NOT A REAL MEDICAL RECORD" in Observações.
+| type | player | athlete id | title | occurrence type | opening status | date |
+|---|---|---|---|---|---|---|
+| occurrence | Antonio Rüdiger | cd1169a8-ff4e-4567-9097-743eeb8e40a6 | Contusão no joelho direito em treino | Trauma | Disponível | 2026-11-06 |
+| occurrence | Antonio Rüdiger | cd1169a8-ff4e-4567-9097-743eeb8e40a6 | Síndrome gripal com febre | Doença | Em Avaliação | 2026-11-18 |
+| occurrence | Arda Güler | 7b5bb58e-8286-492b-9dc1-7cfce2d8f878 | Lesão no flexor da anca esquerda | Queixa | Em Avaliação | 2026-11-11 |
+| occurrence | Arda Güler | 7b5bb58e-8286-492b-9dc1-7cfce2d8f878 | Amigdalite aguda | Doença | Em Avaliação | 2026-11-20 |
+| occurrence | Aurélien Tchouaméni | b4314360-8233-4a51-8da3-f57d4ae6c216 | Fascite plantar do pé direito | Queixa | Disponível | 2026-11-10 |
+| occurrence | Aurélien Tchouaméni | b4314360-8233-4a51-8da3-f57d4ae6c216 | Cervicalgia após disputa aérea | Queixa | Em Avaliação | 2026-11-24 |
+| occurrence | Aurélien Tchouaméni | b4314360-8233-4a51-8da3-f57d4ae6c216 | Cefaleia após choque de cabeça | Trauma | Em Avaliação | 2026-11-25 |
+| occurrence | Éder Militão | 2f8da770-4f8e-4761-a004-e6b41b68ed81 | Dor na face posterior da coxa direita em sprint | Queixa | Em Avaliação | 2026-11-04 |
+| occurrence | Éder Militão | 2f8da770-4f8e-4761-a004-e6b41b68ed81 | Recidiva de dor posterior da coxa direita | Queixa | Em Avaliação | 2026-11-24 |
+| occurrence | Eduardo Camavinga | d6761a6d-a3b7-4048-895c-8def08b2740e | Entorse do joelho esquerdo em jogo | Trauma | Em Avaliação | 2026-11-08 |
+| occurrence | Eduardo Camavinga | d6761a6d-a3b7-4048-895c-8def08b2740e | Rinite alérgica sazonal | Doença | Disponível | 2026-11-10 |
+| occurrence | Eduardo Camavinga | d6761a6d-a3b7-4048-895c-8def08b2740e | Dor lombar após treino de força | Queixa | Disponível | 2026-11-12 |
+| occurrence | Eduardo Camavinga | d6761a6d-a3b7-4048-895c-8def08b2740e | Gastroenterite aguda | Doença | Em Avaliação | 2026-11-17 |
+| occurrence | Endrick | 42eef4af-747c-4c50-b13c-3789fa8572ea | Dor no pubis em treino | Queixa | Em Avaliação | 2026-11-15 |
+| occurrence | Endrick | 42eef4af-747c-4c50-b13c-3789fa8572ea | Choque no pé esquerdo em treino | Trauma | Disponível | 2026-11-18 |
+| occurrence | Endrick | 42eef4af-747c-4c50-b13c-3789fa8572ea | Cãibras recorrentes na perna direita | Outro | Disponível | 2026-11-23 |
+| occurrence | Endrick | 42eef4af-747c-4c50-b13c-3789fa8572ea | Fadiga pós-jogo e sono reduzido | Outro | Disponível | 2026-11-26 |
+| occurrence | Federico Valverde | 8866749e-f433-4ce7-92d1-958a538166d0 | Dor no gémeo direito | Queixa | Em Avaliação | 2026-11-09 |
+| occurrence | Federico Valverde | 8866749e-f433-4ce7-92d1-958a538166d0 | Contusão no cotovelo direito em treino | Trauma | Disponível | 2026-11-13 |
+| occurrence | Federico Valverde | 8866749e-f433-4ce7-92d1-958a538166d0 | Fadiga e carga acumulada | Outro | Disponível | 2026-11-23 |
+| occurrence | Ferland Mendy | 03ce9089-89ae-49f7-b2ff-ac39b64d06bb | Entorse do tornozelo esquerdo em jogo | Trauma | Em Avaliação | 2026-11-05 |
+| occurrence | Ferland Mendy | 03ce9089-89ae-49f7-b2ff-ac39b64d06bb | Dor no tendão de Aquiles esquerdo | Queixa | Disponível | 2026-11-21 |
+| occurrence | Jude Bellingham | 0d2e35da-c6e4-4f0e-9ca5-f3d9b254373a | Dor no ombro esquerdo após queda | Trauma | Em Avaliação | 2026-11-07 |
+| occurrence | Jude Bellingham | 0d2e35da-c6e4-4f0e-9ca5-f3d9b254373a | Entorse do dedo da mão esquerda em treino | Trauma | Em Avaliação | 2026-11-14 |
+| occurrence | Jude Bellingham | 0d2e35da-c6e4-4f0e-9ca5-f3d9b254373a | Dor púbica na região adutora | Queixa | Disponível | 2026-11-22 |
+| occurrence | Kylian Mbappé | 29da042f-414d-4c27-810a-419bd088e547 | Dor no joelho direito ao salto | Queixa | Em Avaliação | 2026-11-13 |
+| occurrence | Kylian Mbappé | 29da042f-414d-4c27-810a-419bd088e547 | Consulta pós-jogo para recuperação | Outro | Disponível | 2026-11-27 |
+| occurrence | Rodrygo | 37613ca3-60d7-450a-ab07-a97a14926712 | Dor no isquiotibial esquerdo | Queixa | Em Avaliação | 2026-11-14 |
+| occurrence | Rodrygo | 37613ca3-60d7-450a-ab07-a97a14926712 | Conjuntivite aguda | Doença | Disponível | 2026-11-16 |
+| occurrence | Rodrygo | 37613ca3-60d7-450a-ab07-a97a14926712 | Dor na região glútea esquerda | Queixa | Disponível | 2026-11-19 |
+| occurrence | Rodrygo | 37613ca3-60d7-450a-ab07-a97a14926712 | Otite externa | Doença | Em Avaliação | 2026-11-21 |
+| occurrence | Thibaut Courtois | d877b60f-2dff-4ea3-a11d-f9923baf985c | Contusão no dedo da mão direita em treino de bolas paradas | Trauma | Em Avaliação | 2026-11-03 |
+| occurrence | Thibaut Courtois | d877b60f-2dff-4ea3-a11d-f9923baf985c | Dor lombar baixa após viagem | Queixa | Disponível | 2026-11-19 |
+| occurrence | Vinicius Junior | 818c429b-71c5-41aa-bfdc-e782a6a36397 | Entorse do tornozelo direito em treino | Trauma | Em Avaliação | 2026-11-12 |
+| occurrence | Vinicius Junior | 818c429b-71c5-41aa-bfdc-e782a6a36397 | Dor no ombro direito após queda | Trauma | Em Avaliação | 2026-11-25 |
+| occurrence | Vinicius Junior | 818c429b-71c5-41aa-bfdc-e782a6a36397 | Contusão na coxa esquerda | Trauma | Disponível | 2026-11-26 |

@@ -29,3 +29,13 @@
 | athlete | Carlos Espí | f9927759-70b6-4b06-b24f-04d1734fc874 | 2026-11-27 |
 | athlete | Brahim Díaz | bf770133-921c-4dfe-977c-baab2730b468 | 2026-11-27 |
 | athlete | Yan Diomande | d6ee6845-ca52-4c9d-88a9-e4496560bb08 | 2026-11-27 |
+
+## Calendar events (squad 8a078001-a960-40ce-ac97-c494e051fdea), added 2026-11-27 via /team-calendar editor
+Event row ids were not read (UI only). Records are identified by squad, date and label.
+| category | count | date range / notes |
+|---|---|---|
+| OFFICIAL (match, label has competition and fixture) | 47 | 2026-08-22 to 2027-05-30 (38 LaLiga, 8 Champions League league phase, 1 Supercopa semi-final) |
+| INTERNAL TEST EVENT (label prefix "TEST EVENT:") | 11 | 2026-11-27 to 2026-12-11 (5 training, 3 rest, 3 travel) |
+| TEST PLACEHOLDER (match, label prefix "TEST PLACEHOLDER:") | 4 | 2026-12-16, 2027-01-13, 2027-02-07, 2027-02-17 |
+
+Total 62.

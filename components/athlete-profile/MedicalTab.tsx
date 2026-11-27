@@ -449,7 +449,7 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
 
         {/* Medication + Surgical */}
         <div className="grid gap-4 lg:grid-cols-2">
-          <Section icon={FileText} title={`Medicação${activeMeds.length ? ` (${activeMeds.length})` : ''}`}
+          <Section icon={FileText} title={`Medicação Habitual${activeMeds.length ? ` (${activeMeds.length})` : ''}`}
             action={
               <button type="button" onClick={() => setShowHistModal(true)} className="text-[10px] font-medium hover:opacity-70" style={{ color: 'var(--sophi-accent)' }}>
                 Editar
@@ -465,6 +465,15 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
                     <div>
                       <span className="font-medium" style={{ color: 'var(--sophi-text)' }}>{m.name}</span>
                       <span className="ml-1.5" style={{ color: 'var(--sophi-text3)' }}>{m.dosage} · {m.frequency}</span>
+                      {m.has_tue && (
+                        <span
+                          className="ml-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                          style={{ background: 'var(--sophi-warn-bg)', color: 'var(--sophi-warn)' }}
+                          title={m.tue_valid_until ? `AUT válida até ${formatDate(m.tue_valid_until)}` : 'AUT registada'}
+                        >
+                          AUT{m.tue_number ? ` · ${m.tue_number}` : ''}
+                        </span>
+                      )}
                     </div>
                     {m.prescriber && <span className="text-[10px] shrink-0" style={{ color: 'var(--sophi-text3)' }}>{m.prescriber}</span>}
                   </div>

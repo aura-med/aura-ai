@@ -6,7 +6,7 @@
 // components/occurrences/OccurrenceRow.tsx has with /occurrences and the
 // athlete profile's Overview tab.
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Loader2, ChevronRight, ChevronDown, CalendarClock } from 'lucide-react'
+import { Plus, Loader2, ChevronRight, ChevronDown, Minimize2, CalendarClock } from 'lucide-react'
 import { OWNER_ROLE, REHAB_ROLES } from '@/lib/roles'
 import {
   PlanModal, PlanDetail, fetchRehabPlans, formatShort,
@@ -22,6 +22,9 @@ export function RehabPlanSection({ profile }: { profile: AthleteProfileData }) {
   const [plansVersion, setPlansVersion] = useState(0)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [expandedPastId, setExpandedPastId] = useState<string | null>(null)
+  // Collapsed by default — an active plan's full detail (phases, criteria,
+  // calendar) takes up a lot of vertical space on the Lesões tab.
+  const [activePlanExpanded, setActivePlanExpanded] = useState(false)
 
   const loadPlans = useCallback(() => setPlansVersion((v) => v + 1), [])
 
@@ -57,8 +60,37 @@ export function RehabPlanSection({ profile }: { profile: AthleteProfileData }) {
 
   return (
     <div className="space-y-4">
-      {activePlan ? (
-        <PlanDetail plan={activePlan} athleteName={profile.name} occurrences={occurrences} canEdit={canEdit} onPlanChanged={loadPlans} />
+      {activePlan ? activePlanExpanded ? (
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => setActivePlanExpanded(false)}
+            className="flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 rounded-lg hover:bg-[var(--sophi-accent-bg)]"
+            style={{ color: 'var(--sophi-accent)' }}
+          >
+            <Minimize2 size={11} /> Minimizar
+          </button>
+          <PlanDetail plan={activePlan} athleteName={profile.name} occurrences={occurrences} canEdit={canEdit} onPlanChanged={loadPlans} />
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setActivePlanExpanded(true)}
+          className="w-full flex items-center gap-3 rounded-xl border px-4 py-3 text-left hover:bg-[var(--sophi-accent-bg)]"
+          style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
+        >
+          <CalendarClock size={14} style={{ color: 'var(--sophi-accent)' }} />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>{activePlan.title}</p>
+            <p className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-text3)' }}>
+              Início {formatShort(activePlan.start_date)} · Fim previsto {formatShort(activePlan.expected_end_date)}
+            </p>
+          </div>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0" style={{ background: 'var(--sophi-green-bg)', color: 'var(--sophi-green)' }}>
+            Ativo
+          </span>
+          <ChevronRight size={13} style={{ color: 'var(--sophi-text3)' }} />
+        </button>
       ) : (
         <div className="rounded-xl border p-8 flex flex-col items-center gap-3 text-center" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
           <CalendarClock size={22} style={{ color: 'var(--sophi-text3)' }} />

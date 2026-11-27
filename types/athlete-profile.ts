@@ -133,6 +133,11 @@ export interface MedicationRecord {
   start_date?: string
   end_date?: string
   prescriber?: string
+  // Therapeutic Use Exemption (Autorização de Uso Terapêutico) — required when
+  // the medication is on the WADA/ANAD Prohibited List.
+  has_tue?: boolean
+  tue_number?: string
+  tue_valid_until?: string
 }
 
 // ── Rehab Sessions ────────────────────────────────────────────────────────────
@@ -163,9 +168,15 @@ export interface RehabSession {
   rehab_plan_id: string | null
   pse: number | null
   exercises: RehabSessionExercise[]
+  modalities: string[]
   created_at: string
   updated_at: string
 }
+
+export const TREATMENT_MODALITIES = [
+  'Crioterapia', 'Eletroterapia', 'Agulhamento Seco', 'Laser', 'Ligadura Funcional',
+  'Ultrassom', 'Ondas de Choque', 'TENS', 'Mobilização Articular', 'EMS',
+] as const
 
 // ── Rehab Plan Calendar (migration 034) ───────────────────────────────────────
 // Day-by-day reabilitação calendar — distinct from RehabSession above (a flat

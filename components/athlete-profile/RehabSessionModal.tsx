@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { X, Check, Loader2, Activity, Trash2, Plus } from 'lucide-react'
-import type { RehabSession, RehabSessionExercise, RehabPlan, ActiveOccurrence } from '@/types/athlete-profile'
+import { TREATMENT_MODALITIES, type RehabSession, type RehabSessionExercise, type RehabPlan, type ActiveOccurrence } from '@/types/athlete-profile'
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -47,6 +47,7 @@ export function RehabSessionModal({ athleteId, existing, occurrences, plans, onC
   const [exercises,    setExercises]    = useState<RehabSessionExercise[]>(
     existing?.exercises?.length ? existing.exercises : []
   )
+  const [modalities,   setModalities]   = useState<string[]>(existing?.modalities ?? [])
 
   const [saving,   setSaving]   = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -79,6 +80,7 @@ export function RehabSessionModal({ athleteId, existing, occurrences, plans, onC
         rehab_plan_id:    rehabPlanId || null,
         pse:              pse !== '' ? Number(pse) : null,
         exercises:        exercises.filter((ex) => ex.name.trim().length > 0),
+        modalities,
       }
 
       let res: Response
@@ -136,7 +138,7 @@ export function RehabSessionModal({ athleteId, existing, occurrences, plans, onC
           <div className="flex items-center gap-2">
             <Activity size={14} style={{ color: 'var(--sophi-accent)' }} />
             <p className="text-sm font-bold" style={{ color: 'var(--sophi-text)' }}>
-              {isEdit ? 'Editar Sessão' : 'Nova Sessão de Reabilitação'}
+              {isEdit ? 'Editar Sessão' : 'Nova Sessão'}
             </p>
           </div>
           <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-[var(--sophi-bg4)]">
@@ -199,6 +201,33 @@ export function RehabSessionModal({ athleteId, existing, occurrences, plans, onC
                   {t.label}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Modalities applied */}
+          <div className="space-y-2">
+            <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--sophi-text3)' }}>
+              Modalidades Aplicadas
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {TREATMENT_MODALITIES.map((m) => {
+                const active = modalities.includes(m)
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setModalities((prev) => active ? prev.filter((x) => x !== m) : [...prev, m])}
+                    className="px-2.5 py-1 rounded-full border text-[11px] font-medium transition-all"
+                    style={{
+                      borderColor: active ? 'var(--sophi-accent)' : 'var(--sophi-border)',
+                      background:  active ? 'var(--sophi-accent-bg)' : 'var(--sophi-bg2)',
+                      color:       active ? 'var(--sophi-accent)' : 'var(--sophi-text3)',
+                    }}
+                  >
+                    {m}
+                  </button>
+                )
+              })}
             </div>
           </div>
 

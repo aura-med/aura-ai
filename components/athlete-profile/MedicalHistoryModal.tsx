@@ -188,39 +188,69 @@ export function MedicalHistoryModal({ athleteId, existing, onClose, onSaved }: P
                 <Plus size={10} /> Adicionar
               </button>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {medications.map((m, i) => (
-                <div key={i} className="grid grid-cols-12 gap-2 items-start">
-                  <div className="col-span-4">
-                    <input
-                      value={m.name} onChange={(e) => updateMed(i, 'name', e.target.value)}
-                      placeholder="Nome"
-                      className={inputClass} style={inputStyle}
-                    />
+                <div key={i} className="rounded-lg border p-2 space-y-2" style={{ borderColor: 'var(--sophi-border)' }}>
+                  <div className="grid grid-cols-12 gap-2 items-start">
+                    <div className="col-span-4">
+                      <input
+                        value={m.name} onChange={(e) => updateMed(i, 'name', e.target.value)}
+                        placeholder="Nome"
+                        className={inputClass} style={inputStyle}
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <input
+                        value={m.dosage} onChange={(e) => updateMed(i, 'dosage', e.target.value)}
+                        placeholder="Dose"
+                        className={inputClass} style={inputStyle}
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <input
+                        value={m.frequency} onChange={(e) => updateMed(i, 'frequency', e.target.value)}
+                        placeholder="Frequência"
+                        className={inputClass} style={inputStyle}
+                      />
+                    </div>
+                    <div className="col-span-2 flex items-center gap-1">
+                      <input
+                        type="date" value={m.start_date ?? ''} onChange={(e) => updateMed(i, 'start_date', e.target.value)}
+                        className={`${inputClass} col-span-1`} style={inputStyle}
+                      />
+                      <button type="button" onClick={() => removeMed(i)} className="p-1 rounded hover:bg-[var(--sophi-bg4)] shrink-0">
+                        <Trash2 size={12} style={{ color: 'var(--sophi-danger)' }} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="col-span-3">
+
+                  {/* AUT — Autorização de Uso Terapêutico (TUE), para substâncias
+                      da Lista de Proibições WADA/ANAD */}
+                  <label className="flex items-center gap-1.5 text-[10px]" style={{ color: 'var(--sophi-text2)' }}>
                     <input
-                      value={m.dosage} onChange={(e) => updateMed(i, 'dosage', e.target.value)}
-                      placeholder="Dose"
-                      className={inputClass} style={inputStyle}
+                      type="checkbox"
+                      checked={!!m.has_tue}
+                      onChange={(e) => setMedications((prev) => prev.map((x, idx) => idx === i ? { ...x, has_tue: e.target.checked } : x))}
                     />
-                  </div>
-                  <div className="col-span-3">
-                    <input
-                      value={m.frequency} onChange={(e) => updateMed(i, 'frequency', e.target.value)}
-                      placeholder="Frequência"
-                      className={inputClass} style={inputStyle}
-                    />
-                  </div>
-                  <div className="col-span-2 flex items-center gap-1">
-                    <input
-                      type="date" value={m.start_date ?? ''} onChange={(e) => updateMed(i, 'start_date', e.target.value)}
-                      className={`${inputClass} col-span-1`} style={inputStyle}
-                    />
-                    <button type="button" onClick={() => removeMed(i)} className="p-1 rounded hover:bg-[var(--sophi-bg4)] shrink-0">
-                      <Trash2 size={12} style={{ color: 'var(--sophi-danger)' }} />
-                    </button>
-                  </div>
+                    Tem AUT (Autorização de Uso Terapêutico)
+                  </label>
+                  {m.has_tue && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        value={m.tue_number ?? ''}
+                        onChange={(e) => updateMed(i, 'tue_number', e.target.value)}
+                        placeholder="Nº de autorização"
+                        className={inputClass} style={inputStyle}
+                      />
+                      <input
+                        type="date"
+                        value={m.tue_valid_until ?? ''}
+                        onChange={(e) => updateMed(i, 'tue_valid_until', e.target.value)}
+                        className={inputClass} style={inputStyle}
+                        title="Válida até"
+                      />
+                    </div>
+                  )}
                 </div>
               ))}
               {medications.length === 0 && (

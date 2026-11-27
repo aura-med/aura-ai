@@ -18,3 +18,11 @@
 - LIMITS: (1) Intensity cannot be set or verified. No calendar UI field or display exists for it (recon.md), so the dataset intensity values are not stored. Adding it would be an app feature, out of scope. (2) The editor forces a venue on matches, so the 4 placeholders were stored with the default venue "Casa". The label is the marker. (3) Kick-off times and results have no fields and are not stored. (4) The dataset has no recovery events.
 - Screenshots: screenshots/05-calendar-2026-08.png to 05-calendar-2027-05.png.
 - gates/core.json does not exist, so there were no review findings to fix.
+## Profile step (2026-11-27)
+- Approach: user approved a Playwright run through the real UI (no API, no DB access). Fresh login with SOPHI_TEST_EMAIL/SOPHI_TEST_PASSWORD read from .env.local at runtime; scripts /tmp/rm/prof.mjs and verprof.mjs (not committed). A first attempt using a saved session file was refused by the permission layer and not retried.
+- Entered per player via athlete page > Ficha Clínica > "Editar dados clínicos": Altura (cm) = dataset heightCm (Transfermarkt values); Notas Clínicas = one public-bio line (place and date of birth, nationality, preferred foot, shirt number). Peso and other fields left empty (no public source). Idempotent: players whose values already match are skipped (Courtois was saved in a single-player test run first, then skipped in the full run). No existing notes were overwritten.
+- Result: 26 saved, 0 failures. Read-back of all 26 profile pages: height and bio text on screen for 26/26. Roster page shows "26 atletas convocados" = 26 roster entries = 26 profiles.
+- Screenshots (GK, DEF, MID, FWD x3): screenshots/06-profile-gk-courtois.png, 06-profile-def-militao.png, 06-profile-mid-bellingham.png, 06-profile-fwd-mbappe.png, 06-profile-fwd-brahim.png, 06-profile-fwd-endrick.png.
+- No UI field exists for career (clubs, national teams, caps), performance (appearances, goals, minutes 2026-27), contract expiry, other citizenships or public injury flags. They stay in real-madrid-dataset.json and source-manifest.md.
+- Only public bio text was stored in "Notas Clínicas"; no clinical claims.
+- gates/core.json does not exist, so there were no review findings to fix.

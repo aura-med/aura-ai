@@ -39,3 +39,6 @@ Event row ids were not read (UI only). Records are identified by squad, date and
 | TEST PLACEHOLDER (match, label prefix "TEST PLACEHOLDER:") | 4 | 2026-12-16, 2027-01-13, 2027-02-07, 2027-02-17 |
 
 Total 62.
+
+## Profile edits (2026-11-27)
+Edited entity: `athletes_medical_history` row (height_cm, notes) for each of the 26 athletes listed above, same athlete ids, via the athlete page "Dados Clínicos" edit dialog. No new entities created.

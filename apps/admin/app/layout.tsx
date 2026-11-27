@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { DM_Mono, Poppins } from 'next/font/google'
+import { Poppins } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 
@@ -9,10 +9,12 @@ const poppins = Poppins({
   weight: ['300', '400', '500', '600', '700'],
 })
 
-const dmMono = DM_Mono({
+// --font-dm-mono used to load DM Mono — now Poppins under the same variable
+// name, same reasoning as the main app's layout.tsx.
+const dmMono = Poppins({
   variable: '--font-dm-mono',
   subsets: ['latin'],
-  weight: ['300', '400', '500'],
+  weight: ['400', '500', '600'],
 })
 
 export const metadata: Metadata = {

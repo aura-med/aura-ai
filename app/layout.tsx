@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { DM_Mono, Poppins } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { NextIntlClientProvider } from 'next-intl'
@@ -12,10 +12,15 @@ const poppins = Poppins({
   weight: ["300", "400", "500", "600", "700"],
 });
 
-const dmMono = DM_Mono({
+// --font-dm-mono used to load DM Mono for labels/badges/timestamps — user
+// feedback: it read as "robotizado" next to the rest of the UI. Loads
+// Poppins under the same CSS variable name instead, so every existing
+// var(--font-dm-mono)/var(--font-mono) reference across the app becomes
+// Poppins without touching each of those call sites individually.
+const dmMono = Poppins({
   variable: "--font-dm-mono",
   subsets: ["latin"],
-  weight: ["300", "400", "500"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {

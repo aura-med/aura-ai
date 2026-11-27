@@ -125,6 +125,25 @@ export async function updateOccurrence(input: UpdateOccurrenceInput) {
   const supabase = await createClient()
   const clinician = await getClinician(supabase)
 
+  // Mirrors the enforce_unavailable_requires_diagnosis trigger (098), which
+  // is deliberately scoped to occurrence_records INSERT only and does not
+  // cover this edit path (see that migration's comment). Checked here,
+  // specifically for this user-facing "Editar" action, so it doesn't affect
+  // the internal mirror/fallback UPDATEs on occurrences that the trigger
+  // was kept narrow to avoid breaking.
+  if (input.availabilityStatus === 'unavailable') {
+    const { data: activeDiagnoses, error: diagnosisCheckError } = await supabase
+      .from('diagnoses')
+      .select('id')
+      .eq('occurrence_id', input.occurrenceId)
+      .eq('is_resolved', false)
+      .limit(1)
+    if (diagnosisCheckError) throw new Error(diagnosisCheckError.message)
+    if (!activeDiagnoses || activeDiagnoses.length === 0) {
+      throw new Error('Uma ocorrência só pode ficar Indisponível com um diagnóstico associado.')
+    }
+  }
+
   // update_occurrence_own_edit (068) locks the row first, so decisionChanged
   // (whether to bump updated_at / mark decision_source: 'own') is derived
   // from a guaranteed-current snapshot rather than a SELECT taken before the

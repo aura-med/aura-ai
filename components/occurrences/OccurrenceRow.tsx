@@ -199,39 +199,44 @@ export function OccurrenceRow({ occ, canCreateDiagnosis, onRevalidate }: { occ: 
     }
     setReevalDiagnosisError(null)
     startTransition(async () => {
-      if (reevalData.availability_status === 'unavailable') {
-        // conclude_reassessment_with_diagnosis (098) inserts the diagnosis
-        // and the reassessment atomically — the trigger it also installs
-        // would otherwise reject this same reassessment if saved on its own.
-        await addOccurrenceRecordWithDiagnosis({
-          occurrenceId: occ.id,
-          athleteId: occ.athlete_id,
-          recordDate: reevalData.recordDate,
-          subjective: '',
-          objective: '',
-          assessment: reevalData.observations,
-          plan: '',
-          loadManagementRestrictions: reevalData.restrictions,
-          loadManagementNotes: reevalData.notes.trim() || null,
-          diagnosisType: reevalDiagnosis.diagnosisType,
-          osiicsCode: reevalDiagnosis.osiicsCode,
-          osiicsDescription: reevalDiagnosis.osiicsDescription,
-          customDescription: reevalDiagnosis.customDesc.trim() || null,
-          ...diagnosisCoreValueToCharacterization(reevalDiagnosis),
-        })
-      } else {
-        await addOccurrenceRecord({
-          occurrenceId: occ.id,
-          athleteId: occ.athlete_id,
-          recordDate: reevalData.recordDate,
-          subjective: '',
-          objective: '',
-          assessment: reevalData.observations,
-          plan: '',
-          availabilityStatus: reevalData.availability_status,
-          loadManagementRestrictions: reevalData.restrictions,
-          loadManagementNotes: reevalData.notes.trim() || null,
-        })
+      try {
+        if (reevalData.availability_status === 'unavailable') {
+          // conclude_reassessment_with_diagnosis (098) inserts the diagnosis
+          // and the reassessment atomically — the trigger it also installs
+          // would otherwise reject this same reassessment if saved on its own.
+          await addOccurrenceRecordWithDiagnosis({
+            occurrenceId: occ.id,
+            athleteId: occ.athlete_id,
+            recordDate: reevalData.recordDate,
+            subjective: '',
+            objective: '',
+            assessment: reevalData.observations,
+            plan: '',
+            loadManagementRestrictions: reevalData.restrictions,
+            loadManagementNotes: reevalData.notes.trim() || null,
+            diagnosisType: reevalDiagnosis.diagnosisType,
+            osiicsCode: reevalDiagnosis.osiicsCode,
+            osiicsDescription: reevalDiagnosis.osiicsDescription,
+            customDescription: reevalDiagnosis.customDesc.trim() || null,
+            ...diagnosisCoreValueToCharacterization(reevalDiagnosis),
+          })
+        } else {
+          await addOccurrenceRecord({
+            occurrenceId: occ.id,
+            athleteId: occ.athlete_id,
+            recordDate: reevalData.recordDate,
+            subjective: '',
+            objective: '',
+            assessment: reevalData.observations,
+            plan: '',
+            availabilityStatus: reevalData.availability_status,
+            loadManagementRestrictions: reevalData.restrictions,
+            loadManagementNotes: reevalData.notes.trim() || null,
+          })
+        }
+      } catch (err) {
+        setReevalDiagnosisError(err instanceof Error ? err.message : 'Não foi possível guardar a reavaliação')
+        return
       }
       setShowReeval(false)
       setReevalData({

@@ -11,6 +11,7 @@ import { Plus, Trash2, Loader2, CheckSquare, Square, Pencil, X } from 'lucide-re
 import {
   upsertRehabPhaseCriterion, deleteRehabPhaseCriterion, setRehabCriterionCompletion,
 } from '@/lib/actions/rehab-plan'
+import { todayStr } from '@/lib/utils/microcycle'
 import type { RehabPhaseCriterion, ThresholdOperator } from '@/types/athlete-profile'
 
 const OPERATOR_LABELS: Record<ThresholdOperator, string> = {
@@ -38,7 +39,7 @@ export function PhaseCriteriaSection({ phaseId, initialCriteria, canEdit, onChan
 
   const criteria = initialCriteria
   const doneCount = criteria.filter((c) => c.is_completed).length
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayStr()
 
   function resetForm() {
     setDescription(''); setMetricLabel(''); setThresholdOperator(''); setThresholdValue(''); setUnit(''); setTargetTestDate('')

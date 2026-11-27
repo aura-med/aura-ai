@@ -63,6 +63,9 @@ DECLARE
   v_confirmed_by text;
 BEGIN
   IF p_resolved_at IS NOT NULL THEN
+    IF p_resolved_at > CURRENT_DATE THEN
+      RAISE EXCEPTION 'A data de resolução não pode ser no futuro.';
+    END IF;
     PERFORM set_config('app.trusted_resolved_at', p_resolved_at::text, true);
   END IF;
 
@@ -120,7 +123,7 @@ BEGIN
   END IF;
 
   IF v_diagnosis.diagnosis_type = 'injury' THEN
-    v_injury_date := COALESCE(v_occurrence_date, v_diagnosis.diagnosis_date, v_diagnosis.diagnosed_at::date);
+    v_injury_date := COALESCE(v_diagnosis.diagnosis_date, v_occurrence_date, v_diagnosis.diagnosed_at::date);
     v_return_date := COALESCE(v_diagnosis.resolved_at::date, CURRENT_DATE);
     v_days_absent := GREATEST(0, v_return_date - v_injury_date);
     v_severity := CASE
@@ -138,7 +141,7 @@ BEGIN
     ) VALUES (
       v_diagnosis.athlete_id, v_injury_date, v_return_date,
       COALESCE(v_diagnosis.osiics_description, v_diagnosis.custom_description, 'Diagnóstico sem descrição'),
-      v_diagnosis.osiics_code, v_severity, v_days_absent, false, v_confirmed_by, p_secondary_prevention_note
+      v_diagnosis.osiics_code, v_severity, v_days_absent, v_diagnosis.is_recurrence, v_confirmed_by, p_secondary_prevention_note
     );
   END IF;
 

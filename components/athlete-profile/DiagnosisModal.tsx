@@ -123,10 +123,10 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
       <div
-        className="w-full max-w-md rounded-2xl border shadow-2xl p-5 space-y-4"
+        className="w-full max-w-md rounded-2xl border shadow-2xl flex flex-col max-h-[90vh]"
         style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between px-5 py-4 border-b shrink-0" style={{ borderColor: 'var(--sophi-border)' }}>
           <h3 className="font-semibold" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
             {isEdit ? 'Editar Diagnóstico' : 'Novo Diagnóstico'}
           </h3>
@@ -134,6 +134,8 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
             <X size={16} style={{ color: 'var(--sophi-text3)' }} />
           </button>
         </div>
+
+        <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
 
         <DiagnosisCoreFields athleteId={athleteId} value={core} onChange={patchCore} />
 
@@ -196,7 +198,9 @@ export function DiagnosisModal({ athleteId, occurrences, existing, onClose, onSa
           <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>
         )}
 
-        <div className="flex gap-3 pt-1">
+        </div>
+
+        <div className="flex gap-3 px-5 py-4 border-t shrink-0" style={{ borderColor: 'var(--sophi-border)' }}>
           <button
             type="button"
             onClick={onClose}

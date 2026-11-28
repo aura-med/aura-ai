@@ -701,6 +701,7 @@ export function PlanDetail({
   const [diagPicker, setDiagPicker] = useState<{ diagnoses: { id: string; label: string }[] } | null>(null)
   const [selectedDiagId, setSelectedDiagId] = useState<string>('')
   const [dischargeNote, setDischargeNote] = useState('')
+  const [confirmAvailable, setConfirmAvailable] = useState(true)
   const [confirmDeletePhaseId, setConfirmDeletePhaseId] = useState<string | null>(null)
   const [deletingPhase, setDeletingPhase] = useState(false)
   const [advancingPhaseId, setAdvancingPhaseId] = useState<string | null>(null)
@@ -814,12 +815,12 @@ export function PlanDetail({
 
   const dayMap = new Map(days.map((d) => [dayKey(d.entry_date, d.period), d]))
 
-  async function handleClose(completed: boolean, diagnosisId?: string | null, secondaryPreventionNote?: string | null) {
+  async function handleClose(completed: boolean, diagnosisId?: string | null, secondaryPreventionNote?: string | null, setAvailable = true) {
     setClosing(completed ? 'complete' : 'archive')
     setCloseError(null)
     setDiagPicker(null)
     try {
-      await closeRehabPlan(plan.id, completed, diagnosisId, secondaryPreventionNote)
+      await closeRehabPlan(plan.id, completed, diagnosisId, secondaryPreventionNote, setAvailable)
     } catch (e) {
       setCloseError(e instanceof Error ? e.message : 'Erro ao fechar plano')
     } finally {
@@ -839,6 +840,7 @@ export function PlanDetail({
     }
     setCloseError(null)
     setDischargeNote('')
+    setConfirmAvailable(true)
     if (plan.occurrence_id) {
       setSelectedDiagId('')
       setDiagPicker({ diagnoses: [] })
@@ -959,11 +961,25 @@ export function PlanDetail({
               placeholder="ex: fortalecimento excêntrico dos isquiotibiais 2x/semana, monitorização de carga nas próximas 4 semanas…"
               className={inputClass} style={{ ...inputStyle, resize: 'vertical' }} />
           </div>
+          <label
+            className="flex items-start gap-2 cursor-pointer rounded-lg p-2"
+            style={{ background: 'var(--sophi-green-bg)' }}
+          >
+            <input
+              type="checkbox"
+              checked={confirmAvailable}
+              onChange={(e) => setConfirmAvailable(e.target.checked)}
+              className="mt-0.5 accent-[var(--sophi-green)]"
+            />
+            <span className="text-[11px]" style={{ color: 'var(--sophi-green)' }}>
+              Alterar o estado de disponibilidade do atleta para <strong>Disponível</strong>
+            </span>
+          </label>
           <div className="flex items-center gap-2 pt-1">
             <button
               type="button"
               disabled={closing !== null}
-              onClick={() => handleClose(true, selectedDiagId || null, dischargeNote.trim() || null)}
+              onClick={() => handleClose(true, selectedDiagId || null, dischargeNote.trim() || null, confirmAvailable)}
               className="flex items-center gap-1 text-[10px] font-bold px-3 py-1.5 rounded-lg"
               style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}
             >

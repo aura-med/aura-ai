@@ -21,7 +21,7 @@ type Avail = 'available' | 'evaluation' | 'unavailable' | 'rtp' | 'load_manageme
 // diagnosis says — not the most restrictive of all open issues; active
 // rehab still acts as a floor. Falls back to `fallback` when nothing else
 // is open.
-async function recomputeAndPersistAvailability(
+export async function recomputeAndPersistAvailability(
   supabase: Awaited<ReturnType<typeof createClient>>,
   athleteId: string,
   fallback: Avail,

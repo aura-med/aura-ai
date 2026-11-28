@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { RehabPlanPeriod } from '@/types/athlete-profile'
 import { REHAB_DAY_OCCUPIED_ERROR } from '@/lib/actions/rehab-plan-errors'
-import { resolveDiagnosis } from '@/lib/actions/clinical'
+import { resolveDiagnosis, recomputeAndPersistAvailability } from '@/lib/actions/clinical'
 import { logAudit } from '@/lib/audit'
 
 async function currentUserId(supabase: Awaited<ReturnType<typeof createClient>>) {
@@ -157,6 +157,9 @@ export async function closeRehabPlan(
   completed: boolean,
   resolveTargetDiagnosisId?: string | null,
   secondaryPreventionNote?: string | null,
+  // Clinician-confirmed on the discharge banner — defaults to true so other
+  // callers (e.g. tests) keep the old behaviour unless they opt out.
+  setAvailableOnDischarge = true,
 ) {
   const supabase = await createClient()
   const user = await currentUser(supabase)
@@ -194,6 +197,17 @@ export async function closeRehabPlan(
     })()
     if (targetId) {
       await resolveDiagnosis(targetId, data.athlete_id, null, secondaryPreventionNote)
+    }
+    // Bug fix: previously, discharge only recomputed availability as a side
+    // effect of resolveDiagnosis above — if no matching diagnosis was found
+    // (occurrence/diagnosis ids didn't line up, or none existed), the
+    // athlete's status silently kept whatever the active plan had floored
+    // it to (rtp/unavailable), even though the plan itself had just been
+    // deactivated. Recompute unconditionally so discharge always reflects
+    // the plan no longer being active, gated on the clinician's own
+    // confirmation on the discharge banner.
+    if (setAvailableOnDischarge) {
+      await recomputeAndPersistAvailability(supabase, data.athlete_id, 'available')
     }
   }
 

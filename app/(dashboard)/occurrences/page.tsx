@@ -38,7 +38,7 @@ async function getData(squadId: string | null, date: string) {
       is_resolved, resolved_at, microcycle_number,
       athletes!inner ( id, name, shirt_number, photo_url, position, availability_status ),
       occurrence_records ( id, record_date, subjective, objective, assessment, plan, availability_status, load_management_restrictions, load_management_notes, clinician_name, created_at ),
-      diagnoses ( id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, load_management_restrictions, load_management_notes, is_resolved )
+      diagnoses ( id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, load_management_restrictions, load_management_notes, is_resolved, diagnosed_at, resolved_at, diagnosis_date, context, match_minute, mechanism, contact_type, player_action, foul_involved, body_region, body_side, tissue_type, is_recurrence, related_diagnosis_id, claim_filed )
     `)
     .eq('org_id', orgId)
     .eq('athletes.active', true)

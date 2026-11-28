@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { logAudit } from '@/lib/audit'
+import type { InjuryCharacterizationFields } from '@/lib/actions/clinical'
 
 type AvailabilityStatus = 'available' | 'evaluation' | 'unavailable' | 'rtp' | 'load_management'
 
@@ -50,17 +52,24 @@ async function getClinician(supabase: Awaited<ReturnType<typeof createClient>>) 
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, role')
+    .select('full_name, role, org_id')
     .eq('id', user?.id ?? '')
     .single()
-  return { userId: user?.id, name: profile?.full_name ?? '', role: profile?.role ?? '' }
+  return { userId: user?.id, email: user?.email ?? '', name: profile?.full_name ?? '', role: profile?.role ?? '', orgId: profile?.org_id ?? '' }
 }
 
 export async function registerOccurrence(input: RegisterOccurrenceInput) {
+  // Opening an occurrence only ever decides between Apto and A Avaliar — every
+  // other outcome (Gestão de Carga, Indisponível, RTP) is only ever reached
+  // through a reassessment or the rehab plan. The UI already restricts the
+  // select to these two; this is defense in depth against a crafted call.
+  if (input.availabilityStatus !== 'available' && input.availabilityStatus !== 'evaluation') {
+    throw new Error('Uma ocorrência só pode abrir como Disponível ou A Avaliar.')
+  }
   const supabase = await createClient()
   const clinician = await getClinician(supabase)
 
-  const { error } = await supabase.from('occurrences').insert({
+  const { data: inserted, error } = await supabase.from('occurrences').insert({
     athlete_id: input.athleteId,
     org_id: input.orgId,
     squad_id: input.squadId,
@@ -79,13 +88,19 @@ export async function registerOccurrence(input: RegisterOccurrenceInput) {
     clinician_name: clinician.name,
     clinician_role: clinician.role,
     is_resolved: false,
-  })
+  }).select('id').single()
 
   if (error) throw new Error(error.message)
 
   // Recompute from all active issues so a less-restrictive new occurrence
   // doesn't clear a still-active unavailable/rtp one.
   await recomputeAndPersistAvailability(supabase, input.athleteId, input.availabilityStatus)
+
+  await logAudit({
+    userId: clinician.userId ?? '', userEmail: clinician.email, orgId: input.orgId,
+    action: 'occurrence.create', resourceType: 'occurrence', resourceId: inserted?.id,
+    metadata: { athleteId: input.athleteId },
+  })
 
   revalidatePath('/occurrences')
   revalidatePath('/')
@@ -108,6 +123,26 @@ export interface UpdateOccurrenceInput {
 // This corrects the original entry itself rather than logging a new event.
 export async function updateOccurrence(input: UpdateOccurrenceInput) {
   const supabase = await createClient()
+  const clinician = await getClinician(supabase)
+
+  // Mirrors the enforce_unavailable_requires_diagnosis trigger (098), which
+  // is deliberately scoped to occurrence_records INSERT only and does not
+  // cover this edit path (see that migration's comment). Checked here,
+  // specifically for this user-facing "Editar" action, so it doesn't affect
+  // the internal mirror/fallback UPDATEs on occurrences that the trigger
+  // was kept narrow to avoid breaking.
+  if (input.availabilityStatus === 'unavailable') {
+    const { data: activeDiagnoses, error: diagnosisCheckError } = await supabase
+      .from('diagnoses')
+      .select('id')
+      .eq('occurrence_id', input.occurrenceId)
+      .eq('is_resolved', false)
+      .limit(1)
+    if (diagnosisCheckError) throw new Error(diagnosisCheckError.message)
+    if (!activeDiagnoses || activeDiagnoses.length === 0) {
+      throw new Error('Uma ocorrência só pode ficar Indisponível com um diagnóstico associado.')
+    }
+  }
 
   // update_occurrence_own_edit (068) locks the row first, so decisionChanged
   // (whether to bump updated_at / mark decision_source: 'own') is derived
@@ -150,6 +185,11 @@ export async function updateOccurrence(input: UpdateOccurrenceInput) {
     await recomputeAndPersistAvailability(supabase, targetAthleteId, input.availabilityStatus)
   }
 
+  await logAudit({
+    userId: clinician.userId ?? '', userEmail: clinician.email, orgId: clinician.orgId,
+    action: 'occurrence.update', resourceType: 'occurrence', resourceId: input.occurrenceId,
+  })
+
   revalidatePath('/occurrences')
   revalidatePath('/')
   revalidatePath(`/athletes/${targetAthleteId}`)
@@ -158,30 +198,28 @@ export async function updateOccurrence(input: UpdateOccurrenceInput) {
 export async function resolveOccurrence(
   occurrenceId: string,
   athleteId: string,
-  resolutionStatus: AvailabilityStatus
+  resolutionStatus: AvailabilityStatus,
+  resolvedAt?: string | null
 ) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const clinician = await getClinician(supabase)
 
-  // Trust the occurrence row's own athlete_id (returned from the update), not the
-  // client-supplied athleteId, so we never recompute availability for the wrong athlete.
-  // Guard on is_resolved=false so a stale/double resolve doesn't overwrite the
-  // original resolved_at/resolved_by on an already-resolved row.
-  const { data: resolved, error: resolveError } = await supabase
-    .from('occurrences')
-    .update({
-      is_resolved: true,
-      resolved_at: new Date().toISOString(),
-      resolved_by: user?.id,
-      availability_status: resolutionStatus,
-    })
-    .eq('id', occurrenceId)
-    .eq('is_resolved', false)
-    .select('athlete_id')
-    .maybeSingle()
+  // resolve_occurrence_with_date (094) does the is_resolved=false guard and
+  // the resolved_at/resolved_by derivation itself (via set_occurrence_audit,
+  // trusting a backdated resolvedAt only through this RPC's own
+  // app.trusted_resolved_at GUC — see 094's header). Trust the occurrence
+  // row's own athlete_id from the RPC's return, not the client-supplied
+  // athleteId, so we never recompute availability for the wrong athlete.
+  const { data: resolvedRows, error: resolveError } = await supabase.rpc('resolve_occurrence_with_date', {
+    p_occurrence_id: occurrenceId,
+    p_resolution_status: resolutionStatus,
+    p_resolved_at: resolvedAt ?? null,
+  })
 
-  // No row updated (stale or RLS-filtered id) → nothing was resolved; abort
-  // before touching availability so a crafted call can't move an athlete's state.
+  // No row returned (stale id, already resolved, or RLS-filtered) → nothing
+  // was resolved; abort before touching availability so a crafted call can't
+  // move an athlete's state.
+  const resolved = resolvedRows?.[0]
   if (resolveError || !resolved?.athlete_id) {
     throw new Error(resolveError?.message ?? 'Ocorrência não encontrada')
   }
@@ -192,6 +230,11 @@ export async function resolveOccurrence(
   // This occurrence is now resolved, so `resolutionStatus` only applies as the
   // fallback when nothing else is open.
   await recomputeAndPersistAvailability(supabase, targetAthleteId, resolutionStatus)
+
+  await logAudit({
+    userId: clinician.userId ?? '', userEmail: clinician.email, orgId: clinician.orgId,
+    action: 'occurrence.resolve', resourceType: 'occurrence', resourceId: occurrenceId,
+  })
 
   revalidatePath('/occurrences')
   revalidatePath('/')
@@ -211,6 +254,7 @@ export async function addOccurrenceRecord(input: {
   loadManagementNotes: string | null
 }) {
   const supabase = await createClient()
+  const clinician = await getClinician(supabase)
 
   // add_occurrence_record_and_mirror (070) inserts the reassessment and,
   // only when it's still the most recent source for its occurrence, mirrors
@@ -247,6 +291,88 @@ export async function addOccurrenceRecord(input: {
   // Recompute from all active occurrences/diagnoses so a less-restrictive
   // reassessment on one issue doesn't clear a still-active one elsewhere.
   await recomputeAndPersistAvailability(supabase, targetAthleteId, input.availabilityStatus)
+
+  await logAudit({
+    userId: clinician.userId ?? '', userEmail: clinician.email, orgId: clinician.orgId,
+    action: 'occurrence_record.create', resourceType: 'occurrence_record', resourceId: record.id,
+    metadata: { occurrenceId: input.occurrenceId },
+  })
+
+  revalidatePath('/occurrences')
+  revalidatePath('/')
+  revalidatePath(`/athletes/${targetAthleteId}`)
+}
+
+// Concludes a reassessment as Indisponível together with its now-mandatory
+// diagnosis, in one atomic call — mirrors addOccurrenceRecord above but goes
+// through conclude_reassessment_with_diagnosis (098) instead of 070, which
+// inserts the diagnosis first and errors if diagnosisType is missing (the
+// trigger added in 098 enforces the same rule even for a direct Data API
+// call, so this isn't the only thing preventing a diagnosis-less
+// Indisponível — just the one that gives the UI a clean, atomic save).
+export async function addOccurrenceRecordWithDiagnosis(input: {
+  occurrenceId: string
+  athleteId: string
+  recordDate: string
+  subjective: string
+  objective: string
+  assessment: string
+  plan: string
+  loadManagementRestrictions: string[]
+  loadManagementNotes: string | null
+  diagnosisType: 'injury' | 'disease'
+  osiicsCode: string | null
+  osiicsDescription: string | null
+  customDescription: string | null
+} & Partial<InjuryCharacterizationFields>) {
+  const supabase = await createClient()
+  const clinician = await getClinician(supabase)
+
+  const { data: rows, error } = await supabase.rpc('conclude_reassessment_with_diagnosis', {
+    p_occurrence_id: input.occurrenceId,
+    p_record_date: input.recordDate,
+    p_subjective: input.subjective,
+    p_objective: input.objective,
+    p_assessment: input.assessment,
+    p_plan: input.plan,
+    p_availability_status: 'unavailable',
+    p_load_management_restrictions: input.loadManagementRestrictions,
+    p_load_management_notes: input.loadManagementNotes,
+    p_diagnosis_type: input.diagnosisType,
+    p_osiics_code: input.osiicsCode,
+    p_osiics_description: input.osiicsDescription,
+    p_custom_description: input.customDescription,
+    p_diagnosis_date: input.diagnosisDate ?? null,
+    p_context: input.context ?? null,
+    p_match_minute: input.matchMinute ?? null,
+    p_mechanism: input.mechanism ?? null,
+    p_contact_type: input.contactType ?? null,
+    p_player_action: input.playerAction ?? null,
+    p_foul_involved: input.foulInvolved ?? null,
+    p_body_region: input.bodyRegion ?? null,
+    p_body_side: input.bodySide ?? null,
+    p_tissue_type: input.tissueType ?? null,
+    p_is_recurrence: input.isRecurrence ?? null,
+    p_related_diagnosis_id: input.relatedDiagnosisId ?? null,
+    p_claim_filed: input.claimFiled ?? null,
+  })
+  if (error) throw new Error(error.message)
+  const record = rows?.[0]
+  if (!record?.athlete_id) throw new Error('Ocorrência já resolvida ou inexistente')
+  const targetAthleteId = record.athlete_id
+
+  await recomputeAndPersistAvailability(supabase, targetAthleteId, 'unavailable')
+
+  await logAudit({
+    userId: clinician.userId ?? '', userEmail: clinician.email, orgId: clinician.orgId,
+    action: 'occurrence_record.create', resourceType: 'occurrence_record', resourceId: record.id,
+    metadata: { occurrenceId: input.occurrenceId },
+  })
+  await logAudit({
+    userId: clinician.userId ?? '', userEmail: clinician.email, orgId: clinician.orgId,
+    action: 'diagnosis.create', resourceType: 'diagnosis',
+    metadata: { occurrenceId: input.occurrenceId, diagnosisType: input.diagnosisType },
+  })
 
   revalidatePath('/occurrences')
   revalidatePath('/')

@@ -9,11 +9,17 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { RehabPlanPeriod } from '@/types/athlete-profile'
 import { REHAB_DAY_OCCUPIED_ERROR } from '@/lib/actions/rehab-plan-errors'
-import { resolveDiagnosis } from '@/lib/actions/clinical'
+import { resolveDiagnosis, recomputeAndPersistAvailability } from '@/lib/actions/clinical'
+import { logAudit } from '@/lib/audit'
 
 async function currentUserId(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: { user } } = await supabase.auth.getUser()
   return user?.id ?? null
+}
+
+async function currentUser(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const { data: { user } } = await supabase.auth.getUser()
+  return { id: user?.id ?? '', email: user?.email ?? '' }
 }
 
 // The FK on rehab_plans.occurrence_id only checks the occurrence exists,
@@ -47,7 +53,8 @@ export interface CreateRehabPlanInput {
 
 export async function createRehabPlan(input: CreateRehabPlanInput) {
   const supabase = await createClient()
-  const userId = await currentUserId(supabase)
+  const user = await currentUser(supabase)
+  const userId = user.id
   const { data: profile } = await supabase
     .from('profiles')
     .select('org_id')
@@ -91,6 +98,12 @@ export async function createRehabPlan(input: CreateRehabPlanInput) {
     if (error.code === '23505') throw new Error('Este atleta já tem um plano de reabilitação ativo. Termina-o antes de criar um novo.')
     throw new Error(error.message)
   }
+
+  await logAudit({
+    userId: user.id, userEmail: user.email, orgId: data.org_id ?? '',
+    action: 'rehab_plan.create', resourceType: 'rehab_plan', resourceId: data.id,
+    metadata: { athleteId: input.athleteId },
+  })
 
   revalidatePath(`/athletes/${input.athleteId}`)
   return data
@@ -139,19 +152,31 @@ export async function updateRehabPlan(input: UpdateRehabPlanInput) {
 // closed_at is stamped either way so the history view always shows when a
 // plan stopped being active, not just for the "completed" outcome.
 // Guarded on is_active=true so a stale UI can't re-close an already-closed plan.
-export async function closeRehabPlan(planId: string, completed: boolean, resolveTargetDiagnosisId?: string | null) {
+export async function closeRehabPlan(
+  planId: string,
+  completed: boolean,
+  resolveTargetDiagnosisId?: string | null,
+  secondaryPreventionNote?: string | null,
+  // Clinician-confirmed on the discharge banner — defaults to true so other
+  // callers (e.g. tests) keep the old behaviour unless they opt out.
+  setAvailableOnDischarge = true,
+) {
   const supabase = await createClient()
+  const user = await currentUser(supabase)
+  const { data: closerProfile } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
 
   const { data, error } = await supabase
     .from('rehab_plans')
     .update({
-      is_active:    false,
-      is_completed: completed,
-      closed_at:    new Date().toISOString(),
+      is_active:      false,
+      is_completed:   completed,
+      closed_at:      new Date().toISOString(),
+      closed_by:      user.id || null,
+      closed_by_name: closerProfile?.full_name ?? null,
     })
     .eq('id', planId)
     .eq('is_active', true)
-    .select('athlete_id, occurrence_id')
+    .select('athlete_id, occurrence_id, org_id')
     .maybeSingle()
   if (error || !data?.athlete_id) throw new Error(error?.message ?? 'Plano já encerrado ou inexistente')
 
@@ -171,9 +196,26 @@ export async function closeRehabPlan(planId: string, completed: boolean, resolve
       return diag?.id ?? null
     })()
     if (targetId) {
-      await resolveDiagnosis(targetId, data.athlete_id)
+      await resolveDiagnosis(targetId, data.athlete_id, null, secondaryPreventionNote)
+    }
+    // Bug fix: previously, discharge only recomputed availability as a side
+    // effect of resolveDiagnosis above — if no matching diagnosis was found
+    // (occurrence/diagnosis ids didn't line up, or none existed), the
+    // athlete's status silently kept whatever the active plan had floored
+    // it to (rtp/unavailable), even though the plan itself had just been
+    // deactivated. Recompute unconditionally so discharge always reflects
+    // the plan no longer being active, gated on the clinician's own
+    // confirmation on the discharge banner.
+    if (setAvailableOnDischarge) {
+      await recomputeAndPersistAvailability(supabase, data.athlete_id, 'available')
     }
   }
+
+  await logAudit({
+    userId: user.id, userEmail: user.email, orgId: data.org_id ?? '',
+    action: 'rehab_plan.close', resourceType: 'rehab_plan', resourceId: planId,
+    metadata: { completed },
+  })
 
   revalidatePath('/rehab')
   revalidatePath(`/athletes/${data.athlete_id}`)
@@ -203,6 +245,7 @@ export interface UpsertRehabPlanPhaseInput {
   planId: string
   name: string
   criteria: string | null
+  phaseType: 'standard' | 'rtp'
   startDate: string
   testDate: string | null
 }
@@ -221,10 +264,15 @@ export async function upsertRehabPlanPhase(input: UpsertRehabPlanPhaseInput) {
   if (input.phaseId) {
     const { error } = await supabase
       .from('rehab_plan_phases')
-      .update({ name: input.name, criteria: input.criteria, start_date: input.startDate, test_date: input.testDate })
+      .update({ name: input.name, criteria: input.criteria, phase_type: input.phaseType, start_date: input.startDate, test_date: input.testDate })
       .eq('id', input.phaseId)
       .eq('plan_id', input.planId)
-    if (error) throw new Error(error.message)
+    // 23505 = unique_violation on rehab_plan_phases_one_rtp_per_plan (096) —
+    // a second phase was marked RTP while one already exists for this plan.
+    if (error) {
+      if (error.code === '23505') throw new Error('Este plano já tem uma fase de RTP.')
+      throw new Error(error.message)
+    }
   } else {
     // phase_number is derived server-side (max + 1) rather than client-supplied,
     // so two clinicians adding a phase near-simultaneously can't collide on the
@@ -244,14 +292,23 @@ export async function upsertRehabPlanPhase(input: UpsertRehabPlanPhaseInput) {
       phase_number: nextNumber,
       name:         input.name,
       criteria:     input.criteria,
+      phase_type:   input.phaseType,
       start_date:   input.startDate,
       test_date:    input.testDate,
       created_by:   userId,
     })
     if (error) {
-      // 23505 = unique_violation on (plan_id, phase_number) — a near-simultaneous
-      // second "Nova Fase" submit raced this one's max+1 computation.
-      if (error.code === '23505') throw new Error('Outra fase foi criada ao mesmo tempo — tenta novamente.')
+      // 23505 = unique_violation on either (plan_id, phase_number) — a
+      // near-simultaneous second "Nova Fase" submit raced this one's max+1
+      // computation — or rehab_plan_phases_one_rtp_per_plan (096), if this
+      // was meant to be the plan's RTP phase and another already is.
+      if (error.code === '23505') {
+        throw new Error(
+          input.phaseType === 'rtp'
+            ? 'Este plano já tem uma fase de RTP.'
+            : 'Outra fase foi criada ao mesmo tempo — tenta novamente.'
+        )
+      }
       throw new Error(error.message)
     }
   }
@@ -272,6 +329,138 @@ export async function deleteRehabPlanPhase(phaseId: string, planId: string) {
   // rehab_plan_days.phase_id is ON DELETE SET NULL — any day tagged with this
   // phase just loses the tag, its content is untouched.
   const { error } = await supabase.from('rehab_plan_phases').delete().eq('id', phaseId).eq('plan_id', planId)
+  if (error) throw new Error(error.message)
+
+  revalidatePath(`/athletes/${plan.athlete_id}`)
+}
+
+// ── Phase criteria (096) ─────────────────────────────────────────────────────
+
+export interface UpsertRehabPhaseCriterionInput {
+  criterionId?: string
+  phaseId: string
+  description: string
+  metricLabel: string | null
+  thresholdOperator: 'gte' | 'lte' | 'gt' | 'lt' | 'eq' | null
+  thresholdValue: number | null
+  unit: string | null
+  targetTestDate: string | null
+  displayOrder: number
+}
+
+// Resolves the criterion's own plan's athlete_id for revalidation — joined
+// through rehab_plan_phases since rehab_phase_criteria has no athlete_id of
+// its own (RLS already scopes both reads to plans the caller can see).
+async function athleteIdForPhase(supabase: Awaited<ReturnType<typeof createClient>>, phaseId: string): Promise<string> {
+  const { data: phase, error: phaseError } = await supabase
+    .from('rehab_plan_phases')
+    .select('plan_id')
+    .eq('id', phaseId)
+    .single()
+  if (phaseError || !phase?.plan_id) throw new Error(phaseError?.message ?? 'Fase não encontrada')
+
+  const { data: plan, error: planError } = await supabase
+    .from('rehab_plans')
+    .select('athlete_id')
+    .eq('id', phase.plan_id)
+    .single()
+  if (planError || !plan?.athlete_id) throw new Error(planError?.message ?? 'Plano não encontrado')
+  return plan.athlete_id
+}
+
+export async function upsertRehabPhaseCriterion(input: UpsertRehabPhaseCriterionInput) {
+  const supabase = await createClient()
+  const userId = await currentUserId(supabase)
+  const athleteId = await athleteIdForPhase(supabase, input.phaseId)
+
+  if (input.criterionId) {
+    const { error } = await supabase
+      .from('rehab_phase_criteria')
+      .update({
+        description: input.description,
+        metric_label: input.metricLabel,
+        threshold_operator: input.thresholdOperator,
+        threshold_value: input.thresholdValue,
+        unit: input.unit,
+        target_test_date: input.targetTestDate,
+        display_order: input.displayOrder,
+      })
+      .eq('id', input.criterionId)
+      .eq('phase_id', input.phaseId)
+    if (error) throw new Error(error.message)
+  } else {
+    const { error } = await supabase.from('rehab_phase_criteria').insert({
+      phase_id: input.phaseId,
+      description: input.description,
+      metric_label: input.metricLabel,
+      threshold_operator: input.thresholdOperator,
+      threshold_value: input.thresholdValue,
+      unit: input.unit,
+      target_test_date: input.targetTestDate,
+      display_order: input.displayOrder,
+      created_by: userId,
+    })
+    if (error) throw new Error(error.message)
+  }
+
+  revalidatePath(`/athletes/${athleteId}`)
+}
+
+export async function deleteRehabPhaseCriterion(criterionId: string, phaseId: string) {
+  const supabase = await createClient()
+  const athleteId = await athleteIdForPhase(supabase, phaseId)
+
+  const { error } = await supabase.from('rehab_phase_criteria').delete().eq('id', criterionId).eq('phase_id', phaseId)
+  if (error) throw new Error(error.message)
+
+  revalidatePath(`/athletes/${athleteId}`)
+}
+
+// set_rehab_criterion_completion (096) derives completed_by/completed_at
+// from the session server-side — never client-supplied, so a sign-off can't
+// be forged (same pattern as diagnosed_by/diagnosed_at elsewhere).
+export async function setRehabCriterionCompletion(criterionId: string, phaseId: string, isCompleted: boolean, measuredValue?: number | null) {
+  const supabase = await createClient()
+  const athleteId = await athleteIdForPhase(supabase, phaseId)
+
+  const { data, error } = await supabase.rpc('set_rehab_criterion_completion', {
+    p_criterion_id: criterionId,
+    p_is_completed: isCompleted,
+    p_measured_value: measuredValue ?? null,
+  })
+  if (error) throw new Error(error.message)
+  if (!data?.[0]) throw new Error('Critério não encontrado')
+
+  if (isCompleted) {
+    const user = await currentUser(supabase)
+    const { data: profile } = await supabase.from('profiles').select('org_id').eq('id', user.id).single()
+    await logAudit({
+      userId: user.id, userEmail: user.email, orgId: profile?.org_id ?? '',
+      action: 'rehab_criterion.complete', resourceType: 'rehab_phase_criterion', resourceId: criterionId,
+      metadata: { phaseId },
+    })
+  }
+
+  revalidatePath(`/athletes/${athleteId}`)
+  return data[0]
+}
+
+// advance_rehab_plan_phase (096) raises if the plan's current phase still
+// has incomplete criteria — a genuine gate, not just a UI affordance.
+export async function advanceRehabPlanPhase(planId: string, nextPhaseId: string) {
+  const supabase = await createClient()
+
+  const { data: plan, error: planError } = await supabase
+    .from('rehab_plans')
+    .select('athlete_id')
+    .eq('id', planId)
+    .single()
+  if (planError || !plan?.athlete_id) throw new Error(planError?.message ?? 'Plano não encontrado')
+
+  const { error } = await supabase.rpc('advance_rehab_plan_phase', {
+    p_plan_id: planId,
+    p_next_phase_id: nextPhaseId,
+  })
   if (error) throw new Error(error.message)
 
   revalidatePath(`/athletes/${plan.athlete_id}`)

@@ -62,6 +62,7 @@
     },
     "nav": {
       "dashboard": "Dashboard",
+      "feed": "Feed",
       "squad": "Plantilla",
       "selecoes": "Selecciones",
       "athletes": "Evaluación Atleta",
@@ -76,7 +77,8 @@
       "occurrences": "Ocurrencias",
       "load": "Carga & GPS",
       "performance": "Máximos & Perfil",
-      "calendar": "Inteligencia Calendario",
+      "calendar": "Calendario",
+      "calendar_intelligence": "Inteligencia Calendario",
       "passport": "Pasaporte Atleta",
       "female_squad": "Equipo Femenino",
       "settings": "Configuración",
@@ -328,6 +330,8 @@
       "description": "Gestiona los datos de tu organización.",
       "orgName": "Nombre de la Organización",
       "orgType": "Tipo",
+      "orgLogo": "Logotipo",
+      "uploadLogo": "Subir logotipo",
       "memberSince": "desde",
       "adminOnly": "Solo los administradores pueden cambiar el nombre de la organización.",
       "noOrg": "No estás asociado a ninguna organización."

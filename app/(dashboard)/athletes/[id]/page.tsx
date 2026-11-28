@@ -64,7 +64,7 @@ async function AthleteDetailContent({
   const { data: athlete, error } = await supabase
     .from('athletes')
     .select(`
-      id, name, shirt_number, photo_url, position, date_of_birth, club, status, availability_status,
+      id, name, shirt_number, photo_url, position, date_of_birth, club, availability_status,
       squad_id, nationality, menstrual_day, cycle_length, active,
       score_history (score_date, total_score, acwr_partial, hrv_partial, fatigue_partial, sleep_partial, tqr_partial, history_partial, stress_partial, decel_partial, confidence, days_since_match)
     `)
@@ -146,7 +146,7 @@ async function AthleteDetailContent({
     subjective, objective, assessment, plan, clinician_name, clinician_role,
     is_resolved, resolved_at,
     occurrence_records ( id, record_date, subjective, objective, assessment, plan, availability_status, load_management_restrictions, load_management_notes, clinician_name, created_at ),
-    diagnoses ( id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, load_management_restrictions, load_management_notes, is_resolved )
+    diagnoses ( id, osiics_code, osiics_description, diagnosis_type, custom_description, availability_status, load_management_restrictions, load_management_notes, is_resolved, diagnosed_at, resolved_at, diagnosis_date, context, match_minute, mechanism, contact_type, player_action, foul_involved, body_region, body_side, tissue_type, is_recurrence, related_diagnosis_id, claim_filed )
   `
   const [
     { data: activeOccurrences, error: activeOccurrencesError },
@@ -312,8 +312,7 @@ async function AthleteDetailContent({
 
   // ── Assemble profile ──────────────────────────────────────────────────────
   const rawAthlete = athlete as typeof athlete & { availability_status?: string | null }
-  const availabilityStatus = rawAthlete.availability_status
-    ?? (athlete.status === 'rehab' ? 'rtp' : 'available')
+  const availabilityStatus = rawAthlete.availability_status ?? 'available'
 
   // Edit form data — owner/doctor only (updateAthlete re-checks on the server).
   const editor: AthleteProfileData['editor'] = canManage && viewer.org
@@ -345,7 +344,6 @@ async function AthleteDetailContent({
     position:          athlete.position ?? null,
     date_of_birth:     athlete.date_of_birth ?? null,
     club:              athlete.club ?? null,
-    status:            athlete.status ?? 'available',
     availabilityStatus,
     score,
     riskLevel,

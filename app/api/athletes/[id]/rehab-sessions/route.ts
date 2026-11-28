@@ -1,10 +1,19 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import type { RehabSessionExercise } from '@/types/athlete-profile'
+import { TREATMENT_MODALITIES, type RehabSessionExercise } from '@/types/athlete-profile'
+
+const MODALITY_SET = new Set<string>(TREATMENT_MODALITIES)
+
+// Trusts only known modality labels — drops anything else rather than
+// persisting arbitrary client strings.
+function sanitizeModalities(input: unknown): string[] {
+  if (!Array.isArray(input)) return []
+  return [...new Set(input.filter((m): m is string => typeof m === 'string' && MODALITY_SET.has(m)))]
+}
 
 type Ctx = { params: Promise<{ id: string }> }
 
-const COLUMNS = 'id, athlete_id, session_date, session_type, duration_minutes, description, clinician_name, notes, occurrence_id, rehab_plan_id, pse, exercises, created_at, updated_at'
+const COLUMNS = 'id, athlete_id, session_date, session_type, duration_minutes, description, clinician_name, notes, occurrence_id, rehab_plan_id, pse, exercises, modalities, created_at, updated_at'
 
 // Trusts only the shape the client-side exercise-row editor produces; drops
 // anything else rather than persisting arbitrary client JSON.
@@ -113,6 +122,7 @@ export async function POST(req: Request, { params }: Ctx) {
       rehab_plan_id:    body.rehab_plan_id ?? null,
       pse:              sanitizePse(body.pse),
       exercises:        sanitizeExercises(body.exercises),
+      modalities:       sanitizeModalities(body.modalities),
     })
     .select(COLUMNS)
     .single()
@@ -159,6 +169,7 @@ export async function PATCH(req: Request, { params }: Ctx) {
   if ('rehab_plan_id' in rest) updateData.rehab_plan_id = rest.rehab_plan_id ?? null
   if ('pse' in rest) updateData.pse = sanitizePse(rest.pse)
   if ('exercises' in rest) updateData.exercises = sanitizeExercises(rest.exercises)
+  if ('modalities' in rest) updateData.modalities = sanitizeModalities(rest.modalities)
 
   const { data, error } = await supabase
     .from('rehab_sessions')

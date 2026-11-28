@@ -26,10 +26,7 @@ export default async function AthletesIndexPage({
       decel: null, md: null,
     }
     const score = calcScore(inputs)
-    // Falls back to the legacy status flag for rows predating the
-    // availability_status migration.
-    const effectiveStatus = (a.availability_status as AthleteAvailabilityStatus | null)
-      ?? (a.status === 'rehab' ? 'rtp' : 'available')
+    const effectiveStatus = (a.availability_status as AthleteAvailabilityStatus | null) ?? 'available'
     return { ...a, score, effectiveStatus }
   })
 

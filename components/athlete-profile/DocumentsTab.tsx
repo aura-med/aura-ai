@@ -183,6 +183,13 @@ export function DocumentsTab({ profile }: { profile: AthleteProfileData }) {
     return acc
   }, {})
 
+  // Most recent exam first; documents without an exam date fall back to their upload date.
+  const sortedDocuments = [...documents].sort((a, b) => {
+    const dateA = new Date(a.exam_date ?? a.created_at).getTime()
+    const dateB = new Date(b.exam_date ?? b.created_at).getTime()
+    return dateB - dateA
+  })
+
   return (
     <>
       <div className="space-y-4">
@@ -276,7 +283,7 @@ export function DocumentsTab({ profile }: { profile: AthleteProfileData }) {
           </div>
         ) : (
           <div className="space-y-2">
-            {documents.map((doc) => (
+            {sortedDocuments.map((doc) => (
               <DocumentRow key={doc.id} doc={doc} onArchive={handleArchived} />
             ))}
           </div>

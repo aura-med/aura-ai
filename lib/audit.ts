@@ -23,6 +23,18 @@ export type AuditAction =
   | 'rehab.phase.advance'
   | 'rehab.phase.override'
   | 'auth.token.issue'
+  | 'occurrence.create'
+  | 'occurrence.update'
+  | 'occurrence.resolve'
+  | 'occurrence_record.create'
+  | 'diagnosis.create'
+  | 'diagnosis.update'
+  | 'diagnosis.resolve'
+  | 'weight.create'
+  | 'wellness.checkin'
+  | 'rehab_plan.create'
+  | 'rehab_plan.close'
+  | 'rehab_criterion.complete'
 
 export interface AuditEvent {
   userId:       string

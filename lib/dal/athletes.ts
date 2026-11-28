@@ -7,7 +7,6 @@ export interface AthleteListDTO {
   shirt_number: number | null
   photo_url: string | null
   position: string | null
-  status: string
   availability_status: string | null
   squad_id: string | null
   wellness_checkins: Array<{
@@ -36,7 +35,7 @@ export async function getAthleteList(squadId?: string | null): Promise<AthleteLi
   let query = supabase
     .from('athletes')
     .select(`
-      id, name, shirt_number, photo_url, position, status, availability_status, squad_id,
+      id, name, shirt_number, photo_url, position, availability_status, squad_id,
       wellness_checkins ( checkin_date, fatigue, sleep_hours, tqr, stress, hrv_ms, sleep_quality ),
       injury_events ( id, injury_date, return_date, severity ),
       score_history ( score_date, total_score )
@@ -55,7 +54,6 @@ export interface ReadinessAthleteDTO {
   shirt_number: number | null
   photo_url: string | null
   position: string | null
-  status: string
   availability_status: string | null
   squad_id: string | null
   wellness_checkins: Array<{
@@ -87,7 +85,7 @@ export async function getReadinessList(squadId?: string | null): Promise<Readine
   let query = supabase
     .from('athletes')
     .select(`
-      id, name, shirt_number, photo_url, position, status, availability_status, squad_id,
+      id, name, shirt_number, photo_url, position, availability_status, squad_id,
       wellness_checkins ( checkin_date, fatigue, sleep_hours, tqr, stress, hrv_ms ),
       performance_data ( session_date, vmax, vmax_today_pct ),
       injury_events ( injury_date, return_date, severity ),

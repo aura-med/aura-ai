@@ -1,0 +1,3749 @@
+{
+ "schemaVersion": 1,
+ "retrievalDate": "2026-11-27",
+ "team": {
+  "name": "Real Madrid CF",
+  "shortName": "Real Madrid",
+  "country": "Spain",
+  "city": "Madrid",
+  "founded": 1902,
+  "league": "LaLiga",
+  "stadium": "Santiago Bernabéu",
+  "president": "Florentino Pérez",
+  "headCoach": "José Mourinho",
+  "captain": "Federico Valverde",
+  "sourcesNote": "Head coach and staff from realmadrid.com first-team page; president, captain, stadium and founding year from Wikipedia (2026-27 season and list-of-players pages).",
+  "technicalStaff": [
+   {
+    "name": "Mourinho",
+    "role": "Head coach"
+   },
+   {
+    "name": "João Tralhão",
+    "role": "Assistant coach"
+   },
+   {
+    "name": "Pedro Machado",
+    "role": "Technical assistant"
+   },
+   {
+    "name": "Sami Khedira",
+    "role": "Technical assistant"
+   },
+   {
+    "name": "Nuno Santos",
+    "role": "Goalkeeper coach"
+   },
+   {
+    "name": "Antonio Dias",
+    "role": "Fitness coach"
+   },
+   {
+    "name": "Antonio Pintus",
+    "role": "Performance manager"
+   },
+   {
+    "name": "Sandro Carriço",
+    "role": "Sports Sciences"
+   },
+   {
+    "name": "Roberto Merella",
+    "role": "Head analyst"
+   }
+  ],
+  "staffNote": "Official page shows surname only for Mourinho; first name from Wikipedia."
+ },
+ "squad": {
+  "name": "Real Madrid",
+  "type": "male",
+  "season": "2026-27",
+  "targetOrganization": "FPF (existing test login), per user decision Path B"
+ },
+ "rosterSource": {
+  "url": "https://www.realmadrid.com/en-US/football/first-team/players",
+  "retrieved": "2026-11-27",
+  "count": 26
+ },
+ "roster": [
+  {
+   "name": "Thibaut Courtois",
+   "shirtNumber": 1,
+   "position": "GK",
+   "dateOfBirth": "1992-05-11",
+   "nationality": "Belgium",
+   "club": "Real Madrid",
+   "officialPageLabel": "Courtois",
+   "profile": {
+    "placeOfBirth": "Bree",
+    "heightCm": 200,
+    "heightCmWikipedia": 201,
+    "preferredFoot": "left",
+    "citizenshipsTransfermarkt": [
+     "Belgium"
+    ],
+    "transfermarktPosition": "Goalkeeper",
+    "contractExpires": "2028-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /thibaut-courtois/profil/spieler/108390",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Thibaut_Courtois",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Bilzen V.V.",
+     "Genk"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2009–2011",
+      "club": "Genk",
+      "loan": false,
+      "appearances": "41",
+      "goals": "0"
+     },
+     {
+      "years": "2011–2018",
+      "club": "Chelsea",
+      "loan": false,
+      "appearances": "126",
+      "goals": "0"
+     },
+     {
+      "years": "2011–2014",
+      "club": "Atlético Madrid (loan)",
+      "loan": true,
+      "appearances": "111",
+      "goals": "0"
+     },
+     {
+      "years": "2018–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "244",
+      "goals": "0"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2009–2010",
+      "team": "Belgium U18",
+      "caps": "4",
+      "goals": "0"
+     },
+     {
+      "years": "2011–",
+      "team": "Belgium",
+      "caps": "115",
+      "goals": "0"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 17,
+    "appearances": 17,
+    "goals": 0,
+    "minutes": 1530,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/thibaut-courtois/profil/spieler/108390"
+  },
+  {
+   "name": "Raúl Asencio",
+   "shirtNumber": 2,
+   "position": "DEF",
+   "dateOfBirth": "2003-02-13",
+   "nationality": "Spain",
+   "club": "Real Madrid",
+   "officialPageLabel": "Asencio",
+   "profile": {
+    "placeOfBirth": "Las Palmas de Gran Canaria",
+    "heightCm": 184,
+    "heightCmWikipedia": 184,
+    "preferredFoot": "right",
+    "citizenshipsTransfermarkt": [
+     "Spain"
+    ],
+    "transfermarktPosition": "Centre-Back",
+    "contractExpires": "2031-06-30",
+    "publicAvailabilityReport": "Transfermarkt squad page, 2026-11-27: fatigue fracture - Return expected on 01/01/2027. Public press-style status, not a clinical record; do not load as a clinical entry.",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /raul-asencio/profil/spieler/935245",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Raúl_Asencio",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Veteranos del Pilar",
+     "Las Palmas",
+     "Real Madrid"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2022–2023",
+      "club": "RSC Internacional",
+      "loan": false,
+      "appearances": "29",
+      "goals": "0"
+     },
+     {
+      "years": "2023–2024",
+      "club": "Real Madrid B",
+      "loan": false,
+      "appearances": "45",
+      "goals": "0"
+     },
+     {
+      "years": "2024–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "46",
+      "goals": "2"
+     }
+    ],
+    "nationalTeams": []
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 3,
+    "appearances": 0,
+    "goals": 0,
+    "minutes": 0,
+    "status": "Not used during this season",
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/raul-asencio/profil/spieler/935245"
+  },
+  {
+   "name": "Éder Militão",
+   "shirtNumber": 3,
+   "position": "DEF",
+   "dateOfBirth": "1998-01-18",
+   "nationality": "Brazil",
+   "club": "Real Madrid",
+   "officialPageLabel": "E. Militão",
+   "profile": {
+    "placeOfBirth": "Sertãozinho",
+    "heightCm": 186,
+    "heightCmWikipedia": 186,
+    "preferredFoot": "right",
+    "citizenshipsTransfermarkt": [
+     "Brazil",
+     "Spain"
+    ],
+    "transfermarktPosition": "Centre-Back",
+    "contractExpires": "2028-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /eder-militao/profil/spieler/401530",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Éder_Militão",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "São Paulo"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2017–2018",
+      "club": "São Paulo",
+      "loan": false,
+      "appearances": "49",
+      "goals": "5"
+     },
+     {
+      "years": "2018–2019",
+      "club": "Porto",
+      "loan": false,
+      "appearances": "29",
+      "goals": "3"
+     },
+     {
+      "years": "2019–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "135",
+      "goals": "10"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2015",
+      "team": "Brazil U17",
+      "caps": "5",
+      "goals": "0"
+     },
+     {
+      "years": "2018–",
+      "team": "Brazil",
+      "caps": "38",
+      "goals": "2"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 8,
+    "appearances": 3,
+    "goals": 0,
+    "minutes": 140,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/eder-militao/profil/spieler/401530"
+  },
+  {
+   "name": "Dean Huijsen",
+   "shirtNumber": 4,
+   "position": "DEF",
+   "dateOfBirth": "2005-04-14",
+   "nationality": "Spain",
+   "club": "Real Madrid",
+   "officialPageLabel": "Huijsen",
+   "profile": {
+    "placeOfBirth": "Amsterdam",
+    "heightCm": 195,
+    "heightCmWikipedia": 196,
+    "preferredFoot": "both",
+    "citizenshipsTransfermarkt": [
+     "Spain",
+     "Netherlands"
+    ],
+    "transfermarktPosition": "Centre-Back",
+    "contractExpires": "2030-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /dean-huijsen/profil/spieler/890290",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Dean_Huijsen",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Costa Unida CF",
+     "Málaga",
+     "Juventus"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2023",
+      "club": "Juventus Next Gen",
+      "loan": false,
+      "appearances": "27",
+      "goals": "1"
+     },
+     {
+      "years": "2023–2024",
+      "club": "Juventus",
+      "loan": false,
+      "appearances": "1",
+      "goals": "0"
+     },
+     {
+      "years": "2024",
+      "club": "Roma (loan)",
+      "loan": true,
+      "appearances": "13",
+      "goals": "2"
+     },
+     {
+      "years": "2024–2025",
+      "club": "Bournemouth",
+      "loan": false,
+      "appearances": "32",
+      "goals": "3"
+     },
+     {
+      "years": "2025–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "39",
+      "goals": "2"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2021–2022",
+      "team": "Netherlands U17",
+      "caps": "11",
+      "goals": "2"
+     },
+     {
+      "years": "2022–2023",
+      "team": "Netherlands U18",
+      "caps": "4",
+      "goals": "0"
+     },
+     {
+      "years": "2023–2024",
+      "team": "Netherlands U19",
+      "caps": "3",
+      "goals": "0"
+     },
+     {
+      "years": "2024",
+      "team": "Spain U21",
+      "caps": "7",
+      "goals": "1"
+     },
+     {
+      "years": "2025–",
+      "team": "Spain",
+      "caps": "10",
+      "goals": "0"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 17,
+    "appearances": 14,
+    "goals": 0,
+    "minutes": 1177,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/dean-huijsen/profil/spieler/890290"
+  },
+  {
+   "name": "Jude Bellingham",
+   "shirtNumber": 5,
+   "position": "MID",
+   "dateOfBirth": "2003-06-29",
+   "nationality": "England",
+   "club": "Real Madrid",
+   "officialPageLabel": "Bellingham",
+   "profile": {
+    "placeOfBirth": "Stourbridge",
+    "heightCm": 186,
+    "heightCmWikipedia": 186,
+    "preferredFoot": "right",
+    "citizenshipsTransfermarkt": [
+     "England",
+     "Ireland"
+    ],
+    "transfermarktPosition": "Attacking Midfield",
+    "contractExpires": "2029-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /jude-bellingham/profil/spieler/581678",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Jude_Bellingham",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Stourbridge Juniors",
+     "Birmingham City"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2019–2020",
+      "club": "Birmingham City",
+      "loan": false,
+      "appearances": "41",
+      "goals": "4"
+     },
+     {
+      "years": "2020–2023",
+      "club": "Borussia Dortmund",
+      "loan": false,
+      "appearances": "92",
+      "goals": "12"
+     },
+     {
+      "years": "2023–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "100",
+      "goals": "39"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2016–2018",
+      "team": "England U15",
+      "caps": "8",
+      "goals": "1"
+     },
+     {
+      "years": "2018–2019",
+      "team": "England U16",
+      "caps": "11",
+      "goals": "4"
+     },
+     {
+      "years": "2019",
+      "team": "England U17",
+      "caps": "3",
+      "goals": "2"
+     },
+     {
+      "years": "2020",
+      "team": "England U21",
+      "caps": "4",
+      "goals": "1"
+     },
+     {
+      "years": "2020–",
+      "team": "England",
+      "caps": "62",
+      "goals": "14"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 18,
+    "appearances": 18,
+    "goals": 7,
+    "minutes": 1447,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/jude-bellingham/profil/spieler/581678"
+  },
+  {
+   "name": "Eduardo Camavinga",
+   "shirtNumber": 6,
+   "position": "MID",
+   "dateOfBirth": "2002-11-10",
+   "nationality": "France",
+   "club": "Real Madrid",
+   "officialPageLabel": "Camavinga",
+   "profile": {
+    "placeOfBirth": "Cabinda",
+    "heightCm": 182,
+    "heightCmWikipedia": 185,
+    "preferredFoot": "left",
+    "citizenshipsTransfermarkt": [
+     "France",
+     "Congo"
+    ],
+    "transfermarktPosition": "Central Midfield",
+    "contractExpires": "2029-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /eduardo-camavinga/profil/spieler/640428",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Eduardo_Camavinga",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Drapeau-Fougères",
+     "Rennes"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2018–2019",
+      "club": "Rennes II",
+      "loan": false,
+      "appearances": "13",
+      "goals": "4"
+     },
+     {
+      "years": "2019–2021",
+      "club": "Rennes",
+      "loan": false,
+      "appearances": "71",
+      "goals": "2"
+     },
+     {
+      "years": "2021–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "154",
+      "goals": "4"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2019–2022",
+      "team": "France U21",
+      "caps": "13",
+      "goals": "2"
+     },
+     {
+      "years": "2020–",
+      "team": "France",
+      "caps": "35",
+      "goals": "2"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 17,
+    "appearances": 15,
+    "goals": 0,
+    "minutes": 573,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/eduardo-camavinga/profil/spieler/640428"
+  },
+  {
+   "name": "Vinicius Junior",
+   "shirtNumber": 7,
+   "position": "FWD",
+   "dateOfBirth": "2000-07-12",
+   "nationality": "Brazil",
+   "club": "Real Madrid",
+   "officialPageLabel": "Vini Jr.",
+   "profile": {
+    "placeOfBirth": "São Gonçalo",
+    "heightCm": 176,
+    "heightCmWikipedia": 176,
+    "preferredFoot": "right",
+    "citizenshipsTransfermarkt": [
+     "Brazil",
+     "Spain"
+    ],
+    "transfermarktPosition": "Left Winger",
+    "contractExpires": "2032-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /vinicius-junior/profil/spieler/371998",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Vinícius_Júnior",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Flamengo"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2017–2018",
+      "club": "Flamengo",
+      "loan": false,
+      "appearances": "50",
+      "goals": "11"
+     },
+     {
+      "years": "2018",
+      "club": "Real Madrid B",
+      "loan": false,
+      "appearances": "5",
+      "goals": "4"
+     },
+     {
+      "years": "2018–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "251",
+      "goals": "78"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2015–2016",
+      "team": "Brazil U15",
+      "caps": "10",
+      "goals": "7"
+     },
+     {
+      "years": "2016–2017",
+      "team": "Brazil U17",
+      "caps": "19",
+      "goals": "17"
+     },
+     {
+      "years": "2018–2019",
+      "team": "Brazil U20",
+      "caps": "4",
+      "goals": "0"
+     },
+     {
+      "years": "2019–",
+      "team": "Brazil",
+      "caps": "59",
+      "goals": "19"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 14,
+    "appearances": 14,
+    "goals": 2,
+    "minutes": 1005,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/vinicius-junior/profil/spieler/371998"
+  },
+  {
+   "name": "Federico Valverde",
+   "shirtNumber": 8,
+   "position": "MID",
+   "dateOfBirth": "1998-07-22",
+   "nationality": "Uruguay",
+   "club": "Real Madrid",
+   "officialPageLabel": "Valverde",
+   "profile": {
+    "placeOfBirth": "Montevideo",
+    "heightCm": 182,
+    "heightCmWikipedia": 182,
+    "preferredFoot": "right",
+    "citizenshipsTransfermarkt": [
+     "Uruguay",
+     "Spain"
+    ],
+    "transfermarktPosition": "Central Midfield",
+    "contractExpires": "2029-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /federico-valverde/profil/spieler/369081",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Federico_Valverde",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Estudiantes de la Unión",
+     "Peñarol"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2015–2016",
+      "club": "Peñarol",
+      "loan": false,
+      "appearances": "12",
+      "goals": "0"
+     },
+     {
+      "years": "2016–2017",
+      "club": "Real Madrid B",
+      "loan": false,
+      "appearances": "30",
+      "goals": "3"
+     },
+     {
+      "years": "2017–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "256",
+      "goals": "26"
+     },
+     {
+      "years": "2017–2018",
+      "club": "Deportivo La Coruña (loan)",
+      "loan": true,
+      "appearances": "24",
+      "goals": "0"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2012–2013",
+      "team": "Uruguay U15",
+      "caps": "25",
+      "goals": "7"
+     },
+     {
+      "years": "2014–2015",
+      "team": "Uruguay U17",
+      "caps": "24",
+      "goals": "11"
+     },
+     {
+      "years": "2015",
+      "team": "Uruguay U18",
+      "caps": "7",
+      "goals": "3"
+     },
+     {
+      "years": "2015–2017",
+      "team": "Uruguay U20",
+      "caps": "15",
+      "goals": "2"
+     },
+     {
+      "years": "2017–",
+      "team": "Uruguay",
+      "caps": "78",
+      "goals": "10"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 17,
+    "appearances": 17,
+    "goals": 4,
+    "minutes": 1307,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/federico-valverde/profil/spieler/369081"
+  },
+  {
+   "name": "Endrick",
+   "shirtNumber": 9,
+   "position": "FWD",
+   "dateOfBirth": "2006-07-21",
+   "nationality": "Brazil",
+   "club": "Real Madrid",
+   "officialPageLabel": "Endrick",
+   "profile": {
+    "placeOfBirth": "Taguatinga",
+    "heightCm": 172,
+    "heightCmWikipedia": 173,
+    "preferredFoot": "left",
+    "citizenshipsTransfermarkt": [
+     "Brazil"
+    ],
+    "transfermarktPosition": "Centre-Forward",
+    "contractExpires": "2030-06-30",
+    "publicAvailabilityReport": "Transfermarkt squad page, 2026-11-27: Muscle injury - Return unknown. Public press-style status, not a clinical record; do not load as a clinical entry.",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /endrick/profil/spieler/971570",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Endrick_(footballer,_born_2006)",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Palmeiras"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2022–2024",
+      "club": "Palmeiras",
+      "loan": false,
+      "appearances": "60",
+      "goals": "15"
+     },
+     {
+      "years": "2024–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "28",
+      "goals": "1"
+     },
+     {
+      "years": "2026",
+      "club": "Lyon (loan)",
+      "loan": true,
+      "appearances": "16",
+      "goals": "5"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2022",
+      "team": "Brazil U17",
+      "caps": "4",
+      "goals": "5"
+     },
+     {
+      "years": "2024–",
+      "team": "Brazil U23",
+      "caps": "7",
+      "goals": "2"
+     },
+     {
+      "years": "2023–",
+      "team": "Brazil",
+      "caps": "26",
+      "goals": "5"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 13,
+    "appearances": 8,
+    "goals": 1,
+    "minutes": 160,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/endrick/profil/spieler/971570"
+  },
+  {
+   "name": "Kylian Mbappé",
+   "shirtNumber": 10,
+   "position": "FWD",
+   "dateOfBirth": "1998-12-20",
+   "nationality": "France",
+   "club": "Real Madrid",
+   "officialPageLabel": "Mbappé",
+   "profile": {
+    "placeOfBirth": "Paris",
+    "heightCm": 180,
+    "heightCmWikipedia": 178,
+    "preferredFoot": "right",
+    "citizenshipsTransfermarkt": [
+     "France",
+     "Cameroon"
+    ],
+    "transfermarktPosition": "Centre-Forward",
+    "contractExpires": "2029-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /kylian-mbappe/profil/spieler/342229",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Kylian_Mbappé",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Bondy",
+     "Monaco"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2015–2016",
+      "club": "Monaco II",
+      "loan": false,
+      "appearances": "12",
+      "goals": "4"
+     },
+     {
+      "years": "2015–2018",
+      "club": "Monaco",
+      "loan": false,
+      "appearances": "41",
+      "goals": "16"
+     },
+     {
+      "years": "2017–2018",
+      "club": "Paris Saint-Germain (loan)",
+      "loan": true,
+      "appearances": "27",
+      "goals": "13"
+     },
+     {
+      "years": "2018–2024",
+      "club": "Paris Saint-Germain",
+      "loan": false,
+      "appearances": "178",
+      "goals": "162"
+     },
+     {
+      "years": "2024–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "78",
+      "goals": "69"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2014",
+      "team": "France U17",
+      "caps": "2",
+      "goals": "0"
+     },
+     {
+      "years": "2016",
+      "team": "France U19",
+      "caps": "11",
+      "goals": "7"
+     },
+     {
+      "years": "2017–",
+      "team": "France",
+      "caps": "108",
+      "goals": "67"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 18,
+    "appearances": 18,
+    "goals": 19,
+    "minutes": 1613,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/kylian-mbappe/profil/spieler/342229"
+  },
+  {
+   "name": "Rodrygo",
+   "shirtNumber": 11,
+   "position": "FWD",
+   "dateOfBirth": "2001-01-09",
+   "nationality": "Brazil",
+   "club": "Real Madrid",
+   "officialPageLabel": "Rodrygo",
+   "profile": {
+    "placeOfBirth": "Osasco",
+    "heightCm": 174,
+    "heightCmWikipedia": 174,
+    "preferredFoot": "right",
+    "citizenshipsTransfermarkt": [
+     "Brazil",
+     "Spain"
+    ],
+    "transfermarktPosition": "Right Winger",
+    "contractExpires": "2028-06-30",
+    "publicAvailabilityReport": "Transfermarkt squad page, 2026-11-27: Cruciate ligament tear - Return expected on 31/12/2026. Public press-style status, not a clinical record; do not load as a clinical entry.",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /rodrygo/profil/spieler/412363",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Rodrygo",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Santos"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2017–2019",
+      "club": "Santos",
+      "loan": false,
+      "appearances": "41",
+      "goals": "9"
+     },
+     {
+      "years": "2019",
+      "club": "Real Madrid Castilla",
+      "loan": false,
+      "appearances": "3",
+      "goals": "2"
+     },
+     {
+      "years": "2019–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "191",
+      "goals": "33"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2017–2018",
+      "team": "Brazil U17",
+      "caps": "4",
+      "goals": "3"
+     },
+     {
+      "years": "2018–2019",
+      "team": "Brazil U20",
+      "caps": "10",
+      "goals": "3"
+     },
+     {
+      "years": "2019–2021",
+      "team": "Brazil U23",
+      "caps": "5",
+      "goals": "1"
+     },
+     {
+      "years": "2019–",
+      "team": "Brazil",
+      "caps": "37",
+      "goals": "9"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "appearances": 0,
+    "goals": 0,
+    "minutes": 0,
+    "status": "Not in squad during this season",
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/rodrygo/profil/spieler/412363"
+  },
+  {
+   "name": "Trent Alexander-Arnold",
+   "shirtNumber": 12,
+   "position": "DEF",
+   "dateOfBirth": "1998-10-07",
+   "nationality": "England",
+   "club": "Real Madrid",
+   "officialPageLabel": "Trent",
+   "profile": {
+    "placeOfBirth": "Liverpool",
+    "heightCm": 180,
+    "heightCmWikipedia": 180,
+    "preferredFoot": "right",
+    "citizenshipsTransfermarkt": [
+     "England"
+    ],
+    "transfermarktPosition": "Right-Back",
+    "contractExpires": "2031-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /trent-alexander-arnold/profil/spieler/314353",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Trent_Alexander-Arnold",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Liverpool"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2016–2025",
+      "club": "Liverpool",
+      "loan": false,
+      "appearances": "259",
+      "goals": "18"
+     },
+     {
+      "years": "2025–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "29",
+      "goals": "0"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2013–2014",
+      "team": "England U16",
+      "caps": "6",
+      "goals": "0"
+     },
+     {
+      "years": "2014–2015",
+      "team": "England U17",
+      "caps": "12",
+      "goals": "0"
+     },
+     {
+      "years": "2016",
+      "team": "England U18",
+      "caps": "2",
+      "goals": "0"
+     },
+     {
+      "years": "2016–2017",
+      "team": "England U19",
+      "caps": "10",
+      "goals": "6"
+     },
+     {
+      "years": "2017–2018",
+      "team": "England U21",
+      "caps": "3",
+      "goals": "0"
+     },
+     {
+      "years": "2018–",
+      "team": "England",
+      "caps": "37",
+      "goals": "4"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 18,
+    "appearances": 9,
+    "goals": 0,
+    "minutes": 492,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/trent-alexander-arnold/profil/spieler/314353"
+  },
+  {
+   "name": "Andriy Lunin",
+   "shirtNumber": 13,
+   "position": "GK",
+   "dateOfBirth": "1999-02-11",
+   "nationality": "Ukraine",
+   "club": "Real Madrid",
+   "officialPageLabel": "Lunin",
+   "profile": {
+    "placeOfBirth": "Krasnograd, Kharkiv Oblast",
+    "heightCm": 191,
+    "heightCmWikipedia": 191,
+    "preferredFoot": "right",
+    "citizenshipsTransfermarkt": [
+     "Ukraine"
+    ],
+    "transfermarktPosition": "Goalkeeper",
+    "contractExpires": "2030-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /andriy-lunin/profil/spieler/404839",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Andriy_Lunin",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Metalist Kharkiv",
+     "Dnipro"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2016–2017",
+      "club": "Dnipro",
+      "loan": false,
+      "appearances": "22",
+      "goals": "0"
+     },
+     {
+      "years": "2017–2018",
+      "club": "Zorya Luhansk",
+      "loan": false,
+      "appearances": "29",
+      "goals": "0"
+     },
+     {
+      "years": "2018–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "44",
+      "goals": "0"
+     },
+     {
+      "years": "2018–2019",
+      "club": "Leganés (loan)",
+      "loan": true,
+      "appearances": "5",
+      "goals": "0"
+     },
+     {
+      "years": "2019–2020",
+      "club": "Valladolid (loan)",
+      "loan": true,
+      "appearances": "0",
+      "goals": "0"
+     },
+     {
+      "years": "2020",
+      "club": "Oviedo (loan)",
+      "loan": true,
+      "appearances": "20",
+      "goals": "0"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2014–2015",
+      "team": "Ukraine U16",
+      "caps": "5",
+      "goals": "0"
+     },
+     {
+      "years": "2015–2016",
+      "team": "Ukraine U17",
+      "caps": "9",
+      "goals": "0"
+     },
+     {
+      "years": "2016",
+      "team": "Ukraine U18",
+      "caps": "1",
+      "goals": "0"
+     },
+     {
+      "years": "2017",
+      "team": "Ukraine U19",
+      "caps": "3",
+      "goals": "0"
+     },
+     {
+      "years": "2019",
+      "team": "Ukraine U20",
+      "caps": "6",
+      "goals": "0"
+     },
+     {
+      "years": "2017–2018",
+      "team": "Ukraine U21",
+      "caps": "5",
+      "goals": "0"
+     },
+     {
+      "years": "2018–",
+      "team": "Ukraine",
+      "caps": "16",
+      "goals": "0"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 18,
+    "appearances": 1,
+    "goals": 0,
+    "minutes": 90,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/andriy-lunin/profil/spieler/404839"
+  },
+  {
+   "name": "Aurélien Tchouaméni",
+   "shirtNumber": 14,
+   "position": "MID",
+   "dateOfBirth": "2000-01-27",
+   "nationality": "France",
+   "club": "Real Madrid",
+   "officialPageLabel": "Tchouaméni",
+   "profile": {
+    "placeOfBirth": "Rouen",
+    "heightCm": 187,
+    "heightCmWikipedia": 187,
+    "preferredFoot": "right",
+    "citizenshipsTransfermarkt": [
+     "France",
+     "Cameroon"
+    ],
+    "transfermarktPosition": "Defensive Midfield",
+    "contractExpires": "2032-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /aurelien-tchouameni/profil/spieler/413112",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Aurélien_Tchouaméni",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "SJ D'Artigues",
+     "Bordeaux"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2017–2018",
+      "club": "Bordeaux II",
+      "loan": false,
+      "appearances": "16",
+      "goals": "3"
+     },
+     {
+      "years": "2018–2020",
+      "club": "Bordeaux",
+      "loan": false,
+      "appearances": "25",
+      "goals": "0"
+     },
+     {
+      "years": "2020–2022",
+      "club": "Monaco",
+      "loan": false,
+      "appearances": "74",
+      "goals": "5"
+     },
+     {
+      "years": "2022–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "133",
+      "goals": "4"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2015–2016",
+      "team": "France U16",
+      "caps": "11",
+      "goals": "0"
+     },
+     {
+      "years": "2016–2017",
+      "team": "France U17",
+      "caps": "14",
+      "goals": "0"
+     },
+     {
+      "years": "2017–2018",
+      "team": "France U18",
+      "caps": "11",
+      "goals": "1"
+     },
+     {
+      "years": "2018",
+      "team": "France U19",
+      "caps": "7",
+      "goals": "0"
+     },
+     {
+      "years": "2019",
+      "team": "France U20",
+      "caps": "5",
+      "goals": "0"
+     },
+     {
+      "years": "2021",
+      "team": "France U21",
+      "caps": "4",
+      "goals": "0"
+     },
+     {
+      "years": "2021–",
+      "team": "France",
+      "caps": "50",
+      "goals": "3"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 13,
+    "appearances": 11,
+    "goals": 0,
+    "minutes": 754,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/aurelien-tchouameni/profil/spieler/413112"
+  },
+  {
+   "name": "Arda Güler",
+   "shirtNumber": 15,
+   "position": "MID",
+   "dateOfBirth": "2005-02-25",
+   "nationality": "Turkey",
+   "club": "Real Madrid",
+   "officialPageLabel": "Arda Güler",
+   "profile": {
+    "placeOfBirth": "Ankara",
+    "heightCm": 176,
+    "heightCmWikipedia": 175,
+    "preferredFoot": "left",
+    "citizenshipsTransfermarkt": [
+     "Türkiye"
+    ],
+    "transfermarktPosition": "Attacking Midfield",
+    "contractExpires": "2032-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /arda-guler/profil/spieler/861410",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Arda_Güler",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Gençlerbirliği",
+     "Fenerbahçe"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2021–2023",
+      "club": "Fenerbahçe",
+      "loan": false,
+      "appearances": "32",
+      "goals": "7"
+     },
+     {
+      "years": "2023–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "84",
+      "goals": "16"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2021–2022",
+      "team": "Turkey U17",
+      "caps": "10",
+      "goals": "4"
+     },
+     {
+      "years": "2022–",
+      "team": "Turkey",
+      "caps": "38",
+      "goals": "8"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 16,
+    "appearances": 16,
+    "goals": 4,
+    "minutes": 1014,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/arda-guler/profil/spieler/861410"
+  },
+  {
+   "name": "Ibrahima Konaté",
+   "shirtNumber": 16,
+   "position": "DEF",
+   "dateOfBirth": "1999-05-25",
+   "nationality": "France",
+   "club": "Real Madrid",
+   "officialPageLabel": "Konaté",
+   "profile": {
+    "placeOfBirth": "Paris",
+    "heightCm": 194,
+    "heightCmWikipedia": 194,
+    "preferredFoot": "right",
+    "citizenshipsTransfermarkt": [
+     "France",
+     "Mali"
+    ],
+    "transfermarktPosition": "Centre-Back",
+    "contractExpires": "2030-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /ibrahima-konate/profil/spieler/357119",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Ibrahima_Konaté",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Paris FC",
+     "Sochaux"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2016–2017",
+      "club": "Sochaux II",
+      "loan": false,
+      "appearances": "9",
+      "goals": "1"
+     },
+     {
+      "years": "2017",
+      "club": "Sochaux",
+      "loan": false,
+      "appearances": "12",
+      "goals": "1"
+     },
+     {
+      "years": "2017–2021",
+      "club": "RB Leipzig",
+      "loan": false,
+      "appearances": "66",
+      "goals": "2"
+     },
+     {
+      "years": "2021–2026",
+      "club": "Liverpool",
+      "loan": false,
+      "appearances": "118",
+      "goals": "2"
+     },
+     {
+      "years": "2026–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "12",
+      "goals": "0"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2014–2015",
+      "team": "France U16",
+      "caps": "12",
+      "goals": "2"
+     },
+     {
+      "years": "2015–2016",
+      "team": "France U17",
+      "caps": "7",
+      "goals": "0"
+     },
+     {
+      "years": "2017",
+      "team": "France U19",
+      "caps": "1",
+      "goals": "0"
+     },
+     {
+      "years": "2018",
+      "team": "France U20",
+      "caps": "1",
+      "goals": "0"
+     },
+     {
+      "years": "2019–2021",
+      "team": "France U21",
+      "caps": "13",
+      "goals": "0"
+     },
+     {
+      "years": "2022–",
+      "team": "France",
+      "caps": "31",
+      "goals": "0"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 18,
+    "appearances": 15,
+    "goals": 0,
+    "minutes": 1305,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/ibrahima-konate/profil/spieler/357119"
+  },
+  {
+   "name": "Marc Cucurella",
+   "shirtNumber": 17,
+   "position": "DEF",
+   "dateOfBirth": "1998-07-22",
+   "nationality": "Spain",
+   "club": "Real Madrid",
+   "officialPageLabel": "Cucurella",
+   "profile": {
+    "placeOfBirth": "Alella",
+    "heightCm": 174,
+    "heightCmWikipedia": 173,
+    "preferredFoot": "left",
+    "citizenshipsTransfermarkt": [
+     "Spain"
+    ],
+    "transfermarktPosition": "Left-Back",
+    "contractExpires": "2032-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /marc-cucurella/profil/spieler/284857",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Marc_Cucurella",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Espanyol",
+     "Barcelona"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2016–2018",
+      "club": "Barcelona B",
+      "loan": false,
+      "appearances": "48",
+      "goals": "1"
+     },
+     {
+      "years": "2017–2020",
+      "club": "Barcelona",
+      "loan": false,
+      "appearances": "0",
+      "goals": "0"
+     },
+     {
+      "years": "2018–2019",
+      "club": "Eibar (loan)",
+      "loan": true,
+      "appearances": "31",
+      "goals": "1"
+     },
+     {
+      "years": "2019–2020",
+      "club": "Getafe (loan)",
+      "loan": true,
+      "appearances": "37",
+      "goals": "1"
+     },
+     {
+      "years": "2020–2021",
+      "club": "Getafe",
+      "loan": false,
+      "appearances": "38",
+      "goals": "3"
+     },
+     {
+      "years": "2021–2022",
+      "club": "Brighton & Hove Albion",
+      "loan": false,
+      "appearances": "35",
+      "goals": "1"
+     },
+     {
+      "years": "2022–2026",
+      "club": "Chelsea",
+      "loan": false,
+      "appearances": "115",
+      "goals": "6"
+     },
+     {
+      "years": "2026–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "13",
+      "goals": "0"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2014",
+      "team": "Spain U16",
+      "caps": "3",
+      "goals": "0"
+     },
+     {
+      "years": "2014–2015",
+      "team": "Spain U17",
+      "caps": "16",
+      "goals": "2"
+     },
+     {
+      "years": "2016–2017",
+      "team": "Spain U19",
+      "caps": "6",
+      "goals": "0"
+     },
+     {
+      "years": "2016",
+      "team": "Spain U20",
+      "caps": "6",
+      "goals": "0"
+     },
+     {
+      "years": "2019–2021",
+      "team": "Spain U21",
+      "caps": "11",
+      "goals": "1"
+     },
+     {
+      "years": "2021",
+      "team": "Spain U23",
+      "caps": "6",
+      "goals": "0"
+     },
+     {
+      "years": "2021–",
+      "team": "Spain",
+      "caps": "37",
+      "goals": "1"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 18,
+    "appearances": 18,
+    "goals": 0,
+    "minutes": 1227,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/marc-cucurella/profil/spieler/284857"
+  },
+  {
+   "name": "Álvaro Carreras",
+   "shirtNumber": 18,
+   "position": "DEF",
+   "dateOfBirth": "2003-03-23",
+   "nationality": "Spain",
+   "club": "Real Madrid",
+   "officialPageLabel": "Á. Carreras",
+   "profile": {
+    "placeOfBirth": "Ferrol",
+    "heightCm": 186,
+    "heightCmWikipedia": 186,
+    "preferredFoot": "left",
+    "citizenshipsTransfermarkt": [
+     "Spain"
+    ],
+    "transfermarktPosition": "Left-Back",
+    "contractExpires": "2031-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /alvaro-carreras/profil/spieler/811778",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Álvaro_Carreras",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Racing Ferrol",
+     "Deportivo La Coruña",
+     "Real Madrid",
+     "Manchester United"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2022–2024",
+      "club": "Manchester United",
+      "loan": false,
+      "appearances": "0",
+      "goals": "0"
+     },
+     {
+      "years": "2022–2023",
+      "club": "Preston North End (loan)",
+      "loan": true,
+      "appearances": "39",
+      "goals": "0"
+     },
+     {
+      "years": "2023–2024",
+      "club": "Granada (loan)",
+      "loan": true,
+      "appearances": "13",
+      "goals": "0"
+     },
+     {
+      "years": "2024",
+      "club": "Benfica (loan)",
+      "loan": true,
+      "appearances": "11",
+      "goals": "1"
+     },
+     {
+      "years": "2024–2025",
+      "club": "Benfica",
+      "loan": false,
+      "appearances": "32",
+      "goals": "3"
+     },
+     {
+      "years": "2025–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "34",
+      "goals": "3"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2021",
+      "team": "Spain U19",
+      "caps": "2",
+      "goals": "0"
+     },
+     {
+      "years": "2023–2024",
+      "team": "Spain U21",
+      "caps": "9",
+      "goals": "0"
+     },
+     {
+      "years": "2024",
+      "team": "Galicia",
+      "caps": "1",
+      "goals": "0"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 18,
+    "appearances": 10,
+    "goals": 1,
+    "minutes": 397,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/alvaro-carreras/profil/spieler/811778"
+  },
+  {
+   "name": "Carlos Espí",
+   "shirtNumber": 19,
+   "position": "FWD",
+   "dateOfBirth": "2005-07-24",
+   "nationality": "Spain",
+   "club": "Real Madrid",
+   "officialPageLabel": "C. Espí",
+   "profile": {
+    "placeOfBirth": "Tavernes de la Valldigna",
+    "heightCm": 194,
+    "heightCmWikipedia": 194,
+    "preferredFoot": "right",
+    "citizenshipsTransfermarkt": [
+     "Spain"
+    ],
+    "transfermarktPosition": "Centre-Forward",
+    "contractExpires": "2031-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /carlos-espi/profil/spieler/1063338",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Carlos_Espí",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Tavernes",
+     "Alzira",
+     "Levante"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2022",
+      "club": "Alzira B",
+      "loan": false,
+      "appearances": "1",
+      "goals": "0"
+     },
+     {
+      "years": "2023–2024",
+      "club": "Levante B",
+      "loan": false,
+      "appearances": "15",
+      "goals": "4"
+     },
+     {
+      "years": "2024–2026",
+      "club": "Levante",
+      "loan": false,
+      "appearances": "63",
+      "goals": "18"
+     },
+     {
+      "years": "2026–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "8",
+      "goals": "3"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2024",
+      "team": "Spain U19",
+      "caps": "2",
+      "goals": "2"
+     },
+     {
+      "years": "2025",
+      "team": "Spain U20",
+      "caps": "2",
+      "goals": "0"
+     },
+     {
+      "years": "2026–",
+      "team": "Spain U21",
+      "caps": "4",
+      "goals": "5"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 18,
+    "appearances": 12,
+    "goals": 4,
+    "minutes": 62,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/carlos-espi/profil/spieler/1063338"
+  },
+  {
+   "name": "Bernardo Silva",
+   "shirtNumber": 20,
+   "position": "MID",
+   "dateOfBirth": "1994-08-10",
+   "nationality": "Portugal",
+   "club": "Real Madrid",
+   "officialPageLabel": "Bernardo Silva",
+   "profile": {
+    "placeOfBirth": "Lisboa",
+    "heightCm": 173,
+    "heightCmWikipedia": 173,
+    "preferredFoot": "left",
+    "citizenshipsTransfermarkt": [
+     "Portugal"
+    ],
+    "transfermarktPosition": "Attacking Midfield",
+    "contractExpires": "2028-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /bernardo-silva/profil/spieler/241641",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Bernardo_Silva",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Benfica"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2013–2015",
+      "club": "Benfica B",
+      "loan": false,
+      "appearances": "38",
+      "goals": "7"
+     },
+     {
+      "years": "2013–2015",
+      "club": "Benfica",
+      "loan": false,
+      "appearances": "1",
+      "goals": "0"
+     },
+     {
+      "years": "2014–2015",
+      "club": "Monaco (loan)",
+      "loan": true,
+      "appearances": "15",
+      "goals": "2"
+     },
+     {
+      "years": "2015–2017",
+      "club": "Monaco",
+      "loan": false,
+      "appearances": "86",
+      "goals": "22"
+     },
+     {
+      "years": "2017–2026",
+      "club": "Manchester City",
+      "loan": false,
+      "appearances": "304",
+      "goals": "45"
+     },
+     {
+      "years": "2026–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "11",
+      "goals": "0"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2012–2013",
+      "team": "Portugal U19",
+      "caps": "13",
+      "goals": "2"
+     },
+     {
+      "years": "2013–2015",
+      "team": "Portugal U21",
+      "caps": "14",
+      "goals": "6"
+     },
+     {
+      "years": "2015–",
+      "team": "Portugal",
+      "caps": "116",
+      "goals": "15"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 17,
+    "appearances": 15,
+    "goals": 1,
+    "minutes": 868,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/bernardo-silva/profil/spieler/241641"
+  },
+  {
+   "name": "Brahim Díaz",
+   "shirtNumber": 21,
+   "position": "FWD",
+   "dateOfBirth": "1999-08-03",
+   "nationality": "Morocco",
+   "club": "Real Madrid",
+   "officialPageLabel": "Brahim",
+   "profile": {
+    "placeOfBirth": "Málaga",
+    "heightCm": 170,
+    "heightCmWikipedia": 170,
+    "preferredFoot": "both",
+    "citizenshipsTransfermarkt": [
+     "Morocco",
+     "Spain"
+    ],
+    "transfermarktPosition": "Right Winger",
+    "contractExpires": "2027-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /brahim-diaz/profil/spieler/314678",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Brahim_Díaz",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Málaga",
+     "Manchester City"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2016–2019",
+      "club": "Manchester City",
+      "loan": false,
+      "appearances": "5",
+      "goals": "0"
+     },
+     {
+      "years": "2019–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "113",
+      "goals": "14"
+     },
+     {
+      "years": "2020–2023",
+      "club": "AC Milan (loan)",
+      "loan": true,
+      "appearances": "91",
+      "goals": "13"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2016–2017",
+      "team": "Spain U17",
+      "caps": "10",
+      "goals": "3"
+     },
+     {
+      "years": "2016–2018",
+      "team": "Spain U19",
+      "caps": "10",
+      "goals": "1"
+     },
+     {
+      "years": "2017–2021",
+      "team": "Spain U21",
+      "caps": "8",
+      "goals": "2"
+     },
+     {
+      "years": "2021",
+      "team": "Spain",
+      "caps": "1",
+      "goals": "1"
+     },
+     {
+      "years": "2024–",
+      "team": "Morocco",
+      "caps": "34",
+      "goals": "15"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 18,
+    "appearances": 10,
+    "goals": 0,
+    "minutes": 258,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/brahim-diaz/profil/spieler/314678"
+  },
+  {
+   "name": "Antonio Rüdiger",
+   "shirtNumber": 22,
+   "position": "DEF",
+   "dateOfBirth": "1993-03-03",
+   "nationality": "Germany",
+   "club": "Real Madrid",
+   "officialPageLabel": "Rüdiger",
+   "profile": {
+    "placeOfBirth": "Berlin",
+    "heightCm": 190,
+    "heightCmWikipedia": 190,
+    "preferredFoot": "right",
+    "citizenshipsTransfermarkt": [
+     "Germany",
+     "Sierra Leone"
+    ],
+    "transfermarktPosition": "Centre-Back",
+    "contractExpires": "2027-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /antonio-rudiger/profil/spieler/86202",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Antonio_Rüdiger",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "VfB Sperber Neukölln",
+     "SV Tasmania Berlin",
+     "Neuköllner Sportfreunde 1907",
+     "Hertha Zehlendorf",
+     "Borussia Dortmund",
+     "VfB Stuttgart"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2011–2015",
+      "club": "VfB Stuttgart II",
+      "loan": false,
+      "appearances": "22",
+      "goals": "3"
+     },
+     {
+      "years": "2012–2016",
+      "club": "VfB Stuttgart",
+      "loan": false,
+      "appearances": "66",
+      "goals": "2"
+     },
+     {
+      "years": "2015–2016",
+      "club": "Roma (loan)",
+      "loan": true,
+      "appearances": "30",
+      "goals": "2"
+     },
+     {
+      "years": "2016–2017",
+      "club": "Roma",
+      "loan": false,
+      "appearances": "26",
+      "goals": "0"
+     },
+     {
+      "years": "2017–2022",
+      "club": "Chelsea",
+      "loan": false,
+      "appearances": "133",
+      "goals": "9"
+     },
+     {
+      "years": "2022–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "117",
+      "goals": "4"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2010–2011",
+      "team": "Germany U18",
+      "caps": "8",
+      "goals": "4"
+     },
+     {
+      "years": "2011–2012",
+      "team": "Germany U19",
+      "caps": "14",
+      "goals": "1"
+     },
+     {
+      "years": "2012",
+      "team": "Germany U20",
+      "caps": "2",
+      "goals": "0"
+     },
+     {
+      "years": "2012–2014",
+      "team": "Germany U21",
+      "caps": "10",
+      "goals": "1"
+     },
+     {
+      "years": "2014–2026",
+      "team": "Germany",
+      "caps": "86",
+      "goals": "3"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 18,
+    "appearances": 8,
+    "goals": 2,
+    "minutes": 621,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/antonio-rudiger/profil/spieler/86202"
+  },
+  {
+   "name": "Ferland Mendy",
+   "shirtNumber": 23,
+   "position": "DEF",
+   "dateOfBirth": "1995-06-08",
+   "nationality": "France",
+   "club": "Real Madrid",
+   "officialPageLabel": "F. Mendy",
+   "profile": {
+    "placeOfBirth": "Meulan-en-Yvelines",
+    "heightCm": 180,
+    "heightCmWikipedia": 180,
+    "preferredFoot": "left",
+    "citizenshipsTransfermarkt": [
+     "France",
+     "Senegal"
+    ],
+    "transfermarktPosition": "Left-Back",
+    "contractExpires": "2028-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /ferland-mendy/profil/spieler/291417",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Ferland_Mendy",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Ecquevilly EFC",
+     "Paris Saint-Germain",
+     "Mantois",
+     "Le Havre"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2013–2016",
+      "club": "Le Havre II",
+      "loan": false,
+      "appearances": "56",
+      "goals": "1"
+     },
+     {
+      "years": "2015–2017",
+      "club": "Le Havre",
+      "loan": false,
+      "appearances": "47",
+      "goals": "2"
+     },
+     {
+      "years": "2017–2019",
+      "club": "Lyon",
+      "loan": false,
+      "appearances": "57",
+      "goals": "2"
+     },
+     {
+      "years": "2019–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "133",
+      "goals": "4"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2018–2024",
+      "team": "France",
+      "caps": "10",
+      "goals": "0"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "appearances": 0,
+    "goals": 0,
+    "minutes": 0,
+    "status": "Not in squad during this season",
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/ferland-mendy/profil/spieler/291417"
+  },
+  {
+   "name": "Denzel Dumfries",
+   "shirtNumber": 24,
+   "position": "DEF",
+   "dateOfBirth": "1996-04-18",
+   "nationality": "Netherlands",
+   "club": "Real Madrid",
+   "officialPageLabel": "Dumfries",
+   "profile": {
+    "placeOfBirth": "Rotterdam",
+    "heightCm": 188,
+    "heightCmWikipedia": 188,
+    "preferredFoot": "right",
+    "citizenshipsTransfermarkt": [
+     "Netherlands",
+     "Aruba"
+    ],
+    "transfermarktPosition": "Right-Back",
+    "contractExpires": "2030-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /denzel-dumfries/profil/spieler/321528",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Denzel_Dumfries",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Smitshoek",
+     "BVV Barendrecht"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2014–2017",
+      "club": "Sparta Rotterdam",
+      "loan": false,
+      "appearances": "65",
+      "goals": "2"
+     },
+     {
+      "years": "2017–2018",
+      "club": "Heerenveen",
+      "loan": false,
+      "appearances": "33",
+      "goals": "3"
+     },
+     {
+      "years": "2018–2021",
+      "club": "PSV",
+      "loan": false,
+      "appearances": "89",
+      "goals": "13"
+     },
+     {
+      "years": "2021–2026",
+      "club": "Inter Milan",
+      "loan": false,
+      "appearances": "147",
+      "goals": "20"
+     },
+     {
+      "years": "2026–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "8",
+      "goals": "0"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2014",
+      "team": "Aruba",
+      "caps": "2",
+      "goals": "1"
+     },
+     {
+      "years": "2016",
+      "team": "Netherlands U20",
+      "caps": "4",
+      "goals": "0"
+     },
+     {
+      "years": "2016–2018",
+      "team": "Netherlands U21",
+      "caps": "5",
+      "goals": "0"
+     },
+     {
+      "years": "2018–",
+      "team": "Netherlands",
+      "caps": "82",
+      "goals": "11"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 18,
+    "appearances": 11,
+    "goals": 0,
+    "minutes": 686,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/denzel-dumfries/profil/spieler/321528"
+  },
+  {
+   "name": "Yan Diomande",
+   "shirtNumber": 25,
+   "position": "FWD",
+   "dateOfBirth": "2006-11-14",
+   "nationality": "Ivory Coast",
+   "club": "Real Madrid",
+   "officialPageLabel": "Diomande",
+   "profile": {
+    "placeOfBirth": "Abidjan",
+    "heightCm": 180,
+    "heightCmWikipedia": 182,
+    "preferredFoot": "right",
+    "citizenshipsTransfermarkt": [
+     "Cote d'Ivoire"
+    ],
+    "transfermarktPosition": "Right Winger",
+    "contractExpires": "2033-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /yan-diomande/profil/spieler/1390649",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Yan_Diomande",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "DME Academy"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2025",
+      "club": "Leganés B",
+      "loan": false,
+      "appearances": "3",
+      "goals": "0"
+     },
+     {
+      "years": "2025",
+      "club": "Leganés",
+      "loan": false,
+      "appearances": "10",
+      "goals": "2"
+     },
+     {
+      "years": "2025–2026",
+      "club": "RB Leipzig",
+      "loan": false,
+      "appearances": "33",
+      "goals": "12"
+     },
+     {
+      "years": "2026–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "13",
+      "goals": "3"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2022",
+      "team": "Ivory Coast U17",
+      "caps": "1",
+      "goals": "1"
+     },
+     {
+      "years": "2025–",
+      "team": "Ivory Coast U23",
+      "caps": "1",
+      "goals": "0"
+     },
+     {
+      "years": "2025–",
+      "team": "Ivory Coast",
+      "caps": "16",
+      "goals": "3"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 18,
+    "appearances": 18,
+    "goals": 4,
+    "minutes": 1043,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/yan-diomande/profil/spieler/1390649"
+  },
+  {
+   "name": "Thiago Pitarch",
+   "shirtNumber": 27,
+   "position": "MID",
+   "dateOfBirth": "2007-08-03",
+   "nationality": "Spain",
+   "club": "Real Madrid",
+   "officialPageLabel": "Thiago",
+   "profile": {
+    "placeOfBirth": "Fuenlabrada",
+    "heightCm": 179,
+    "heightCmWikipedia": 175,
+    "preferredFoot": "right",
+    "citizenshipsTransfermarkt": [
+     "Spain",
+     "Morocco"
+    ],
+    "transfermarktPosition": "Central Midfield",
+    "contractExpires": "2030-06-30",
+    "sources": {
+     "roster": "realmadrid.com official first-team page",
+     "dobHeightFootBirthplaceContract": "Transfermarkt player profile /thiago-pitarch/profil/spieler/1375227",
+     "dobCrossCheck": "Wikipedia infobox (same DOB)"
+    }
+   },
+   "career": {
+    "source": "Wikipedia infobox, https://en.wikipedia.org/wiki/Thiago_Pitarch",
+    "retrieved": "2026-11-27",
+    "scopeNote": "Club appearances/goals are as printed in the infobox; competition scope varies by row (several rows are league-only) and as-of dates differ by player. Do not add these to the 2026-27 figures.",
+    "youthClubs": [
+     "Atlético Madrid",
+     "Getafe",
+     "Leganés",
+     "Real Madrid"
+    ],
+    "seniorClubs": [
+     {
+      "years": "2025–2026",
+      "club": "Real Madrid C",
+      "loan": false,
+      "appearances": "2",
+      "goals": "0"
+     },
+     {
+      "years": "2025–",
+      "club": "Real Madrid B",
+      "loan": false,
+      "appearances": "19",
+      "goals": "0"
+     },
+     {
+      "years": "2026–",
+      "club": "Real Madrid",
+      "loan": false,
+      "appearances": "11",
+      "goals": "0"
+     }
+    ],
+    "nationalTeams": [
+     {
+      "years": "2026",
+      "team": "Spain U19",
+      "caps": "9",
+      "goals": "0"
+     },
+     {
+      "years": "2025–",
+      "team": "Spain U20",
+      "caps": "7",
+      "goals": "1"
+     }
+    ]
+   },
+   "performance": {
+    "season": "2026-27",
+    "asOf": "2026-11-27",
+    "scope": "All competitions on record at source: LaLiga + UEFA Champions League (18 team matches); Copa del Rey and Supercopa not yet played",
+    "source": "Transfermarkt squad statistics (https://www.transfermarkt.com/real-madrid/leistungsdaten/verein/418)",
+    "calledUp": 14,
+    "appearances": 1,
+    "goals": 0,
+    "minutes": 1,
+    "crossCheck": "Appearances and goals match Wikipedia 2026-27 season squad statistics (credited to FBref), as of 2026-11-24; Wikipedia gives no minutes"
+   },
+   "transfermarktProfileUrl": "https://www.transfermarkt.com/thiago-pitarch/profil/spieler/1375227"
+  }
+ ],
+ "calendar": [
+  {
+   "date": "2026-08-22",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Espanyol vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Espanyol",
+   "venue": "away",
+   "stadium": "RCDE Stadium",
+   "kickoffMadridTime": "21:30",
+   "result": "W 2-1",
+   "status": "played",
+   "transfermarktMatchday": 2,
+   "wikipediaRound": "1",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-08-26",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Real Sociedad",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Real Sociedad",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "kickoffMadridTime": "21:00",
+   "result": "W 4-1",
+   "status": "played",
+   "transfermarktMatchday": 1,
+   "wikipediaRound": "2",
+   "scheduleNote": "The match date was pushed back due to the clubs' player's involvement in the 2026 FIFA World Cup.",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-08-30",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Málaga CF",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Málaga CF",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "kickoffMadridTime": "17:00",
+   "result": "W 4-0",
+   "status": "played",
+   "transfermarktMatchday": 3,
+   "wikipediaRound": "3",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-09-04",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Betis vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Real Betis",
+   "venue": "away",
+   "stadium": "La Cartuja",
+   "kickoffMadridTime": "21:00",
+   "result": "L 0-1",
+   "status": "played",
+   "transfermarktMatchday": 4,
+   "wikipediaRound": "4",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-09-08",
+   "type": "match",
+   "intensity": "max",
+   "title": "Champions League: Real Madrid vs Inter Milan",
+   "category": "OFFICIAL",
+   "competition": "UEFA Champions League (league phase)",
+   "opponent": "Inter Milan",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "kickoffMadridTime": "21:00",
+   "result": "W 2-1",
+   "status": "played",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-09-12",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Rayo Vallecano",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Rayo Vallecano",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "kickoffMadridTime": "21:00",
+   "result": "W 4-1",
+   "status": "played",
+   "transfermarktMatchday": 5,
+   "wikipediaRound": "5",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-09-15",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Elche CF vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Elche CF",
+   "venue": "away",
+   "stadium": "Martínez Valero",
+   "kickoffMadridTime": "21:30",
+   "result": "W 3-2",
+   "status": "played",
+   "transfermarktMatchday": 6,
+   "wikipediaRound": "6",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-09-20",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Atlético Madrid vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Atlético Madrid",
+   "venue": "away",
+   "stadium": "Riyadh Air Metropolitano",
+   "kickoffMadridTime": "16:15",
+   "result": "L 1-2",
+   "status": "played",
+   "transfermarktMatchday": 7,
+   "wikipediaRound": "7",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-10-10",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Villarreal CF",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Villarreal CF",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "kickoffMadridTime": "21:00",
+   "result": "W 1-0",
+   "status": "played",
+   "transfermarktMatchday": 8,
+   "wikipediaRound": "8",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-10-14",
+   "type": "match",
+   "intensity": "max",
+   "title": "Champions League: AS Roma vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "UEFA Champions League (league phase)",
+   "opponent": "AS Roma",
+   "venue": "away",
+   "stadium": "Stadio Olimpico",
+   "kickoffMadridTime": "21:00",
+   "result": "W 4-3",
+   "status": "played",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Sevilla FC",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Sevilla FC",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "kickoffMadridTime": "21:00",
+   "result": "W 4-1",
+   "status": "played",
+   "transfermarktMatchday": 9,
+   "wikipediaRound": "9",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "type": "match",
+   "intensity": "max",
+   "title": "Champions League: Real Madrid vs RB Leipzig",
+   "category": "OFFICIAL",
+   "competition": "UEFA Champions League (league phase)",
+   "opponent": "RB Leipzig",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "kickoffMadridTime": "21:00",
+   "result": "W 4-1",
+   "status": "played",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-10-25",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: FC Barcelona vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "FC Barcelona",
+   "venue": "away",
+   "stadium": "Spotify Camp Nou",
+   "kickoffMadridTime": "21:00",
+   "result": "W 2-1",
+   "status": "played",
+   "transfermarktMatchday": 10,
+   "wikipediaRound": "10",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-11-01",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Racing Santander vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Racing Santander",
+   "venue": "away",
+   "stadium": "El Sardinero",
+   "kickoffMadridTime": "16:15",
+   "result": "W 3-0",
+   "status": "played",
+   "transfermarktMatchday": 11,
+   "wikipediaRound": "11",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-11-04",
+   "type": "match",
+   "intensity": "max",
+   "title": "Champions League: AEK Athens vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "UEFA Champions League (league phase)",
+   "opponent": "AEK Athens",
+   "venue": "away",
+   "stadium": "Agia Sophia Stadium",
+   "kickoffMadridTime": "18:45",
+   "result": "W 3-2",
+   "status": "played",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-11-07",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Valencia CF vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Valencia CF",
+   "venue": "away",
+   "stadium": "Mestalla",
+   "kickoffMadridTime": "21:00",
+   "result": "W 3-0",
+   "status": "played",
+   "transfermarktMatchday": 12,
+   "wikipediaRound": "12",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-11-21",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Celta Vigo",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Celta Vigo",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "kickoffMadridTime": "21:00",
+   "result": "W 2-1",
+   "status": "played",
+   "transfermarktMatchday": 13,
+   "wikipediaRound": "13",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-11-24",
+   "type": "match",
+   "intensity": "max",
+   "title": "Champions League: Real Madrid vs PSV Eindhoven",
+   "category": "OFFICIAL",
+   "competition": "UEFA Champions League (league phase)",
+   "opponent": "PSV Eindhoven",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "kickoffMadridTime": "21:00",
+   "result": "W 5-1",
+   "status": "played",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-11-27",
+   "type": "training",
+   "intensity": "medium",
+   "title": "TEST EVENT: Pre-match team session",
+   "category": "INTERNAL TEST EVENT",
+   "note": "Invented by the test plan; not a club schedule."
+  },
+  {
+   "date": "2026-11-28",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Alavés",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Alavés",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "kickoffMadridTime": "21:00",
+   "status": "scheduled",
+   "transfermarktMatchday": 14,
+   "wikipediaRound": "14",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-11-29",
+   "type": "rest",
+   "intensity": "low",
+   "title": "TEST EVENT: Day off after Alavés match",
+   "category": "INTERNAL TEST EVENT",
+   "note": "Invented by the test plan; not a club schedule."
+  },
+  {
+   "date": "2026-11-30",
+   "type": "training",
+   "intensity": "high",
+   "title": "TEST EVENT: High-intensity training",
+   "category": "INTERNAL TEST EVENT",
+   "note": "Invented by the test plan; not a club schedule."
+  },
+  {
+   "date": "2026-12-01",
+   "type": "travel",
+   "intensity": "low",
+   "title": "TEST EVENT: Travel to San Sebastián",
+   "category": "INTERNAL TEST EVENT",
+   "note": "Invented by the test plan; not a club schedule."
+  },
+  {
+   "date": "2026-12-02",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Sociedad vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Real Sociedad",
+   "venue": "away",
+   "stadium": "Anoeta",
+   "kickoffMadridTime": "19:00",
+   "status": "scheduled",
+   "transfermarktMatchday": 23,
+   "wikipediaRound": "15",
+   "scheduleNote": "The match date was pushed forward due to both clubs' involvement in the 2027 Supercopa de España.",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-12-03",
+   "type": "training",
+   "intensity": "medium",
+   "title": "TEST EVENT: Post-match training, tactical work",
+   "category": "INTERNAL TEST EVENT",
+   "note": "Invented by the test plan; not a club schedule."
+  },
+  {
+   "date": "2026-12-04",
+   "type": "training",
+   "intensity": "low",
+   "title": "TEST EVENT: Recovery and mobility session",
+   "category": "INTERNAL TEST EVENT",
+   "note": "Invented by the test plan; not a club schedule."
+  },
+  {
+   "date": "2026-12-05",
+   "type": "travel",
+   "intensity": "low",
+   "title": "TEST EVENT: Travel to Bilbao",
+   "category": "INTERNAL TEST EVENT",
+   "note": "Invented by the test plan; not a club schedule."
+  },
+  {
+   "date": "2026-12-06",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Athletic Club vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Athletic Club",
+   "venue": "away",
+   "stadium": "San Mamés",
+   "kickoffMadridTime": "16:15",
+   "status": "scheduled",
+   "transfermarktMatchday": 15,
+   "wikipediaRound": "16",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-12-07",
+   "type": "rest",
+   "intensity": "low",
+   "title": "TEST EVENT: Day off",
+   "category": "INTERNAL TEST EVENT",
+   "note": "Invented by the test plan; not a club schedule."
+  },
+  {
+   "date": "2026-12-08",
+   "type": "travel",
+   "intensity": "low",
+   "title": "TEST EVENT: Travel to London",
+   "category": "INTERNAL TEST EVENT",
+   "note": "Invented by the test plan; not a club schedule."
+  },
+  {
+   "date": "2026-12-09",
+   "type": "match",
+   "intensity": "max",
+   "title": "Champions League: Arsenal vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "UEFA Champions League (league phase)",
+   "opponent": "Arsenal",
+   "venue": "away",
+   "stadium": "Emirates Stadium",
+   "kickoffMadridTime": "21:00",
+   "status": "scheduled",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-12-10",
+   "type": "rest",
+   "intensity": "low",
+   "title": "TEST EVENT: Rest day",
+   "category": "INTERNAL TEST EVENT",
+   "note": "Invented by the test plan; not a club schedule."
+  },
+  {
+   "date": "2026-12-11",
+   "type": "training",
+   "intensity": "high",
+   "title": "TEST EVENT: Match preparation, set pieces",
+   "category": "INTERNAL TEST EVENT",
+   "note": "Invented by the test plan; not a club schedule."
+  },
+  {
+   "date": "2026-12-13",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs CA Osasuna",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "CA Osasuna",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "kickoffMadridTime": "21:00",
+   "status": "scheduled",
+   "transfermarktMatchday": 16,
+   "wikipediaRound": "17",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2026-12-16",
+   "type": "match",
+   "intensity": "max",
+   "title": "TEST PLACEHOLDER: Copa del Rey round of 32 (opponent and date not published)",
+   "category": "TEST PLACEHOLDER",
+   "note": "Copa del Rey round of 32 is listed for 15-17 December 2026 (Wikipedia). The exact date and the opponent are unpublished here; 16 Dec is a stand-in.",
+   "notAnOfficialMatch": true
+  },
+  {
+   "date": "2026-12-20",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Deportivo A Coruña vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Deportivo A Coruña",
+   "venue": "away",
+   "stadium": "ABANCA-Riazor",
+   "status": "scheduled",
+   "transfermarktMatchday": 17,
+   "wikipediaRound": "18",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-01-03",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Getafe CF",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Getafe CF",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "status": "scheduled",
+   "transfermarktMatchday": 18,
+   "wikipediaRound": "19",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-01-10",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Levante UD",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Levante UD",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "status": "scheduled",
+   "transfermarktMatchday": 19,
+   "wikipediaRound": "20",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-01-13",
+   "type": "match",
+   "intensity": "max",
+   "title": "TEST PLACEHOLDER: Copa del Rey round of 16, only if Real Madrid advance (date unpublished)",
+   "category": "TEST PLACEHOLDER",
+   "note": "Conditional on advancing; date is a stand-in.",
+   "notAnOfficialMatch": true
+  },
+  {
+   "date": "2027-01-17",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Málaga CF vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Málaga CF",
+   "venue": "away",
+   "stadium": "La Rosaleda",
+   "status": "scheduled",
+   "transfermarktMatchday": 20,
+   "wikipediaRound": "21",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-01-19",
+   "type": "match",
+   "intensity": "max",
+   "title": "Champions League: Real Madrid vs LASK",
+   "category": "OFFICIAL",
+   "competition": "UEFA Champions League (league phase)",
+   "opponent": "LASK",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "kickoffMadridTime": "21:00",
+   "status": "scheduled",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-01-24",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Real Betis",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Real Betis",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "status": "scheduled",
+   "transfermarktMatchday": 21,
+   "wikipediaRound": "22",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-01-27",
+   "type": "match",
+   "intensity": "max",
+   "title": "Champions League: Shakhtar Donetsk vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "UEFA Champions League (league phase)",
+   "opponent": "Shakhtar Donetsk",
+   "venue": "away",
+   "stadium": "Stamford Bridge",
+   "kickoffMadridTime": "21:00",
+   "status": "scheduled",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-01-31",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Rayo Vallecano vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Rayo Vallecano",
+   "venue": "away",
+   "stadium": "Vallecas",
+   "status": "scheduled",
+   "transfermarktMatchday": 22,
+   "wikipediaRound": "23",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-02-03",
+   "type": "match",
+   "intensity": "max",
+   "title": "Supercopa de España semi-final: Real Sociedad vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "Supercopa de España (semi-final)",
+   "opponent": "Real Sociedad",
+   "venue": "neutral",
+   "stadium": "Beşiktaş Stadium",
+   "kickoffSourceTime": "22:00 UTC+3 (Wikipedia)",
+   "status": "scheduled",
+   "sourceConfidence": "Single secondary source (Wikipedia season page). Absent from the Transfermarkt schedule page. Not confirmed on realmadrid.com or rfef.es during this run.",
+   "sources": [
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-02-07",
+   "type": "match",
+   "intensity": "max",
+   "title": "TEST PLACEHOLDER: Supercopa de España final, only if Real Madrid win the semi-final (date unpublished)",
+   "category": "TEST PLACEHOLDER",
+   "note": "Wikipedia gives only 'February 2027' for the last match; date is a stand-in.",
+   "notAnOfficialMatch": true
+  },
+  {
+   "date": "2027-02-14",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Athletic Club",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Athletic Club",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "status": "scheduled",
+   "transfermarktMatchday": 24,
+   "wikipediaRound": "24",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-02-17",
+   "type": "match",
+   "intensity": "max",
+   "title": "TEST PLACEHOLDER: Champions League knockout-phase match (round, opponent and date unpublished)",
+   "category": "TEST PLACEHOLDER",
+   "note": "Knockout draw has not happened; date is a stand-in and the tie may not exist (a top-8 finish skips the play-off round).",
+   "notAnOfficialMatch": true
+  },
+  {
+   "date": "2027-02-21",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Sevilla FC vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Sevilla FC",
+   "venue": "away",
+   "stadium": "Ramón Sánchez-Pizjuán",
+   "status": "scheduled",
+   "transfermarktMatchday": 25,
+   "wikipediaRound": "25",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-02-28",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Valencia CF",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Valencia CF",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "status": "scheduled",
+   "transfermarktMatchday": 26,
+   "wikipediaRound": "26",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-03-07",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Villarreal CF vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Villarreal CF",
+   "venue": "away",
+   "stadium": "La Cerámica",
+   "status": "scheduled",
+   "transfermarktMatchday": 27,
+   "wikipediaRound": "27",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-03-14",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Espanyol",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Espanyol",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "status": "scheduled",
+   "transfermarktMatchday": 28,
+   "wikipediaRound": "28",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-03-21",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Celta Vigo vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Celta Vigo",
+   "venue": "away",
+   "stadium": "ABANCA Balaídos",
+   "status": "scheduled",
+   "transfermarktMatchday": 29,
+   "wikipediaRound": "29",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-04-04",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Atlético Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Atlético Madrid",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "status": "scheduled",
+   "transfermarktMatchday": 30,
+   "wikipediaRound": "30",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-04-11",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: CA Osasuna vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "CA Osasuna",
+   "venue": "away",
+   "stadium": "El Sadar",
+   "status": "scheduled",
+   "transfermarktMatchday": 31,
+   "wikipediaRound": "31",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-04-18",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Getafe CF vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Getafe CF",
+   "venue": "away",
+   "stadium": "Coliseum",
+   "status": "scheduled",
+   "transfermarktMatchday": 32,
+   "wikipediaRound": "32",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-04-21",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Elche CF",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Elche CF",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "status": "scheduled",
+   "transfermarktMatchday": 33,
+   "wikipediaRound": "33",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-05-02",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Levante UD vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Levante UD",
+   "venue": "away",
+   "stadium": "Ciutat de València",
+   "status": "scheduled",
+   "transfermarktMatchday": 34,
+   "wikipediaRound": "34",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-05-09",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs FC Barcelona",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "FC Barcelona",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "status": "scheduled",
+   "transfermarktMatchday": 35,
+   "wikipediaRound": "35",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-05-16",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Racing Santander",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Racing Santander",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "status": "scheduled",
+   "transfermarktMatchday": 36,
+   "wikipediaRound": "36",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-05-23",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Alavés vs Real Madrid",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Alavés",
+   "venue": "away",
+   "stadium": "Mendizorrotza",
+   "status": "scheduled",
+   "transfermarktMatchday": 37,
+   "wikipediaRound": "37",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  },
+  {
+   "date": "2027-05-30",
+   "type": "match",
+   "intensity": "max",
+   "title": "LaLiga: Real Madrid vs Deportivo A Coruña",
+   "category": "OFFICIAL",
+   "competition": "LaLiga",
+   "opponent": "Deportivo A Coruña",
+   "venue": "home",
+   "stadium": "Bernabéu",
+   "status": "scheduled",
+   "transfermarktMatchday": 38,
+   "wikipediaRound": "38",
+   "sources": [
+    "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+   ]
+  }
+ ],
+ "calendarSource": {
+  "official": [
+   "https://www.transfermarkt.com/real-madrid/spielplan/verein/418",
+   "https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season"
+  ],
+  "note": "realmadrid.com calendar pages returned HTTP 404 to automated fetch. Fixtures come from Transfermarkt and Wikipedia, which agree on every date, home/away and score. Kick-off times are Madrid local time. LaLiga rounds after the 2026-12-13 match have no published kick-off time.",
+  "counts": {
+   "OFFICIAL": 47,
+   "TEST PLACEHOLDER": 4,
+   "INTERNAL TEST EVENT": 11
+  }
+ },
+ "appFieldMapping": "Squad form: name, type, season. Athlete form: name, position, shirtNumber, dateOfBirth, nationality, club. Calendar rows: date, type, title (label), opponent, venue; intensity has no UI field."
+}

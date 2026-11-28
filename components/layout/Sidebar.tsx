@@ -10,7 +10,7 @@ import { OWNER_ROLE, CLINICAL_ROLES, REHAB_ROLES, SQUAD_ROLES } from '@/lib/role
 import {
   LayoutDashboard, Activity, Calendar,
   Heart, Gauge, BookOpen, Settings,
-  ClipboardList, TrendingUp, FileText, AlertCircle, UserCircle, Pill, Apple,
+  ClipboardList, TrendingUp, FileText, AlertCircle, UserCircle, Pill, Apple, Rss, Users,
   ChevronLeft, ChevronRight,
 } from 'lucide-react'
 
@@ -33,9 +33,15 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  // Overview — visible to all. The squad/"Plantel" view lives as a tab inside
-  // the dashboard, so it is intentionally not a separate sidebar entry.
+  // Overview — visible to all. Plantel and Calendário used to be tabs
+  // inside the Dashboard — extracted into their own pages/routes per user
+  // feedback, so each gets its own real sidebar entry here.
   { href: '/',              labelKey: 'dashboard',         icon: LayoutDashboard, roles: ALL_ROLES,        sectionKey: 'overview' },
+  { href: '/squad',         labelKey: 'squad',             icon: Users,           roles: ALL_ROLES,        sectionKey: 'overview' },
+  { href: '/team-calendar', labelKey: 'calendar',          icon: Calendar,        roles: ALL_ROLES,        sectionKey: 'overview' },
+  // Feed — clinical oversight of who did what; same audience as
+  // getClinicalActivityFeed's own role check (owner + clinical staff).
+  { href: '/feed',          labelKey: 'feed',              icon: Rss,             roles: [OWNER_ROLE, ...CLINICAL_ROLES], sectionKey: 'overview' },
   // Clínico — clinical staff only
   { href: '/clinical',      labelKey: 'clinical_file',     icon: FileText,        roles: CLINICAL_ROLES,   sectionKey: 'clinical' },
   { href: '/occurrences',   labelKey: 'occurrences',       icon: AlertCircle,     roles: CLINICAL_ROLES,   sectionKey: 'clinical' },
@@ -47,8 +53,10 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/performance',   labelKey: 'performance',       icon: TrendingUp,      roles: PERFORMANCE_ROLES, inDevelopment: true, sectionKey: 'performance' },
   { href: '/readiness',     labelKey: 'readiness',         icon: Heart,           roles: PERFORMANCE_ROLES, inDevelopment: true, sectionKey: 'performance' },
   { href: '/input',         labelKey: 'input',             icon: ClipboardList,   roles: PERFORMANCE_ROLES, inDevelopment: true, sectionKey: 'performance' },
-  // Intelligence — visible to all, marked as in development
-  { href: '/calendar',      labelKey: 'calendar',          icon: Calendar,        roles: ALL_ROLES,        inDevelopment: true, sectionKey: 'intelligence' },
+  // Intelligence — visible to all, marked as in development. "Calendar
+  // Intelligence" is a distinct, still-unbuilt feature from the real
+  // Calendário above — restored here in its original spot.
+  { href: '/calendar',      labelKey: 'calendar_intelligence', icon: Calendar,    roles: ALL_ROLES,        inDevelopment: true, sectionKey: 'intelligence' },
   { href: '/passport',      labelKey: 'passport',          icon: BookOpen,        roles: ALL_ROLES,        inDevelopment: true, sectionKey: 'intelligence' },
   // System
   { href: '/settings',      labelKey: 'settings',          icon: Settings,        roles: ALL_ROLES,        sectionKey: 'system' },

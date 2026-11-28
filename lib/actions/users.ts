@@ -168,6 +168,23 @@ export async function listOrgUsers(): Promise<
   }
 }
 
+// GoTrue's /invite request blocks on actually sending the email — with no
+// SMTP configured (or an unreachable/misconfigured one), it hangs until its
+// own ~10s internal deadline and returns a 504, but by then it has already
+// created the auth user. Left unguarded, that leaves the browser spinning
+// forever with no error (a thrown/rejected fetch here was never caught), and
+// a ghost invited-but-unconfirmed user that blocks ever re-inviting that
+// email ("already registered") since this action never reaches the
+// profile/squads step to let someone find and clean it up.
+const INVITE_TIMEOUT_MS = 12_000
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('invite_timeout')), ms)
+    promise.then((v) => { clearTimeout(timer); resolve(v) }, (e) => { clearTimeout(timer); reject(e) })
+  })
+}
+
 export async function inviteUser(payload: unknown): Promise<{ success: true } | Fail> {
   const parsed = InviteUserSchema.safeParse(payload)
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? 'Dados inválidos')
@@ -180,11 +197,26 @@ export async function inviteUser(payload: unknown): Promise<{ success: true } | 
   const squads = validateSquadAssignment(input.role, input.squad_ids, actor.squadIds)
   if (!squads.ok) return fail(squads.error)
 
-  const { data, error } = await actor.service.auth.admin.inviteUserByEmail(
-    input.email,
-    buildInviteOptions(input.full_name, webAppUrl()),
-  )
-  if (error || !data.user) {
+  let data: Awaited<ReturnType<ServiceClient['auth']['admin']['inviteUserByEmail']>>['data'] | null = null
+  let error: Awaited<ReturnType<ServiceClient['auth']['admin']['inviteUserByEmail']>>['error'] | null = null
+  try {
+    const res = await withTimeout(
+      actor.service.auth.admin.inviteUserByEmail(input.email, buildInviteOptions(input.full_name, webAppUrl())),
+      INVITE_TIMEOUT_MS,
+    )
+    data = res.data
+    error = res.error
+  } catch (e) {
+    // Timed out (or the fetch itself threw) — GoTrue may still have created
+    // the auth user before hitting its own deadline on the email send. Best
+    // effort: find and remove it so the email isn't permanently stuck as
+    // "already registered" with no profile to show for it.
+    const { data: list } = await actor.service.auth.admin.listUsers()
+    const ghost = list?.users?.find((u) => u.email?.toLowerCase() === input.email.toLowerCase() && !u.email_confirmed_at && !u.last_sign_in_at)
+    if (ghost) await actor.service.auth.admin.deleteUser(ghost.id)
+    return fail('O envio do convite demorou demasiado tempo a responder. Isto costuma indicar um problema na configuração de SMTP do Supabase Auth — verifica em Supabase > Authentication > Emails > SMTP Settings.')
+  }
+  if (error || !data?.user) {
     return fail(/already|registered|exists/i.test(error?.message ?? '')
       ? 'Já existe um utilizador com este email'
       : error?.message ?? 'Não foi possível enviar o convite')
@@ -250,10 +282,15 @@ export async function resendInvite(userId: string): Promise<{ success: true } | 
   if (!au?.email) return fail('Utilizador sem email')
   if (au.email_confirmed_at || au.last_sign_in_at) return fail('Este utilizador já aceitou o convite')
 
-  const { error } = await actor.service.auth.admin.inviteUserByEmail(
-    au.email, buildInviteOptions(target.profile.full_name, webAppUrl()),
-  )
-  if (error) return fail(error.message)
+  try {
+    const { error } = await withTimeout(
+      actor.service.auth.admin.inviteUserByEmail(au.email, buildInviteOptions(target.profile.full_name, webAppUrl())),
+      INVITE_TIMEOUT_MS,
+    )
+    if (error) return fail(error.message)
+  } catch {
+    return fail('O reenvio do convite demorou demasiado tempo a responder. Isto costuma indicar um problema na configuração de SMTP do Supabase Auth.')
+  }
   await audit(actor, 'user.invite_resend', target.profile.id)
   return { success: true }
 }
@@ -351,7 +388,15 @@ export async function setUserActive(userId: string, active: boolean): Promise<{ 
   // A reactivated user who never accepted the invite needs a fresh invite.
   const au = target.authUser
   if (active && au?.email && !au.email_confirmed_at && !au.last_sign_in_at) {
-    await actor.service.auth.admin.inviteUserByEmail(au.email, buildInviteOptions(target.profile.full_name, webAppUrl()))
+    try {
+      await withTimeout(
+        actor.service.auth.admin.inviteUserByEmail(au.email, buildInviteOptions(target.profile.full_name, webAppUrl())),
+        INVITE_TIMEOUT_MS,
+      )
+    } catch {
+      // Reactivation itself already succeeded above — a slow/broken mailer
+      // shouldn't fail it; the user can retry from "Reenviar convite".
+    }
   }
 
   await audit(actor, active ? 'user.reactivate' : 'user.deactivate', target.profile.id)

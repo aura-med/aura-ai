@@ -31,7 +31,7 @@ export default async function FemalePage({
 
   type FemaleAthlete = {
     id: string; name: string; shirt_number: number | null; photo_url: string | null; position: string | null
-    club: string | null; status: string; menstrual_day: number | null; cycle_length: number | null
+    club: string | null; availability_status: string | null; menstrual_day: number | null; cycle_length: number | null
     wellness_checkins: Array<{ checkin_date: string; fatigue: number | null; sleep_hours: number | null; tqr: number | null; stress: number | null }>
     injury_events: Array<{ id: string }>
     rehab_sessions: Array<{ id: string }>
@@ -49,8 +49,8 @@ export default async function FemalePage({
     return { ...a, base_score: base.score, adjusted_score: adjusted.adjusted, phase: adjusted.phase }
   })
 
-  const isRtp = (a: { availability_status?: string | null; status?: string | null }) =>
-    (a.availability_status ?? (a.status === 'rehab' ? 'rtp' : 'available')) === 'rtp'
+  const isRtp = (a: { availability_status: string | null }) =>
+    (a.availability_status ?? 'available') === 'rtp'
   const rehab     = withData.filter(isRtp)
   const highRisk  = withData.filter(a => a.adjusted_score >= 65)
   const inOvulation = withData.filter(a => a.phase?.phase === 'ovulatory')

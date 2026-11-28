@@ -62,6 +62,7 @@
     },
     "nav": {
       "dashboard": "Dashboard",
+      "feed": "Feed",
       "squad": "Squad",
       "selecoes": "Squads",
       "athletes": "Athlete Assessment",
@@ -76,7 +77,8 @@
       "occurrences": "Occurrences",
       "load": "Load & GPS",
       "performance": "Max Values & Profile",
-      "calendar": "Calendar Intelligence",
+      "calendar": "Calendar",
+      "calendar_intelligence": "Calendar Intelligence",
       "passport": "Athlete Passport",
       "female_squad": "Female Squad",
       "settings": "Settings",
@@ -328,6 +330,8 @@
       "description": "Manage your organization's details.",
       "orgName": "Organization Name",
       "orgType": "Type",
+      "orgLogo": "Logo",
+      "uploadLogo": "Upload logo",
       "memberSince": "since",
       "adminOnly": "Only administrators can change the organization name.",
       "noOrg": "You are not associated with any organization."

@@ -59,19 +59,6 @@ function nullableInteger(value: unknown, field: string, minimum: number) {
   return number
 }
 
-function normalizePhases(phases: unknown): RehabProtocolPhase[] {
-  if (!Array.isArray(phases) || phases.length === 0) throw new Error('phases is required')
-
-  return phases.map((phase, index) => {
-    const item = phase as Partial<RehabProtocolPhase>
-    return {
-      name: requiredText(item.name, `phases[${index}].name`),
-      progression_criteria: String(item.progression_criteria ?? '').trim(),
-      load_restrictions: String(item.load_restrictions ?? '').trim(),
-    }
-  })
-}
-
 export async function createOsiicsCode(input: OsiicsCode): Promise<ActionResult> {
   const context = await requirePlatformAdmin()
 
@@ -117,53 +104,11 @@ export async function createOsiicsCode(input: OsiicsCode): Promise<ActionResult>
   }
 }
 
-export async function saveRehabProtocol(input: RehabProtocolInput): Promise<ActionResult> {
-  const context = await requirePlatformAdmin()
-
-  try {
-    const payload = {
-      name: requiredText(input.name, 'name'),
-      key: requiredText(input.key, 'key'),
-      phases: normalizePhases(input.phases),
-      total_days: nullableInteger(input.total_days, 'total_days', 1),
-      evidence: nullableText(input.evidence),
-    }
-
-    const service = createAdminClient()
-    let targetId = input.id
-
-    if (targetId) {
-      const { error } = await service
-        .from('rehab_protocols')
-        .update(payload)
-        .eq('id', targetId)
-      if (error) return errorResult(error)
-    } else {
-      const { data, error } = await service
-        .from('rehab_protocols')
-        .insert(payload)
-        .select('id')
-        .single()
-      if (error) return errorResult(error)
-      targetId = data.id
-    }
-
-    await recordAudit({
-      actor_user_id: context.user.id,
-      event_type: input.id ? 'clinical.rehab_protocol_updated' : 'clinical.rehab_protocol_created',
-      target_type: 'rehab_protocols',
-      target_id: targetId,
-      metadata: {
-        key: payload.key,
-        name: payload.name,
-      },
-    })
-
-    revalidatePath('/protocols')
-    return { ok: true }
-  } catch (error) {
-    return errorResult(error)
-  }
+// Frozen (B7): rehab_protocols templates fed the legacy "suggested
+// protocol" flow, removed when injury diagnoses started auto-creating a
+// rehab plan directly (099). No new writes.
+export async function saveRehabProtocol(_input: RehabProtocolInput): Promise<ActionResult> {
+  return { ok: false, message: 'Este fluxo foi descontinuado. Protocolos de reabilitação já não são usados.' }
 }
 
 export async function deleteOsiicsCode(code: string): Promise<ActionResult> {

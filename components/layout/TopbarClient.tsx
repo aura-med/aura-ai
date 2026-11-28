@@ -32,7 +32,7 @@ const NotificationCenter = dynamic(
 )
 
 export function TopbarClient({ dto }: { dto: TopbarDTO }) {
-  const { selectedSquadId, setSquad, setOrg, setSquads, setTheme, setRole, setAthleteId, mobileSidebarOpen, setMobileSidebarOpen } = useUiStore()
+  const { selectedSquadId, setSquad, setOrg, setSquads, setTheme, setRole, setAthleteId, mobileSidebarOpen, setMobileSidebarOpen, sidebarCollapsed } = useUiStore()
   const appliedThemePreference = useRef<'dark' | 'light' | null>(null)
   const router = useRouter()
   const pathname = usePathname()
@@ -96,45 +96,64 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 h-14 flex items-center justify-between px-5 z-40 border-b"
+      className="fixed top-0 left-0 right-0 h-14 flex items-center justify-between z-40 border-b"
       style={{
         background: 'var(--sophi-bg)',
         borderColor: 'var(--sophi-border)',
       }}
     >
-      <div className="flex min-w-0 items-center gap-3">
+      <div className="flex h-full min-w-0 items-center">
         <button
           onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-          className="flex size-11 items-center justify-center rounded-md transition-colors md:hidden"
+          className="ml-2 flex size-11 items-center justify-center rounded-md transition-colors md:hidden"
           style={{ color: 'var(--sophi-text2)' }}
           aria-label="Toggle menu"
         >
           <Menu size={18} />
         </button>
+
+        {/* Exactly the sidebar's own width (collapsed/expanded, same Tailwind
+            scale classes as Sidebar.tsx) and flush at x=0 like the sidebar,
+            so this box's border-r always lines up with the sidebar's own
+            right edge instead of floating at an unrelated position. */}
         <Link
           href={dashboardHref}
           aria-label="Dashboard"
-          className="flex items-center"
+          className={`hidden h-full shrink-0 items-center justify-center border-r md:flex ${sidebarCollapsed ? 'w-16' : 'w-60'}`}
+          style={{ borderColor: 'var(--sophi-border)' }}
         >
-          <SophiLogo className="h-10 w-auto" />
+          <SophiLogo className="h-10 w-auto" iconOnly />
         </Link>
+        {/* Mobile: no permanent sidebar to align with, just a plain inline logo. */}
+        <Link href={dashboardHref} aria-label="Dashboard" className="ml-2 flex items-center md:hidden">
+          <SophiLogo className="h-10 w-auto" iconOnly />
+        </Link>
+
         {dto.org && (
-          <div
-            className="hidden min-w-0 items-baseline gap-2 border-l pl-3 md:flex"
-            style={{ borderColor: 'var(--sophi-border)' }}
-          >
-            <span
-              className="truncate text-base font-bold leading-none"
-              style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}
-            >
-              {dto.org.name}
-            </span>
-            <span
-              className="text-[10px] font-mono uppercase tracking-wide"
-              style={{ color: 'var(--sophi-text3)' }}
-            >
-              {dto.org.type}
-            </span>
+          <div className="hidden min-w-0 items-center gap-2 pl-3 md:flex">
+            {dto.org.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- external/storage URL, no next/image domain config
+              <img
+                src={dto.org.logoUrl}
+                alt={dto.org.name}
+                className="h-12 w-12 shrink-0 object-contain"
+              />
+            ) : (
+              <div className="flex items-baseline gap-2">
+                <span
+                  className="truncate text-base font-bold leading-none"
+                  style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}
+                >
+                  {dto.org.name}
+                </span>
+                <span
+                  className="text-[10px] font-mono uppercase tracking-wide"
+                  style={{ color: 'var(--sophi-text3)' }}
+                >
+                  {dto.org.type}
+                </span>
+              </div>
+            )}
           </div>
         )}
 
@@ -146,7 +165,7 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
           <SelectTrigger
             size="sm"
             aria-label="Choose squad"
-            className="ml-1 hidden sm:flex min-w-32 max-w-52 border-[var(--sophi-border2)] bg-[var(--sophi-bg3)] text-xs text-[var(--sophi-text)]"
+            className="ml-4 hidden sm:flex min-w-32 max-w-52 border-[var(--sophi-border2)] bg-[var(--sophi-bg3)] text-xs text-[var(--sophi-text)]"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             <span className="min-w-0 flex-1 truncate text-left">
@@ -163,7 +182,7 @@ export function TopbarClient({ dto }: { dto: TopbarDTO }) {
         </Select>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 pr-5">
         <span
           className="hidden lg:block text-xs"
           style={{ color: 'var(--sophi-text3)', fontFamily: 'var(--font-dm-mono)' }}

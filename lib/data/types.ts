@@ -19,7 +19,7 @@ export interface SelectOptionDTO {
 export interface ViewerContextDTO {
   userId: string | null
   user: { email: string; fullName: string | null } | null
-  org: { id: string; name: string; type: string } | null
+  org: { id: string; name: string; type: string; logoUrl: string | null } | null
   role: string | null
   squads: Array<{ id: string; name: string; type: string; season: string | null; orgId: string }>
   athleteId: string | null

@@ -133,6 +133,11 @@ export interface MedicationRecord {
   start_date?: string
   end_date?: string
   prescriber?: string
+  // Therapeutic Use Exemption (Autorização de Uso Terapêutico) — required when
+  // the medication is on the WADA/ANAD Prohibited List.
+  has_tue?: boolean
+  tue_number?: string
+  tue_valid_until?: string
 }
 
 // ── Rehab Sessions ────────────────────────────────────────────────────────────
@@ -163,9 +168,15 @@ export interface RehabSession {
   rehab_plan_id: string | null
   pse: number | null
   exercises: RehabSessionExercise[]
+  modalities: string[]
   created_at: string
   updated_at: string
 }
+
+export const TREATMENT_MODALITIES = [
+  'Crioterapia', 'Eletroterapia', 'Dry Needling', 'Ligadura Funcional',
+  'Ondas de Choque', 'TENS', 'Mobilização Articular', 'TECAR',
+] as const
 
 // ── Rehab Plan Calendar (migration 034) ───────────────────────────────────────
 // Day-by-day reabilitação calendar — distinct from RehabSession above (a flat
@@ -190,9 +201,12 @@ export interface RehabPlan {
   is_completed: boolean
   closed_at: string | null
   rtp_criteria: RtpCriterion[]
+  current_phase_id: string | null
   created_at: string
   updated_at: string
 }
+
+export type RehabPhaseType = 'standard' | 'rtp'
 
 export interface RehabPlanPhase {
   id: string
@@ -200,8 +214,31 @@ export interface RehabPlanPhase {
   phase_number: number
   name: string
   criteria: string | null
+  phase_type: RehabPhaseType
   start_date: string
   test_date: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ThresholdOperator = 'gte' | 'lte' | 'gt' | 'lt' | 'eq'
+
+export interface RehabPhaseCriterion {
+  id: string
+  phase_id: string
+  description: string
+  metric_label: string | null
+  threshold_operator: ThresholdOperator | null
+  threshold_value: number | null
+  unit: string | null
+  measured_value: number | null
+  target_test_date: string | null
+  is_completed: boolean
+  completed_by: string | null
+  completed_by_name: string | null
+  completed_at: string | null
+  display_order: number
+  created_by: string | null
   created_at: string
   updated_at: string
 }
@@ -506,7 +543,6 @@ export interface AthleteProfileData {
   position: string | null
   date_of_birth: string | null
   club: string | null
-  status: string
   availabilityStatus: string
   // Score
   score: number | null

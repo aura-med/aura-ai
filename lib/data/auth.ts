@@ -47,7 +47,7 @@ export const getViewerContext = cache(async (): Promise<ViewerContextDTO> => {
   const [{ data: orgData }, { data: squadsData }, { data: athleteData }] = await Promise.all([
     supabase
       .from('organizations')
-      .select('id, name, type')
+      .select('id, name, type, logo_url')
       .eq('id', orgId)
       .single(),
     squadsQuery,
@@ -64,6 +64,7 @@ export const getViewerContext = cache(async (): Promise<ViewerContextDTO> => {
       id: asString(org.id) ?? orgId,
       name: asString(org.name) ?? 'Organizacao',
       type: asString(org.type) ?? 'club',
+      logoUrl: asString(org.logo_url),
     },
     role,
     squads: asRecordArray(squadsData).map((squad) => ({

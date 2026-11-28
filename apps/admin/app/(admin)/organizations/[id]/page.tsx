@@ -67,7 +67,7 @@ export default async function OrganizationDetailPage({
                 <tr key={athlete.id}>
                   <td style={{ color: 'var(--sophi-text)' }}>{athlete.name}</td>
                   <td>{athlete.position ?? '-'}</td>
-                  <td><StatusBadge tone={athlete.active ? 'green' : 'neutral'}>{athlete.status}</StatusBadge></td>
+                  <td><StatusBadge tone={athlete.active ? 'green' : 'neutral'}>{athlete.active ? 'active' : 'inactive'}</StatusBadge></td>
                   <td>{athlete.consent_date ? formatDate(athlete.consent_date) : <StatusBadge tone="danger">missing</StatusBadge>}</td>
                 </tr>
               ))}

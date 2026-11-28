@@ -15,7 +15,6 @@ export interface RehabSessionDTO {
     name: string
     shirt_number: number | null
     position: string | null
-    status: string
   }
   rehab_protocols: {
     id: string
@@ -29,7 +28,7 @@ export async function getRehabSessions(squadId?: string | null): Promise<RehabSe
   let query = supabase
     .from('athletes')
     .select(`
-      id, name, shirt_number, position, status,
+      id, name, shirt_number, position,
       rehab_sessions (
         id, athlete_id, protocol_id, phase_index, start_date, clinical_data, rtp_criteria, updated_at,
         rehab_protocols ( id, name, phases )
@@ -46,7 +45,6 @@ export async function getRehabSessions(squadId?: string | null): Promise<RehabSe
     name: string
     shirt_number: number | null
     position: string | null
-    status: string
     rehab_sessions: Array<{
       id: string
       athlete_id: string
@@ -72,7 +70,6 @@ export async function getRehabSessions(squadId?: string | null): Promise<RehabSe
           name: a.name,
           shirt_number: a.shirt_number,
           position: a.position,
-          status: a.status,
         },
         rehab_protocols: session.rehab_protocols,
       } as RehabSessionDTO
@@ -91,7 +88,6 @@ export async function getRehabSessions(squadId?: string | null): Promise<RehabSe
         name: a.name,
         shirt_number: a.shirt_number,
         position: a.position,
-        status: a.status,
       },
       rehab_protocols: null,
     } as RehabSessionDTO & { noSession: true }

@@ -6,7 +6,6 @@ export interface PassportAthleteDTO {
   name: string
   shirt_number: number | null
   position: string | null
-  status: string
   squad_id: string | null
   injury_events: Array<{
     id: string
@@ -42,7 +41,7 @@ export async function getPassportList(squadId?: string | null): Promise<Passport
   let query = supabase
     .from('athletes')
     .select(`
-      id, name, shirt_number, position, status, squad_id,
+      id, name, shirt_number, position, squad_id,
       injury_events ( id, injury_date, return_date, diagnosis, location, severity, days_absent, is_recurrence ),
       performance_data ( session_date, vmax, vmax_today_pct ),
       athlete_passport ( id, passport_data, is_shareable, last_updated ),

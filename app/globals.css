@@ -44,6 +44,9 @@
 }
 
 /* Sophi Sports — light theme (default). Values follow landing_page/assets/style.css */
+/* Kept in sync manually with apps/admin/app/globals.css and
+   landing_page/assets/style.css — the three brand color-token sets are
+   deliberately duplicated, not shared, so update all three together. */
 :root {
   color-scheme: light;
 

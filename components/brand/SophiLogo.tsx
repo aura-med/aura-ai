@@ -31,14 +31,17 @@ interface SophiLogoProps {
   style?: CSSProperties
   /** Hide the "behind your team" tagline (use when rendered very small). */
   hideTagline?: boolean
+  /** Icon mark only — no "sophi" wordmark, no tagline. Crops the viewBox
+   * tightly around the icon group instead of the full lockup's width. */
+  iconOnly?: boolean
 }
 
-export function SophiLogo({ className, style, hideTagline = false }: SophiLogoProps) {
+export function SophiLogo({ className, style, hideTagline = false, iconOnly = false }: SophiLogoProps) {
   return (
     <svg
       role="img"
       aria-label="Sophi Sports"
-      viewBox="66 66 222 86"
+      viewBox={iconOnly ? '66 66 72 84' : '66 66 222 86'}
       className={className}
       style={{ color: 'var(--sophi-logo)', ...style }}
       fill="currentColor"
@@ -46,13 +49,17 @@ export function SophiLogo({ className, style, hideTagline = false }: SophiLogoPr
       <g transform="translate(69.9917 70.0023) scale(1.037643)">
         <Paths d={ICON_D} />
       </g>
-      <g transform="translate(151.5450 79.9801)">
-        <Paths d={WORD_D} />
-      </g>
-      {!hideTagline && (
-        <g transform="translate(151.9950 128.3051)">
-          <Paths d={TAG_D} />
-        </g>
+      {!iconOnly && (
+        <>
+          <g transform="translate(151.5450 79.9801)">
+            <Paths d={WORD_D} />
+          </g>
+          {!hideTagline && (
+            <g transform="translate(151.9950 128.3051)">
+              <Paths d={TAG_D} />
+            </g>
+          )}
+        </>
       )}
     </svg>
   )

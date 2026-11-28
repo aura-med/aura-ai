@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { FileText, Stethoscope, Brain, Plus, ChevronDown, ChevronRight, Shield, Edit2, Loader2, Heart } from 'lucide-react'
+import { FileText, Stethoscope, Brain, Plus, ChevronDown, ChevronRight, Shield, Edit2, Loader2, Heart, ClipboardList } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type {
@@ -10,13 +10,14 @@ import type {
   MedicalConsultation,
   Scat6Assessment,
   MedicalHistory,
+  AthleteAnamnesis,
 } from '@/types/athlete-profile'
 
 const ConsultationModal = dynamic(() => import('./ConsultationModal').then((mod) => mod.ConsultationModal))
 const MedicalHistoryModal = dynamic(() => import('./MedicalHistoryModal').then((mod) => mod.MedicalHistoryModal))
 const Scat6Modal = dynamic(() => import('./Scat6Modal').then((mod) => mod.Scat6Modal))
-const AnamnesisTab = dynamic(() => import('./AnamnesisTab').then((mod) => mod.AnamnesisTab))
-const InjuriesTab = dynamic(() => import('./InjuriesTab').then((mod) => mod.InjuriesTab))
+const AnamnesisModal = dynamic(() => import('./AnamnesisModal').then((mod) => mod.AnamnesisModal))
+const MedicationAdminSection = dynamic(() => import('./MedicationAdminSection').then((mod) => mod.MedicationAdminSection))
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -246,6 +247,9 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
   const [scat6,           setScat6]           = useState<Scat6Assessment | null>(profile.baselineScat6 ?? profile.activeConcussion)
   const [showScat6Modal,  setShowScat6Modal]  = useState(false)
   const [editScat6,       setEditScat6]       = useState<Scat6Assessment | null>(null)
+  // Anamnese
+  const [anamnesis,       setAnamnesis]       = useState<AthleteAnamnesis | null>(profile.anamnesis)
+  const [showAnamnesisModal, setShowAnamnesisModal] = useState(false)
 
   // ── Fetch consultations ────────────────────────────────────────────────────
   useEffect(() => {
@@ -445,7 +449,7 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
 
         {/* Medication + Surgical */}
         <div className="grid gap-4 lg:grid-cols-2">
-          <Section icon={FileText} title={`Medicação${activeMeds.length ? ` (${activeMeds.length})` : ''}`}
+          <Section icon={FileText} title={`Medicação Habitual${activeMeds.length ? ` (${activeMeds.length})` : ''}`}
             action={
               <button type="button" onClick={() => setShowHistModal(true)} className="text-[10px] font-medium hover:opacity-70" style={{ color: 'var(--sophi-accent)' }}>
                 Editar
@@ -461,6 +465,15 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
                     <div>
                       <span className="font-medium" style={{ color: 'var(--sophi-text)' }}>{m.name}</span>
                       <span className="ml-1.5" style={{ color: 'var(--sophi-text3)' }}>{m.dosage} · {m.frequency}</span>
+                      {m.has_tue && (
+                        <span
+                          className="ml-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                          style={{ background: 'var(--sophi-warn-bg)', color: 'var(--sophi-warn)' }}
+                          title={m.tue_valid_until ? `AUT válida até ${formatDate(m.tue_valid_until)}` : 'AUT registada'}
+                        >
+                          AUT{m.tue_number ? ` · ${m.tue_number}` : ''}
+                        </span>
+                      )}
                     </div>
                     {m.prescriber && <span className="text-[10px] shrink-0" style={{ color: 'var(--sophi-text3)' }}>{m.prescriber}</span>}
                   </div>
@@ -490,6 +503,10 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
             )}
           </Section>
         </div>
+
+        {/* Medication administration log (antidoping log) — distinct from the
+            prescribed list above, but kept on the same tab now. */}
+        <MedicationAdminSection profile={profile} />
 
         {/* SOAP notes */}
         <Section
@@ -525,10 +542,31 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
         </Section>
 
         {/* Anamnese — Avaliação Pré-Época */}
-        <AnamnesisTab profile={profile} />
-
-        {/* Lesões — histórico integrado na ficha clínica */}
-        <InjuriesTab profile={profile} />
+        <Section
+          icon={ClipboardList}
+          title="Anamnese — Avaliação Pré-Época"
+          action={
+            <button
+              type="button"
+              onClick={() => setShowAnamnesisModal(true)}
+              className="flex items-center gap-1 text-[10px] font-medium hover:opacity-70"
+              style={{ color: 'var(--sophi-accent)' }}
+            >
+              <Edit2 size={10} /> {anamnesis ? 'Ver / Editar' : 'Preencher'}
+            </button>
+          }
+        >
+          {anamnesis ? (
+            <p className="text-xs" style={{ color: 'var(--sophi-text3)' }}>
+              Época {anamnesis.season}
+              {anamnesis.clinician_name ? ` · Registado por ${anamnesis.clinician_name}` : ''}
+            </p>
+          ) : (
+            <p className="text-xs text-center py-3" style={{ color: 'var(--sophi-text3)' }}>
+              Sem anamnese registada para esta época
+            </p>
+          )}
+        </Section>
       </div>
 
       {/* Modals */}
@@ -556,6 +594,15 @@ export function MedicalTab({ profile }: { profile: AthleteProfileData }) {
           existing={editScat6}
           onClose={() => { setShowScat6Modal(false); setEditScat6(null) }}
           onSaved={handleScat6Saved}
+        />
+      )}
+      {showAnamnesisModal && (
+        <AnamnesisModal
+          athleteId={profile.id}
+          viewerRole={profile.viewerRole}
+          existing={anamnesis}
+          onClose={() => setShowAnamnesisModal(false)}
+          onSaved={(a) => setAnamnesis(a)}
         />
       )}
     </>

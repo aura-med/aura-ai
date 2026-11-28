@@ -2,31 +2,19 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { Activity, Plus, Clock, Edit2, Loader2, Syringe, CalendarClock } from 'lucide-react'
+import { Activity, Plus, Edit2, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { administerMedication } from '@/lib/actions/clinical'
-import { OWNER_ROLE, CLINICAL_ROLES, REHAB_ROLES } from '@/lib/roles'
+import { OWNER_ROLE, REHAB_ROLES } from '@/lib/roles'
 import { fetchRehabPlans } from '@/components/rehab-plans/RehabPlanShared'
 import type {
   AthleteProfileData,
   RehabSession,
   RehabPlan,
-  MedicationAdministration,
 } from '@/types/athlete-profile'
 
 const RehabSessionModal = dynamic(() => import('./RehabSessionModal').then((mod) => mod.RehabSessionModal))
-const RehabPlanSection = dynamic(() => import('./RehabPlanSection').then((mod) => mod.RehabPlanSection))
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-// Local-time default — UTC (toISOString) shifts the clinician's day/time by
-// their timezone offset, which corrupts the medication administration log.
-function localDateTimeValue(): string {
-  const d = new Date()
-  const p = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
-}
 
 function formatDate(dateStr: string | null | undefined) {
   if (!dateStr) return '—'
@@ -86,6 +74,98 @@ function EmptyState({ label, cta, onClick }: { label: string; cta: string; onCli
   )
 }
 
+// ── Monthly summary ────────────────────────────────────────────────────────────
+
+function MonthSummary({ sessions }: { sessions: RehabSession[] }) {
+  const monthPrefix = new Date().toISOString().slice(0, 7) // YYYY-MM
+  const thisMonth = sessions.filter((s) => s.session_date.startsWith(monthPrefix))
+  const byType = thisMonth.reduce<Record<string, number>>((acc, s) => {
+    acc[s.session_type] = (acc[s.session_type] ?? 0) + 1
+    return acc
+  }, {})
+  const pseValues = thisMonth.map((s) => s.pse).filter((p): p is number => p != null)
+  const avgPse = pseValues.length ? (pseValues.reduce((a, b) => a + b, 0) / pseValues.length) : null
+
+  if (thisMonth.length === 0) return null
+
+  return (
+    <div className="rounded-xl border p-3 flex flex-wrap items-center gap-x-4 gap-y-2" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+      <div>
+        <p className="text-lg font-bold font-mono leading-none" style={{ color: 'var(--sophi-text)' }}>{thisMonth.length}</p>
+        <p className="text-[9px] uppercase tracking-wider mt-0.5" style={{ color: 'var(--sophi-text3)' }}>Sessões este mês</p>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {Object.entries(byType).map(([type, count]) => (
+          <span key={type} className="text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-bg4)', color: 'var(--sophi-text3)' }}>
+            {SESSION_TYPE_LABEL[type] ?? type}: {count}
+          </span>
+        ))}
+      </div>
+      {avgPse != null && (
+        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full ml-auto" style={{ background: 'var(--sophi-warn-bg)', color: 'var(--sophi-warn)' }}>
+          PSE médio: {avgPse.toFixed(1)}
+        </span>
+      )}
+    </div>
+  )
+}
+
+// ── Week strip ─────────────────────────────────────────────────────────────────
+
+function toISODate(d: Date) {
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+}
+
+function WeekStrip({ sessions }: { sessions: RehabSession[] }) {
+  const today = new Date()
+  const day = today.getDay()
+  const mondayOffset = day === 0 ? -6 : 1 - day
+  const monday = new Date(today)
+  monday.setDate(today.getDate() + mondayOffset)
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    return d
+  })
+  const todayISO = toISODate(today)
+  const countByDay = new Map<string, number>()
+  for (const s of sessions) countByDay.set(s.session_date, (countByDay.get(s.session_date) ?? 0) + 1)
+
+  const WEEKDAY_LABEL = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+
+  return (
+    <div className="rounded-xl border p-3" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
+      <p className="text-[9px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--sophi-text3)' }}>Esta Semana</p>
+      <div className="grid grid-cols-7 gap-1.5">
+        {days.map((d, i) => {
+          const iso = toISODate(d)
+          const count = countByDay.get(iso) ?? 0
+          const isToday = iso === todayISO
+          return (
+            <div
+              key={iso}
+              className="rounded-lg py-2 flex flex-col items-center gap-1"
+              style={{
+                background: isToday ? 'var(--sophi-accent-bg)' : 'var(--sophi-bg3)',
+                border: isToday ? '1px solid var(--sophi-accent)' : '1px solid transparent',
+              }}
+            >
+              <span className="text-[9px] font-semibold uppercase" style={{ color: isToday ? 'var(--sophi-accent)' : 'var(--sophi-text3)' }}>
+                {WEEKDAY_LABEL[i]}
+              </span>
+              <span className="text-sm font-bold font-mono" style={{ color: count > 0 ? 'var(--sophi-text)' : 'var(--sophi-text3)' }}>
+                {count || '—'}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ── Rehab Session Row ─────────────────────────────────────────────────────────
 
 function RehabRow({ s, occurrenceLabel, planLabel, onEdit }: { s: RehabSession; occurrenceLabel?: string | null; planLabel?: string | null; onEdit?: () => void }) {
@@ -108,6 +188,15 @@ function RehabRow({ s, occurrenceLabel, planLabel, onEdit }: { s: RehabSession; 
             </span>
           )}
         </div>
+        {s.modalities.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1">
+            {s.modalities.map((m) => (
+              <span key={m} className="text-[9px] font-medium px-1.5 py-0.5 rounded-full" style={{ background: 'var(--sophi-bg4)', color: 'var(--sophi-text3)' }}>
+                {m}
+              </span>
+            ))}
+          </div>
+        )}
         {s.exercises.length > 0 && (
           <p className="text-[11px] truncate mt-0.5" style={{ color: 'var(--sophi-text3)' }}>
             {s.exercises
@@ -142,131 +231,9 @@ function RehabRow({ s, occurrenceLabel, planLabel, onEdit }: { s: RehabSession; 
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
-// ── Medication Administration Modal ──────────────────────────────────────────
-
-const ROUTE_OPTIONS = [
-  { value: 'oral',           label: 'Oral' },
-  { value: 'im',             label: 'IM (intramuscular)' },
-  { value: 'intra-articular', label: 'Intra-articular' },
-  { value: 'iv',             label: 'IV (intravenoso)' },
-  { value: 'topical',        label: 'Tópico' },
-  { value: 'other',          label: 'Outro' },
-]
-
-function formatDateTime(dt: string) {
-  return new Date(dt).toLocaleString('pt-PT', {
-    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
-  })
-}
-
-function MedAdminModal({
-  athleteId,
-  onClose,
-  onSaved,
-}: {
-  athleteId: string
-  onClose: () => void
-  onSaved: (record: MedicationAdministration) => void
-}) {
-  const [medName,        setMedName]        = useState('')
-  const [dose,           setDose]           = useState('')
-  const [route,          setRoute]          = useState('oral')
-  const [notes,          setNotes]          = useState('')
-  const [administeredAt, setAdministeredAt] = useState(localDateTimeValue)
-  const [saving,         setSaving]         = useState(false)
-  const [error,          setError]          = useState<string | null>(null)
-
-  async function handleSave() {
-    if (!medName.trim()) { setError('Nome do medicamento obrigatório'); return }
-    setSaving(true)
-    setError(null)
-    try {
-      // Author/org derived server-side so the antidoping log can't be forged.
-      const data = await administerMedication({
-        athleteId,
-        medicationName: medName.trim(),
-        dose:           dose.trim() || null,
-        route,
-        notes:          notes.trim() || null,
-        administeredAt: new Date(administeredAt).toISOString(),
-      })
-      onSaved(data as MedicationAdministration)
-    } catch (e) {
-      setError((e as Error).message)
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="w-full max-w-sm rounded-2xl border shadow-2xl p-5 space-y-4" style={{ background: 'var(--sophi-bg2)', borderColor: 'var(--sophi-border)' }}>
-        <h3 className="font-semibold text-sm" style={{ color: 'var(--sophi-text)', fontFamily: 'var(--font-display)' }}>
-          Registar Administração
-        </h3>
-        <div className="space-y-3">
-          <div className="space-y-1.5">
-            <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Medicamento</label>
-            <input value={medName} onChange={(e) => setMedName(e.target.value)} placeholder="Nome do medicamento"
-              className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
-              style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Dose</label>
-              <input value={dose} onChange={(e) => setDose(e.target.value)} placeholder="ex: 500 mg"
-                className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
-                style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }} />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Via</label>
-              <select value={route} onChange={(e) => setRoute(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
-                style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }}>
-                {ROUTE_OPTIONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
-              </select>
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Data e hora</label>
-            <input type="datetime-local" value={administeredAt} onChange={(e) => setAdministeredAt(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
-              style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }} />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-xs" style={{ color: 'var(--sophi-text2)' }}>Notas (opcional)</label>
-            <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notas adicionais"
-              className="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none"
-              style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }} />
-          </div>
-        </div>
-        {error && <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>}
-        <div className="flex gap-3">
-          <button type="button" onClick={onClose}
-            className="flex-1 px-4 py-2 rounded-lg text-sm border hover:bg-[var(--sophi-bg3)]"
-            style={{ borderColor: 'var(--sophi-border)', color: 'var(--sophi-text2)' }}>
-            Cancelar
-          </button>
-          <button type="button" onClick={handleSave} disabled={saving}
-            className="flex-1 px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1"
-            style={{ background: 'var(--sophi-primary)', color: 'var(--sophi-on-primary)' }}>
-            {saving && <Loader2 size={12} className="animate-spin" />} Guardar
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ── Main ──────────────────────────────────────────────────────────────────────
-
 export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
   const router = useRouter()
 
-  // Clinical write actions mirror the RLS insert policies (owner/doctor/physio/
-  // masseur) — other roles get a read-only view instead of an RLS error on save.
-  const canClinical = profile.viewerRole === OWNER_ROLE || CLINICAL_ROLES.includes(profile.viewerRole)
   // Rehab sessions have a narrower writer set (018 rehab_clinical_write: owner +
   // doctor/physio only — masseurs are excluded).
   const canRehab = profile.viewerRole === OWNER_ROLE || REHAB_ROLES.includes(profile.viewerRole)
@@ -291,11 +258,6 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
   // Rehab session modal
   const [showRehabModal,  setShowRehabModal]  = useState(false)
   const [editingRehab,    setEditingRehab]    = useState<RehabSession | null>(null)
-
-  // Medication administrations (clinical table)
-  const [medAdminRecords,  setMedAdminRecords]  = useState<MedicationAdministration[]>([])
-  const [loadingMedAdmin,  setLoadingMedAdmin]  = useState(true)
-  const [showMedAdminModal, setShowMedAdminModal] = useState(false)
 
   // ── Fetch rehab sessions ───────────────────────────────────────────────────
   useEffect(() => {
@@ -324,28 +286,6 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
     return () => { cancelled = true }
   }, [profile.id])
 
-  // ── Fetch medication administrations ───────────────────────────────────────
-  useEffect(() => {
-    let cancelled = false
-    const load = async () => {
-      setLoadingMedAdmin(true)
-      try {
-        const supabase = createClient()
-        const { data } = await supabase
-          .from('medication_administrations')
-          .select('id, medication_name, dose, route, administered_by_name, administered_at, notes, created_at')
-          .eq('athlete_id', profile.id)
-          .order('administered_at', { ascending: false })
-          .limit(50)
-        if (!cancelled) setMedAdminRecords((data ?? []) as MedicationAdministration[])
-      } finally {
-        if (!cancelled) setLoadingMedAdmin(false)
-      }
-    }
-    load()
-    return () => { cancelled = true }
-  }, [profile.id])
-
   // ── Handlers ───────────────────────────────────────────────────────────────
   function handleRehabSaved(s: RehabSession) {
     setSessions((prev) => {
@@ -369,16 +309,14 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
     <>
       <div className="space-y-4">
 
-        {/* Rehab plan calendar — day-by-day programme, distinct from the
-            physio session log below it. */}
-        <Section icon={CalendarClock} title="Plano de Reabilitação">
-          <RehabPlanSection profile={profile} />
-        </Section>
+        {!loadingS && <MonthSummary sessions={sessions} />}
+        {!loadingS && <WeekStrip sessions={sessions} />}
 
-        {/* Physiotherapy & Rehab */}
+        {/* Treatment sessions — the rehab plan itself now lives on the Lesões tab,
+            next to the injury it treats. */}
         <Section
           icon={Activity}
-          title={`Fisioterapia & Reabilitação${sessions.length > 0 ? ` (${sessions.length})` : ''}`}
+          title={`Sessões de Tratamento${sessions.length > 0 ? ` (${sessions.length})` : ''}`}
           action={canRehab ? (
             <button
               type="button"
@@ -397,12 +335,12 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
           ) : sessions.length === 0 ? (
             canRehab ? (
               <EmptyState
-                label="Sem sessões de fisioterapia registadas"
+                label="Sem sessões de tratamento registadas"
                 cta="Nova Sessão"
                 onClick={() => { setEditingRehab(null); setShowRehabModal(true) }}
               />
             ) : (
-              <p className="py-6 text-center text-xs" style={{ color: 'var(--sophi-text3)' }}>Sem sessões de fisioterapia registadas</p>
+              <p className="py-6 text-center text-xs" style={{ color: 'var(--sophi-text3)' }}>Sem sessões de tratamento registadas</p>
             )
           ) : (
             <div className="space-y-2">
@@ -414,57 +352,6 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
                   planLabel={s.rehab_plan_id ? planLabelById.get(s.rehab_plan_id) : null}
                   onEdit={canRehab ? () => { setEditingRehab(s); setShowRehabModal(true) } : undefined}
                 />
-              ))}
-            </div>
-          )}
-        </Section>
-
-        {/* Medication administrations (antidoping log) */}
-        <Section
-          icon={Syringe}
-          title={`Medicação${medAdminRecords.length > 0 ? ` (${medAdminRecords.length})` : ''}`}
-          action={canClinical ? (
-            <button
-              type="button"
-              onClick={() => setShowMedAdminModal(true)}
-              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg transition-colors hover:bg-[var(--sophi-accent-bg)]"
-              style={{ color: 'var(--sophi-accent)' }}
-            >
-              <Plus size={10} /> Registar
-            </button>
-          ) : undefined}
-        >
-          {loadingMedAdmin ? (
-            <div className="flex justify-center py-4">
-              <Loader2 size={16} className="animate-spin" style={{ color: 'var(--sophi-text3)' }} />
-            </div>
-          ) : medAdminRecords.length === 0 ? (
-            canClinical ? (
-              <EmptyState label="Sem administrações registadas" cta="Registar administração" onClick={() => setShowMedAdminModal(true)} />
-            ) : (
-              <p className="py-6 text-center text-xs" style={{ color: 'var(--sophi-text3)' }}>Sem administrações registadas</p>
-            )
-          ) : (
-            <div className="space-y-2">
-              {medAdminRecords.map((r) => (
-                <div key={r.id} className="rounded-lg border px-3 py-2.5 space-y-1" style={{ borderColor: 'var(--sophi-border)', background: 'var(--sophi-bg3)' }}>
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-xs font-semibold" style={{ color: 'var(--sophi-text)' }}>{r.medication_name}</p>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {r.route && (
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase" style={{ background: 'var(--sophi-bg4)', color: 'var(--sophi-text3)' }}>
-                          {r.route}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 text-[10px]" style={{ color: 'var(--sophi-text3)' }}>
-                    {r.dose && <span>{r.dose}</span>}
-                    <span className="flex items-center gap-1"><Clock size={9} />{formatDateTime(r.administered_at)}</span>
-                    {r.administered_by_name && <span>· {r.administered_by_name}</span>}
-                  </div>
-                  {r.notes && <p className="text-[10px] italic" style={{ color: 'var(--sophi-text3)' }}>{r.notes}</p>}
-                </div>
               ))}
             </div>
           )}
@@ -482,13 +369,6 @@ export function TreatmentsTab({ profile }: { profile: AthleteProfileData }) {
           onClose={() => { setShowRehabModal(false); setEditingRehab(null) }}
           onSaved={handleRehabSaved}
           onDeleted={handleRehabDeleted}
-        />
-      )}
-      {showMedAdminModal && (
-        <MedAdminModal
-          athleteId={profile.id}
-          onClose={() => setShowMedAdminModal(false)}
-          onSaved={(r) => { setMedAdminRecords((prev) => [r, ...prev]); setShowMedAdminModal(false) }}
         />
       )}
     </>

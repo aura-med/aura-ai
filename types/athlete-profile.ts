@@ -175,7 +175,7 @@ export interface RehabSession {
 
 export const TREATMENT_MODALITIES = [
   'Crioterapia', 'Eletroterapia', 'Dry Needling', 'Ligadura Funcional',
-  'Ondas de Choque', 'TENS', 'Mobilização Articular', 'Tecar',
+  'Ondas de Choque', 'TENS', 'Mobilização Articular', 'TECAR',
 ] as const
 
 // ── Rehab Plan Calendar (migration 034) ───────────────────────────────────────

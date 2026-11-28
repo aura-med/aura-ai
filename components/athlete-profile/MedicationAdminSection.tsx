@@ -3,12 +3,13 @@
 // Medication administration log (antidoping log) — distinct from the
 // prescribed/active medication list in MedicalTab: this records each actual
 // dose given over time, rather than an ongoing prescription.
-import { useState, useEffect } from 'react'
-import { Plus, Clock, Loader2, Syringe } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { Plus, Clock, Loader2, Syringe, AlertTriangle, ShieldCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { administerMedication } from '@/lib/actions/clinical'
 import { OWNER_ROLE, CLINICAL_ROLES } from '@/lib/roles'
-import type { AthleteProfileData, MedicationAdministration } from '@/types/athlete-profile'
+import { checkProhibitedSubstance, WADA_LIST_VERSION } from '@/lib/medical/wadaProhibitedList'
+import type { AthleteProfileData, MedicationAdministration, MedicationRecord } from '@/types/athlete-profile'
 
 // Local-time default — UTC (toISOString) shifts the clinician's day/time by
 // their timezone offset, which corrupts the medication administration log.
@@ -50,12 +51,52 @@ function EmptyState({ label, cta, onClick }: { label: string; cta: string; onCli
   )
 }
 
+function TueCheck({ medName, route, existingMedications }: { medName: string; route: string; existingMedications: MedicationRecord[] }) {
+  const match = useMemo(() => checkProhibitedSubstance(medName, route), [medName, route])
+  if (!match) return null
+
+  const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
+  const needle = normalize(medName)
+  const hasTue = existingMedications.some((m) => m.has_tue && (needle.includes(normalize(m.name)) || normalize(m.name).includes(needle)))
+
+  if (hasTue) {
+    return (
+      <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ background: 'var(--sophi-green-bg)' }}>
+        <ShieldCheck size={13} className="shrink-0 mt-0.5" style={{ color: 'var(--sophi-green)' }} />
+        <p className="text-[11px]" style={{ color: 'var(--sophi-green)' }}>
+          Pode constar da Lista de Proibições WADA ({match.matched.category} — {match.matched.categoryLabel}), mas existe uma AUT registada para "{medName}" na Medicação Habitual.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ background: 'var(--sophi-warn-bg)' }}>
+      <AlertTriangle size={13} className="shrink-0 mt-0.5" style={{ color: 'var(--sophi-warn)' }} />
+      <div>
+        <p className="text-[11px] font-semibold" style={{ color: 'var(--sophi-warn)' }}>
+          Pode constar da Lista de Proibições WADA — {match.matched.category} ({match.matched.categoryLabel})
+        </p>
+        <p className="text-[10px] mt-0.5" style={{ color: 'var(--sophi-warn)' }}>{match.note}</p>
+        <p className="text-[9px] mt-1" style={{ color: 'var(--sophi-text3)' }}>
+          Sem AUT registada para este atleta. Verificar na lista oficial ({WADA_LIST_VERSION}) antes de administrar, ou registar a AUT na Medicação Habitual.
+        </p>
+        <p className="text-[9px]" style={{ color: 'var(--sophi-text3)' }}>
+          Deteção automática por nome — não é uma verificação oficial; confirma sempre na lista publicada pela WADA.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function MedAdminModal({
   athleteId,
+  existingMedications,
   onClose,
   onSaved,
 }: {
   athleteId: string
+  existingMedications: MedicationRecord[]
   onClose: () => void
   onSaved: (record: MedicationAdministration) => void
 }) {
@@ -132,6 +173,7 @@ function MedAdminModal({
               style={{ background: 'var(--sophi-bg3)', borderColor: 'var(--sophi-border2)', color: 'var(--sophi-text)' }} />
           </div>
         </div>
+        {medName.trim() && <TueCheck medName={medName} route={route} existingMedications={existingMedications} />}
         {error && <p className="text-xs" style={{ color: 'var(--sophi-danger)' }}>{error}</p>}
         <div className="flex gap-3">
           <button type="button" onClick={onClose}
@@ -236,6 +278,7 @@ export function MedicationAdminSection({ profile }: { profile: AthleteProfileDat
       {showModal && (
         <MedAdminModal
           athleteId={profile.id}
+          existingMedications={profile.medicalHistory?.medications ?? []}
           onClose={() => setShowModal(false)}
           onSaved={(r) => { setRecords((prev) => [r, ...prev]); setShowModal(false) }}
         />
